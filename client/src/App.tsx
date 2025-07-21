@@ -1,30 +1,31 @@
-import { Switch, Route } from "wouter";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
-import { Home } from "@/pages/home";
+import { Layout } from "@/layout/Layout";
+import { HomePage } from "@/pages/HomePage";
+import { JournalPage } from "@/pages/JournalPage";
+import { GoalsPage } from "@/pages/GoalsPage";
+import { TrainingPage } from "@/pages/TrainingPage";
+import { DocSafePage } from "@/pages/DocSafePage";
 import NotFound from "@/pages/not-found";
-
-function Router() {
-  return (
-    <Switch>
-      <Route path="/" component={Home} />
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
 
 function App() {
   return (
     <ThemeProvider defaultTheme="light" storageKey="bizzin-ui-theme">
       <TooltipProvider>
-        <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900">
-          <Header />
-          <Router />
-          <Footer />
-        </div>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<HomePage />} />
+              <Route path="journal" element={<JournalPage />} />
+              <Route path="goals" element={<GoalsPage />} />
+              <Route path="training" element={<TrainingPage />} />
+              <Route path="docsafe" element={<DocSafePage />} />
+              <Route path="*" element={<NotFound />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
         <Toaster />
       </TooltipProvider>
     </ThemeProvider>
