@@ -2,7 +2,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { supabase } from "@/lib/supabase"
+import { authService } from "@/lib/supabase"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -28,12 +28,12 @@ export default function AuthPage() {
     setMessage("")
     const { email, password } = data
 
-    const { error } =
+    const result =
       mode === "signUp"
-        ? await supabase.auth.signUp({ email, password })
-        : await supabase.auth.signInWithPassword({ email, password })
+        ? await authService.signUp(email, password)
+        : await authService.signIn(email, password)
 
-    setMessage(error ? error.message : "Check your email for confirmation.")
+    setMessage(result.error || "Authentication successful!")
   }
 
   return (

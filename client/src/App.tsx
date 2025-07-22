@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Router, Route, Switch } from "wouter";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
@@ -9,28 +10,28 @@ import { GoalsPage } from "@/pages/GoalsPage";
 import { TrainingPage } from "@/pages/TrainingPage";
 import { DocSafePage } from "@/pages/DocSafePage";
 import NotFound from "@/pages/not-found";
-import AuthPage from "@/pages/AuthPage"
+
+const queryClient = new QueryClient();
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="light" storageKey="bizzin-ui-theme">
-      <TooltipProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="/" element={<Layout />}>
-              <Route index element={<HomePage />} />
-              <Route path="journal" element={<JournalPage />} />
-              <Route path="goals" element={<GoalsPage />} />
-              <Route path="training" element={<TrainingPage />} />
-              <Route path="docsafe" element={<DocSafePage />} />
-              <Route path="*" element={<NotFound />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-        <Toaster />
-      </TooltipProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="light" storageKey="bizzin-ui-theme">
+        <TooltipProvider>
+          <Router>
+            <Switch>
+              <Route path="/"><Layout><HomePage /></Layout></Route>
+              <Route path="/journal"><Layout><JournalPage /></Layout></Route>
+              <Route path="/goals"><Layout><GoalsPage /></Layout></Route>
+              <Route path="/training"><Layout><TrainingPage /></Layout></Route>
+              <Route path="/docsafe"><Layout><DocSafePage /></Layout></Route>
+              <Route><NotFound /></Route>
+            </Switch>
+          </Router>
+          <Toaster />
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
 
