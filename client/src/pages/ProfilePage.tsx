@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { useAuth } from "@/hooks/AuthProvider"
 import { supabase } from "@/lib/supabase"
-import { User, Settings, Mail, Phone, MapPin, Calendar, Save, AlertCircle, CheckCircle } from "lucide-react"
+import { User, Settings, Mail, Phone, MapPin, Calendar, Save, AlertCircle, CheckCircle, Camera, Upload, Trash2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 const profileSchema = z.object({
@@ -27,7 +27,10 @@ type ProfileFormData = z.infer<typeof profileSchema>
 export default function ProfilePage() {
   const { user } = useAuth()
   const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   
   const {
     register,
@@ -48,8 +51,102 @@ export default function ProfilePage() {
       setValue('phone', metadata.phone || '')
       setValue('location', metadata.location || '')
       setValue('bio', metadata.bio || '')
+      setAvatarUrl(metadata.avatar_url || null)
     }
   }, [user, setValue])
+
+  // Handle file upload
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file || !user) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setMessage({ type: 'error', text: 'Please select a valid image file' })
+      return
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      setMessage({ type: 'error', text: 'File size must be less than 2MB' })
+      return
+    }
+
+    setUploading(true)
+    setMessage(null)
+
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`
+      const filePath = `avatars/${fileName}`
+
+      // Upload file to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('profiles')
+        .upload(filePath, file)
+
+      if (uploadError) throw uploadError
+
+      // Get the public URL
+      const { data } = supabase.storage
+        .from('profiles')
+        .getPublicUrl(filePath)
+
+      const avatarUrl = data.publicUrl
+
+      // Update user metadata with avatar URL
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: {
+          ...user.user_metadata,
+          avatar_url: avatarUrl
+        }
+      })
+
+      if (updateError) throw updateError
+
+      setAvatarUrl(avatarUrl)
+      setMessage({ type: 'success', text: 'Profile picture updated successfully!' })
+
+      // Clear message after 3 seconds
+      setTimeout(() => setMessage(null), 3000)
+
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.message || 'Failed to upload profile picture' })
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  // Handle avatar removal
+  const handleRemoveAvatar = async () => {
+    if (!user || !user.user_metadata?.avatar_url) return
+
+    setUploading(true)
+    setMessage(null)
+
+    try {
+      // Update user metadata to remove avatar URL
+      const { error } = await supabase.auth.updateUser({
+        data: {
+          ...user.user_metadata,
+          avatar_url: null
+        }
+      })
+
+      if (error) throw error
+
+      setAvatarUrl(null)
+      setMessage({ type: 'success', text: 'Profile picture removed successfully!' })
+
+      // Clear message after 3 seconds
+      setTimeout(() => setMessage(null), 3000)
+
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.message || 'Failed to remove profile picture' })
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const onSubmit = async (data: ProfileFormData) => {
     if (!user) return
@@ -66,6 +163,7 @@ export default function ProfilePage() {
           phone: data.phone || '',
           location: data.location || '',
           bio: data.bio || '',
+          avatar_url: avatarUrl || null, // Preserve existing avatar URL
         }
       })
 
@@ -113,13 +211,70 @@ export default function ProfilePage() {
         {/* Profile Overview */}
         <Card className="lg:col-span-1">
           <CardHeader className="text-center">
-            <div className="flex justify-center">
-              <Avatar className="w-24 h-24 border-4 border-orange-100 dark:border-orange-900">
-                <AvatarImage src="/placeholder-avatar.jpg" alt="Profile" />
-                <AvatarFallback className="text-xl font-semibold bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300">
-                  {getInitials()}
-                </AvatarFallback>
-              </Avatar>
+            <div className="flex justify-center relative">
+              <div className="relative group">
+                <Avatar className="w-24 h-24 border-4 border-orange-100 dark:border-orange-900">
+                  <AvatarImage src={avatarUrl || "/placeholder-avatar.jpg"} alt="Profile" />
+                  <AvatarFallback className="text-xl font-semibold bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300">
+                    {getInitials()}
+                  </AvatarFallback>
+                </Avatar>
+                
+                {/* Avatar Upload/Change Buttons */}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-white hover:text-white hover:bg-white/20 p-2"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                  >
+                    <Camera className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+            </div>
+            
+            {/* Upload/Remove Buttons */}
+            <div className="flex justify-center gap-2 mt-3">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="text-xs"
+              >
+                {uploading ? (
+                  'Uploading...'
+                ) : (
+                  <>
+                    <Upload className="w-3 h-3 mr-1" />
+                    {avatarUrl ? 'Change' : 'Upload'}
+                  </>
+                )}
+              </Button>
+              
+              {avatarUrl && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleRemoveAvatar}
+                  disabled={uploading}
+                  className="text-xs text-red-600 hover:text-red-700 hover:border-red-300"
+                >
+                  <Trash2 className="w-3 h-3 mr-1" />
+                  Remove
+                </Button>
+              )}
             </div>
             <CardTitle className="mt-4">
               {user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'}
