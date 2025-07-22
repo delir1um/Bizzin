@@ -62,15 +62,15 @@ export class JournalService {
       const wordCount = entry.content.split(/\s+/).length
       const readingTime = Math.max(1, Math.ceil(wordCount / 200))
 
-      // Create entry data with only existing columns for now
+      // Create entry data with full schema (will work once table is properly created)
       const entryWithUserId = {
         title: entry.title,
         content: entry.content,
         user_id: user.id,
-        reading_time: readingTime,
         mood: entry.mood || null,
+        category: entry.category || null,
         tags: entry.tags || null,
-        // Skip category for now until column is added
+        reading_time: readingTime,
       }
 
       console.log('Creating journal entry for user:', user.id)
