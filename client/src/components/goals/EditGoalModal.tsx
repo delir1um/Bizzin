@@ -30,6 +30,7 @@ const editGoalSchema = z.object({
   priority: z.enum(['low', 'medium', 'high']),
   category: z.string().max(50, "Category must be less than 50 characters").optional(),
   progress: z.number().min(0).max(100),
+  reflection: z.string().max(1000, "Reflection must be less than 1000 characters").optional(),
 })
 
 type EditGoalFormData = z.infer<typeof editGoalSchema>
@@ -70,6 +71,7 @@ export function EditGoalModal({ open, onOpenChange, goal }: EditGoalModalProps) 
       priority: 'medium',
       category: "",
       progress: 0,
+      reflection: "",
     },
   })
 
@@ -84,6 +86,7 @@ export function EditGoalModal({ open, onOpenChange, goal }: EditGoalModalProps) 
         priority: goal.priority,
         category: goal.category || "",
         progress: goal.progress,
+        reflection: goal.reflection || "",
       })
     }
   }, [goal, form])
@@ -100,6 +103,7 @@ export function EditGoalModal({ open, onOpenChange, goal }: EditGoalModalProps) 
         deadline: data.deadline.toISOString(),
         priority: data.priority,
         category: data.category || "",
+        reflection: data.reflection || "",
       }
       
       return GoalsService.updateGoal(goal.id, updates)
@@ -338,6 +342,25 @@ export function EditGoalModal({ open, onOpenChange, goal }: EditGoalModalProps) 
                       />
                     </PopoverContent>
                   </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="reflection"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Reflection & Learnings</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Share your thoughts, challenges, wins, and key learnings from working on this goal..."
+                      className="min-h-[100px] resize-none"
+                      {...field}
+                      disabled={updateGoalMutation.isPending}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

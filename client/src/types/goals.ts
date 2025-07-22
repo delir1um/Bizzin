@@ -12,6 +12,7 @@ export type Goal = {
   user_id: string
   priority: 'low' | 'medium' | 'high'
   category?: string
+  reflection?: string
 }
 
 export type GoalStats = {

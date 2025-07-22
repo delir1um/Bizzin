@@ -29,6 +29,7 @@ const addGoalSchema = z.object({
   status: z.enum(['not_started', 'in_progress', 'completed', 'on_hold', 'at_risk']),
   priority: z.enum(['low', 'medium', 'high']),
   category: z.string().max(50, "Category must be less than 50 characters").optional(),
+  reflection: z.string().max(1000, "Reflection must be less than 1000 characters").optional(),
 })
 
 type AddGoalFormData = z.infer<typeof addGoalSchema>
@@ -67,6 +68,7 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
       status: 'not_started',
       priority: 'medium',
       category: "",
+      reflection: "",
     },
   })
 
@@ -83,6 +85,7 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
         user_id: user.id,
         priority: data.priority,
         category: data.category || "",
+        reflection: data.reflection || "",
       }
       
       return GoalsService.createGoal(goalData)

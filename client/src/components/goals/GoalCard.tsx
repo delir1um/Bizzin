@@ -67,7 +67,7 @@ export function GoalCard({ goal, onEdit }: GoalCardProps) {
   const getTimeStatus = () => {
     if (goal.status === 'completed') {
       return {
-        text: `Completed on ${format(new Date(goal.updated_at), 'MMM d, yyyy')}`,
+        text: `Completed on ${format(new Date(goal.updated_at || goal.deadline), 'MMM d, yyyy')}`,
         icon: CheckCircle,
         className: "text-green-600 dark:text-green-400"
       }
@@ -171,6 +171,17 @@ export function GoalCard({ goal, onEdit }: GoalCardProps) {
               </div>
             )}
           </div>
+          
+          {goal.reflection && (
+            <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+              <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Reflection & Learnings
+              </h4>
+              <blockquote className="border-l-2 border-slate-300 dark:border-slate-600 pl-4 italic text-sm text-slate-600 dark:text-slate-400">
+                {goal.reflection}
+              </blockquote>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
