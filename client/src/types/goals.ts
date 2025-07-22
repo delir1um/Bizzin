@@ -7,8 +7,8 @@ export type Goal = {
   target_value?: number
   current_value?: number
   deadline: string // ISO date string
-  created_at: string
-  updated_at: string
+  created_at?: string
+  updated_at?: string
   user_id: string
   priority: 'low' | 'medium' | 'high'
   category?: string
