@@ -61,7 +61,7 @@ export function DashboardPage() {
   return (
     <div className="space-y-6 p-6">
       {/* Welcome Section with Inspirational Quote */}
-      <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 rounded-xl p-6 border border-orange-200/50 dark:border-orange-800/50">
+      <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
           Welcome back, <span className="text-orange-600">
             {user?.user_metadata?.full_name || 
@@ -74,7 +74,7 @@ export function DashboardPage() {
         
         {/* Daily Inspirational Quote */}
         {dailyQuote && (
-          <div className="mt-4 p-4 bg-white/50 dark:bg-slate-800/50 rounded-lg border border-orange-200/30 dark:border-orange-700/30">
+          <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-600">
             <blockquote className="text-slate-700 dark:text-slate-300 italic text-base leading-relaxed">
               "{dailyQuote.text}"
             </blockquote>
