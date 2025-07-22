@@ -33,7 +33,9 @@ const formatPercentage = (used: number, limit: number): number => {
 export function PlanManagement() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const { user } = useAuth()
-  const { usageStatus, isPremium, isFree, isLoading } = usePlans()
+  const { usageStatus, isPremium, isFree, isLoading, refetch } = usePlans()
+
+
 
   if (isLoading) {
     return (
