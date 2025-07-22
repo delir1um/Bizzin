@@ -14,6 +14,8 @@ import AuthPage from "@/pages/AuthPage"
 import { AuthProvider } from "@/hooks/AuthProvider"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
 import { queryClient } from "@/lib/queryClient"
+import { DashboardPage } from "@/pages/DashboardPage"
+
 
 function App() {
   return (
@@ -32,6 +34,15 @@ function App() {
                   <Route index element={<HomePage />} />
                 
                 {/* Protected routes */}
+                  <Route
+                    path="dashboard"
+                    element={
+                      <ProtectedRoute>
+                        <DashboardPage />
+                      </ProtectedRoute>
+                    }
+                  />
+
                   <Route
                     path="journal"
                     element={
