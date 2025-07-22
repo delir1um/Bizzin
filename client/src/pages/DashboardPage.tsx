@@ -53,6 +53,9 @@ export function DashboardPage() {
     goal.deadline && 
     isAfter(new Date(), new Date(goal.deadline))
   )
+  
+  // Get daily inspirational quote
+  const dailyQuote = user?.email ? InspirationalQuotes.getDailyInspiration(user.email) : null
 
   return (
     <div className="space-y-6 p-6">
