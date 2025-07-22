@@ -27,7 +27,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }
 
   const navItems = [
-    { path: "/", label: "Home" },
+    { path: user ? "/dashboard" : "/", label: user ? "Dashboard" : "Home" },
     { path: "/journal", label: "Journal" },
     { path: "/goals", label: "Goals" },
     { path: "/training", label: "Training" },
@@ -82,14 +82,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <span className="sr-only">Toggle theme</span>
               </Button>
 
-              {/* User Avatar Dropdown */}
-              {user && (
+              {/* Login Button or User Avatar */}
+              {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                       <Avatar className="h-8 w-8">
                         <AvatarImage src="/placeholder-avatar.jpg" alt="@user" />
-                        <AvatarFallback className="bg-blue-600 text-white">
+                        <AvatarFallback className="bg-orange-600 text-white">
                           {user.email?.charAt(0).toUpperCase() || "U"}
                         </AvatarFallback>
                       </Avatar>
@@ -122,6 +122,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+              ) : (
+                <Link to="/auth">
+                  <Button className="bg-orange-600 hover:bg-orange-700 text-white">
+                    <User className="mr-2 h-4 w-4" />
+                    Login
+                  </Button>
+                </Link>
               )}
             </div>
           </div>
@@ -135,7 +142,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   to={item.path}
                   className={`px-3 py-2 text-sm font-medium rounded-md whitespace-nowrap transition-colors ${
                     isActive(item.path)
-                      ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200"
+                      ? "bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-200"
                       : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700"
                   }`}
                 >
