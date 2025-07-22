@@ -1,19 +1,21 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { useNavigate } from "react-router-dom"
-import { useUser } from "@/lib/auth"
+import { useLocation } from "wouter"
+import { useAuth } from "@/hooks/AuthProvider"
 import { CalendarDays, Notebook, File, PlayCircle } from "lucide-react"
 
 export function DashboardPage() {
-  const user = useUser()
-  const navigate = useNavigate()
+  const { user } = useAuth()
+  const [, setLocation] = useLocation()
+  
+  const navigate = (path: string) => setLocation(path)
 
   return (
     <div className="p-6 space-y-6">
       {/* Welcome */}
       <div>
-        <h1 className="text-3xl font-bold">Welcome back, {user?.name ?? "Entrepreneur"}!</h1>
+        <h1 className="text-3xl font-bold">Welcome back, {user?.email?.split('@')[0] ?? "Entrepreneur"}!</h1>
         <p className="text-muted-foreground mt-1">Plan. Track. Grow.</p>
       </div>
 

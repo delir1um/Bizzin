@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { Router, Route } from "wouter"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { ThemeProvider } from "@/lib/theme-provider"
 import { TooltipProvider } from "@/components/ui/tooltip"
@@ -23,62 +23,49 @@ function App() {
       <AuthProvider>
         <ThemeProvider defaultTheme="light" storageKey="bizzin-ui-theme">
           <TooltipProvider>
-            <BrowserRouter>
-              <Routes>
-                {/* Public route */}
-                <Route path="/auth" element={<AuthPage />} />
+            <Router>
+              {/* Public route */}
+              <Route path="/auth" component={AuthPage} />
 
-                {/* Layout-wrapped routes */}
-                <Route path="/" element={<Layout />}>
-                  {/* Public landing page */}
-                  <Route index element={<HomePage />} />
-                
+              {/* Layout-wrapped routes */}
+              <Layout>
+                {/* Public landing page */}
+                <Route path="/" component={HomePage} />
+              
                 {/* Protected routes */}
-                  <Route
-                    path="dashboard"
-                    element={
-                      <ProtectedRoute>
-                        <DashboardPage />
-                      </ProtectedRoute>
-                    }
-                  />
-
-                  <Route
-                    path="journal"
-                    element={
-                      <ProtectedRoute>
-                        <JournalPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="goals"
-                    element={
-                      <ProtectedRoute>
-                        <GoalsPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="training"
-                    element={
-                      <ProtectedRoute>
-                        <TrainingPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="docsafe"
-                    element={
-                      <ProtectedRoute>
-                        <DocSafePage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route path="*" element={<NotFound />} />
+                <Route path="/dashboard">
+                  <ProtectedRoute>
+                    <DashboardPage />
+                  </ProtectedRoute>
                 </Route>
-              </Routes>
-            </BrowserRouter>
+
+                <Route path="/journal">
+                  <ProtectedRoute>
+                    <JournalPage />
+                  </ProtectedRoute>
+                </Route>
+                
+                <Route path="/goals">
+                  <ProtectedRoute>
+                    <GoalsPage />
+                  </ProtectedRoute>
+                </Route>
+                
+                <Route path="/training">
+                  <ProtectedRoute>
+                    <TrainingPage />
+                  </ProtectedRoute>
+                </Route>
+                
+                <Route path="/docsafe">
+                  <ProtectedRoute>
+                    <DocSafePage />
+                  </ProtectedRoute>
+                </Route>
+                
+                <Route component={NotFound} />
+              </Layout>
+            </Router>
             <Toaster />
           </TooltipProvider>
         </ThemeProvider>
