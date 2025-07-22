@@ -74,8 +74,8 @@ export class PlansService {
     if (planType === 'free') {
       return {
         plan_type: 'free',
-        storage_limit: 500 * 1024 * 1024, // 500MB
-        max_file_size: 50 * 1024 * 1024, // 50MB
+        storage_limit: 50 * 1024 * 1024, // 50MB
+        max_file_size: 10 * 1024 * 1024, // 10MB
         monthly_documents: 20,
         monthly_journal_entries: 10,
         max_active_goals: 5,

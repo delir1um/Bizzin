@@ -50,7 +50,7 @@ export function PlanManagement() {
   const features = [
     {
       name: "Storage Space",
-      free: "500 MB",
+      free: "50 MB",
       premium: "10 GB",
       icon: Database
     },

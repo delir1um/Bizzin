@@ -21,8 +21,8 @@ After running the SQL, verify these tables exist in your Supabase dashboard:
 ## Plan Limits Implemented
 
 ### Free Tier
-- **Storage**: 500MB limit
-- **File Size**: 50MB max per file
+- **Storage**: 50MB limit
+- **File Size**: 10MB max per file
 - **Documents**: 20 uploads per month
 - **Journal**: 10 entries per month  
 - **Goals**: 5 active goals maximum
