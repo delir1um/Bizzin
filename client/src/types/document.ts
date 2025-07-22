@@ -7,7 +7,6 @@ export interface Document {
   file_type: string
   file_size: number
   category: string
-  folder_id?: string
   tags: string[]
   is_shared: boolean
   shared_with?: string[]
@@ -30,7 +29,6 @@ export interface CreateDocumentRequest {
   name: string
   file: File
   category: string
-  folder_id?: string
   tags?: string[]
   description?: string
 }

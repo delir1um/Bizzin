@@ -36,7 +36,6 @@ export class DocumentService {
         file_type: request.file.type,
         file_size: request.file.size,
         category: request.category,
-        folder_id: request.folder_id || null,
         tags: request.tags || [],
         is_shared: false,
         description: request.description || null,
@@ -64,20 +63,12 @@ export class DocumentService {
   }
 
   // Get all documents for a user
-  static async getUserDocuments(userId: string, folderId?: string): Promise<Document[]> {
-    let query = supabase
+  static async getUserDocuments(userId: string): Promise<Document[]> {
+    const { data, error } = await supabase
       .from('documents')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
-
-    if (folderId) {
-      query = query.eq('folder_id', folderId)
-    } else {
-      query = query.is('folder_id', null)
-    }
-
-    const { data, error } = await query
 
     if (error) {
       console.error('Error fetching documents:', error)

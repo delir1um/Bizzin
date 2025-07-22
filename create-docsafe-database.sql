@@ -1,4 +1,4 @@
--- Create the documents table
+-- Create the documents table (simplified without folder_id for now)
 CREATE TABLE IF NOT EXISTS documents (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -8,7 +8,6 @@ CREATE TABLE IF NOT EXISTS documents (
     file_type TEXT NOT NULL,
     file_size BIGINT NOT NULL,
     category TEXT NOT NULL,
-    folder_id UUID REFERENCES folders(id) ON DELETE SET NULL,
     tags TEXT[],
     is_shared BOOLEAN DEFAULT FALSE,
     shared_with TEXT[],
@@ -43,7 +42,6 @@ CREATE POLICY "Enable all operations for users on their folders" ON folders
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_documents_user_id ON documents(user_id);
 CREATE INDEX IF NOT EXISTS idx_documents_category ON documents(category);
-CREATE INDEX IF NOT EXISTS idx_documents_folder_id ON documents(folder_id);
 CREATE INDEX IF NOT EXISTS idx_documents_created_at ON documents(created_at);
 CREATE INDEX IF NOT EXISTS idx_folders_user_id ON folders(user_id);
 CREATE INDEX IF NOT EXISTS idx_folders_parent_id ON folders(parent_id);

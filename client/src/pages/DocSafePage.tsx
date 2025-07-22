@@ -37,17 +37,16 @@ export function DocSafePage() {
   })
 
   // Fetch documents
-  const { data: documents = [], isLoading: docsLoading } = useQuery({
-    queryKey: ['documents', user?.id, selectedCategory],
-    queryFn: () => {
-      if (!user) return []
-      if (selectedCategory) {
-        return DocumentService.getDocumentsByCategory(user.id, selectedCategory)
-      }
-      return DocumentService.getUserDocuments(user.id)
-    },
+  const { data: allDocuments = [], isLoading: docsLoading } = useQuery({
+    queryKey: ['documents', user?.id],
+    queryFn: () => user ? DocumentService.getUserDocuments(user.id) : [],
     enabled: !!user,
   })
+
+  // Filter documents by category if selected
+  const documents = selectedCategory 
+    ? allDocuments.filter(doc => doc.category === selectedCategory)
+    : allDocuments
 
   // Search documents
   const { data: searchResults = [] } = useQuery({
