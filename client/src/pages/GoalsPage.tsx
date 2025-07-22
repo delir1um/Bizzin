@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Target, Plus, TrendingUp, CheckCircle, Clock, AlertCircle, Filter } from "lucide-react"
 import { GoalCard } from "@/components/goals/GoalCard"
 import { AddGoalModal } from "@/components/goals/AddGoalModal"
+import { EditGoalModal } from "@/components/goals/EditGoalModal"
 import { GoalsService } from "@/lib/services/goals"
 import { useAuth } from "@/hooks/AuthProvider"
 import { Goal } from "@/types/goals"
@@ -18,6 +19,8 @@ export function GoalsPage() {
   const { user } = useAuth()
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all')
   const [addGoalModalOpen, setAddGoalModalOpen] = useState(false)
+  const [editGoalModalOpen, setEditGoalModalOpen] = useState(false)
+  const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null)
 
   // Fetch goals data
   const {
@@ -54,6 +57,11 @@ export function GoalsPage() {
     { value: 'completed' as const, label: 'Completed', count: stats.completed },
     { value: 'at_risk' as const, label: 'At Risk', count: goals.filter((g: Goal) => g.status === 'at_risk').length },
   ]
+
+  const handleEditGoal = (goal: Goal) => {
+    setSelectedGoal(goal)
+    setEditGoalModalOpen(true)
+  }
 
   if (!user) {
     return (
@@ -269,7 +277,7 @@ export function GoalsPage() {
       ) : (
         <div className="space-y-6">
           {filteredGoals.map((goal: Goal) => (
-            <GoalCard key={goal.id} goal={goal} />
+            <GoalCard key={goal.id} goal={goal} onEdit={handleEditGoal} />
           ))}
         </div>
       )}
@@ -278,6 +286,13 @@ export function GoalsPage() {
       <AddGoalModal 
         open={addGoalModalOpen} 
         onOpenChange={setAddGoalModalOpen}
+      />
+
+      {/* Edit Goal Modal */}
+      <EditGoalModal 
+        open={editGoalModalOpen} 
+        onOpenChange={setEditGoalModalOpen}
+        goal={selectedGoal}
       />
     </div>
   )

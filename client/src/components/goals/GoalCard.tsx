@@ -1,12 +1,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, TrendingUp, Clock, CheckCircle, AlertTriangle, Play } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Calendar, TrendingUp, Clock, CheckCircle, AlertTriangle, Play, Edit3 } from "lucide-react"
 import { Goal } from "@/types/goals"
 import { format, differenceInDays, isAfter } from "date-fns"
 
 type GoalCardProps = {
   goal: Goal
+  onEdit?: (goal: Goal) => void
 }
 
 const statusConfig = {
@@ -48,7 +50,7 @@ const priorityColors = {
   high: "border-l-red-500"
 }
 
-export function GoalCard({ goal }: GoalCardProps) {
+export function GoalCard({ goal, onEdit }: GoalCardProps) {
   const statusInfo = statusConfig[goal.status]
   const StatusIcon = statusInfo.icon
   const deadline = new Date(goal.deadline)
@@ -116,10 +118,22 @@ export function GoalCard({ goal }: GoalCardProps) {
             </CardDescription>
           </div>
           <div className="flex flex-col items-end space-y-2">
-            <Badge variant={statusInfo.variant} className={statusInfo.className}>
-              <StatusIcon className="w-3 h-3 mr-1" />
-              {statusInfo.label}
-            </Badge>
+            <div className="flex items-center space-x-2">
+              {onEdit && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onEdit(goal)}
+                  className="h-8 w-8 p-0"
+                >
+                  <Edit3 className="h-4 w-4" />
+                </Button>
+              )}
+              <Badge variant={statusInfo.variant} className={statusInfo.className}>
+                <StatusIcon className="w-3 h-3 mr-1" />
+                {statusInfo.label}
+              </Badge>
+            </div>
             {goal.category && (
               <Badge variant="outline" className="text-xs">
                 {goal.category}
