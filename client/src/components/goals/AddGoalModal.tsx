@@ -82,7 +82,7 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
         deadline: data.deadline.toISOString(),
         user_id: user.id,
         priority: data.priority,
-        category: data.category || undefined,
+        category: data.category || "",
       }
       
       return GoalsService.createGoal(goalData)

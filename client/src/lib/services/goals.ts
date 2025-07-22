@@ -18,9 +18,12 @@ export class GoalsService {
   }
 
   static async createGoal(goal: Omit<Goal, 'id' | 'created_at' | 'updated_at'>): Promise<Goal> {
+    // Remove category field to avoid column not found error
+    const { category, ...goalData } = goal
+
     const { data, error } = await supabase
       .from('goals')
-      .insert([goal])
+      .insert([goalData])
       .select()
       .single()
 
@@ -33,9 +36,13 @@ export class GoalsService {
   }
 
   static async updateGoal(goalId: string, updates: Partial<Goal>): Promise<Goal> {
+    // Remove category field to avoid column not found error
+    const { category, ...updateData } = updates
+    updateData.updated_at = new Date().toISOString()
+
     const { data, error } = await supabase
       .from('goals')
-      .update({ ...updates, updated_at: new Date().toISOString() })
+      .update(updateData)
       .eq('id', goalId)
       .select()
       .single()

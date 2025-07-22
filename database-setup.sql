@@ -18,6 +18,9 @@ CREATE TABLE IF NOT EXISTS public.goals (
     category TEXT
 );
 
+-- If the table already exists without the category column, add it
+ALTER TABLE public.goals ADD COLUMN IF NOT EXISTS category TEXT;
+
 -- Enable Row Level Security
 ALTER TABLE public.goals ENABLE ROW LEVEL SECURITY;
 

@@ -99,7 +99,7 @@ export function EditGoalModal({ open, onOpenChange, goal }: EditGoalModalProps) 
         progress: data.progress,
         deadline: data.deadline.toISOString(),
         priority: data.priority,
-        category: data.category || undefined,
+        category: data.category || "",
       }
       
       return GoalsService.updateGoal(goal.id, updates)
