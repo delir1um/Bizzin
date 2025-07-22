@@ -12,6 +12,9 @@ import type { Document } from "@/types/document"
 import { useToast } from "@/hooks/use-toast"
 import { UploadModal } from "@/components/docsafe/UploadModal"
 import { EditDocumentModal } from "@/components/docsafe/EditDocumentModal"
+import { PlanLimitBanner } from "@/components/plans/PlanLimitBanner"
+import { UpgradeModal } from "@/components/plans/UpgradeModal"
+import { usePlans } from "@/hooks/usePlans"
 import { format } from "date-fns"
 
 export function DocSafePage() {
@@ -19,11 +22,13 @@ export function DocSafePage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string>("")
   const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null)
   const [documentToEdit, setDocumentToEdit] = useState<Document | null>(null)
   const queryClient = useQueryClient()
   const { toast } = useToast()
+  const { usageStatus, canUploadDocument, hasStorageSpace } = usePlans()
 
   // Get current user
   useEffect(() => {
@@ -156,7 +161,13 @@ export function DocSafePage() {
               Refresh
             </Button>
             <Button 
-              onClick={() => setShowUploadModal(true)}
+              onClick={() => {
+                if (canUploadDocument) {
+                  setShowUploadModal(true)
+                } else {
+                  setShowUpgradeModal(true)
+                }
+              }}
               className="bg-orange-600 hover:bg-orange-700 text-white"
             >
               <Upload className="w-4 h-4 mr-2" />
@@ -165,6 +176,22 @@ export function DocSafePage() {
           </div>
         </div>
       </div>
+
+      {/* Plan Limit Banners */}
+      {usageStatus && (
+        <div className="space-y-4 mb-8">
+          <PlanLimitBanner 
+            usageStatus={usageStatus} 
+            limitType="storage" 
+            onUpgrade={() => setShowUpgradeModal(true)}
+          />
+          <PlanLimitBanner 
+            usageStatus={usageStatus} 
+            limitType="documents" 
+            onUpgrade={() => setShowUpgradeModal(true)}
+          />
+        </div>
+      )}
 
       {/* Storage Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -422,6 +449,15 @@ export function DocSafePage() {
         onClose={closeEditModal}
         document={documentToEdit}
       />
+
+      {/* Upgrade Modal */}
+      {user && (
+        <UpgradeModal
+          isOpen={showUpgradeModal}
+          onClose={() => setShowUpgradeModal(false)}
+          userId={user.id}
+        />
+      )}
     </div>
   )
 }

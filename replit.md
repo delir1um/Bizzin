@@ -60,3 +60,6 @@ Bizzin is a modern SaaS platform to help entrepreneurs plan, journal, and track 
 - **Name Personalization Enhancement**: Enhanced quote system to prioritize user profile names over email parsing for better personalization
 - **Welcome Section Design Update**: Changed from orange gradient to clean white background for better readability while maintaining orange accent on user names
 - **DocSafe Delete Dialog Fix**: Replaced problematic browser confirm dialog with proper React AlertDialog component featuring clean UI, loading states, and consistent styling
+- **Plan System Implementation**: Built comprehensive freemium plan system with database schema, usage tracking, and UI components for free vs premium differentiation
+- **Usage Limits Integration**: Added plan limits throughout platform including storage (500MB free, 10GB premium), document uploads (20/month free, unlimited premium), and feature restrictions
+- **DocSafe Plan Integration**: Implemented upload restrictions, storage warnings, and upgrade prompts based on user plan with limit banners and upgrade modal
