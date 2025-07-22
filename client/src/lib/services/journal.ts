@@ -62,7 +62,7 @@ export class JournalService {
       const wordCount = entry.content.split(/\s+/).length
       const readingTime = Math.max(1, Math.ceil(wordCount / 200))
 
-      // Create entry data with full schema (will work once table is properly created)
+      // Create entry data with full schema (works after proper database setup)
       const entryWithUserId = {
         title: entry.title,
         content: entry.content,
