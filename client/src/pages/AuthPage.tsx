@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useLocation } from "wouter"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -19,7 +19,7 @@ type FormData = z.infer<typeof schema>
 export default function AuthPage() {
   const [mode, setMode] = useState<"signIn" | "signUp">("signIn")
   const [message, setMessage] = useState("")
-  const navigate = useNavigate()
+  const [, setLocation] = useLocation()
 
   const {
     register,
@@ -31,10 +31,10 @@ export default function AuthPage() {
   useEffect(() => {
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession()
-      if (data.session) navigate("/")
+      if (data.session) setLocation("/dashboard")
     }
     checkSession()
-  }, [navigate])
+  }, [setLocation])
 
   const onSubmit = async (data: FormData) => {
     setMessage("")
@@ -51,7 +51,7 @@ export default function AuthPage() {
       if (mode === "signUp") {
         setMessage("Check your email for confirmation.")
       } else {
-        navigate("/")
+        setLocation("/dashboard")
       }
     }
   }
