@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button"
-import { ClipboardList, BookOpen, TrendingUp } from "lucide-react"
+import { Target, BookOpen, Calculator, Shield, PenTool } from "lucide-react"
+import { useLocation } from "wouter"
 
 export function HomePage() {
+  const [, setLocation] = useLocation()
   return (
     <main className="flex-1">
       {/* Hero Section */}
@@ -23,30 +25,42 @@ export function HomePage() {
             
             {/* Description */}
             <p className="mt-6 text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
-              Transform your business ideas into actionable plans with our comprehensive suite of tools designed for entrepreneurs and growing companies.
+              Create your own business goals, journal your journey, learn from expert courses, and use professional calculators to grow your business.
             </p>
 
             {/* CTA Buttons */}
             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 text-lg font-medium transition-colors shadow-lg hover:shadow-xl">
-                Start Your Journey
+              <Button 
+                onClick={() => setLocation('/auth')}
+                className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 text-lg font-medium transition-colors shadow-lg hover:shadow-xl"
+              >
+                Start Free Trial
               </Button>
               <Button 
                 variant="outline" 
+                onClick={() => setLocation('/goals')}
                 className="w-full sm:w-auto border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-8 py-4 text-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
               >
-                Watch Demo
+                Explore Features
               </Button>
             </div>
 
-            {/* Trust Indicators */}
+            {/* Value Proposition */}
             <div className="mt-16">
-              <p className="text-sm text-slate-500 dark:text-slate-400 mb-8">Trusted by 10,000+ entrepreneurs worldwide</p>
-              <div className="flex justify-center items-center space-x-8 opacity-60">
-                <div className="h-8 w-24 bg-slate-300 dark:bg-slate-600 rounded"></div>
-                <div className="h-8 w-24 bg-slate-300 dark:bg-slate-600 rounded"></div>
-                <div className="h-8 w-24 bg-slate-300 dark:bg-slate-600 rounded"></div>
-                <div className="h-8 w-24 bg-slate-300 dark:bg-slate-600 rounded"></div>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-8">Everything you need to plan, track, and grow your business</p>
+              <div className="flex justify-center items-center space-x-8 text-slate-400 dark:text-slate-500">
+                <div className="flex items-center gap-2">
+                  <Target className="w-4 h-4" />
+                  <span className="text-sm">Goal Tracking</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <PenTool className="w-4 h-4" />
+                  <span className="text-sm">Business Journal</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Calculator className="w-4 h-4" />
+                  <span className="text-sm">Business Tools</span>
+                </div>
               </div>
             </div>
           </div>
@@ -57,36 +71,149 @@ export function HomePage() {
       <section className="py-24 bg-white dark:bg-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Everything you need to succeed</h2>
-            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">Powerful tools designed to help your business thrive</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Complete Business Management Platform</h2>
+            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">Create your own content with our professional tools and expert-led training</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Feature 1 */}
-            <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-700">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            {/* Goals */}
+            <div 
+              className="bg-slate-50 dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setLocation('/goals')}
+            >
               <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mb-6">
-                <ClipboardList className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                <Target className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
-              <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">Business Planning</h3>
-              <p className="text-slate-600 dark:text-slate-300">Create comprehensive business plans with our guided templates and expert insights.</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Goals Tracking</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">Create and track your own 3, 6, and 12-month business goals.</p>
             </div>
 
-            {/* Feature 2 */}
-            <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-700">
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mb-6">
-                <BookOpen className="w-6 h-6 text-green-600 dark:text-green-400" />
-              </div>
-              <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">Learning Resources</h3>
-              <p className="text-slate-600 dark:text-slate-300">Access curated courses, articles, and tutorials from industry experts.</p>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-700">
+            {/* Journal */}
+            <div 
+              className="bg-slate-50 dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setLocation('/journal')}
+            >
               <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mb-6">
-                <TrendingUp className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                <PenTool className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
-              <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">Growth Analytics</h3>
-              <p className="text-slate-600 dark:text-slate-300">Track your progress with detailed analytics and actionable insights.</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Business Journal</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">Write and organize your business thoughts, insights, and reflections.</p>
+            </div>
+
+            {/* Training */}
+            <div 
+              className="bg-slate-50 dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setLocation('/training')}
+            >
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mb-6">
+                <BookOpen className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Training Modules</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">Learn from our expert-created business courses and training content.</p>
+            </div>
+
+            {/* BizBuilder Tools */}
+            <div 
+              className="bg-slate-50 dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setLocation('/bizbuilder')}
+            >
+              <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900 rounded-lg flex items-center justify-center mb-6">
+                <Calculator className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">BizBuilder Tools</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">Use our professional calculators for budget, cash flow, and break-even analysis.</p>
+            </div>
+
+            {/* DocSafe */}
+            <div 
+              className="bg-slate-50 dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setLocation('/docsafe')}
+            >
+              <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900 rounded-lg flex items-center justify-center mb-6">
+                <Shield className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">DocSafe</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">Upload and organize your business documents with secure cloud storage.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Subscription Tiers */}
+      <section className="py-24 bg-slate-50 dark:bg-slate-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Choose Your Plan</h2>
+            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">Start free, upgrade when you're ready to grow</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Free Tier */}
+            <div className="bg-white dark:bg-slate-800 p-8 rounded-xl border border-slate-200 dark:border-slate-700">
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Free Tier</h3>
+              <p className="text-slate-600 dark:text-slate-300 mb-6">Get started with basic features</p>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center text-slate-700 dark:text-slate-300">
+                  <Target className="w-5 h-5 text-green-500 mr-3" />
+                  Basic goal tracking
+                </li>
+                <li className="flex items-center text-slate-700 dark:text-slate-300">
+                  <PenTool className="w-5 h-5 text-green-500 mr-3" />
+                  Personal journal entries
+                </li>
+                <li className="flex items-center text-slate-700 dark:text-slate-300">
+                  <BookOpen className="w-5 h-5 text-green-500 mr-3" />
+                  Limited training content
+                </li>
+                <li className="flex items-center text-slate-700 dark:text-slate-300">
+                  <Calculator className="w-5 h-5 text-green-500 mr-3" />
+                  Limited calculator usage
+                </li>
+              </ul>
+              <Button 
+                onClick={() => setLocation('/auth')}
+                variant="outline" 
+                className="w-full"
+              >
+                Get Started Free
+              </Button>
+            </div>
+
+            {/* Paid Subscription */}
+            <div className="bg-orange-50 dark:bg-orange-900/20 p-8 rounded-xl border-2 border-orange-200 dark:border-orange-800 relative">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <span className="bg-orange-600 text-white px-4 py-2 rounded-full text-sm font-medium">Popular</span>
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Paid Subscription</h3>
+              <p className="text-slate-600 dark:text-slate-300 mb-6">Full access to all platform features</p>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center text-slate-700 dark:text-slate-300">
+                  <Target className="w-5 h-5 text-orange-500 mr-3" />
+                  Unlimited goal tracking with analytics
+                </li>
+                <li className="flex items-center text-slate-700 dark:text-slate-300">
+                  <PenTool className="w-5 h-5 text-orange-500 mr-3" />
+                  Advanced journal features
+                </li>
+                <li className="flex items-center text-slate-700 dark:text-slate-300">
+                  <BookOpen className="w-5 h-5 text-orange-500 mr-3" />
+                  Full training library access
+                </li>
+                <li className="flex items-center text-slate-700 dark:text-slate-300">
+                  <Calculator className="w-5 h-5 text-orange-500 mr-3" />
+                  Unlimited calculator usage
+                </li>
+                <li className="flex items-center text-slate-700 dark:text-slate-300">
+                  <Shield className="w-5 h-5 text-orange-500 mr-3" />
+                  Increased storage limits
+                </li>
+              </ul>
+              <Button 
+                onClick={() => setLocation('/auth')}
+                className="w-full bg-orange-600 hover:bg-orange-700"
+              >
+                Start Free Trial
+              </Button>
             </div>
           </div>
         </div>
