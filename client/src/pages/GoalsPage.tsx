@@ -14,6 +14,7 @@ import { EditGoalModal } from "@/components/goals/EditGoalModal"
 import { GoalsService } from "@/lib/services/goals"
 import { useAuth } from "@/hooks/AuthProvider"
 import { Goal } from "@/types/goals"
+import { ConfettiCelebration, CelebrationToast } from "@/components/ConfettiCelebration"
 
 type FilterStatus = 'all' | 'active' | 'completed' | 'at_risk'
 type FilterPriority = 'all' | 'high' | 'medium' | 'low'
@@ -29,6 +30,9 @@ export function GoalsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null)
   const [goalToDelete, setGoalToDelete] = useState<Goal | null>(null)
+  const [celebrationTrigger, setCelebrationTrigger] = useState(false)
+  const [celebrationToastVisible, setCelebrationToastVisible] = useState(false)
+  const [completedGoal, setCompletedGoal] = useState<Goal | null>(null)
 
   // Fetch goals data
   const {
@@ -124,6 +128,22 @@ export function GoalsPage() {
       setDeleteDialogOpen(false)
       setGoalToDelete(null)
     }
+  }
+
+  const handleGoalCompleted = (goal: Goal) => {
+    setCompletedGoal(goal)
+    setCelebrationTrigger(true)
+    setCelebrationToastVisible(true)
+    
+    // Reset celebration trigger after animation
+    setTimeout(() => {
+      setCelebrationTrigger(false)
+    }, 100)
+  }
+
+  const handleCelebrationComplete = () => {
+    setCelebrationToastVisible(false)
+    setCompletedGoal(null)
   }
 
   if (!user) {
@@ -385,6 +405,7 @@ export function GoalsPage() {
         open={editGoalModalOpen} 
         onOpenChange={setEditGoalModalOpen}
         goal={selectedGoal}
+        onGoalCompleted={handleGoalCompleted}
       />
 
       {/* Delete Confirmation Dialog */}
@@ -408,6 +429,14 @@ export function GoalsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Celebration Components */}
+      <ConfettiCelebration trigger={celebrationTrigger} />
+      <CelebrationToast 
+        show={celebrationToastVisible}
+        goalTitle={completedGoal?.title || ""}
+        onComplete={handleCelebrationComplete}
+      />
     </div>
   )
 }

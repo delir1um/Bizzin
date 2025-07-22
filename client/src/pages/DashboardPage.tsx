@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -10,10 +11,14 @@ import { CalendarDays, Notebook, File, PlayCircle, Target, TrendingUp, Clock, Al
 import { GoalsService } from "@/lib/services/goals"
 import { Goal } from "@/types/goals"
 import { format, isAfter, differenceInDays } from "date-fns"
+import { ConfettiCelebration, CelebrationToast } from "@/components/ConfettiCelebration"
 
 export function DashboardPage() {
   const { user } = useAuth()
   const [, setLocation] = useLocation()
+  const [celebrationTrigger, setCelebrationTrigger] = useState(false)
+  const [celebrationToastVisible, setCelebrationToastVisible] = useState(false)
+  const [completedGoal, setCompletedGoal] = useState<Goal | null>(null)
   
   const navigate = (path: string) => setLocation(path)
 
@@ -339,6 +344,17 @@ export function DashboardPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Celebration Components for dashboard goal interactions */}
+      <ConfettiCelebration trigger={celebrationTrigger} />
+      <CelebrationToast 
+        show={celebrationToastVisible}
+        goalTitle={completedGoal?.title || ""}
+        onComplete={() => {
+          setCelebrationToastVisible(false)
+          setCompletedGoal(null)
+        }}
+      />
     </div>
   )
 }

@@ -39,6 +39,7 @@ type EditGoalModalProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   goal: Goal | null
+  onGoalCompleted?: (goal: Goal) => void
 }
 
 const statusOptions = [
@@ -55,7 +56,7 @@ const priorityOptions = [
   { value: 'high', label: 'High Priority' },
 ]
 
-export function EditGoalModal({ open, onOpenChange, goal }: EditGoalModalProps) {
+export function EditGoalModal({ open, onOpenChange, goal, onGoalCompleted }: EditGoalModalProps) {
   const { user } = useAuth()
   const { toast } = useToast()
   const queryClient = useQueryClient()
@@ -108,15 +109,23 @@ export function EditGoalModal({ open, onOpenChange, goal }: EditGoalModalProps) 
       
       return GoalsService.updateGoal(goal.id, updates)
     },
-    onSuccess: () => {
+    onSuccess: (updatedGoal, variables) => {
+      // Check if goal was just completed
+      const wasCompleted = goal?.status !== 'completed' && variables.status === 'completed'
+      
       // Invalidate and refetch goals
       queryClient.invalidateQueries({ queryKey: ['goals', user?.id] })
       
       // Show success message
       toast({
         title: "Goal updated successfully",
-        description: "Your goal has been updated.",
+        description: wasCompleted ? "Congratulations on completing your goal! 🎉" : "Your goal has been updated.",
       })
+      
+      // Trigger celebration if goal was completed
+      if (wasCompleted && onGoalCompleted) {
+        onGoalCompleted(updatedGoal)
+      }
       
       // Close modal
       onOpenChange(false)
