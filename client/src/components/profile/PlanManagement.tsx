@@ -30,6 +30,13 @@ const formatPercentage = (used: number, limit: number): number => {
   return Math.round((used / limit) * 100)
 }
 
+const getProgressColor = (percentage: number): string => {
+  if (percentage >= 100) return "bg-red-500"
+  if (percentage >= 80) return "bg-orange-500" 
+  if (percentage >= 60) return "bg-yellow-500"
+  return "bg-green-500"
+}
+
 export function PlanManagement() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const { user } = useAuth()
@@ -147,12 +154,13 @@ export function PlanManagement() {
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-slate-700 dark:text-slate-300">Storage Used</span>
                 <span className="text-slate-500 dark:text-slate-400">
-                  {formatBytes(currentUsage.storage_used)} / {formatBytes(planLimits.storage_limit)}
+                  {formatBytes(currentUsage.storage_used)} / {formatBytes(planLimits.storage_limit)} 
+                  ({formatPercentage(currentUsage.storage_used, planLimits.storage_limit)}%)
                 </span>
               </div>
               <Progress 
                 value={formatPercentage(currentUsage.storage_used, planLimits.storage_limit)}
-                className="h-2"
+                className="h-3 bg-slate-200 dark:bg-slate-700"
               />
             </div>
 
@@ -162,11 +170,12 @@ export function PlanManagement() {
                 <span className="text-slate-700 dark:text-slate-300">Documents Uploaded</span>
                 <span className="text-slate-500 dark:text-slate-400">
                   {currentUsage.documents_uploaded} / {planLimits.monthly_documents === 10000 ? '∞' : planLimits.monthly_documents}
+                  {planLimits.monthly_documents !== 10000 && ` (${formatPercentage(currentUsage.documents_uploaded, planLimits.monthly_documents)}%)`}
                 </span>
               </div>
               <Progress 
                 value={planLimits.monthly_documents === 10000 ? 0 : formatPercentage(currentUsage.documents_uploaded, planLimits.monthly_documents)}
-                className="h-2"
+                className="h-3 bg-slate-200 dark:bg-slate-700"
               />
             </div>
 
@@ -176,11 +185,12 @@ export function PlanManagement() {
                 <span className="text-slate-700 dark:text-slate-300">Journal Entries</span>
                 <span className="text-slate-500 dark:text-slate-400">
                   {currentUsage.journal_entries_created} / {planLimits.monthly_journal_entries === 10000 ? '∞' : planLimits.monthly_journal_entries}
+                  {planLimits.monthly_journal_entries !== 10000 && ` (${formatPercentage(currentUsage.journal_entries_created, planLimits.monthly_journal_entries)}%)`}
                 </span>
               </div>
               <Progress 
                 value={planLimits.monthly_journal_entries === 10000 ? 0 : formatPercentage(currentUsage.journal_entries_created, planLimits.monthly_journal_entries)}
-                className="h-2"
+                className="h-3 bg-slate-200 dark:bg-slate-700"
               />
             </div>
 
@@ -188,13 +198,14 @@ export function PlanManagement() {
             <div>
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-slate-700 dark:text-slate-300">Active Goals</span>
-                <span className="text-slate-500 dark:text-slate-400">
+                <span className={`text-sm ${currentUsage.goals_created > planLimits.max_active_goals ? 'text-red-600 font-medium' : 'text-slate-500 dark:text-slate-400'}`}>
                   {currentUsage.goals_created} / {planLimits.max_active_goals === 1000 ? '∞' : planLimits.max_active_goals}
+                  {planLimits.max_active_goals !== 1000 && ` (${formatPercentage(currentUsage.goals_created, planLimits.max_active_goals)}%)`}
                 </span>
               </div>
               <Progress 
                 value={planLimits.max_active_goals === 1000 ? 0 : formatPercentage(currentUsage.goals_created, planLimits.max_active_goals)}
-                className="h-2"
+                className="h-3 bg-slate-200 dark:bg-slate-700"
               />
             </div>
           </CardContent>
