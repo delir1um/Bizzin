@@ -65,7 +65,7 @@ export function DocSafePreviewPage() {
               <h1 className="text-3xl font-bold text-slate-900 dark:text-white">DocSafe</h1>
             </div>
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Securely store, organize, and access your critical business documents in one protected vault
+              Upload and organize your own business documents with secure cloud storage
             </p>
           </div>
         </div>
@@ -111,8 +111,8 @@ export function DocSafePreviewPage() {
         {/* CTA Section */}
         <div className="text-center mb-8">
           <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-6 rounded-lg mb-6">
-            <h2 className="text-2xl font-bold mb-2">Store Your Business Documents</h2>
-            <p className="text-emerald-100 mb-4">Organize and manage your important business files</p>
+            <h2 className="text-2xl font-bold mb-2">Upload Your Business Documents</h2>
+            <p className="text-emerald-100 mb-4">Store and organize your own important business files securely</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button 
                 onClick={() => setLocation('/auth')}
@@ -128,7 +128,7 @@ export function DocSafePreviewPage() {
         {/* Documents Preview */}
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Your Document Vault</h2>
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Example Document Layout</h2>
             <Button 
               onClick={() => setLocation('/auth')}
               className="bg-emerald-600 hover:bg-emerald-700"

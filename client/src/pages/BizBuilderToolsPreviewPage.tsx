@@ -45,7 +45,7 @@ export function BizBuilderToolsPreviewPage() {
               <h1 className="text-3xl font-bold text-slate-900 dark:text-white">BizBuilder Tools</h1>
             </div>
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Essential business calculators and planning tools to help you make informed decisions
+              Use our essential business calculators and planning tools for your business decisions
             </p>
           </div>
         </div>
@@ -91,8 +91,8 @@ export function BizBuilderToolsPreviewPage() {
         {/* CTA Section */}
         <div className="text-center mb-8">
           <div className="bg-gradient-to-r from-orange-600 to-amber-600 text-white p-6 rounded-lg mb-6">
-            <h2 className="text-2xl font-bold mb-2">Access Business Planning Tools</h2>
-            <p className="text-orange-100 mb-4">Make informed decisions with our comprehensive calculator suite</p>
+            <h2 className="text-2xl font-bold mb-2">Use Our Business Planning Tools</h2>
+            <p className="text-orange-100 mb-4">Make informed decisions with our professionally built calculator suite</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button 
                 onClick={() => setLocation('/auth')}

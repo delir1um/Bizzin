@@ -61,7 +61,7 @@ export function TrainingPreviewPage() {
               <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Business Training</h1>
             </div>
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Accelerate your growth with expert-led courses designed for entrepreneurs and business leaders
+              Learn from our expert-created business courses and training modules
             </p>
           </div>
         </div>
@@ -107,8 +107,8 @@ export function TrainingPreviewPage() {
         {/* CTA Section */}
         <div className="text-center mb-8">
           <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-lg mb-6">
-            <h2 className="text-2xl font-bold mb-2">Level Up Your Business Skills</h2>
-            <p className="text-blue-100 mb-4">Access expert courses from industry leaders and successful entrepreneurs</p>
+            <h2 className="text-2xl font-bold mb-2">Learn Business Skills</h2>
+            <p className="text-blue-100 mb-4">Access our professionally created courses from industry experts</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button 
                 onClick={() => setLocation('/auth')}
@@ -124,7 +124,7 @@ export function TrainingPreviewPage() {
         {/* Courses Preview */}
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Featured Courses</h2>
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Available Courses</h2>
             <Button 
               onClick={() => setLocation('/auth')}
               className="bg-blue-600 hover:bg-blue-700"

@@ -68,7 +68,7 @@ export function GoalsPreviewPage() {
               <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Goals Tracking</h1>
             </div>
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Set, track, and achieve your business objectives with our comprehensive goal management system
+              Create and track your own business goals with our comprehensive management system
             </p>
           </div>
         </div>
@@ -114,8 +114,8 @@ export function GoalsPreviewPage() {
         {/* CTA Section */}
         <div className="text-center mb-8">
           <div className="bg-gradient-to-r from-orange-600 to-red-500 text-white p-6 rounded-lg mb-6">
-            <h2 className="text-2xl font-bold mb-2">Ready to Track Your Goals?</h2>
-            <p className="text-orange-100 mb-4">Join thousands of entrepreneurs achieving their business objectives</p>
+            <h2 className="text-2xl font-bold mb-2">Ready to Set Your Goals?</h2>
+            <p className="text-orange-100 mb-4">Create and manage your own business objectives with our goal tracking system</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button 
                 onClick={() => setLocation('/auth')}
@@ -131,7 +131,7 @@ export function GoalsPreviewPage() {
         {/* Goals Preview */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Sample Goals</h2>
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Example Goal Layout</h2>
             <Button 
               onClick={() => setLocation('/auth')}
               className="bg-orange-600 hover:bg-orange-700"
