@@ -141,28 +141,42 @@ export class InspirationalQuotes {
     return QUOTE_TEMPLATES[index]
   }
   
-  private static formatName(email: string): string {
-    if (!email) return 'Entrepreneur'
-    
-    const name = email.split('@')[0]
-    
-    // Handle common email patterns
-    if (name.includes('.')) {
-      const parts = name.split('.')
-      return parts.map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ')
+  private static formatName(user: any): string {
+    // First, try to get the user's actual name from their profile/metadata
+    if (user?.user_metadata?.full_name) {
+      return user.user_metadata.full_name
     }
     
-    if (name.includes('_')) {
-      const parts = name.split('_')
-      return parts.map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ')
+    if (user?.user_metadata?.first_name) {
+      const firstName = user.user_metadata.first_name
+      const lastName = user.user_metadata.last_name || ''
+      return `${firstName} ${lastName}`.trim()
     }
     
-    // Just capitalize first letter
-    return name.charAt(0).toUpperCase() + name.slice(1)
+    // If no profile name is set, fall back to email parsing
+    if (user?.email) {
+      const name = user.email.split('@')[0]
+      
+      // Handle common email patterns
+      if (name.includes('.')) {
+        const parts = name.split('.')
+        return parts.map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ')
+      }
+      
+      if (name.includes('_')) {
+        const parts = name.split('_')
+        return parts.map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ')
+      }
+      
+      // Just capitalize first letter
+      return name.charAt(0).toUpperCase() + name.slice(1)
+    }
+    
+    return 'Entrepreneur'
   }
   
-  private static personalizeQuote(template: QuoteTemplate, userEmail: string): { text: string; author: string } {
-    const formattedName = this.formatName(userEmail)
+  private static personalizeQuote(template: QuoteTemplate, user: any): { text: string; author: string } {
+    const formattedName = this.formatName(user)
     const personalizedText = template.text.replace('{name}', formattedName)
     
     return {
@@ -171,9 +185,9 @@ export class InspirationalQuotes {
     }
   }
   
-  public static getDailyInspiration(userEmail: string): { text: string; author: string; category: string } {
+  public static getDailyInspiration(user: any): { text: string; author: string; category: string } {
     const template = this.getDailyQuote()
-    const personalized = this.personalizeQuote(template, userEmail)
+    const personalized = this.personalizeQuote(template, user)
     
     return {
       ...personalized,
@@ -181,9 +195,9 @@ export class InspirationalQuotes {
     }
   }
   
-  public static getRandomInspiration(userEmail: string): { text: string; author: string; category: string } {
+  public static getRandomInspiration(user: any): { text: string; author: string; category: string } {
     const template = this.getRandomQuote()
-    const personalized = this.personalizeQuote(template, userEmail)
+    const personalized = this.personalizeQuote(template, user)
     
     return {
       ...personalized,
@@ -191,11 +205,11 @@ export class InspirationalQuotes {
     }
   }
   
-  public static getQuotesByCategory(category: QuoteTemplate['category'], userEmail: string): { text: string; author: string; category: string }[] {
+  public static getQuotesByCategory(category: QuoteTemplate['category'], user: any): { text: string; author: string; category: string }[] {
     const categoryQuotes = QUOTE_TEMPLATES.filter(quote => quote.category === category)
     
     return categoryQuotes.map(template => {
-      const personalized = this.personalizeQuote(template, userEmail)
+      const personalized = this.personalizeQuote(template, user)
       return {
         ...personalized,
         category: template.category

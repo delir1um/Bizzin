@@ -56,14 +56,19 @@ export function DashboardPage() {
   )
   
   // Get daily inspirational quote
-  const dailyQuote = user?.email ? InspirationalQuotes.getDailyInspiration(user.email) : null
+  const dailyQuote = user ? InspirationalQuotes.getDailyInspiration(user) : null
 
   return (
     <div className="space-y-6 p-6">
       {/* Welcome Section with Inspirational Quote */}
       <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 rounded-xl p-6 border border-orange-200/50 dark:border-orange-800/50">
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-          Welcome back, <span className="text-orange-600">{user?.email?.split('@')[0] ?? "Entrepreneur"}</span>!
+          Welcome back, <span className="text-orange-600">
+            {user?.user_metadata?.full_name || 
+             user?.user_metadata?.first_name || 
+             user?.email?.split('@')[0] || 
+             "Entrepreneur"}
+          </span>!
         </h1>
         <p className="text-slate-600 dark:text-slate-300 mt-2 text-lg">Plan. Track. Grow.</p>
         
