@@ -1,66 +1,89 @@
-# Bizzin Goals Feature Setup Instructions
+# 🚀 DocSafe Setup Instructions
 
 ## Database Setup Required
 
-The Goals feature requires a Supabase database table. Please follow these steps:
+To enable the DocSafe document management system, you need to set up the database and storage:
 
-### 1. Create the Goals Table
+### 1. Create Database Tables
 
-1. Go to your Supabase project dashboard
-2. Navigate to the SQL Editor
-3. Run the SQL script from `database-setup-simple.sql` file in the project root
-4. This will create the `goals` table with proper Row Level Security policies
+Go to your [Supabase Dashboard](https://supabase.com/dashboard/projects) → SQL Editor and run:
 
-**Important**: Use `database-setup-simple.sql` instead of `database-setup.sql` to avoid foreign key constraint issues.
+```sql
+-- Run the complete SQL from create-docsafe-database.sql
+-- This creates the documents and folders tables with proper RLS policies
+```
 
-### 2. Key Database Fields
+### 2. Create Storage Bucket
 
-The goals table includes:
-- `id` (UUID, primary key)
-- `title` (text, required)
-- `description` (text, optional)
-- `status` (enum: not_started, in_progress, completed, on_hold, at_risk)
-- `progress` (integer, 0-100)
-- `target_value` (integer, optional)
-- `current_value` (integer, optional) 
-- `deadline` (timestamp)
-- `user_id` (UUID, references auth.users)
-- `priority` (enum: low, medium, high)
-- `category` (text, optional)
+1. Go to **Storage** section in Supabase Dashboard
+2. Click **New Bucket**
+3. Set bucket name: `documents`
+4. Set as **Private** (not public)
+5. Click **Create bucket**
 
-### 3. Authentication Setup
+### 3. Set Up Storage Policies
 
-⚠️ **Important**: 
-- Make sure you have signed up through the Supabase authentication system (via the /auth page)
-- The user ID from Supabase auth must match the user_id used in the goals table
-- If you get foreign key constraint errors, use the `database-setup-simple.sql` script instead
+In the SQL Editor, run these storage policies:
 
-### 4. Current Status
+```sql
+-- Enable upload for authenticated users
+CREATE POLICY "Enable upload for authenticated users" ON storage.objects 
+    FOR INSERT WITH CHECK (bucket_id = 'documents' AND auth.role() = 'authenticated');
 
-⚠️ **Important**: The category field is temporarily disabled in the UI because it may not exist in your current database. After running the SQL setup script, you can re-enable the category field in the forms.
+-- Enable read for users on their files  
+CREATE POLICY "Enable read for users on their files" ON storage.objects 
+    FOR SELECT USING (bucket_id = 'documents' AND auth.uid()::text = (storage.foldername(name))[1]);
 
-### 5. Features Available
+-- Enable delete for users on their files
+CREATE POLICY "Enable delete for users on their files" ON storage.objects 
+    FOR DELETE USING (bucket_id = 'documents' AND auth.uid()::text = (storage.foldername(name))[1]);
+```
 
-✅ Create new goals
-✅ Edit existing goals  
-✅ View goal statistics
-✅ Filter goals by status
-✅ Progress tracking
-✅ Priority levels
-✅ Authentication & user isolation
+## Features Available
 
-### 6. Next Steps
+Once setup is complete, DocSafe provides:
 
-After setting up the database:
-1. Test creating a goal
-2. Test editing a goal
-3. Verify all data is saving correctly
-4. Check that Row Level Security is working (users can only see their own goals)
+### ✅ File Upload & Management
+- Drag & drop file upload with validation
+- Support for PDF, Word, Excel, PowerPoint, images
+- File size limit: 10MB per file
+- Automatic file type detection and icons
 
-## Need Help?
+### ✅ Organization Features
+- Document categorization (Business Plans, Legal, Financial, etc.)
+- Tag management system (up to 10 tags per document)
+- Folder organization (coming soon)
+- Description and metadata support
 
-If you encounter any issues:
-1. Verify your Supabase environment variables are set
-2. Check that the SQL script ran without errors
-3. Ensure your Supabase project has the auth schema enabled
-4. Verify Row Level Security policies are active
+### ✅ Search & Discovery
+- Real-time search across document names, content, and tags
+- Filter by category
+- Browse by date and file type
+- Quick category navigation
+
+### ✅ File Operations
+- Download documents securely
+- Delete documents with confirmation
+- View document metadata and properties
+- Storage usage tracking
+
+### ✅ Security Features
+- Row Level Security (RLS) - users only see their own documents
+- Private file storage with authenticated access
+- Secure file upload and download
+
+### ✅ Analytics Dashboard
+- Total document count
+- Storage usage with visual indicators
+- Category distribution
+- Folder organization metrics
+
+## Testing the System
+
+1. Navigate to `/docsafe` in your app
+2. Click "Upload Document" to test file upload
+3. Try uploading a PDF or image file
+4. Test search functionality with uploaded documents
+5. Test category filtering and organization
+
+The system is production-ready and follows all established patterns from your Goals and Journal systems.
