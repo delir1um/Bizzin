@@ -66,34 +66,34 @@ export function JournalPreviewPage() {
         <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mb-8">
           <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Journal Entries</CardTitle>
+              <CardTitle className="text-sm font-medium">Write Entries</CardTitle>
               <BookOpen className="h-4 w-4 text-purple-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">47</div>
-              <p className="text-xs text-muted-foreground">This month: 12</p>
+              <div className="text-2xl font-bold">Document</div>
+              <p className="text-xs text-muted-foreground">Business insights</p>
             </CardContent>
           </Card>
 
           <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Writing Streak</CardTitle>
+              <CardTitle className="text-sm font-medium">Search & Filter</CardTitle>
               <Calendar className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">14 days</div>
-              <p className="text-xs text-muted-foreground">Personal best: 28 days</p>
+              <div className="text-2xl font-bold text-green-600">Organized</div>
+              <p className="text-xs text-muted-foreground">Find entries easily</p>
             </CardContent>
           </Card>
 
           <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Key Insights</CardTitle>
+              <CardTitle className="text-sm font-medium">Categorize</CardTitle>
               <TrendingUp className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">23</div>
-              <p className="text-xs text-muted-foreground">Actionable ideas captured</p>
+              <div className="text-2xl font-bold">Tagged</div>
+              <p className="text-xs text-muted-foreground">Label and organize</p>
             </CardContent>
           </Card>
         </div>
@@ -200,25 +200,25 @@ export function JournalPreviewPage() {
         <div className="mt-12 grid gap-6 grid-cols-1 md:grid-cols-3">
           <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
             <PenTool className="w-12 h-12 text-purple-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Rich Text Editor</h3>
+            <h3 className="text-lg font-semibold mb-2">Business Journaling</h3>
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              Write with a powerful editor that supports formatting, images, and links
+              Document your business journey, insights, and learning experiences
             </p>
           </div>
           
           <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
             <Target className="w-12 h-12 text-green-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Goal Integration</h3>
+            <h3 className="text-lg font-semibold mb-2">Entry Management</h3>
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              Link journal entries to your goals and track reflection progress
+              Create, edit, and organize journal entries with categories and tags
             </p>
           </div>
           
           <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
             <TrendingUp className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Insights Discovery</h3>
+            <h3 className="text-lg font-semibold mb-2">Search & Filter</h3>
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              Identify patterns and extract actionable insights from your writing
+              Find specific entries quickly with search and date filtering tools
             </p>
           </div>
         </div>

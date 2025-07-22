@@ -72,34 +72,34 @@ export function TrainingPreviewPage() {
         <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mb-8">
           <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Courses Available</CardTitle>
+              <CardTitle className="text-sm font-medium">Course Library</CardTitle>
               <BookOpen className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">150+</div>
-              <p className="text-xs text-muted-foreground">New courses weekly</p>
+              <div className="text-2xl font-bold">Business</div>
+              <p className="text-xs text-muted-foreground">Skills training</p>
             </CardContent>
           </Card>
 
           <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Hours Watched</CardTitle>
+              <CardTitle className="text-sm font-medium">Progress Tracking</CardTitle>
               <Video className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">24.5h</div>
-              <p className="text-xs text-muted-foreground">This month</p>
+              <div className="text-2xl font-bold text-green-600">Monitor</div>
+              <p className="text-xs text-muted-foreground">Learning progress</p>
             </CardContent>
           </Card>
 
           <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Certificates</CardTitle>
+              <CardTitle className="text-sm font-medium">Categories</CardTitle>
               <GraduationCap className="h-4 w-4 text-purple-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">3</div>
-              <p className="text-xs text-muted-foreground">Completed courses</p>
+              <div className="text-2xl font-bold">Organized</div>
+              <p className="text-xs text-muted-foreground">By topic areas</p>
             </CardContent>
           </Card>
         </div>
@@ -216,25 +216,25 @@ export function TrainingPreviewPage() {
         <div className="mt-12 grid gap-6 grid-cols-1 md:grid-cols-3">
           <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
             <Video className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">HD Video Content</h3>
+            <h3 className="text-lg font-semibold mb-2">Business Training</h3>
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              High-quality video lessons with downloadable resources and transcripts
+              Access curated business courses across multiple categories
             </p>
           </div>
           
           <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
             <Users className="w-12 h-12 text-green-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Expert Instructors</h3>
+            <h3 className="text-lg font-semibold mb-2">Course Categories</h3>
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              Learn from successful entrepreneurs and industry leaders
+              Strategy, Marketing, Finance, and Leadership course collections
             </p>
           </div>
           
           <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
             <GraduationCap className="w-12 h-12 text-purple-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Certificates</h3>
+            <h3 className="text-lg font-semibold mb-2">Progress Tracking</h3>
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              Earn certificates of completion to showcase your skills
+              Monitor your learning progress and completed courses
             </p>
           </div>
         </div>

@@ -76,34 +76,34 @@ export function DocSafePreviewPage() {
         <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mb-8">
           <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Documents Stored</CardTitle>
+              <CardTitle className="text-sm font-medium">Document Storage</CardTitle>
               <FileText className="h-4 w-4 text-emerald-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">47</div>
-              <p className="text-xs text-muted-foreground">256 MB used</p>
+              <div className="text-2xl font-bold">Upload</div>
+              <p className="text-xs text-muted-foreground">Store files</p>
             </CardContent>
           </Card>
 
           <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Security Level</CardTitle>
+              <CardTitle className="text-sm font-medium">Organization</CardTitle>
               <Shield className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">Bank-grade</div>
-              <p className="text-xs text-muted-foreground">256-bit encryption</p>
+              <div className="text-2xl font-bold text-green-600">Folders</div>
+              <p className="text-xs text-muted-foreground">Categorize docs</p>
             </CardContent>
           </Card>
 
           <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Quick Access</CardTitle>
+              <CardTitle className="text-sm font-medium">Find Files</CardTitle>
               <Search className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">Instant</div>
-              <p className="text-xs text-muted-foreground">AI-powered search</p>
+              <div className="text-2xl font-bold">Search</div>
+              <p className="text-xs text-muted-foreground">Filter and find</p>
             </CardContent>
           </Card>
         </div>
@@ -111,8 +111,8 @@ export function DocSafePreviewPage() {
         {/* CTA Section */}
         <div className="text-center mb-8">
           <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-6 rounded-lg mb-6">
-            <h2 className="text-2xl font-bold mb-2">Secure Your Business Documents</h2>
-            <p className="text-emerald-100 mb-4">Enterprise-grade security for your most important files</p>
+            <h2 className="text-2xl font-bold mb-2">Store Your Business Documents</h2>
+            <p className="text-emerald-100 mb-4">Organize and manage your important business files</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button 
                 onClick={() => setLocation('/auth')}
@@ -215,25 +215,25 @@ export function DocSafePreviewPage() {
         <div className="mt-12 grid gap-6 grid-cols-1 md:grid-cols-3">
           <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
             <Shield className="w-12 h-12 text-emerald-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Bank-Grade Security</h3>
+            <h3 className="text-lg font-semibold mb-2">Secure Storage</h3>
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              Your documents are protected with 256-bit AES encryption and SOC 2 compliance
+              Store important business documents with file upload and organization features
             </p>
           </div>
           
           <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
             <Search className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Smart Search</h3>
+            <h3 className="text-lg font-semibold mb-2">Find Documents</h3>
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              Find any document instantly with AI-powered search across file contents
+              Search through your uploaded documents and filter by categories
             </p>
           </div>
           
           <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
             <Upload className="w-12 h-12 text-purple-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Easy Upload</h3>
+            <h3 className="text-lg font-semibold mb-2">File Management</h3>
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              Drag and drop files or upload via mobile app with automatic organization
+              Upload, organize, and manage your business documents and files
             </p>
           </div>
         </div>

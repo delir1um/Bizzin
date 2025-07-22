@@ -79,34 +79,34 @@ export function GoalsPreviewPage() {
         <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mb-8">
           <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Goals</CardTitle>
+              <CardTitle className="text-sm font-medium">Track Goals</CardTitle>
               <Target className="h-4 w-4 text-orange-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">12</div>
-              <p className="text-xs text-muted-foreground">8 in progress</p>
+              <div className="text-2xl font-bold">Organized</div>
+              <p className="text-xs text-muted-foreground">Set and prioritize</p>
             </CardContent>
           </Card>
 
           <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
+              <CardTitle className="text-sm font-medium">Progress</CardTitle>
               <TrendingUp className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">85%</div>
-              <p className="text-xs text-muted-foreground">4 completed goals</p>
+              <div className="text-2xl font-bold text-green-600">Visual</div>
+              <p className="text-xs text-muted-foreground">Track completion</p>
             </CardContent>
           </Card>
 
           <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">This Month</CardTitle>
+              <CardTitle className="text-sm font-medium">Filter & Sort</CardTitle>
               <CheckCircle className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">3</div>
-              <p className="text-xs text-muted-foreground">Goals completed</p>
+              <div className="text-2xl font-bold">Flexible</div>
+              <p className="text-xs text-muted-foreground">Find what matters</p>
             </CardContent>
           </Card>
         </div>
@@ -216,25 +216,25 @@ export function GoalsPreviewPage() {
         <div className="mt-12 grid gap-6 grid-cols-1 md:grid-cols-3">
           <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
             <Target className="w-12 h-12 text-orange-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Smart Goal Tracking</h3>
+            <h3 className="text-lg font-semibold mb-2">Goal Management</h3>
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              Set SMART goals with deadlines, priorities, and progress tracking
+              Create goals with descriptions, deadlines, priorities, and categories
             </p>
           </div>
           
           <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
             <TrendingUp className="w-12 h-12 text-green-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Progress Analytics</h3>
+            <h3 className="text-lg font-semibold mb-2">Progress Tracking</h3>
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              Visualize your progress with interactive charts and insights
+              Monitor progress with visual indicators and status updates
             </p>
           </div>
           
           <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
             <CheckCircle className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Achievement Tracking</h3>
+            <h3 className="text-lg font-semibold mb-2">Organization</h3>
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              Celebrate wins and maintain momentum toward your objectives
+              Filter by status, priority, search, and sort to stay organized
             </p>
           </div>
         </div>
