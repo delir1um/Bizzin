@@ -65,11 +65,20 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
       handleClose()
     },
     onError: (error: any) => {
-      toast({
-        title: "Upload failed",
-        description: error.message || "Failed to upload document",
-        variant: "destructive",
-      })
+      // Check if it's an RLS policy error
+      if (error.message?.includes('row-level security policy') || error.message?.includes('violates row-level security')) {
+        toast({
+          title: "Database Setup Required",
+          description: "DocSafe tables need setup. Check DOCSAFE_SETUP_REQUIRED.md for 2-minute fix.",
+          variant: "destructive",
+        })
+      } else {
+        toast({
+          title: "Upload failed",
+          description: error.message || "Failed to upload document",
+          variant: "destructive",
+        })
+      }
     },
   })
 
