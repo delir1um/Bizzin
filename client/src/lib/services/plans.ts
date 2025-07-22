@@ -11,6 +11,22 @@ export class PlansService {
       .single()
 
     if (error) {
+      // If no plan exists, create a free plan for the user
+      if (error.code === 'PGRST116') {
+        console.log('No plan found for user, creating free plan')
+        const { data: newPlan, error: createError } = await supabase
+          .from('user_plans')
+          .insert([{ user_id: userId, plan_type: 'free' }])
+          .select()
+          .single()
+
+        if (createError) {
+          console.error('Error creating user plan:', createError)
+          return null
+        }
+
+        return newPlan
+      }
       console.error('Error fetching user plan:', error)
       return null
     }
@@ -22,13 +38,29 @@ export class PlansService {
   static async getUserUsage(userId: string): Promise<UsageLimits | null> {
     const currentMonth = new Date().toISOString().substring(0, 7) // YYYY-MM format
     
-    const { data, error } = await supabase
-      .rpc('get_or_create_usage_limits', {
-        user_uuid: userId,
-        current_month: currentMonth
-      })
+    // First try to get existing usage record
+    let { data, error } = await supabase
+      .from('usage_limits')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('month_year', currentMonth)
+      .single()
 
-    if (error) {
+    if (error && error.code === 'PGRST116') {
+      // No record exists, create one
+      const { data: newUsage, error: createError } = await supabase
+        .from('usage_limits')
+        .insert([{ user_id: userId, month_year: currentMonth }])
+        .select()
+        .single()
+
+      if (createError) {
+        console.error('Error creating usage limits:', createError)
+        return null
+      }
+
+      data = newUsage
+    } else if (error) {
       console.error('Error fetching user usage:', error)
       return null
     }
@@ -38,18 +70,28 @@ export class PlansService {
 
   // Get plan limits for a specific plan type
   static async getPlanLimits(planType: PlanType): Promise<PlanLimits | null> {
-    const { data, error } = await supabase
-      .from('plan_limits')
-      .select('*')
-      .eq('plan_type', planType)
-      .single()
-
-    if (error) {
-      console.error('Error fetching plan limits:', error)
-      return null
+    // Return hardcoded limits since we're using a view that might not work with RPC
+    if (planType === 'free') {
+      return {
+        plan_type: 'free',
+        storage_limit: 500 * 1024 * 1024, // 500MB
+        max_file_size: 50 * 1024 * 1024, // 50MB
+        monthly_documents: 20,
+        monthly_journal_entries: 10,
+        max_active_goals: 5,
+        daily_calculator_uses: 3
+      }
+    } else {
+      return {
+        plan_type: 'premium',
+        storage_limit: 10 * 1024 * 1024 * 1024, // 10GB
+        max_file_size: 100 * 1024 * 1024, // 100MB
+        monthly_documents: 10000,
+        monthly_journal_entries: 10000,
+        max_active_goals: 1000,
+        daily_calculator_uses: 1000
+      }
     }
-
-    return data
   }
 
   // Get comprehensive usage status for a user
