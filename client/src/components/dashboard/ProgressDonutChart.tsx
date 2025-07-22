@@ -15,7 +15,7 @@ export function ProgressDonutChart({ goals }: ProgressDonutChartProps) {
     {
       name: 'In Progress',
       value: goals.filter(goal => goal.status === 'in_progress').length,
-      color: '#3B82F6'
+      color: '#EA7A57'
     },
     {
       name: 'Not Started',

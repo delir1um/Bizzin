@@ -39,7 +39,7 @@ export function DeadlineTimeline({ goals, onGoalClick }: DeadlineTimelineProps) 
           if (isOverdue) return 'bg-red-500 ring-red-200'
           if (isToday) return 'bg-orange-500 ring-orange-200'
           if (isUrgent) return 'bg-amber-500 ring-amber-200'
-          return 'bg-blue-500 ring-blue-200'
+          return 'bg-orange-500 ring-orange-200'
         }
 
         // Timeline line color
@@ -108,7 +108,7 @@ export function DeadlineTimeline({ goals, onGoalClick }: DeadlineTimelineProps) 
                     <div 
                       className={`h-1.5 rounded-full transition-all duration-300 ${
                         goal.progress >= 80 ? 'bg-green-500' :
-                        goal.progress >= 50 ? 'bg-blue-500' :
+                        goal.progress >= 50 ? 'bg-orange-500' :
                         goal.progress >= 25 ? 'bg-amber-500' : 'bg-red-500'
                       }`}
                       style={{ width: `${goal.progress}%` }}

@@ -66,12 +66,12 @@ export function DashboardPage() {
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
         {/* Goals Stats - Real Data */}
         <Card 
-          className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800" 
+          className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800" 
           onClick={() => navigate("/goals")}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-blue-900 dark:text-blue-100">Total Goals</CardTitle>
-            <div className="p-2 bg-blue-500 rounded-lg">
+            <CardTitle className="text-sm font-medium text-orange-900 dark:text-orange-100">Total Goals</CardTitle>
+            <div className="p-2 bg-orange-500 rounded-lg">
               <Target className="h-4 w-4 text-white" />
             </div>
           </CardHeader>
@@ -83,8 +83,8 @@ export function DashboardPage() {
               </>
             ) : (
               <>
-                <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">{stats.total}</div>
-                <p className="text-xs text-blue-700 dark:text-blue-300">
+                <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">{stats.total}</div>
+                <p className="text-xs text-orange-700 dark:text-orange-300">
                   {stats.inProgress} in progress
                 </p>
               </>

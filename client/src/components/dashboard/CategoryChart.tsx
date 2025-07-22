@@ -6,6 +6,7 @@ interface CategoryChartProps {
 }
 
 const CATEGORY_COLORS = [
+  '#EA7A57', // Orange (primary brand color)
   '#8B5CF6', // Purple
   '#06B6D4', // Cyan
   '#10B981', // Emerald
@@ -13,7 +14,6 @@ const CATEGORY_COLORS = [
   '#EF4444', // Red
   '#3B82F6', // Blue
   '#84CC16', // Lime
-  '#F97316', // Orange
   '#EC4899', // Pink
   '#6366F1', // Indigo
 ]

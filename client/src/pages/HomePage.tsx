@@ -7,13 +7,13 @@ export function HomePage() {
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         {/* Background Pattern */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-sky-50 dark:from-slate-900 dark:to-slate-800"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-red-50 dark:from-slate-900 dark:to-slate-800"></div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
           <div className="text-center">
             {/* Main Heading */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-white tracking-tight">
-              Welcome to <span className="text-blue-600">Bizzin</span>
+              Welcome to <span className="text-orange-600">Bizzin</span>
             </h1>
             
             {/* Subtitle */}
@@ -28,7 +28,7 @@ export function HomePage() {
 
             {/* CTA Buttons */}
             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg font-medium transition-colors shadow-lg hover:shadow-xl">
+              <Button className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 text-lg font-medium transition-colors shadow-lg hover:shadow-xl">
                 Start Your Journey
               </Button>
               <Button 
@@ -64,8 +64,8 @@ export function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Feature 1 */}
             <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-700">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mb-6">
-                <ClipboardList className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mb-6">
+                <ClipboardList className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
               <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">Business Planning</h3>
               <p className="text-slate-600 dark:text-slate-300">Create comprehensive business plans with our guided templates and expert insights.</p>

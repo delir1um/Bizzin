@@ -22,7 +22,7 @@ const statusConfig = {
   },
   in_progress: {
     variant: "secondary" as const,
-    className: "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200",
+    className: "bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200",
     icon: Clock,
     label: "In Progress"
   },
