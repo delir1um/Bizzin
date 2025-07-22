@@ -10,7 +10,7 @@ export function Footer() {
             <span className="ml-2 text-xl font-semibold text-white">Bizzin</span>
           </div>
           <div className="flex space-x-6">
-            <a href="#privacy" className="text-slate-400 hover:text-white text-sm transition-colors">
+            <a href="/privacy" className="text-slate-400 hover:text-white text-sm transition-colors">
               Privacy
             </a>
             <a href="#terms" className="text-slate-400 hover:text-white text-sm transition-colors">

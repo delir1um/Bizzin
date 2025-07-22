@@ -16,6 +16,7 @@ import { DocSafePreviewPage } from "@/pages/DocSafePreviewPage"
 import { BizBuilderToolsPage } from "@/pages/BizBuilderToolsPage"
 import { BizBuilderToolsPreviewPage } from "@/pages/BizBuilderToolsPreviewPage"
 import AuthPage from "@/pages/AuthPage"
+import { PrivacyPage } from "@/pages/PrivacyPage"
 import { AuthProvider, useAuth } from "@/hooks/AuthProvider"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
 import { PreviewOrProtected } from "@/components/PreviewOrProtected"
@@ -69,6 +70,7 @@ function App() {
                 <Route path="/training" component={() => <PreviewOrProtected protectedComponent={TrainingPage} previewComponent={TrainingPreviewPage} />} />
                 <Route path="/bizbuilder" component={() => <PreviewOrProtected protectedComponent={BizBuilderToolsPage} previewComponent={BizBuilderToolsPreviewPage} />} />
                 <Route path="/docsafe" component={() => <PreviewOrProtected protectedComponent={DocSafePage} previewComponent={DocSafePreviewPage} />} />
+                <Route path="/privacy" component={PrivacyPage} />
               </Layout>
             </Router>
             <Toaster />
