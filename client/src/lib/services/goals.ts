@@ -18,15 +18,8 @@ export class GoalsService {
   }
 
   static async createGoal(goal: Omit<Goal, 'id' | 'created_at' | 'updated_at'>): Promise<Goal> {
-    // Get current user to debug the user_id issue
-    const { data: { user } } = await supabase.auth.getUser()
-    console.log('Current user from auth:', user)
-    console.log('Goal user_id:', goal.user_id)
-    
     // Remove category field to avoid column not found error
     const { category, ...goalData } = goal
-
-    console.log('Inserting goal data:', goalData)
 
     const { data, error } = await supabase
       .from('goals')
@@ -43,9 +36,8 @@ export class GoalsService {
   }
 
   static async updateGoal(goalId: string, updates: Partial<Goal>): Promise<Goal> {
-    // Remove category field to avoid column not found error
-    const { category, ...updateData } = updates
-    updateData.updated_at = new Date().toISOString()
+    // Remove category and updated_at fields to avoid column not found errors
+    const { category, updated_at, created_at, id, ...updateData } = updates
 
     const { data, error } = await supabase
       .from('goals')
