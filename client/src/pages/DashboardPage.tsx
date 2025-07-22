@@ -59,7 +59,8 @@ export function DashboardPage() {
   const dailyQuote = user ? InspirationalQuotes.getDailyInspiration(user) : null
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="space-y-6">
       {/* Welcome Section with Inspirational Quote */}
       <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
@@ -697,6 +698,7 @@ export function DashboardPage() {
           setCompletedGoal(null)
         }}
       />
+      </div>
     </div>
   )
 }
