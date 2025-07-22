@@ -94,15 +94,82 @@ export class PlansService {
     }
   }
 
-  // Get comprehensive usage status for a user
+  // Get real storage usage from Supabase Storage
+  static async getStorageUsage(userId: string): Promise<{ used: number; fileCount: number }> {
+    try {
+      const { data, error } = await supabase
+        .from('documents')
+        .select('file_size')
+        .eq('user_id', userId)
+
+      if (error) {
+        console.error('Error fetching storage usage:', error)
+        return { used: 0, fileCount: 0 }
+      }
+
+      const totalSize = data.reduce((sum, doc) => sum + (doc.file_size || 0), 0)
+      return { used: totalSize, fileCount: data.length }
+    } catch (error) {
+      console.error('Error calculating storage usage:', error)
+      return { used: 0, fileCount: 0 }
+    }
+  }
+
+  // Get real goals count
+  static async getGoalsCount(userId: string): Promise<number> {
+    try {
+      const { count, error } = await supabase
+        .from('goals')
+        .select('id', { count: 'exact' })
+        .eq('user_id', userId)
+        .neq('status', 'completed')
+
+      if (error) {
+        console.error('Error fetching goals count:', error)
+        return 0
+      }
+
+      return count || 0
+    } catch (error) {
+      console.error('Error counting goals:', error)
+      return 0
+    }
+  }
+
+  // Get real journal entries count for current month
+  static async getJournalEntriesCount(userId: string): Promise<number> {
+    try {
+      const currentMonth = new Date().toISOString().substring(0, 7) + '%' // YYYY-MM%
+      
+      const { count, error } = await supabase
+        .from('journal_entries')
+        .select('id', { count: 'exact' })
+        .eq('user_id', userId)
+        .like('created_at', currentMonth)
+
+      if (error) {
+        console.error('Error fetching journal entries count:', error)
+        return 0
+      }
+
+      return count || 0
+    } catch (error) {
+      console.error('Error counting journal entries:', error)
+      return 0
+    }
+  }
+
+  // Get comprehensive usage status for a user with real data
   static async getUserUsageStatus(userId: string): Promise<UsageStatus | null> {
     try {
-      const [userPlan, currentUsage] = await Promise.all([
+      const [userPlan, storageUsage, goalsCount, journalCount] = await Promise.all([
         this.getUserPlan(userId),
-        this.getUserUsage(userId)
+        this.getStorageUsage(userId),
+        this.getGoalsCount(userId),
+        this.getJournalEntriesCount(userId)
       ])
 
-      if (!userPlan || !currentUsage) {
+      if (!userPlan) {
         return null
       }
 
@@ -111,35 +178,37 @@ export class PlansService {
         return null
       }
 
-      // Calculate percentages and availability
-      const storage_percentage = (currentUsage.storage_used / planLimits.storage_limit) * 100
-      const documents_percentage = (currentUsage.documents_uploaded / planLimits.monthly_documents) * 100
-      const journal_percentage = (currentUsage.journal_entries_created / planLimits.monthly_journal_entries) * 100
-
-      const can_upload_document = currentUsage.documents_uploaded < planLimits.monthly_documents
-      const can_create_journal_entry = currentUsage.journal_entries_created < planLimits.monthly_journal_entries
-      const can_create_goal = currentUsage.goals_created < planLimits.max_active_goals
-
-      const can_use_calculator = (calculatorId: string): boolean => {
-        const today = new Date().toISOString().substring(0, 10) // YYYY-MM-DD
-        const todayUses = currentUsage.calculator_uses[`${calculatorId}_${today}`] || 0
-        return todayUses < planLimits.daily_calculator_uses
+      // Create current usage with real data
+      const currentUsage: UsageLimits = {
+        id: 'real-usage',
+        user_id: userId,
+        month_year: new Date().toISOString().substring(0, 7),
+        storage_used: storageUsage.used,
+        documents_uploaded: storageUsage.fileCount,
+        journal_entries_created: journalCount,
+        goals_created: goalsCount,
+        calculator_uses: {},
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       }
 
-      return {
+      // Create usage status object
+      const usageStatus: UsageStatus = {
+        user_plan: userPlan,
         current_usage: currentUsage,
         plan_limits: planLimits,
-        user_plan: userPlan,
-        can_upload_document,
-        can_create_journal_entry,
-        can_create_goal,
-        can_use_calculator,
-        storage_percentage: Math.min(storage_percentage, 100),
-        documents_percentage: Math.min(documents_percentage, 100),
-        journal_percentage: Math.min(journal_percentage, 100)
+        can_upload_document: currentUsage.documents_uploaded < planLimits.monthly_documents,
+        can_create_journal_entry: currentUsage.journal_entries_created < planLimits.monthly_journal_entries,
+        can_create_goal: currentUsage.goals_created < planLimits.max_active_goals,
+        can_use_calculator: (calculatorId: string) => {
+          const dailyUses = currentUsage.calculator_uses?.[calculatorId] || 0
+          return dailyUses < planLimits.daily_calculator_uses
+        }
       }
+
+      return usageStatus
     } catch (error) {
-      console.error('Error getting usage status:', error)
+      console.error('Error getting user usage status:', error)
       return null
     }
   }
