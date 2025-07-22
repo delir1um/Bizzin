@@ -59,12 +59,10 @@ function App() {
         <ThemeProvider defaultTheme="light" storageKey="bizzin-ui-theme">
           <TooltipProvider>
             <Router>
-              {/* Public auth route */}
-              <Route path="/auth" component={AuthPage} />
-
-              {/* All other routes go through layout */}
+              {/* All routes go through layout */}
               <Layout>
                 <Route path="/" component={() => <MainRouter />} />
+                <Route path="/auth" component={AuthPage} />
                 <Route path="/dashboard" component={() => <ProtectedRoute><DashboardPage /></ProtectedRoute>} />
                 <Route path="/journal" component={() => <PreviewOrProtected protectedComponent={JournalPage} previewComponent={JournalPreviewPage} />} />
                 <Route path="/goals" component={() => <PreviewOrProtected protectedComponent={GoalsPage} previewComponent={GoalsPreviewPage} />} />
