@@ -10,7 +10,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { useAuth } from "@/hooks/AuthProvider"
 import { supabase } from "@/lib/supabase"
-import { User, Settings, Mail, Phone, MapPin, Calendar, Save, AlertCircle, CheckCircle, Camera, Upload, Trash2 } from "lucide-react"
+import { User, Settings, Mail, Phone, MapPin, Calendar, Save, AlertCircle, CheckCircle, Camera, Upload, Trash2, Crown } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { PlanManagement } from "@/components/profile/PlanManagement"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 const profileSchema = z.object({
@@ -205,9 +207,20 @@ export default function ProfilePage() {
         </p>
       </div>
 
-      <Separator />
+      <Tabs defaultValue="profile" className="space-y-6">
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="profile" className="flex items-center gap-2">
+            <Settings className="w-4 h-4" />
+            Profile
+          </TabsTrigger>
+          <TabsTrigger value="plan" className="flex items-center gap-2">
+            <Crown className="w-4 h-4" />
+            Plan
+          </TabsTrigger>
+        </TabsList>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+        <TabsContent value="profile" className="space-y-6">
+          <div className="grid gap-6 lg:grid-cols-3">
         {/* Profile Overview */}
         <Card className="lg:col-span-1">
           <CardHeader className="text-center">
@@ -481,7 +494,13 @@ export default function ProfilePage() {
             </form>
           </CardContent>
         </Card>
-      </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="plan" className="space-y-6">
+          <PlanManagement />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
