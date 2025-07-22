@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Target, Plus, TrendingUp, CheckCircle, Clock, AlertCircle, Filter } from "lucide-react"
 import { GoalCard } from "@/components/goals/GoalCard"
+import { AddGoalModal } from "@/components/goals/AddGoalModal"
 import { GoalsService } from "@/lib/services/goals"
 import { useAuth } from "@/hooks/AuthProvider"
 import { Goal } from "@/types/goals"
@@ -16,6 +17,7 @@ type FilterStatus = 'all' | 'active' | 'completed' | 'at_risk'
 export function GoalsPage() {
   const { user } = useAuth()
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all')
+  const [addGoalModalOpen, setAddGoalModalOpen] = useState(false)
 
   // Fetch goals data
   const {
@@ -78,7 +80,10 @@ export function GoalsPage() {
             </p>
           </div>
           <div className="mt-4 sm:mt-0">
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button 
+              onClick={() => setAddGoalModalOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
               <Plus className="w-4 h-4 mr-2" />
               New Goal
             </Button>
@@ -251,7 +256,10 @@ export function GoalsPage() {
                   : `You don't have any ${statusFilter} goals at the moment.`
                 }
               </p>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Button 
+                onClick={() => setAddGoalModalOpen(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Create Your First Goal
               </Button>
@@ -265,6 +273,12 @@ export function GoalsPage() {
           ))}
         </div>
       )}
+
+      {/* Add Goal Modal */}
+      <AddGoalModal 
+        open={addGoalModalOpen} 
+        onOpenChange={setAddGoalModalOpen}
+      />
     </div>
   )
 }
