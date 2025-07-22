@@ -31,6 +31,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { path: "/journal", label: "Journal" },
     { path: "/goals", label: "Goals" },
     { path: "/training", label: "Training" },
+    { path: "/bizbuilder", label: "BizBuilder Tools" },
     { path: "/docsafe", label: "DocSafe" },
   ]
 

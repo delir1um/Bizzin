@@ -29,7 +29,7 @@ Bizzin is a modern SaaS platform to help entrepreneurs plan, journal, and track 
 
 ## Project Goals
 - Public landing page (`/`)
-- Protected pages: `/journal`, `/goals`, `/training`, `/docsafe`
+- Protected pages: `/journal`, `/goals`, `/training`, `/bizbuilder`, `/docsafe`
 - User sign in / sign up at `/auth`
 - Role-based feature access: free vs premium
 
@@ -40,3 +40,5 @@ Bizzin is a modern SaaS platform to help entrepreneurs plan, journal, and track 
 - **Chart Integration**: Implemented recharts-based interactive visualizations with tooltips and legends
 - **Celebration System**: Added confetti animations and toast notifications for goal completion
 - **Theme Consistency**: Updated all components to use orange as primary brand color while maintaining multi-colored data visualization
+- **Preview Pages Implementation**: Created preview/teaser pages for all main features to improve user onboarding flow
+- **BizBuilder Tools Addition**: Implemented missing BizBuilder Tools page with 8 business calculators per developer spec
