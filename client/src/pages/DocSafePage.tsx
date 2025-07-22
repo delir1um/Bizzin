@@ -149,7 +149,7 @@ export function DocSafePage() {
       </div>
 
       {/* Storage Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <Card className="bg-white dark:bg-slate-800">
           <CardContent className="p-6">
             <div className="flex items-center">
@@ -161,38 +161,6 @@ export function DocSafePage() {
                   {stats?.total_documents || allDocuments.length || 0}
                 </p>
                 <p className="text-sm text-slate-600 dark:text-slate-400">Total Documents</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white dark:bg-slate-800">
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
-                <Folder className="w-6 h-6 text-green-600 dark:text-green-400" />
-              </div>
-              <div className="ml-4">
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {stats?.total_folders || 0}
-                </p>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Folders</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white dark:bg-slate-800">
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
-                <Share2 className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-              </div>
-              <div className="ml-4">
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {stats?.shared_documents || allDocuments.filter(doc => doc.is_shared).length || 0}
-                </p>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Shared</p>
               </div>
             </div>
           </CardContent>

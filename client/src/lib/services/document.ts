@@ -202,25 +202,11 @@ export class DocumentService {
         // Don't throw, continue with empty array
       }
 
-      // Get folder count (skip if folders table doesn't exist yet)
-      const { data: folders, error: foldersError } = await supabase
-        .from('folders')
-        .select('id')
-        .eq('user_id', userId)
-
-      if (foldersError) {
-        console.warn('Folders query error (table may not exist):', foldersError)
-      }
-
       const totalDocuments = documents?.length || 0
-      const sharedDocuments = documents?.filter(doc => doc.is_shared).length || 0
       const storageUsed = documents?.reduce((total, doc) => total + (doc.file_size || 0), 0) || 0
-      const totalFolders = folders?.length || 0
 
       const stats = {
         total_documents: totalDocuments,
-        total_folders: totalFolders,
-        shared_documents: sharedDocuments,
         storage_used: storageUsed,
         storage_limit: 1024 * 1024 * 1024 // 1GB limit
       }
@@ -233,8 +219,6 @@ export class DocumentService {
       // Return default values instead of throwing to prevent UI errors
       return {
         total_documents: 0,
-        total_folders: 0,
-        shared_documents: 0,
         storage_used: 0,
         storage_limit: 1024 * 1024 * 1024 // 1GB limit
       }

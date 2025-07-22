@@ -41,8 +41,6 @@ export interface CreateFolderRequest {
 
 export interface StorageStats {
   total_documents: number
-  total_folders: number
-  shared_documents: number
   storage_used: number
   storage_limit: number
 }
