@@ -30,21 +30,23 @@ export function DocSafePage() {
   }, [])
 
   // Fetch storage stats
-  const { data: stats } = useQuery({
+  const { data: stats, refetch: refetchStats } = useQuery({
     queryKey: ['storage-stats', user?.id],
     queryFn: () => user ? DocumentService.getStorageStats(user.id) : null,
     enabled: !!user,
-    refetchOnWindowFocus: false,
-    staleTime: 30000, // 30 seconds
+    refetchOnWindowFocus: true,
+    staleTime: 0, // Always fetch fresh data
+    refetchInterval: 5000, // Refetch every 5 seconds
   })
 
   // Fetch documents
-  const { data: allDocuments = [], isLoading: docsLoading } = useQuery({
+  const { data: allDocuments = [], isLoading: docsLoading, refetch: refetchDocs } = useQuery({
     queryKey: ['documents', user?.id],
     queryFn: () => user ? DocumentService.getUserDocuments(user.id) : [],
     enabled: !!user,
-    refetchOnWindowFocus: false,
-    staleTime: 10000, // 10 seconds
+    refetchOnWindowFocus: true,
+    staleTime: 0, // Always fetch fresh data
+    refetchInterval: 5000, // Refetch every 5 seconds
   })
 
   // Filter documents by category if selected
@@ -124,7 +126,17 @@ export function DocSafePage() {
               Securely store and manage your business documents
             </p>
           </div>
-          <div className="mt-4 sm:mt-0">
+          <div className="mt-4 sm:mt-0 flex gap-2">
+            <Button 
+              onClick={() => {
+                refetchDocs()
+                refetchStats()
+              }}
+              variant="outline"
+              size="sm"
+            >
+              Refresh
+            </Button>
             <Button 
               onClick={() => setShowUploadModal(true)}
               className="bg-orange-600 hover:bg-orange-700 text-white"
@@ -146,7 +158,7 @@ export function DocSafePage() {
               </div>
               <div className="ml-4">
                 <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {stats?.total_documents || 0}
+                  {stats?.total_documents || allDocuments.length || 0}
                 </p>
                 <p className="text-sm text-slate-600 dark:text-slate-400">Total Documents</p>
               </div>
@@ -178,7 +190,7 @@ export function DocSafePage() {
               </div>
               <div className="ml-4">
                 <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {stats?.shared_documents || 0}
+                  {stats?.shared_documents || allDocuments.filter(doc => doc.is_shared).length || 0}
                 </p>
                 <p className="text-sm text-slate-600 dark:text-slate-400">Shared</p>
               </div>
@@ -194,15 +206,16 @@ export function DocSafePage() {
               </div>
               <div className="ml-4">
                 <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {stats ? DocumentService.formatFileSize(stats.storage_used) : '0 B'}
+                  {stats?.storage_used ? DocumentService.formatFileSize(stats.storage_used) : 
+                   allDocuments.length > 0 ? DocumentService.formatFileSize(allDocuments.reduce((total, doc) => total + doc.file_size, 0)) : '0 B'}
                 </p>
                 <p className="text-sm text-slate-600 dark:text-slate-400">Storage Used</p>
-                {stats && stats.storage_used > 0 && (
+                {((stats && stats.storage_used > 0) || allDocuments.length > 0) && (
                   <div className="mt-2 w-32 bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
                     <div 
                       className="bg-orange-600 h-1.5 rounded-full" 
                       style={{ 
-                        width: `${Math.min((stats.storage_used / stats.storage_limit) * 100, 100)}%` 
+                        width: `${Math.min(((stats?.storage_used || allDocuments.reduce((total, doc) => total + doc.file_size, 0)) / (1024*1024*1024)) * 100, 100)}%` 
                       }}
                     ></div>
                   </div>

@@ -64,11 +64,15 @@ export class DocumentService {
 
   // Get all documents for a user
   static async getUserDocuments(userId: string): Promise<Document[]> {
+    console.log('Fetching documents for user:', userId)
+    
     const { data, error } = await supabase
       .from('documents')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
+
+    console.log('Documents fetch result:', { data, error, count: data?.length })
 
     if (error) {
       console.error('Error fetching documents:', error)
@@ -183,24 +187,29 @@ export class DocumentService {
   // Get storage stats
   static async getStorageStats(userId: string): Promise<StorageStats> {
     try {
+      console.log('Fetching storage stats for user:', userId)
+      
       // Get document counts and sizes
       const { data: documents, error: docsError } = await supabase
         .from('documents')
         .select('file_size, is_shared')
         .eq('user_id', userId)
 
+      console.log('Documents query result:', { documents, docsError })
+
       if (docsError) {
-        throw new Error(`Failed to fetch document stats: ${docsError.message}`)
+        console.error('Documents query error:', docsError)
+        // Don't throw, continue with empty array
       }
 
-      // Get folder count
+      // Get folder count (skip if folders table doesn't exist yet)
       const { data: folders, error: foldersError } = await supabase
         .from('folders')
         .select('id')
         .eq('user_id', userId)
 
       if (foldersError) {
-        throw new Error(`Failed to fetch folder stats: ${foldersError.message}`)
+        console.warn('Folders query error (table may not exist):', foldersError)
       }
 
       const totalDocuments = documents?.length || 0
@@ -208,13 +217,16 @@ export class DocumentService {
       const storageUsed = documents?.reduce((total, doc) => total + (doc.file_size || 0), 0) || 0
       const totalFolders = folders?.length || 0
 
-      return {
+      const stats = {
         total_documents: totalDocuments,
         total_folders: totalFolders,
         shared_documents: sharedDocuments,
         storage_used: storageUsed,
         storage_limit: 1024 * 1024 * 1024 // 1GB limit
       }
+
+      console.log('Calculated stats:', stats)
+      return stats
 
     } catch (err: any) {
       console.error('Error getting storage stats:', err)
