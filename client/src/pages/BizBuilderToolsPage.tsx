@@ -7,76 +7,33 @@ import { Calculator, TrendingUp, DollarSign, Car, Home, BarChart3, Target, Activ
 const tools = [
   {
     id: "business-budget",
-    title: "My Business Budget",
-    description: "Plan and track your business income and expenses",
+    title: "Business Budget Calculator",
+    description: "Plan and track your business income and expenses with detailed budget analysis",
     icon: DollarSign,
-    category: "Financial Planning",
+    category: "Essential Calculators",
     color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
   },
   {
     id: "cash-flow",
-    title: "Cash Flow Projection",
-    description: "Forecast your business cash flow for better planning",
+    title: "Cash Flow Projection Tool",
+    description: "Forecast your business cash flow to better plan for the future",
     icon: TrendingUp,
-    category: "Financial Planning",
+    category: "Essential Calculators",
     color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-  },
-  {
-    id: "tax-estimator",
-    title: "Tax Estimator",
-    description: "Calculate estimated tax obligations for your business",
-    icon: Calculator,
-    category: "Tax & Compliance",
-    color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
-  },
-  {
-    id: "vehicle-finance",
-    title: "Vehicle Finance Calculator",
-    description: "Calculate vehicle loan payments and affordability",
-    icon: Car,
-    category: "Loans & Finance",
-    color: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
-  },
-  {
-    id: "home-loan",
-    title: "Bond / Home Loan Calculator",
-    description: "Calculate home loan payments and total interest",
-    icon: Home,
-    category: "Loans & Finance",
-    color: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
   },
   {
     id: "break-even",
     title: "Break-Even Calculator",
-    description: "Determine the break-even point for your business",
+    description: "Determine the break-even point for your business operations",
     icon: BarChart3,
-    category: "Business Analysis",
-    color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-  },
-  {
-    id: "pricing-tool",
-    title: "Pricing Tool",
-    description: "Set optimal pricing for your products and services",
-    icon: Target,
-    category: "Business Analysis",
-    color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-  },
-  {
-    id: "health-check",
-    title: "Business Health Check",
-    description: "Assess your business performance and identify areas for improvement",
-    icon: Activity,
-    category: "Business Analysis",
-    color: "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200"
+    category: "Essential Calculators",
+    color: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
   }
 ]
 
 const categories = [
   "All Tools",
-  "Financial Planning",
-  "Tax & Compliance", 
-  "Loans & Finance",
-  "Business Analysis"
+  "Essential Calculators"
 ]
 
 export function BizBuilderToolsPage() {
@@ -170,42 +127,63 @@ export function BizBuilderToolsPage() {
         })}
       </div>
 
-      {/* Coming Soon Section */}
+      {/* Usage & Access Info */}
       <div className="mt-12">
-        <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-6">Coming Soon</h2>
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          <Card className="border-dashed border-2 border-slate-300 dark:border-slate-600 opacity-60">
-            <CardHeader>
-              <CardTitle className="text-lg text-slate-600 dark:text-slate-400">
-                SARS Tax Integration
-              </CardTitle>
-              <CardDescription>
-                Automatic tax bracket updates and compliance features
-              </CardDescription>
-            </CardHeader>
-          </Card>
-          
-          <Card className="border-dashed border-2 border-slate-300 dark:border-slate-600 opacity-60">
-            <CardHeader>
-              <CardTitle className="text-lg text-slate-600 dark:text-slate-400">
-                Invoice Generator
-              </CardTitle>
-              <CardDescription>
-                Professional invoice creation and management
-              </CardDescription>
-            </CardHeader>
-          </Card>
-          
-          <Card className="border-dashed border-2 border-slate-300 dark:border-slate-600 opacity-60">
-            <CardHeader>
-              <CardTitle className="text-lg text-slate-600 dark:text-slate-400">
-                Accounting Integration
-              </CardTitle>
-              <CardDescription>
-                Connect with Xero, QuickBooks, and other platforms
-              </CardDescription>
-            </CardHeader>
-          </Card>
+        <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-6">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">Calculator Access</h2>
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+            <div>
+              <h3 className="font-medium text-slate-900 dark:text-white mb-2">Free Tier</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                Limited calculations per month with basic export functionality
+              </p>
+            </div>
+            <div>
+              <h3 className="font-medium text-slate-900 dark:text-white mb-2">Paid Subscription</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                Unlimited calculations with advanced export and saving features
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Phase 2 Features */}
+        <div className="mt-8">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">Phase 2 Features</h2>
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <Card className="border-dashed border-2 border-slate-300 dark:border-slate-600 opacity-60">
+              <CardHeader>
+                <CardTitle className="text-lg text-slate-600 dark:text-slate-400">
+                  SARS API Integration
+                </CardTitle>
+                <CardDescription>
+                  Automatic tax updates and compliance features
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            
+            <Card className="border-dashed border-2 border-slate-300 dark:border-slate-600 opacity-60">
+              <CardHeader>
+                <CardTitle className="text-lg text-slate-600 dark:text-slate-400">
+                  Advanced Reporting
+                </CardTitle>
+                <CardDescription>
+                  Detailed analytics and business insights
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            
+            <Card className="border-dashed border-2 border-slate-300 dark:border-slate-600 opacity-60">
+              <CardHeader>
+                <CardTitle className="text-lg text-slate-600 dark:text-slate-400">
+                  Additional Calculators
+                </CardTitle>
+                <CardDescription>
+                  Tax estimators, loan calculators, and more
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
         </div>
       </div>
 

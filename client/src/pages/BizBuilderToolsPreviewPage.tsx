@@ -7,34 +7,26 @@ import { useLocation } from "wouter"
 const demoTools = [
   {
     id: "business-budget",
-    title: "My Business Budget",
+    title: "Business Budget Calculator",
     description: "Plan and track your business income and expenses",
     icon: DollarSign,
-    category: "Financial Planning",
+    category: "Essential Calculators",
     isBlurred: false
   },
   {
     id: "cash-flow",
-    title: "Cash Flow Projection", 
+    title: "Cash Flow Projection Tool", 
     description: "Forecast your business cash flow for better planning",
     icon: TrendingUp,
-    category: "Financial Planning",
+    category: "Essential Calculators",
     isBlurred: true
   },
   {
-    id: "tax-estimator",
-    title: "Tax Estimator",
-    description: "Calculate estimated tax obligations for your business",
-    icon: Calculator,
-    category: "Tax & Compliance",
-    isBlurred: true
-  },
-  {
-    id: "vehicle-finance",
-    title: "Vehicle Finance Calculator",
-    description: "Calculate vehicle loan payments and affordability",
-    icon: Car,
-    category: "Loans & Finance", 
+    id: "break-even",
+    title: "Break-Even Calculator",
+    description: "Determine the break-even point for your business",
+    icon: BarChart3,
+    category: "Essential Calculators",
     isBlurred: true
   }
 ]
@@ -68,8 +60,8 @@ export function BizBuilderToolsPreviewPage() {
               <Calculator className="h-4 w-4 text-orange-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">8+</div>
-              <p className="text-xs text-muted-foreground">Calculators available</p>
+              <div className="text-2xl font-bold">3</div>
+              <p className="text-xs text-muted-foreground">Essential calculators</p>
             </CardContent>
           </Card>
 
@@ -79,8 +71,8 @@ export function BizBuilderToolsPreviewPage() {
               <BarChart3 className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">4</div>
-              <p className="text-xs text-muted-foreground">Tool categories</p>
+              <div className="text-2xl font-bold text-green-600">Tiered</div>
+              <p className="text-xs text-muted-foreground">Access levels</p>
             </CardContent>
           </Card>
 
@@ -183,39 +175,23 @@ export function BizBuilderToolsPreviewPage() {
           </div>
         </div>
 
-        {/* Full Tool Categories */}
+        {/* Access Tiers */}
         <div className="mt-12">
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">All Tool Categories</h2>
-          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">Calculator Access</h2>
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
             <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
-              <DollarSign className="w-12 h-12 text-green-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Financial Planning</h3>
+              <DollarSign className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Free Tier</h3>
               <p className="text-sm text-slate-600 dark:text-slate-300">
-                Business budget and cash flow tools
+                Limited calculations per month with basic export functionality
               </p>
             </div>
             
             <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
-              <Calculator className="w-12 h-12 text-purple-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Tax & Compliance</h3>
+              <Target className="w-12 h-12 text-orange-600 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Paid Subscription</h3>
               <p className="text-sm text-slate-600 dark:text-slate-300">
-                Tax estimation and compliance tools
-              </p>
-            </div>
-            
-            <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
-              <Car className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Loans & Finance</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-300">
-                Vehicle and home loan calculators
-              </p>
-            </div>
-
-            <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
-              <Activity className="w-12 h-12 text-red-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Business Analysis</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-300">
-                Break-even, pricing, and health check tools
+                Unlimited calculations with advanced export and saving features
               </p>
             </div>
           </div>
