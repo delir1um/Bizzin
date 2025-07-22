@@ -184,10 +184,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
           <div className="mt-8 pt-8 border-t border-slate-800 text-center">
             <p className="text-slate-400 text-sm">
-              &copy; {new Date().getFullYear()} Bizzin. All rights reserved.
-            </p>
-            <p className="text-slate-400 text-sm mt-2">
-              Developed with 🧡 by{" "}
+              &copy; {new Date().getFullYear()} Bizzin. All rights reserved. | Developed by{" "}
               <a 
                 href="https://www.cloudfusion.co.za" 
                 target="_blank" 
