@@ -9,6 +9,7 @@ import { GoalsPage } from "@/pages/GoalsPage";
 import { TrainingPage } from "@/pages/TrainingPage";
 import { DocSafePage } from "@/pages/DocSafePage";
 import NotFound from "@/pages/not-found";
+import AuthPage from "@/pages/AuthPage"
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
       <TooltipProvider>
         <BrowserRouter>
           <Routes>
+            <Route path="/auth" element={<AuthPage />} />
             <Route path="/" element={<Layout />}>
               <Route index element={<HomePage />} />
               <Route path="journal" element={<JournalPage />} />
