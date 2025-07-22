@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast"
 import { Target, Plus, TrendingUp, CheckCircle, Clock, AlertCircle, Filter } from "lucide-react"
 import { GoalCard } from "@/components/goals/GoalCard"
@@ -25,7 +26,9 @@ export function GoalsPage() {
   const [priorityFilter, setPriorityFilter] = useState<FilterPriority>('all')
   const [addGoalModalOpen, setAddGoalModalOpen] = useState(false)
   const [editGoalModalOpen, setEditGoalModalOpen] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null)
+  const [goalToDelete, setGoalToDelete] = useState<Goal | null>(null)
 
   // Fetch goals data
   const {
@@ -111,9 +114,15 @@ export function GoalsPage() {
   })
 
   const handleDeleteGoal = (goal: Goal) => {
-    const confirmed = window.confirm("Are you sure you want to delete this goal?")
-    if (confirmed) {
-      deleteGoalMutation.mutate(goal.id)
+    setGoalToDelete(goal)
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmDeleteGoal = () => {
+    if (goalToDelete) {
+      deleteGoalMutation.mutate(goalToDelete.id)
+      setDeleteDialogOpen(false)
+      setGoalToDelete(null)
     }
   }
 
@@ -377,6 +386,28 @@ export function GoalsPage() {
         onOpenChange={setEditGoalModalOpen}
         goal={selectedGoal}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Goal</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{goalToDelete?.title}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteGoal}
+              className="bg-red-600 hover:bg-red-700 text-white"
+              disabled={deleteGoalMutation.isPending}
+            >
+              {deleteGoalMutation.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
