@@ -218,7 +218,14 @@ export class DocumentService {
 
     } catch (err: any) {
       console.error('Error getting storage stats:', err)
-      throw err
+      // Return default values instead of throwing to prevent UI errors
+      return {
+        total_documents: 0,
+        total_folders: 0,
+        shared_documents: 0,
+        storage_used: 0,
+        storage_limit: 1024 * 1024 * 1024 // 1GB limit
+      }
     }
   }
 

@@ -34,6 +34,8 @@ export function DocSafePage() {
     queryKey: ['storage-stats', user?.id],
     queryFn: () => user ? DocumentService.getStorageStats(user.id) : null,
     enabled: !!user,
+    refetchOnWindowFocus: false,
+    staleTime: 30000, // 30 seconds
   })
 
   // Fetch documents
@@ -41,6 +43,8 @@ export function DocSafePage() {
     queryKey: ['documents', user?.id],
     queryFn: () => user ? DocumentService.getUserDocuments(user.id) : [],
     enabled: !!user,
+    refetchOnWindowFocus: false,
+    staleTime: 10000, // 10 seconds
   })
 
   // Filter documents by category if selected
@@ -193,6 +197,16 @@ export function DocSafePage() {
                   {stats ? DocumentService.formatFileSize(stats.storage_used) : '0 B'}
                 </p>
                 <p className="text-sm text-slate-600 dark:text-slate-400">Storage Used</p>
+                {stats && stats.storage_used > 0 && (
+                  <div className="mt-2 w-32 bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
+                    <div 
+                      className="bg-orange-600 h-1.5 rounded-full" 
+                      style={{ 
+                        width: `${Math.min((stats.storage_used / stats.storage_limit) * 100, 100)}%` 
+                      }}
+                    ></div>
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>
@@ -225,10 +239,10 @@ export function DocSafePage() {
       <div className="mb-8">
         <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">Browse by Category</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {['Business Plans', 'Legal Documents', 'Financial Reports', 'Contracts'].map((category, index) => {
-            const categoryCount = documents.filter(doc => doc.category === category).length
-            const colors = ['blue', 'green', 'purple', 'orange']
-            const color = colors[index]
+          {['Business Plans', 'Legal Documents', 'Financial Reports', 'Contracts', 'Presentations', 'Marketing Materials'].map((category, index) => {
+            const categoryCount = allDocuments.filter(doc => doc.category === category).length
+            const colors = ['blue', 'green', 'purple', 'orange', 'indigo', 'pink']
+            const color = colors[index % colors.length]
             
             return (
               <Card 
@@ -238,13 +252,13 @@ export function DocSafePage() {
                 }`}
                 onClick={() => setSelectedCategory(selectedCategory === category ? '' : category)}
               >
-                <CardContent className="p-6 text-center">
-                  <div className={`w-12 h-12 bg-${color}-100 dark:bg-${color}-900 rounded-lg flex items-center justify-center mx-auto mb-3`}>
-                    <FileText className={`w-6 h-6 text-${color}-600 dark:text-${color}-400`} />
+                <CardContent className="p-4 text-center">
+                  <div className={`w-10 h-10 bg-${color}-100 dark:bg-${color}-900 rounded-lg flex items-center justify-center mx-auto mb-2`}>
+                    <FileText className={`w-5 h-5 text-${color}-600 dark:text-${color}-400`} />
                   </div>
-                  <h3 className="font-semibold text-slate-900 dark:text-white">{category}</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                    {categoryCount} document{categoryCount !== 1 ? 's' : ''}
+                  <h3 className="font-medium text-slate-900 dark:text-white text-sm">{category}</h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                    {categoryCount} doc{categoryCount !== 1 ? 's' : ''}
                   </p>
                 </CardContent>
               </Card>
@@ -318,7 +332,7 @@ export function DocSafePage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
-                        <FileText className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                        <span className="text-lg">{doc.file_type.includes('pdf') ? '📄' : doc.file_type.includes('word') ? '📝' : doc.file_type.includes('excel') ? '📊' : doc.file_type.includes('image') ? '🖼️' : '📁'}</span>
                       </div>
                       <div className="flex-1">
                         <h3 className="font-semibold text-slate-900 dark:text-white">{doc.name}</h3>
