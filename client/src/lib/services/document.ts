@@ -290,4 +290,34 @@ export class DocumentService {
     if (fileType.includes('image')) return 'img'
     return 'file'
   }
+
+  // Update document metadata
+  static async updateDocument(documentId: string, updates: {
+    name?: string
+    category?: string
+    description?: string
+    tags?: string[]
+  }): Promise<Document> {
+    try {
+      const { data, error } = await supabase
+        .from('documents')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', documentId)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error updating document:', error)
+        throw new Error(`Failed to update document: ${error.message}`)
+      }
+
+      return data
+    } catch (err: any) {
+      console.error('Error in updateDocument:', err)
+      throw err
+    }
+  }
 }

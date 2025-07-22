@@ -5,20 +5,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-import { Upload, FileText, Download, Share2, Lock, Folder, Search, Filter, Trash2, Eye } from "lucide-react"
+import { Upload, FileText, Download, Share2, Lock, Folder, Search, Filter, Trash2, Eye, Edit } from "lucide-react"
 import { DocumentService } from "@/lib/services/document"
 import { supabase } from "@/lib/supabase"
 import type { Document } from "@/types/document"
 import { useToast } from "@/hooks/use-toast"
 import { UploadModal } from "@/components/docsafe/UploadModal"
+import { EditDocumentModal } from "@/components/docsafe/EditDocumentModal"
 import { format } from "date-fns"
 
 export function DocSafePage() {
   const [user, setUser] = useState<any>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [showUploadModal, setShowUploadModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string>("")
   const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null)
+  const [documentToEdit, setDocumentToEdit] = useState<Document | null>(null)
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
@@ -98,6 +101,16 @@ export function DocSafePage() {
 
   const handleDeleteDocument = (doc: Document) => {
     setDocumentToDelete(doc)
+  }
+
+  const handleEditDocument = (doc: Document) => {
+    setDocumentToEdit(doc)
+    setShowEditModal(true)
+  }
+
+  const closeEditModal = () => {
+    setShowEditModal(false)
+    setDocumentToEdit(null)
   }
 
   const confirmDelete = () => {
@@ -344,6 +357,14 @@ export function DocSafePage() {
                       <Button 
                         variant="ghost" 
                         size="sm"
+                        onClick={() => handleEditDocument(doc)}
+                        className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
                         onClick={() => handleDownload(doc)}
                         disabled={downloadMutation.isPending}
                       >
@@ -393,6 +414,13 @@ export function DocSafePage() {
       <UploadModal 
         isOpen={showUploadModal} 
         onClose={() => setShowUploadModal(false)} 
+      />
+
+      {/* Edit Document Modal */}
+      <EditDocumentModal 
+        isOpen={showEditModal}
+        onClose={closeEditModal}
+        document={documentToEdit}
       />
     </div>
   )
