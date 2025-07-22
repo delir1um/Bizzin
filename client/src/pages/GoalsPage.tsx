@@ -1,10 +1,11 @@
 import { useState } from "react"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useToast } from "@/hooks/use-toast"
 import { Target, Plus, TrendingUp, CheckCircle, Clock, AlertCircle, Filter } from "lucide-react"
 import { GoalCard } from "@/components/goals/GoalCard"
 import { AddGoalModal } from "@/components/goals/AddGoalModal"
@@ -17,6 +18,8 @@ type FilterStatus = 'all' | 'active' | 'completed' | 'at_risk'
 
 export function GoalsPage() {
   const { user } = useAuth()
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all')
   const [addGoalModalOpen, setAddGoalModalOpen] = useState(false)
   const [editGoalModalOpen, setEditGoalModalOpen] = useState(false)
@@ -61,6 +64,35 @@ export function GoalsPage() {
   const handleEditGoal = (goal: Goal) => {
     setSelectedGoal(goal)
     setEditGoalModalOpen(true)
+  }
+
+  // Delete goal mutation
+  const deleteGoalMutation = useMutation({
+    mutationFn: (goalId: string) => GoalsService.deleteGoal(goalId),
+    onSuccess: () => {
+      // Invalidate and refetch goals
+      queryClient.invalidateQueries({ queryKey: ['goals', user?.id] })
+      
+      // Show success message
+      toast({
+        title: "Goal deleted successfully",
+        description: "The goal has been removed from your list.",
+      })
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to delete goal",
+        description: error.message || "Please try again later.",
+        variant: "destructive",
+      })
+    },
+  })
+
+  const handleDeleteGoal = (goal: Goal) => {
+    const confirmed = window.confirm("Are you sure you want to delete this goal?")
+    if (confirmed) {
+      deleteGoalMutation.mutate(goal.id)
+    }
   }
 
   if (!user) {
@@ -277,7 +309,7 @@ export function GoalsPage() {
       ) : (
         <div className="space-y-6">
           {filteredGoals.map((goal: Goal) => (
-            <GoalCard key={goal.id} goal={goal} onEdit={handleEditGoal} />
+            <GoalCard key={goal.id} goal={goal} onEdit={handleEditGoal} onDelete={handleDeleteGoal} />
           ))}
         </div>
       )}

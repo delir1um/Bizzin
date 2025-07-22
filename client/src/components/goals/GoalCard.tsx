@@ -2,13 +2,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Calendar, TrendingUp, Clock, CheckCircle, AlertTriangle, Play, Edit3 } from "lucide-react"
+import { Calendar, TrendingUp, Clock, CheckCircle, AlertTriangle, Play, Edit3, Trash2 } from "lucide-react"
 import { Goal } from "@/types/goals"
 import { format, differenceInDays, isAfter } from "date-fns"
 
 type GoalCardProps = {
   goal: Goal
   onEdit?: (goal: Goal) => void
+  onDelete?: (goal: Goal) => void
 }
 
 const statusConfig = {
@@ -50,7 +51,7 @@ const priorityColors = {
   high: "border-l-red-500"
 }
 
-export function GoalCard({ goal, onEdit }: GoalCardProps) {
+export function GoalCard({ goal, onEdit, onDelete }: GoalCardProps) {
   const statusInfo = statusConfig[goal.status]
   const StatusIcon = statusInfo.icon
   const deadline = new Date(goal.deadline)
@@ -127,6 +128,16 @@ export function GoalCard({ goal, onEdit }: GoalCardProps) {
                   className="h-8 w-8 p-0"
                 >
                   <Edit3 className="h-4 w-4" />
+                </Button>
+              )}
+              {onDelete && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onDelete(goal)}
+                  className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950 dark:hover:text-red-400"
+                >
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               )}
               <Badge variant={statusInfo.variant} className={statusInfo.className}>
