@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Upload, FileText, Download, Share2, Lock, Folder, Search, Filter, Trash2, Eye } from "lucide-react"
 import { DocumentService } from "@/lib/services/document"
 import { supabase } from "@/lib/supabase"
@@ -17,6 +18,7 @@ export function DocSafePage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string>("")
+  const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null)
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
@@ -65,6 +67,7 @@ export function DocSafePage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents'] })
       queryClient.invalidateQueries({ queryKey: ['storage-stats'] })
+      setDocumentToDelete(null)
       toast({
         title: "Document deleted",
         description: "Document has been successfully deleted.",
@@ -93,9 +96,13 @@ export function DocSafePage() {
 
   const displayDocs = searchTerm ? searchResults : documents
 
-  const handleDeleteDocument = (docId: string) => {
-    if (confirm("Are you sure you want to delete this document? This action cannot be undone.")) {
-      deleteDocMutation.mutate(docId)
+  const handleDeleteDocument = (doc: Document) => {
+    setDocumentToDelete(doc)
+  }
+
+  const confirmDelete = () => {
+    if (documentToDelete) {
+      deleteDocMutation.mutate(documentToDelete.id)
     }
   }
 
@@ -345,7 +352,7 @@ export function DocSafePage() {
                       <Button 
                         variant="ghost" 
                         size="sm"
-                        onClick={() => handleDeleteDocument(doc.id)}
+                        onClick={() => handleDeleteDocument(doc)}
                         disabled={deleteDocMutation.isPending}
                         className="text-red-600 hover:text-red-700 hover:bg-red-50"
                       >
@@ -359,6 +366,28 @@ export function DocSafePage() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!documentToDelete} onOpenChange={(open) => !open && setDocumentToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Document</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{documentToDelete?.name}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteDocMutation.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              disabled={deleteDocMutation.isPending}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {deleteDocMutation.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Upload Modal */}
       <UploadModal 
