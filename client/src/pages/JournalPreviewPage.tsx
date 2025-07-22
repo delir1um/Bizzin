@@ -55,7 +55,7 @@ export function JournalPreviewPage() {
               <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Business Journal</h1>
             </div>
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Document your entrepreneurial journey, capture insights, and track your business growth
+              Document your entrepreneurial journey with your own personal business journal
             </p>
           </div>
         </div>
@@ -102,7 +102,7 @@ export function JournalPreviewPage() {
         <div className="text-center mb-8">
           <div className="bg-gradient-to-r from-purple-600 to-blue-500 text-white p-6 rounded-lg mb-6">
             <h2 className="text-2xl font-bold mb-2">Start Your Business Journal</h2>
-            <p className="text-purple-100 mb-4">Capture insights, track progress, and accelerate your growth</p>
+            <p className="text-purple-100 mb-4">Write your own entries, capture insights, and track your business journey</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button 
                 onClick={() => setLocation('/auth')}
@@ -123,14 +123,20 @@ export function JournalPreviewPage() {
         {/* Journal Entries Preview */}
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Recent Entries</h2>
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Example Journal Layout</h2>
             <Button 
               onClick={() => setLocation('/auth')}
               className="bg-purple-600 hover:bg-purple-700"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Write New Entry
+              Start Your Journal
             </Button>
+          </div>
+          
+          <div className="mb-4 p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+            <p className="text-sm text-purple-700 dark:text-purple-300">
+              <strong>Note:</strong> These are example entries to show the journal layout. Your actual journal will contain your own personal business thoughts and insights.
+            </p>
           </div>
 
           <div className="space-y-4">
@@ -142,16 +148,16 @@ export function JournalPreviewPage() {
                 {entry.isBlurred && (
                   <div className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10 flex items-center justify-center">
                     <div className="text-center">
-                      <Lock className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                      <PenTool className="w-8 h-8 text-slate-400 mx-auto mb-2" />
                       <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                        Sign up to read full entries
+                        Sign up to start journaling
                       </p>
                       <Button 
                         size="sm" 
                         className="mt-2 bg-purple-600 hover:bg-purple-700"
                         onClick={() => setLocation('/auth')}
                       >
-                        Unlock Now
+                        Start Writing
                       </Button>
                     </div>
                   </div>
