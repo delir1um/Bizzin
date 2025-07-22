@@ -7,11 +7,15 @@ import { Badge } from "@/components/ui/badge"
 import { useLocation } from "wouter"
 import { useAuth } from "@/hooks/AuthProvider"
 import { useQuery } from "@tanstack/react-query"
-import { CalendarDays, Notebook, File, PlayCircle, Target, TrendingUp, Clock, AlertTriangle, Plus, ArrowRight } from "lucide-react"
+import { CalendarDays, Notebook, File, PlayCircle, Target, TrendingUp, Clock, AlertTriangle, Plus, ArrowRight, BarChart3, PieChart } from "lucide-react"
 import { GoalsService } from "@/lib/services/goals"
 import { Goal } from "@/types/goals"
 import { format, isAfter, differenceInDays } from "date-fns"
 import { ConfettiCelebration, CelebrationToast } from "@/components/ConfettiCelebration"
+import { ProgressDonutChart } from "@/components/dashboard/ProgressDonutChart"
+import { CategoryChart } from "@/components/dashboard/CategoryChart"
+import { PriorityProgressBars } from "@/components/dashboard/PriorityProgressBars"
+import { DeadlineTimeline } from "@/components/dashboard/DeadlineTimeline"
 
 export function DashboardPage() {
   const { user } = useAuth()
@@ -62,12 +66,14 @@ export function DashboardPage() {
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
         {/* Goals Stats - Real Data */}
         <Card 
-          className="cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.02]" 
+          className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800" 
           onClick={() => navigate("/goals")}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Goals</CardTitle>
-            <Target className="h-4 w-4 text-blue-600" />
+            <CardTitle className="text-sm font-medium text-blue-900 dark:text-blue-100">Total Goals</CardTitle>
+            <div className="p-2 bg-blue-500 rounded-lg">
+              <Target className="h-4 w-4 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
             {goalsLoading ? (
@@ -77,8 +83,8 @@ export function DashboardPage() {
               </>
             ) : (
               <>
-                <div className="text-2xl font-bold">{stats.total}</div>
-                <p className="text-xs text-muted-foreground">
+                <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">{stats.total}</div>
+                <p className="text-xs text-blue-700 dark:text-blue-300">
                   {stats.inProgress} in progress
                 </p>
               </>
@@ -86,14 +92,32 @@ export function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Goal Completion Rate */}
+        {/* Goal Completion Rate with color coding */}
         <Card 
-          className="cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.02]" 
+          className={`cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] ${
+            stats.successRate >= 70 
+              ? 'bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800'
+              : stats.successRate >= 40 
+                ? 'bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900 border-amber-200 dark:border-amber-800'
+                : 'bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900 border-red-200 dark:border-red-800'
+          }`}
           onClick={() => navigate("/goals")}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-600" />
+            <CardTitle className={`text-sm font-medium ${
+              stats.successRate >= 70 ? 'text-green-900 dark:text-green-100' 
+              : stats.successRate >= 40 ? 'text-amber-900 dark:text-amber-100' 
+              : 'text-red-900 dark:text-red-100'
+            }`}>
+              Success Rate
+            </CardTitle>
+            <div className={`p-2 rounded-lg ${
+              stats.successRate >= 70 ? 'bg-green-500' 
+              : stats.successRate >= 40 ? 'bg-amber-500' 
+              : 'bg-red-500'
+            }`}>
+              <TrendingUp className="h-4 w-4 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
             {goalsLoading ? (
@@ -103,10 +127,26 @@ export function DashboardPage() {
               </>
             ) : (
               <>
-                <div className="text-2xl font-bold">{stats.successRate}%</div>
-                <p className="text-xs text-muted-foreground">
+                <div className={`text-2xl font-bold ${
+                  stats.successRate >= 70 ? 'text-green-900 dark:text-green-100' 
+                  : stats.successRate >= 40 ? 'text-amber-900 dark:text-amber-100' 
+                  : 'text-red-900 dark:text-red-100'
+                }`}>
+                  {stats.successRate}%
+                </div>
+                <p className={`text-xs ${
+                  stats.successRate >= 70 ? 'text-green-700 dark:text-green-300' 
+                  : stats.successRate >= 40 ? 'text-amber-700 dark:text-amber-300' 
+                  : 'text-red-700 dark:text-red-300'
+                }`}>
                   {stats.completed} completed goals
                 </p>
+                <div className="mt-2">
+                  <Progress 
+                    value={stats.successRate} 
+                    className="h-2"
+                  />
+                </div>
               </>
             )}
           </CardContent>
@@ -114,27 +154,39 @@ export function DashboardPage() {
 
         {/* Journal - Placeholder for now */}
         <Card 
-          className="cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.02] opacity-75" 
+          className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 border-purple-200 dark:border-purple-800 opacity-75" 
           onClick={() => navigate("/journal")}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Journal</CardTitle>
-            <Notebook className="h-4 w-4 text-purple-600" />
+            <CardTitle className="text-sm font-medium text-purple-900 dark:text-purple-100">Journal</CardTitle>
+            <div className="p-2 bg-purple-500 rounded-lg">
+              <Notebook className="h-4 w-4 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">-</div>
-            <p className="text-xs text-muted-foreground">Coming soon</p>
+            <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">-</div>
+            <p className="text-xs text-purple-700 dark:text-purple-300">Coming soon</p>
           </CardContent>
         </Card>
 
         {/* Upcoming Deadlines */}
         <Card 
-          className="cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.02]" 
+          className={`cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] ${
+            overdueGoals.length > 0 
+              ? 'bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900 border-red-200 dark:border-red-800'
+              : 'bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800'
+          }`}
           onClick={() => navigate("/goals")}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Deadlines</CardTitle>
-            <Clock className="h-4 w-4 text-orange-600" />
+            <CardTitle className={`text-sm font-medium ${
+              overdueGoals.length > 0 ? 'text-red-900 dark:text-red-100' : 'text-orange-900 dark:text-orange-100'
+            }`}>
+              Deadlines
+            </CardTitle>
+            <div className={`p-2 rounded-lg ${overdueGoals.length > 0 ? 'bg-red-500' : 'bg-orange-500'}`}>
+              <Clock className="h-4 w-4 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
             {goalsLoading ? (
@@ -144,11 +196,82 @@ export function DashboardPage() {
               </>
             ) : (
               <>
-                <div className="text-2xl font-bold">{upcomingDeadlines.length}</div>
-                <p className="text-xs text-muted-foreground">
+                <div className={`text-2xl font-bold ${
+                  overdueGoals.length > 0 ? 'text-red-900 dark:text-red-100' : 'text-orange-900 dark:text-orange-100'
+                }`}>
+                  {upcomingDeadlines.length}
+                </div>
+                <p className={`text-xs ${
+                  overdueGoals.length > 0 ? 'text-red-700 dark:text-red-300' : 'text-orange-700 dark:text-orange-300'
+                }`}>
                   {overdueGoals.length > 0 ? `${overdueGoals.length} overdue` : 'On track'}
                 </p>
               </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Charts Section */}
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
+        {/* Progress Donut Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <PieChart className="h-5 w-5 text-blue-600" />
+              Goal Progress
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {goalsLoading ? (
+              <div className="flex items-center justify-center h-48">
+                <Skeleton className="w-32 h-32 rounded-full" />
+              </div>
+            ) : (
+              <ProgressDonutChart goals={goals} />
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Category Distribution */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-purple-600" />
+              Categories
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {goalsLoading ? (
+              <div className="flex items-center justify-center h-48">
+                <Skeleton className="w-32 h-32 rounded-full" />
+              </div>
+            ) : (
+              <CategoryChart goals={goals} />
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Priority Progress */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Target className="h-5 w-5 text-orange-600" />
+              Priority Progress
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {goalsLoading ? (
+              <div className="space-y-3">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="space-y-2">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-3 w-full" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <PriorityProgressBars goals={goals} />
             )}
           </CardContent>
         </Card>
@@ -221,59 +344,33 @@ export function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Upcoming Deadlines & Quick Actions */}
+        {/* Upcoming Deadlines with Timeline */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Upcoming Deadlines</CardTitle>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Clock className="h-5 w-5 text-orange-600" />
+              Upcoming Deadlines
+            </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent>
             {goalsLoading ? (
-              <>
+              <div className="space-y-4">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="flex items-center justify-between">
+                  <div key={i} className="flex items-center gap-4">
+                    <Skeleton className="w-3 h-3 rounded-full" />
                     <div className="space-y-2 flex-1">
                       <Skeleton className="h-4 w-3/4" />
                       <Skeleton className="h-3 w-1/2" />
+                      <Skeleton className="h-1.5 w-full rounded-full" />
                     </div>
-                    <Skeleton className="h-6 w-16" />
                   </div>
                 ))}
-              </>
-            ) : upcomingDeadlines.length > 0 ? (
-              upcomingDeadlines.map((goal) => {
-                const daysUntilDeadline = differenceInDays(new Date(goal.deadline), new Date())
-                const isOverdue = daysUntilDeadline < 0
-                const isUrgent = daysUntilDeadline <= 3 && daysUntilDeadline >= 0
-                
-                return (
-                  <div 
-                    key={goal.id}
-                    className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                    onClick={() => navigate("/goals")}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{goal.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Due {format(new Date(goal.deadline), 'MMM d, yyyy')}
-                      </p>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      {isOverdue && <AlertTriangle className="w-4 h-4 text-red-500" />}
-                      <Badge variant={isOverdue ? 'destructive' : isUrgent ? 'default' : 'secondary'}>
-                        {isOverdue ? `${Math.abs(daysUntilDeadline)}d overdue` :
-                         daysUntilDeadline === 0 ? 'Today' :
-                         daysUntilDeadline === 1 ? 'Tomorrow' :
-                         `${daysUntilDeadline}d left`}
-                      </Badge>
-                    </div>
-                  </div>
-                )
-              })
-            ) : (
-              <div className="text-center py-4">
-                <Clock className="w-6 h-6 text-muted-foreground mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">No upcoming deadlines</p>
               </div>
+            ) : (
+              <DeadlineTimeline 
+                goals={goals} 
+                onGoalClick={() => navigate("/goals")}
+              />
             )}
 
             {/* Quick Actions */}
