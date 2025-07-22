@@ -16,6 +16,7 @@ import { ProgressDonutChart } from "@/components/dashboard/ProgressDonutChart"
 import { CategoryChart } from "@/components/dashboard/CategoryChart"
 import { PriorityProgressBars } from "@/components/dashboard/PriorityProgressBars"
 import { DeadlineTimeline } from "@/components/dashboard/DeadlineTimeline"
+import { InspirationalQuotes } from "@/lib/inspirationalQuotes"
 
 export function DashboardPage() {
   const { user } = useAuth()
