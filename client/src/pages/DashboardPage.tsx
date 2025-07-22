@@ -57,25 +57,31 @@ export function DashboardPage() {
   return (
     <div className="space-y-6 p-6">
       {/* Welcome Section */}
-      <div>
-        <h1 className="text-3xl font-bold">Welcome back, {user?.email?.split('@')[0] ?? "Entrepreneur"}!</h1>
-        <p className="text-muted-foreground mt-1">Plan. Track. Grow.</p>
+      <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 rounded-xl p-6 border border-orange-200/50 dark:border-orange-800/50">
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+          Welcome back, <span className="text-orange-600">{user?.email?.split('@')[0] ?? "Entrepreneur"}</span>!
+        </h1>
+        <p className="text-slate-600 dark:text-slate-300 mt-2 text-lg">Plan. Track. Grow.</p>
+        <div className="mt-4 flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
+          <span>Today: {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+        </div>
       </div>
 
       {/* Quick Stats */}
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
-        {/* Goals Stats - Real Data */}
+        {/* Goals Stats - Enhanced */}
         <Card 
-          className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800" 
+          className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800 relative overflow-hidden group" 
           onClick={() => navigate("/goals")}
         >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
             <CardTitle className="text-sm font-medium text-orange-900 dark:text-orange-100">Total Goals</CardTitle>
-            <div className="p-2 bg-orange-500 rounded-lg">
+            <div className="p-2 bg-orange-500 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-300">
               <Target className="h-4 w-4 text-white" />
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="relative z-10">
             {goalsLoading ? (
               <>
                 <Skeleton className="h-8 w-12 mb-1" />
@@ -83,68 +89,14 @@ export function DashboardPage() {
               </>
             ) : (
               <>
-                <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">{stats.total}</div>
-                <p className="text-xs text-orange-700 dark:text-orange-300">
+                <div className="text-3xl font-bold text-orange-900 dark:text-orange-100 mb-1">{stats.total}</div>
+                <p className="text-xs text-orange-700 dark:text-orange-300 font-medium">
                   {stats.inProgress} in progress
                 </p>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Goal Completion Rate with color coding */}
-        <Card 
-          className={`cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] ${
-            stats.successRate >= 70 
-              ? 'bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800'
-              : stats.successRate >= 40 
-                ? 'bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900 border-amber-200 dark:border-amber-800'
-                : 'bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900 border-red-200 dark:border-red-800'
-          }`}
-          onClick={() => navigate("/goals")}
-        >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className={`text-sm font-medium ${
-              stats.successRate >= 70 ? 'text-green-900 dark:text-green-100' 
-              : stats.successRate >= 40 ? 'text-amber-900 dark:text-amber-100' 
-              : 'text-red-900 dark:text-red-100'
-            }`}>
-              Success Rate
-            </CardTitle>
-            <div className={`p-2 rounded-lg ${
-              stats.successRate >= 70 ? 'bg-green-500' 
-              : stats.successRate >= 40 ? 'bg-amber-500' 
-              : 'bg-red-500'
-            }`}>
-              <TrendingUp className="h-4 w-4 text-white" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            {goalsLoading ? (
-              <>
-                <Skeleton className="h-8 w-16 mb-1" />
-                <Skeleton className="h-4 w-24" />
-              </>
-            ) : (
-              <>
-                <div className={`text-2xl font-bold ${
-                  stats.successRate >= 70 ? 'text-green-900 dark:text-green-100' 
-                  : stats.successRate >= 40 ? 'text-amber-900 dark:text-amber-100' 
-                  : 'text-red-900 dark:text-red-100'
-                }`}>
-                  {stats.successRate}%
-                </div>
-                <p className={`text-xs ${
-                  stats.successRate >= 70 ? 'text-green-700 dark:text-green-300' 
-                  : stats.successRate >= 40 ? 'text-amber-700 dark:text-amber-300' 
-                  : 'text-red-700 dark:text-red-300'
-                }`}>
-                  {stats.completed} completed goals
-                </p>
-                <div className="mt-2">
-                  <Progress 
-                    value={stats.successRate} 
-                    className="h-2"
+                <div className="mt-2 w-full bg-orange-200 dark:bg-orange-800 rounded-full h-1">
+                  <div 
+                    className="bg-orange-500 h-1 rounded-full transition-all duration-500" 
+                    style={{ width: `${stats.total > 0 ? (stats.inProgress / stats.total) * 100 : 0}%` }}
                   />
                 </div>
               </>
@@ -152,43 +104,129 @@ export function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Journal - Placeholder for now */}
+        {/* Goal Completion Rate Enhanced */}
         <Card 
-          className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 border-purple-200 dark:border-purple-800 opacity-75" 
-          onClick={() => navigate("/journal")}
-        >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-purple-900 dark:text-purple-100">Journal</CardTitle>
-            <div className="p-2 bg-purple-500 rounded-lg">
-              <Notebook className="h-4 w-4 text-white" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">-</div>
-            <p className="text-xs text-purple-700 dark:text-purple-300">Coming soon</p>
-          </CardContent>
-        </Card>
-
-        {/* Upcoming Deadlines */}
-        <Card 
-          className={`cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] ${
-            overdueGoals.length > 0 
-              ? 'bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900 border-red-200 dark:border-red-800'
-              : 'bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800'
+          className={`cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] relative overflow-hidden group ${
+            stats.successRate >= 70 
+              ? 'bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900 border-green-200 dark:border-green-800'
+              : stats.successRate >= 40 
+                ? 'bg-gradient-to-br from-amber-50 to-yellow-100 dark:from-amber-950 dark:to-yellow-900 border-amber-200 dark:border-amber-800'
+                : 'bg-gradient-to-br from-red-50 to-pink-100 dark:from-red-950 dark:to-pink-900 border-red-200 dark:border-red-800'
           }`}
           onClick={() => navigate("/goals")}
         >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
+            stats.successRate >= 70 ? 'bg-gradient-to-r from-green-500/10 to-transparent'
+            : stats.successRate >= 40 ? 'bg-gradient-to-r from-amber-500/10 to-transparent'
+            : 'bg-gradient-to-r from-red-500/10 to-transparent'
+          }`} />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
             <CardTitle className={`text-sm font-medium ${
-              overdueGoals.length > 0 ? 'text-red-900 dark:text-red-100' : 'text-orange-900 dark:text-orange-100'
+              stats.successRate >= 70 ? 'text-green-900 dark:text-green-100' 
+              : stats.successRate >= 40 ? 'text-amber-900 dark:text-amber-100' 
+              : 'text-red-900 dark:text-red-100'
+            }`}>
+              Success Rate
+            </CardTitle>
+            <div className={`p-2 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-300 ${
+              stats.successRate >= 70 ? 'bg-green-500' 
+              : stats.successRate >= 40 ? 'bg-amber-500' 
+              : 'bg-red-500'
+            }`}>
+              <TrendingUp className="h-4 w-4 text-white" />
+            </div>
+          </CardHeader>
+          <CardContent className="relative z-10">
+            {goalsLoading ? (
+              <>
+                <Skeleton className="h-8 w-16 mb-1" />
+                <Skeleton className="h-4 w-24" />
+              </>
+            ) : (
+              <>
+                <div className={`text-3xl font-bold mb-1 ${
+                  stats.successRate >= 70 ? 'text-green-900 dark:text-green-100' 
+                  : stats.successRate >= 40 ? 'text-amber-900 dark:text-amber-100' 
+                  : 'text-red-900 dark:text-red-100'
+                }`}>
+                  {stats.successRate}%
+                </div>
+                <p className={`text-xs font-medium ${
+                  stats.successRate >= 70 ? 'text-green-700 dark:text-green-300' 
+                  : stats.successRate >= 40 ? 'text-amber-700 dark:text-amber-300' 
+                  : 'text-red-700 dark:text-red-300'
+                }`}>
+                  {stats.completed} completed goals
+                </p>
+                <div className="mt-2 w-full bg-white/50 dark:bg-slate-800/50 rounded-full h-1">
+                  <div 
+                    className={`h-1 rounded-full transition-all duration-700 ${
+                      stats.successRate >= 70 ? 'bg-green-500' 
+                      : stats.successRate >= 40 ? 'bg-amber-500' 
+                      : 'bg-red-500'
+                    }`}
+                    style={{ width: `${stats.successRate}%` }}
+                  />
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Journal Entry Count */}
+        <Card 
+          className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-950 dark:to-indigo-900 border-purple-200 dark:border-purple-800 relative overflow-hidden group" 
+          onClick={() => navigate("/journal")}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+            <CardTitle className="text-sm font-medium text-purple-900 dark:text-purple-100">Journal</CardTitle>
+            <div className="p-2 bg-purple-500 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-300">
+              <Notebook className="h-4 w-4 text-white" />
+            </div>
+          </CardHeader>
+          <CardContent className="relative z-10">
+            <div className="text-3xl font-bold text-purple-900 dark:text-purple-100 mb-1">-</div>
+            <p className="text-xs text-purple-700 dark:text-purple-300 font-medium">Write your thoughts</p>
+            <div className="mt-2 text-xs text-purple-600 dark:text-purple-400">
+              Start journaling today
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Upcoming Deadlines Enhanced */}
+        <Card 
+          className={`cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] relative overflow-hidden group ${
+            overdueGoals.length > 0 
+              ? 'bg-gradient-to-br from-red-50 to-pink-100 dark:from-red-950 dark:to-pink-900 border-red-200 dark:border-red-800'
+              : upcomingDeadlines.length > 0
+                ? 'bg-gradient-to-br from-amber-50 to-orange-100 dark:from-amber-950 dark:to-orange-900 border-amber-200 dark:border-amber-800'
+                : 'bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900 border-green-200 dark:border-green-800'
+          }`}
+          onClick={() => navigate("/goals")}
+        >
+          <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
+            overdueGoals.length > 0 ? 'bg-gradient-to-r from-red-500/10 to-transparent'
+            : upcomingDeadlines.length > 0 ? 'bg-gradient-to-r from-amber-500/10 to-transparent'
+            : 'bg-gradient-to-r from-green-500/10 to-transparent'
+          }`} />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+            <CardTitle className={`text-sm font-medium ${
+              overdueGoals.length > 0 ? 'text-red-900 dark:text-red-100' 
+              : upcomingDeadlines.length > 0 ? 'text-amber-900 dark:text-amber-100'
+              : 'text-green-900 dark:text-green-100'
             }`}>
               Deadlines
             </CardTitle>
-            <div className={`p-2 rounded-lg ${overdueGoals.length > 0 ? 'bg-red-500' : 'bg-orange-500'}`}>
+            <div className={`p-2 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-300 ${
+              overdueGoals.length > 0 ? 'bg-red-500' 
+              : upcomingDeadlines.length > 0 ? 'bg-amber-500'
+              : 'bg-green-500'
+            }`}>
               <Clock className="h-4 w-4 text-white" />
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="relative z-10">
             {goalsLoading ? (
               <>
                 <Skeleton className="h-8 w-12 mb-1" />
@@ -196,16 +234,36 @@ export function DashboardPage() {
               </>
             ) : (
               <>
-                <div className={`text-2xl font-bold ${
-                  overdueGoals.length > 0 ? 'text-red-900 dark:text-red-100' : 'text-orange-900 dark:text-orange-100'
+                <div className={`text-3xl font-bold mb-1 ${
+                  overdueGoals.length > 0 ? 'text-red-900 dark:text-red-100' 
+                  : upcomingDeadlines.length > 0 ? 'text-amber-900 dark:text-amber-100'
+                  : 'text-green-900 dark:text-green-100'
                 }`}>
-                  {upcomingDeadlines.length}
+                  {overdueGoals.length > 0 ? overdueGoals.length : upcomingDeadlines.length}
                 </div>
-                <p className={`text-xs ${
-                  overdueGoals.length > 0 ? 'text-red-700 dark:text-red-300' : 'text-orange-700 dark:text-orange-300'
+                <p className={`text-xs font-medium ${
+                  overdueGoals.length > 0 ? 'text-red-700 dark:text-red-300' 
+                  : upcomingDeadlines.length > 0 ? 'text-amber-700 dark:text-amber-300'
+                  : 'text-green-700 dark:text-green-300'
                 }`}>
-                  {overdueGoals.length > 0 ? `${overdueGoals.length} overdue` : 'On track'}
+                  {overdueGoals.length > 0 ? `${overdueGoals.length} overdue` 
+                   : upcomingDeadlines.length > 0 ? 'upcoming' 
+                   : 'All on track'}
                 </p>
+                <div className="mt-2 w-full bg-white/50 dark:bg-slate-800/50 rounded-full h-1">
+                  <div 
+                    className={`h-1 rounded-full transition-all duration-500 ${
+                      overdueGoals.length > 0 ? 'bg-red-500' 
+                      : upcomingDeadlines.length > 0 ? 'bg-amber-500'
+                      : 'bg-green-500'
+                    }`}
+                    style={{ 
+                      width: overdueGoals.length > 0 ? '100%' 
+                            : upcomingDeadlines.length > 0 ? '60%'
+                            : '100%'
+                    }}
+                  />
+                </div>
               </>
             )}
           </CardContent>
@@ -279,15 +337,18 @@ export function DashboardPage() {
 
       {/* Recent Activity & Quick Actions */}
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-        {/* Recent Goals */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-lg">Recent Goals</CardTitle>
+        {/* Recent Goals Enhanced */}
+        <Card className="bg-gradient-to-br from-slate-50 to-white dark:from-slate-800 dark:to-slate-900 border-slate-200 dark:border-slate-700">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-4">
+            <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+              <Target className="w-5 h-5 text-orange-600" />
+              Recent Goals
+            </CardTitle>
             <Button 
               variant="ghost" 
               size="sm"
               onClick={() => navigate("/goals")}
-              className="text-blue-600 hover:text-blue-700"
+              className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-950 transition-colors"
             >
               View All <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
