@@ -93,6 +93,7 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
     onSuccess: () => {
       // Invalidate and refetch goals
       queryClient.invalidateQueries({ queryKey: ['goals', user?.id] })
+      queryClient.invalidateQueries({ queryKey: ['usage-status'] })
       
       // Show success message
       toast({
