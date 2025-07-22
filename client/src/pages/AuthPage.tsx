@@ -57,8 +57,8 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="flex items-center justify-center py-24 px-4">
-      <Card className="w-[400px]">
+    <div className="flex items-center justify-center min-h-[calc(100vh-200px)] px-4">
+      <Card className="w-full max-w-[400px]">
         <CardContent className="p-6 space-y-4">
           <h2 className="text-xl font-bold text-center">
             {mode === "signUp" ? "Create Account" : "Sign In to Bizzin"}
