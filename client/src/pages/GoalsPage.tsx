@@ -15,12 +15,14 @@ import { useAuth } from "@/hooks/AuthProvider"
 import { Goal } from "@/types/goals"
 
 type FilterStatus = 'all' | 'active' | 'completed' | 'at_risk'
+type FilterPriority = 'all' | 'high' | 'medium' | 'low'
 
 export function GoalsPage() {
   const { user } = useAuth()
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all')
+  const [priorityFilter, setPriorityFilter] = useState<FilterPriority>('all')
   const [addGoalModalOpen, setAddGoalModalOpen] = useState(false)
   const [editGoalModalOpen, setEditGoalModalOpen] = useState(false)
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null)
@@ -40,25 +42,45 @@ export function GoalsPage() {
   // Calculate statistics
   const stats = GoalsService.calculateStats(goals)
   
-  // Filter goals based on status
+  // Filter goals based on status and priority
   const filteredGoals = goals.filter((goal: Goal) => {
+    // Status filter
+    let statusMatches = true
     switch (statusFilter) {
       case 'active':
-        return ['in_progress', 'not_started'].includes(goal.status)
+        statusMatches = ['in_progress', 'not_started'].includes(goal.status)
+        break
       case 'completed':
-        return goal.status === 'completed'
+        statusMatches = goal.status === 'completed'
+        break
       case 'at_risk':
-        return goal.status === 'at_risk'
+        statusMatches = goal.status === 'at_risk'
+        break
       default:
-        return true
+        statusMatches = true
     }
+    
+    // Priority filter
+    let priorityMatches = true
+    if (priorityFilter !== 'all') {
+      priorityMatches = goal.priority === priorityFilter
+    }
+    
+    return statusMatches && priorityMatches
   })
 
-  const filterOptions = [
+  const statusFilterOptions = [
     { value: 'all' as const, label: 'All Goals', count: goals.length },
     { value: 'active' as const, label: 'Active', count: stats.inProgress + goals.filter((g: Goal) => g.status === 'not_started').length },
     { value: 'completed' as const, label: 'Completed', count: stats.completed },
     { value: 'at_risk' as const, label: 'At Risk', count: goals.filter((g: Goal) => g.status === 'at_risk').length },
+  ]
+
+  const priorityFilterOptions = [
+    { value: 'all' as const, label: 'All Priorities', count: goals.length },
+    { value: 'high' as const, label: 'High', count: goals.filter((g: Goal) => g.priority === 'high').length },
+    { value: 'medium' as const, label: 'Medium', count: goals.filter((g: Goal) => g.priority === 'medium').length },
+    { value: 'low' as const, label: 'Low', count: goals.filter((g: Goal) => g.priority === 'low').length },
   ]
 
   const handleEditGoal = (goal: Goal) => {
@@ -207,14 +229,15 @@ export function GoalsPage() {
       </div>
 
       {/* Filter Options */}
-      <div className="mb-6">
+      <div className="mb-6 space-y-4">
+        {/* Status Filter */}
         <div className="flex items-center space-x-4">
           <div className="flex items-center">
             <Filter className="w-4 h-4 mr-2 text-slate-600 dark:text-slate-400" />
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Filter:</span>
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Status:</span>
           </div>
           <div className="flex flex-wrap gap-2">
-            {filterOptions.map((option) => (
+            {statusFilterOptions.map((option) => (
               <Badge
                 key={option.value}
                 variant={statusFilter === option.value ? "default" : "secondary"}
@@ -224,6 +247,30 @@ export function GoalsPage() {
                     : "hover:bg-slate-200 dark:hover:bg-slate-700"
                 }`}
                 onClick={() => setStatusFilter(option.value)}
+              >
+                {option.label} ({option.count})
+              </Badge>
+            ))}
+          </div>
+        </div>
+
+        {/* Priority Filter */}
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center">
+            <div className="w-4 h-4 mr-2"></div>
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Priority:</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {priorityFilterOptions.map((option) => (
+              <Badge
+                key={option.value}
+                variant={priorityFilter === option.value ? "default" : "secondary"}
+                className={`cursor-pointer transition-colors ${
+                  priorityFilter === option.value
+                    ? "bg-orange-600 hover:bg-orange-700 text-white"
+                    : "hover:bg-slate-200 dark:hover:bg-slate-700"
+                }`}
+                onClick={() => setPriorityFilter(option.value)}
               >
                 {option.label} ({option.count})
               </Badge>
@@ -285,15 +332,15 @@ export function GoalsPage() {
             <CardContent className="p-8">
               <Target className="w-12 h-12 text-blue-600 dark:text-blue-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
-                {statusFilter === 'all' 
+                {statusFilter === 'all' && priorityFilter === 'all'
                   ? "No goals yet" 
-                  : `No ${statusFilter} goals`
+                  : `No ${statusFilter !== 'all' ? statusFilter + ' ' : ''}${priorityFilter !== 'all' ? priorityFilter + ' priority ' : ''}goals`
                 }
               </h3>
               <p className="text-slate-600 dark:text-slate-300 mb-6">
-                {statusFilter === 'all' 
+                {statusFilter === 'all' && priorityFilter === 'all'
                   ? "Define clear objectives and track your progress toward business success." 
-                  : `You don't have any ${statusFilter} goals at the moment.`
+                  : `You don't have any goals matching the selected filters at the moment.`
                 }
               </p>
               <Button 

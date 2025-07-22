@@ -18,9 +18,12 @@ export class GoalsService {
   }
 
   static async createGoal(goal: Omit<Goal, 'id' | 'created_at' | 'updated_at'>): Promise<Goal> {
+    // Remove fields that might not exist in database yet
+    const { reflection, ...goalData } = goal
+
     const { data, error } = await supabase
       .from('goals')
-      .insert([goal])
+      .insert([goalData])
       .select()
       .single()
 
@@ -34,7 +37,7 @@ export class GoalsService {
 
   static async updateGoal(goalId: string, updates: Partial<Goal>): Promise<Goal> {
     // Remove fields that shouldn't be updated or might cause errors
-    const { updated_at, created_at, id, ...updateData } = updates
+    const { updated_at, created_at, id, reflection, ...updateData } = updates
 
     const { data, error } = await supabase
       .from('goals')
