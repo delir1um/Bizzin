@@ -9,9 +9,14 @@ import { JournalPage } from "@/pages/JournalPage"
 import { GoalsPage } from "@/pages/GoalsPage"
 import { TrainingPage } from "@/pages/TrainingPage"
 import { DocSafePage } from "@/pages/DocSafePage"
+import { GoalsPreviewPage } from "@/pages/GoalsPreviewPage"
+import { JournalPreviewPage } from "@/pages/JournalPreviewPage"
+import { TrainingPreviewPage } from "@/pages/TrainingPreviewPage"
+import { DocSafePreviewPage } from "@/pages/DocSafePreviewPage"
 import AuthPage from "@/pages/AuthPage"
 import { AuthProvider, useAuth } from "@/hooks/AuthProvider"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
+import { PreviewOrProtected } from "@/components/PreviewOrProtected"
 import { queryClient } from "@/lib/queryClient"
 import { DashboardPage } from "@/pages/DashboardPage"
 import { useEffect } from "react"
@@ -59,10 +64,10 @@ function App() {
               <Layout>
                 <Route path="/" component={() => <MainRouter />} />
                 <Route path="/dashboard" component={() => <ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-                <Route path="/journal" component={() => <ProtectedRoute><JournalPage /></ProtectedRoute>} />
-                <Route path="/goals" component={() => <ProtectedRoute><GoalsPage /></ProtectedRoute>} />
-                <Route path="/training" component={() => <ProtectedRoute><TrainingPage /></ProtectedRoute>} />
-                <Route path="/docsafe" component={() => <ProtectedRoute><DocSafePage /></ProtectedRoute>} />
+                <Route path="/journal" component={() => <PreviewOrProtected protectedComponent={JournalPage} previewComponent={JournalPreviewPage} />} />
+                <Route path="/goals" component={() => <PreviewOrProtected protectedComponent={GoalsPage} previewComponent={GoalsPreviewPage} />} />
+                <Route path="/training" component={() => <PreviewOrProtected protectedComponent={TrainingPage} previewComponent={TrainingPreviewPage} />} />
+                <Route path="/docsafe" component={() => <PreviewOrProtected protectedComponent={DocSafePage} previewComponent={DocSafePreviewPage} />} />
               </Layout>
             </Router>
             <Toaster />
