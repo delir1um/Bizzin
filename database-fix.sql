@@ -4,9 +4,6 @@
 -- Drop the foreign key constraint that's causing the error
 ALTER TABLE public.goals DROP CONSTRAINT IF EXISTS goals_user_id_fkey;
 
--- Verify the table structure
-\d public.goals;
-
 -- Check if the goals table exists and show its constraints
 SELECT 
     tc.constraint_name, 
