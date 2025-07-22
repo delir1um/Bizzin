@@ -4,17 +4,27 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { PlusCircle, Search, Calendar, BookOpen, Edit, Trash2, Clock } from "lucide-react"
+import { PlusCircle, Search, Calendar, BookOpen, Edit, Trash2, Clock, Filter } from "lucide-react"
 import { JournalService } from "@/lib/services/journal"
 import { supabase } from "@/lib/supabase"
 import type { JournalEntry } from "@/types/journal"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
+import { CreateEntryModal } from "@/components/journal/CreateEntryModal"
+import { DateFilterModal } from "@/components/journal/DateFilterModal"
 
 export function JournalPage() {
   const [user, setUser] = useState<any>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showDateFilter, setShowDateFilter] = useState(false)
+  const [dateFilter, setDateFilter] = useState<{
+    startDate: string
+    endDate: string
+    label: string
+  } | null>(null)
+  const [currentPage, setCurrentPage] = useState(0)
+  const entriesPerPage = 10
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
@@ -41,6 +51,15 @@ export function JournalPage() {
     enabled: !!user && !!searchTerm,
   })
 
+  // Date filtered entries
+  const { data: dateFilteredEntries = [] } = useQuery({
+    queryKey: ['journal-date-filter', user?.id, dateFilter?.startDate, dateFilter?.endDate],
+    queryFn: () => user && dateFilter 
+      ? JournalService.getEntriesByDateRange(user.id, dateFilter.startDate, dateFilter.endDate)
+      : [],
+    enabled: !!user && !!dateFilter,
+  })
+
   // Delete entry mutation
   const deleteEntryMutation = useMutation({
     mutationFn: (entryId: string) => JournalService.deleteEntry(entryId),
@@ -60,11 +79,43 @@ export function JournalPage() {
     },
   })
 
-  const displayEntries = searchTerm ? searchResults : entries
+  // Determine which entries to display
+  const allEntries = searchTerm ? searchResults : (dateFilter ? dateFilteredEntries : entries)
+  
+  // Pagination
+  const totalPages = Math.ceil(allEntries.length / entriesPerPage)
+  const paginatedEntries = allEntries.slice(currentPage * entriesPerPage, (currentPage + 1) * entriesPerPage)
+  const displayEntries = paginatedEntries
+
+  // Reset pagination when search or filter changes
+  useEffect(() => {
+    setCurrentPage(0)
+  }, [searchTerm, dateFilter])
 
   const handleDeleteEntry = (entryId: string) => {
     if (confirm("Are you sure you want to delete this journal entry?")) {
       deleteEntryMutation.mutate(entryId)
+    }
+  }
+
+  const handleApplyDateFilter = (startDate: string, endDate: string, label: string) => {
+    setDateFilter({ startDate, endDate, label })
+    setSearchTerm("") // Clear search when applying date filter
+  }
+
+  const handleClearDateFilter = () => {
+    setDateFilter(null)
+  }
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages - 1) {
+      setCurrentPage(currentPage + 1)
+    }
+  }
+
+  const handlePrevPage = () => {
+    if (currentPage > 0) {
+      setCurrentPage(currentPage - 1)
     }
   }
 
@@ -112,9 +163,18 @@ export function JournalPage() {
             className="pl-10 focus:ring-orange-500 focus:border-orange-500"
           />
         </div>
-        <Button variant="outline" className="w-full sm:w-auto">
+        <Button 
+          variant="outline" 
+          className="w-full sm:w-auto"
+          onClick={() => setShowDateFilter(true)}
+        >
           <Calendar className="w-4 h-4 mr-2" />
           Filter by Date
+          {dateFilter && (
+            <Badge variant="secondary" className="ml-2 bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+              {dateFilter.label}
+            </Badge>
+          )}
         </Button>
       </div>
 
@@ -249,33 +309,62 @@ export function JournalPage() {
         </div>
       )}
 
-      {/* Load More - Future implementation */}
-      {!searchTerm && displayEntries.length > 0 && (
-        <div className="mt-12 text-center">
-          <Button variant="outline" className="w-full sm:w-auto">
-            Load More Entries
-          </Button>
-        </div>
-      )}
-
-      {/* Create Entry Modal - Will be implemented in next step */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Create New Entry</h3>
-            <p className="text-slate-600 dark:text-slate-400 mb-4">
-              Entry creation form will be implemented next.
-            </p>
-            <Button 
-              onClick={() => setShowCreateModal(false)}
+      {/* Pagination */}
+      {allEntries.length > entriesPerPage && (
+        <div className="mt-12 flex items-center justify-between">
+          <div className="text-sm text-slate-600 dark:text-slate-400">
+            Showing {currentPage * entriesPerPage + 1} to {Math.min((currentPage + 1) * entriesPerPage, allEntries.length)} of {allEntries.length} entries
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Button
               variant="outline"
-              className="w-full"
+              size="sm"
+              onClick={handlePrevPage}
+              disabled={currentPage === 0}
             >
-              Close
+              Previous
+            </Button>
+            
+            <div className="flex items-center space-x-1">
+              {Array.from({ length: totalPages }, (_, i) => (
+                <Button
+                  key={i}
+                  variant={currentPage === i ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setCurrentPage(i)}
+                  className={currentPage === i ? "bg-orange-600 hover:bg-orange-700 text-white" : ""}
+                >
+                  {i + 1}
+                </Button>
+              ))}
+            </div>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages - 1}
+            >
+              Next
             </Button>
           </div>
         </div>
       )}
+
+      {/* Create Entry Modal */}
+      <CreateEntryModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+      />
+
+      {/* Date Filter Modal */}
+      <DateFilterModal
+        isOpen={showDateFilter}
+        onClose={() => setShowDateFilter(false)}
+        onApplyFilter={handleApplyDateFilter}
+        onClearFilter={handleClearDateFilter}
+      />
     </div>
   )
 }
