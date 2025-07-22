@@ -1,4 +1,4 @@
-import { Link, useLocation } from "wouter"
+import { Outlet, Link, useLocation } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -12,16 +12,16 @@ import {
 import { useTheme } from "@/lib/theme-provider"
 import { Moon, Sun, User, Settings, LogOut } from "lucide-react"
 
-export function Layout({ children }: { children: React.ReactNode }) {
+export function Layout() {
   const { theme, setTheme } = useTheme()
-  const [location] = useLocation()
+  const location = useLocation()
 
   const toggleTheme = () => {
     setTheme(theme === "light" ? "dark" : "light")
   }
 
   const isActive = (path: string) => {
-    return location === path
+    return location.pathname === path
   }
 
   const navItems = [
@@ -140,7 +140,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Main Content */}
       <main className="flex-1">
-        {children}
+        <Outlet />
       </main>
 
       {/* Footer */}
