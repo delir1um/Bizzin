@@ -139,13 +139,29 @@ export class PlansService {
   // Get real journal entries count for current month
   static async getJournalEntriesCount(userId: string): Promise<number> {
     try {
-      const currentMonth = new Date().toISOString().substring(0, 7) + '%' // YYYY-MM%
+      // First try with date range filter for current month
+      const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999).toISOString()
       
-      const { count, error } = await supabase
+      let { count, error } = await supabase
         .from('journal_entries')
         .select('id', { count: 'exact' })
         .eq('user_id', userId)
-        .like('created_at', currentMonth)
+        .gte('created_at', startOfMonth)
+        .lte('created_at', endOfMonth)
+
+      // If date filtering fails, get all entries as fallback
+      if (error) {
+        console.log('Monthly filter failed, getting all journal entries:', error)
+        const result = await supabase
+          .from('journal_entries')
+          .select('id', { count: 'exact' })
+          .eq('user_id', userId)
+        
+        count = result.count
+        error = result.error
+      }
 
       if (error) {
         console.error('Error fetching journal entries count:', error)
