@@ -6,8 +6,10 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
-import { Target, Plus, TrendingUp, CheckCircle, Clock, AlertCircle, Filter } from "lucide-react"
+import { Target, Plus, TrendingUp, CheckCircle, Clock, AlertCircle, Filter, Search, SortAsc, SortDesc, Grid3X3, List, ChevronLeft, ChevronRight } from "lucide-react"
 import { GoalCard } from "@/components/goals/GoalCard"
 import { AddGoalModal } from "@/components/goals/AddGoalModal"
 import { EditGoalModal } from "@/components/goals/EditGoalModal"
@@ -33,6 +35,14 @@ export function GoalsPage() {
   const [celebrationTrigger, setCelebrationTrigger] = useState(false)
   const [celebrationToastVisible, setCelebrationToastVisible] = useState(false)
   const [completedGoal, setCompletedGoal] = useState<Goal | null>(null)
+  
+  // Enhanced UI controls for scalability
+  const [searchQuery, setSearchQuery] = useState("")
+  const [sortBy, setSortBy] = useState<'title' | 'priority' | 'dueDate' | 'created'>('created')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(12) // Show 12 goals per page
 
   // Fetch goals data
   const {
@@ -49,32 +59,77 @@ export function GoalsPage() {
   // Calculate statistics
   const stats = GoalsService.calculateStats(goals)
   
-  // Filter goals based on status and priority
-  const filteredGoals = goals.filter((goal: Goal) => {
-    // Status filter
-    let statusMatches = true
-    switch (statusFilter) {
-      case 'active':
-        statusMatches = ['in_progress', 'not_started'].includes(goal.status)
-        break
-      case 'completed':
-        statusMatches = goal.status === 'completed'
-        break
-      case 'at_risk':
-        statusMatches = goal.status === 'at_risk'
-        break
-      default:
-        statusMatches = true
-    }
-    
-    // Priority filter
-    let priorityMatches = true
-    if (priorityFilter !== 'all') {
-      priorityMatches = goal.priority === priorityFilter
-    }
-    
-    return statusMatches && priorityMatches
-  })
+  // Filter, search, and sort goals
+  const processedGoals = goals
+    .filter((goal: Goal) => {
+      // Status filter
+      let statusMatches = true
+      switch (statusFilter) {
+        case 'active':
+          statusMatches = ['in_progress', 'not_started'].includes(goal.status)
+          break
+        case 'completed':
+          statusMatches = goal.status === 'completed'
+          break
+        case 'at_risk':
+          statusMatches = goal.status === 'at_risk'
+          break
+        default:
+          statusMatches = true
+      }
+      
+      // Priority filter
+      let priorityMatches = true
+      if (priorityFilter !== 'all') {
+        priorityMatches = goal.priority === priorityFilter
+      }
+      
+      // Search filter
+      let searchMatches = true
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase()
+        searchMatches = goal.title.toLowerCase().includes(query) ||
+                       goal.description?.toLowerCase().includes(query) ||
+                       false
+      }
+      
+      return statusMatches && priorityMatches && searchMatches
+    })
+    .sort((a, b) => {
+      let comparison = 0
+      
+      switch (sortBy) {
+        case 'title':
+          comparison = a.title.localeCompare(b.title)
+          break
+        case 'priority':
+          const priorityOrder = { high: 3, medium: 2, low: 1 }
+          comparison = priorityOrder[b.priority] - priorityOrder[a.priority]
+          break
+        case 'dueDate':
+          if (!a.deadline && !b.deadline) comparison = 0
+          else if (!a.deadline) comparison = 1
+          else if (!b.deadline) comparison = -1
+          else comparison = new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
+          break
+        case 'created':
+        default:
+          const aDate = a.created_at || new Date().toISOString()
+          const bDate = b.created_at || new Date().toISOString()
+          comparison = new Date(bDate).getTime() - new Date(aDate).getTime()
+          break
+      }
+      
+      return sortOrder === 'asc' ? comparison : -comparison
+    })
+
+  // Pagination
+  const totalPages = Math.ceil(processedGoals.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const paginatedGoals = processedGoals.slice(startIndex, startIndex + itemsPerPage)
+  
+  // Reset page when filters change
+  const filteredGoals = processedGoals // For backward compatibility
 
   const statusFilterOptions = [
     { value: 'all' as const, label: 'All Goals', count: goals.length },
@@ -257,8 +312,58 @@ export function GoalsPage() {
         </Card>
       </div>
 
-      {/* Filter Options */}
-      <div className="mb-6">
+      {/* Search and Controls */}
+      <div className="mb-6 space-y-4">
+        {/* Search Bar */}
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <Input
+              placeholder="Search goals by title or description..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value)
+                setCurrentPage(1) // Reset to first page on search
+              }}
+              className="pl-10"
+            />
+          </div>
+          
+          {/* Sort Controls */}
+          <div className="flex items-center gap-2">
+            <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Sort by..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="created">Date Created</SelectItem>
+                <SelectItem value="title">Title</SelectItem>
+                <SelectItem value="priority">Priority</SelectItem>
+                <SelectItem value="dueDate">Due Date</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+              className="shrink-0"
+            >
+              {sortOrder === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />}
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+              className="shrink-0"
+            >
+              {viewMode === 'grid' ? <List className="w-4 h-4" /> : <Grid3X3 className="w-4 h-4" />}
+            </Button>
+          </div>
+        </div>
+
+        {/* Filter Options */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           {/* Filter Label */}
           <div className="flex items-center flex-shrink-0">
@@ -280,7 +385,10 @@ export function GoalsPage() {
                         ? "bg-blue-600 hover:bg-blue-700 text-white"
                         : "hover:bg-slate-200 dark:hover:bg-slate-700"
                     }`}
-                    onClick={() => setStatusFilter(option.value)}
+                    onClick={() => {
+                      setStatusFilter(option.value)
+                      setCurrentPage(1) // Reset to first page on filter change
+                    }}
                   >
                     {option.label} ({option.count})
                   </Badge>
@@ -301,7 +409,10 @@ export function GoalsPage() {
                         ? "bg-orange-600 hover:bg-orange-700 text-white"
                         : "hover:bg-slate-200 dark:hover:bg-slate-700"
                     }`}
-                    onClick={() => setPriorityFilter(option.value)}
+                    onClick={() => {
+                      setPriorityFilter(option.value)
+                      setCurrentPage(1) // Reset to first page on filter change
+                    }}
                   >
                     {option.label} ({option.count})
                   </Badge>
@@ -387,11 +498,88 @@ export function GoalsPage() {
           </Card>
         </div>
       ) : (
-        <div className="space-y-6">
-          {filteredGoals.map((goal: Goal) => (
-            <GoalCard key={goal.id} goal={goal} onEdit={handleEditGoal} onDelete={handleDeleteGoal} />
-          ))}
-        </div>
+        <>
+          {/* Results Info */}
+          <div className="flex justify-between items-center mb-4">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, processedGoals.length)} of {processedGoals.length} goals
+              {(searchQuery || statusFilter !== 'all' || priorityFilter !== 'all') && 
+                ` (filtered from ${goals.length} total)`}
+            </p>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Page {currentPage} of {Math.max(1, totalPages)}
+            </p>
+          </div>
+
+          {/* Goals Grid/List */}
+          <div className={
+            viewMode === 'grid' 
+              ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8"
+              : "space-y-4 mb-8"
+          }>
+            {paginatedGoals.map((goal: Goal) => (
+              <GoalCard 
+                key={goal.id} 
+                goal={goal} 
+                onEdit={handleEditGoal} 
+                onDelete={handleDeleteGoal}
+                viewMode={viewMode}
+              />
+            ))}
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Previous
+              </Button>
+              
+              <div className="flex space-x-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum
+                  if (totalPages <= 5) {
+                    pageNum = i + 1
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i
+                  } else {
+                    pageNum = currentPage - 2 + i
+                  }
+                  
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={currentPage === pageNum ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(pageNum)}
+                      className="w-10"
+                    >
+                      {pageNum}
+                    </Button>
+                  )
+                })}
+              </div>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                Next
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
+        </>
       )}
 
       {/* Add Goal Modal */}

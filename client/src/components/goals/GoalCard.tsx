@@ -10,6 +10,7 @@ type GoalCardProps = {
   goal: Goal
   onEdit?: (goal: Goal) => void
   onDelete?: (goal: Goal) => void
+  viewMode?: 'grid' | 'list'
 }
 
 const statusConfig = {
@@ -51,7 +52,7 @@ const priorityColors = {
   high: "border-l-red-500"
 }
 
-export function GoalCard({ goal, onEdit, onDelete }: GoalCardProps) {
+export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid' }: GoalCardProps) {
   const statusInfo = statusConfig[goal.status]
   const StatusIcon = statusInfo.icon
   const deadline = new Date(goal.deadline)
@@ -101,6 +102,90 @@ export function GoalCard({ goal, onEdit, onDelete }: GoalCardProps) {
 
   const timeStatus = getTimeStatus()
 
+  // List view - more compact horizontal layout
+  if (viewMode === 'list') {
+    return (
+      <Card className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 border-l-4 ${priorityColors[goal.priority]} ${
+        goal.status === 'completed' ? 'opacity-75' : ''
+      }`}>
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            {/* Left side - Goal info */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center space-x-3">
+                <StatusIcon className="w-5 h-5 text-slate-600 dark:text-slate-400 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white truncate">
+                    {goal.title}
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 truncate">
+                    {goal.description}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Center - Progress and status */}
+            <div className="flex items-center space-x-6 px-6">
+              <div className="text-center">
+                <Badge className={statusInfo.className}>
+                  {statusInfo.label}
+                </Badge>
+              </div>
+              
+              <div className="w-32">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs text-slate-600 dark:text-slate-400">Progress</span>
+                  <span className="text-xs font-medium text-slate-900 dark:text-white">
+                    {getProgressText()}
+                  </span>
+                </div>
+                <Progress value={goal.progress} className="h-2" />
+              </div>
+
+              <div className="text-center min-w-0">
+                <div className="text-sm font-medium text-slate-900 dark:text-white capitalize">
+                  {goal.priority} Priority
+                </div>
+                {timeStatus && (
+                  <div className={`text-xs ${timeStatus.className} flex items-center justify-center mt-1`}>
+                    <timeStatus.icon className="w-3 h-3 mr-1" />
+                    {timeStatus.text}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Right side - Actions */}
+            <div className="flex items-center space-x-2 flex-shrink-0">
+              {onEdit && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onEdit(goal)}
+                  className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                >
+                  <Edit3 className="w-4 h-4" />
+                </Button>
+              )}
+              {onDelete && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onDelete(goal)}
+                  className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Grid view - original card design
   return (
     <Card className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 border-l-4 ${priorityColors[goal.priority]} ${
       goal.status === 'completed' ? 'opacity-75' : ''
