@@ -1,15 +1,17 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { supabase } from "@/lib/supabase"
+
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 
 const schema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
+  email: z.string().email({ message: "Invalid email address" }),
+  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
 })
 
 type FormData = z.infer<typeof schema>
@@ -17,12 +19,22 @@ type FormData = z.infer<typeof schema>
 export default function AuthPage() {
   const [mode, setMode] = useState<"signIn" | "signUp">("signIn")
   const [message, setMessage] = useState("")
+  const navigate = useNavigate()
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({ resolver: zodResolver(schema) })
+
+  // Redirect away if already signed in
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession()
+      if (data.session) navigate("/")
+    }
+    checkSession()
+  }, [navigate])
 
   const onSubmit = async (data: FormData) => {
     setMessage("")
@@ -33,7 +45,15 @@ export default function AuthPage() {
         ? await supabase.auth.signUp({ email, password })
         : await supabase.auth.signInWithPassword({ email, password })
 
-    setMessage(error ? error.message : "Check your email for confirmation.")
+    if (error) {
+      setMessage(error.message)
+    } else {
+      if (mode === "signUp") {
+        setMessage("Check your email for confirmation.")
+      } else {
+        navigate("/")
+      }
+    }
   }
 
   return (
@@ -46,14 +66,18 @@ export default function AuthPage() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
             <Input placeholder="Email" {...register("email")} />
-            <p className="text-sm text-red-500">{errors.email?.message}</p>
+            {errors.email && (
+              <p className="text-sm text-red-500">{errors.email.message}</p>
+            )}
 
             <Input
               type="password"
               placeholder="Password"
               {...register("password")}
             />
-            <p className="text-sm text-red-500">{errors.password?.message}</p>
+            {errors.password && (
+              <p className="text-sm text-red-500">{errors.password.message}</p>
+            )}
 
             <Button className="w-full" disabled={isSubmitting}>
               {mode === "signUp" ? "Sign Up" : "Sign In"}
@@ -64,21 +88,31 @@ export default function AuthPage() {
             {mode === "signIn" ? (
               <>
                 Don’t have an account?{" "}
-                <button onClick={() => setMode("signUp")} className="underline">
+                <button
+                  onClick={() => setMode("signUp")}
+                  className="underline"
+                >
                   Sign Up
                 </button>
               </>
             ) : (
               <>
                 Already have an account?{" "}
-                <button onClick={() => setMode("signIn")} className="underline">
+                <button
+                  onClick={() => setMode("signIn")}
+                  className="underline"
+                >
                   Sign In
                 </button>
               </>
             )}
           </div>
 
-          {message && <p className="text-center text-sm text-muted-foreground">{message}</p>}
+          {message && (
+            <p className="text-center text-sm text-muted-foreground">
+              {message}
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>
