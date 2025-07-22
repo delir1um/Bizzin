@@ -100,12 +100,7 @@ export function BizBuilderToolsPreviewPage() {
               >
                 Start Using Tools <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
-              <Button 
-                variant="outline" 
-                className="border-white text-white hover:bg-white/10"
-              >
-                View All Tools
-              </Button>
+
             </div>
           </div>
         </div>

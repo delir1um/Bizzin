@@ -110,12 +110,7 @@ export function JournalPreviewPage() {
               >
                 Begin Journaling <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
-              <Button 
-                variant="outline" 
-                className="border-white text-white hover:bg-white/10"
-              >
-                See Examples
-              </Button>
+
             </div>
           </div>
         </div>

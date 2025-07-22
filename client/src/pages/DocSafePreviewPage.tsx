@@ -120,12 +120,7 @@ export function DocSafePreviewPage() {
               >
                 Start Secure Storage <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
-              <Button 
-                variant="outline" 
-                className="border-white text-white hover:bg-white/10"
-              >
-                Security Details
-              </Button>
+
             </div>
           </div>
         </div>
