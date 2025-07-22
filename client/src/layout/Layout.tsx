@@ -70,18 +70,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
             {/* Right Side Actions */}
             <div className="flex items-center space-x-4">
-              {/* Theme Toggle */}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleTheme}
-                className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-              >
-                <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                <span className="sr-only">Toggle theme</span>
-              </Button>
-
               {/* Login Button or User Avatar */}
               {user ? (
                 <DropdownMenu>
@@ -114,6 +102,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     <DropdownMenuItem>
                       <Settings className="mr-2 h-4 w-4" />
                       <span>Settings</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={toggleTheme}>
+                      {theme === "light" ? (
+                        <>
+                          <Moon className="mr-2 h-4 w-4" />
+                          <span>Dark Mode</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sun className="mr-2 h-4 w-4" />
+                          <span>Light Mode</span>
+                        </>
+                      )}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={signOut} className="text-red-600 dark:text-red-400">
