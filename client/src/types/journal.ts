@@ -1,0 +1,45 @@
+export type JournalEntry = {
+  id: string
+  title: string
+  content: string
+  mood?: string
+  tags: string[]
+  category?: string
+  created_at: string
+  updated_at: string
+  user_id: string
+  reading_time?: number // estimated reading time in minutes
+}
+
+export type CreateJournalEntry = Omit<JournalEntry, 'id' | 'created_at' | 'updated_at' | 'user_id' | 'reading_time'>
+
+export type UpdateJournalEntry = Partial<Omit<JournalEntry, 'id' | 'created_at' | 'updated_at' | 'user_id'>>
+
+export const JOURNAL_MOODS = [
+  'Optimistic',
+  'Thoughtful', 
+  'Inspired',
+  'Focused',
+  'Frustrated',
+  'Excited',
+  'Reflective',
+  'Motivated'
+] as const
+
+export type JournalMood = typeof JOURNAL_MOODS[number]
+
+export const JOURNAL_CATEGORIES = [
+  'Research',
+  'Planning',
+  'Strategy',
+  'Feedback',
+  'Milestone',
+  'Learning',
+  'Team',
+  'Product',
+  'Marketing',
+  'Finance',
+  'Personal'
+] as const
+
+export type JournalCategory = typeof JOURNAL_CATEGORIES[number]
