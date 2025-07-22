@@ -8,8 +8,10 @@ The Goals feature requires a Supabase database table. Please follow these steps:
 
 1. Go to your Supabase project dashboard
 2. Navigate to the SQL Editor
-3. Run the SQL script from `database-setup.sql` file in the project root
+3. Run the SQL script from `database-setup-simple.sql` file in the project root
 4. This will create the `goals` table with proper Row Level Security policies
+
+**Important**: Use `database-setup-simple.sql` instead of `database-setup.sql` to avoid foreign key constraint issues.
 
 ### 2. Key Database Fields
 
@@ -26,11 +28,18 @@ The goals table includes:
 - `priority` (enum: low, medium, high)
 - `category` (text, optional)
 
-### 3. Current Status
+### 3. Authentication Setup
+
+⚠️ **Important**: 
+- Make sure you have signed up through the Supabase authentication system (via the /auth page)
+- The user ID from Supabase auth must match the user_id used in the goals table
+- If you get foreign key constraint errors, use the `database-setup-simple.sql` script instead
+
+### 4. Current Status
 
 ⚠️ **Important**: The category field is temporarily disabled in the UI because it may not exist in your current database. After running the SQL setup script, you can re-enable the category field in the forms.
 
-### 4. Features Available
+### 5. Features Available
 
 ✅ Create new goals
 ✅ Edit existing goals  
@@ -40,7 +49,7 @@ The goals table includes:
 ✅ Priority levels
 ✅ Authentication & user isolation
 
-### 5. Next Steps
+### 6. Next Steps
 
 After setting up the database:
 1. Test creating a goal

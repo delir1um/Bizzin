@@ -1,7 +1,7 @@
--- Goals table schema for Supabase
+-- Simple Goals table schema for Supabase (without foreign key constraints)
 -- Run this SQL in your Supabase SQL editor to set up the goals table
 
--- Create the goals table
+-- Create the goals table (without foreign key constraint to avoid user reference issues)
 CREATE TABLE IF NOT EXISTS public.goals (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     title TEXT NOT NULL,
@@ -18,18 +18,10 @@ CREATE TABLE IF NOT EXISTS public.goals (
     category TEXT
 );
 
--- If the table already exists without the category column, add it
-ALTER TABLE public.goals ADD COLUMN IF NOT EXISTS category TEXT;
-
--- Add foreign key constraint for user_id (optional, only if you want referential integrity)
--- Note: Remove this if you get foreign key constraint errors
--- ALTER TABLE public.goals ADD CONSTRAINT goals_user_id_fkey 
---   FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-
 -- Enable Row Level Security
 ALTER TABLE public.goals ENABLE ROW LEVEL SECURITY;
 
--- Create policies
+-- Create policies for RLS
 -- Users can only see their own goals
 CREATE POLICY "Users can view own goals" ON public.goals
     FOR SELECT USING (auth.uid() = user_id);
@@ -61,60 +53,8 @@ END;
 $$ language 'plpgsql';
 
 -- Trigger to automatically update updated_at
+DROP TRIGGER IF EXISTS update_goals_updated_at ON public.goals;
 CREATE TRIGGER update_goals_updated_at 
     BEFORE UPDATE ON public.goals
     FOR EACH ROW 
     EXECUTE FUNCTION update_updated_at_column();
-
--- Sample data (optional - replace with your own user ID from auth.users)
--- First, get your user ID by running: SELECT id FROM auth.users WHERE email = 'your-email@example.com';
--- Then replace 'YOUR_USER_ID_HERE' with your actual UUID
-
--- INSERT INTO public.goals (
---     title,
---     description,
---     status,
---     progress,
---     target_value,
---     current_value,
---     deadline,
---     user_id,
---     priority,
---     category
--- ) VALUES 
--- (
---     'Reach 10,000 Monthly Active Users',
---     'Grow the user base to 10,000 monthly active users through marketing campaigns and product improvements.',
---     'in_progress',
---     75,
---     10000,
---     7500,
---     '2024-03-31T23:59:59Z',
---     'YOUR_USER_ID_HERE',
---     'high',
---     'Growth'
--- ),
--- (
---     'Launch Premium Features',
---     'Complete development and launch premium subscription features including advanced analytics and priority support.',
---     'at_risk',
---     60,
---     10,
---     6,
---     '2024-02-15T23:59:59Z',
---     'YOUR_USER_ID_HERE',
---     'high',
---     'Product'
--- ),
--- (
---     'Complete MVP Development',
---     'Finish all core features for the minimum viable product including user registration, basic functionality, and initial analytics.',
---     'completed',
---     100,
---     NULL,
---     NULL,
---     '2024-01-10T23:59:59Z',
---     'YOUR_USER_ID_HERE',
---     'high',
---     'Development'
--- );
