@@ -56,6 +56,7 @@ export function CreateEntryModal({ isOpen, onClose }: CreateEntryModalProps) {
     mutationFn: (entry: CreateJournalEntry) => JournalService.createEntry(entry),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
+      queryClient.invalidateQueries({ queryKey: ['usage-status'] })
       toast({
         title: "Entry created",
         description: "Your journal entry has been successfully created.",

@@ -65,6 +65,7 @@ export function JournalPage() {
     mutationFn: (entryId: string) => JournalService.deleteEntry(entryId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
+      queryClient.invalidateQueries({ queryKey: ['usage-status'] })
       toast({
         title: "Entry deleted",
         description: "Journal entry has been successfully deleted.",
