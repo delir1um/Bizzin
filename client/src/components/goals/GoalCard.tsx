@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Calendar, TrendingUp, Clock, CheckCircle, AlertTriangle, Play, Edit3, Trash2 } from "lucide-react"
+import { Calendar, TrendingUp, Clock, CheckCircle, AlertTriangle, Play, Edit3, Trash2, Circle, ArrowUp } from "lucide-react"
 import { Goal } from "@/types/goals"
 import { format, differenceInDays, isAfter } from "date-fns"
 
@@ -179,6 +179,14 @@ export function GoalCard({ goal, onEdit, onDelete }: GoalCardProps) {
               <div className="flex items-center text-red-600 dark:text-red-400">
                 <AlertTriangle className="w-4 h-4 mr-1" />
                 High Priority
+              </div>
+            )}
+            
+            {goal.category && (
+              <div className="mt-2">
+                <Badge variant="outline" className="text-xs bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">
+                  {goal.category}
+                </Badge>
               </div>
             )}
           </div>
