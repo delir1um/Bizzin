@@ -23,21 +23,21 @@ UPDATE storage.buckets SET public = true WHERE id = 'profiles';
 CREATE POLICY "Users can upload their own profile pictures" ON storage.objects
 FOR INSERT TO authenticated WITH CHECK (
   bucket_id = 'profiles' 
-  AND auth.uid()::text = (storage.foldername(name))[1]
+  AND name LIKE 'avatars/' || auth.uid()::text || '%'
 );
 
 -- Allow users to update their own profile pictures
 CREATE POLICY "Users can update their own profile pictures" ON storage.objects
 FOR UPDATE TO authenticated USING (
   bucket_id = 'profiles' 
-  AND auth.uid()::text = (storage.foldername(name))[1]
+  AND name LIKE 'avatars/' || auth.uid()::text || '%'
 );
 
 -- Allow users to delete their own profile pictures
 CREATE POLICY "Users can delete their own profile pictures" ON storage.objects
 FOR DELETE TO authenticated USING (
   bucket_id = 'profiles' 
-  AND auth.uid()::text = (storage.foldername(name))[1]
+  AND name LIKE 'avatars/' || auth.uid()::text || '%'
 );
 
 -- Allow everyone to view profile pictures (public access)
