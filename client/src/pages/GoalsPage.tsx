@@ -229,52 +229,56 @@ export function GoalsPage() {
       </div>
 
       {/* Filter Options */}
-      <div className="mb-6 space-y-4">
-        {/* Status Filter */}
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center">
+      <div className="mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          {/* Filter Label */}
+          <div className="flex items-center flex-shrink-0">
             <Filter className="w-4 h-4 mr-2 text-slate-600 dark:text-slate-400" />
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Status:</span>
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Filters:</span>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {statusFilterOptions.map((option) => (
-              <Badge
-                key={option.value}
-                variant={statusFilter === option.value ? "default" : "secondary"}
-                className={`cursor-pointer transition-colors ${
-                  statusFilter === option.value
-                    ? "bg-blue-600 hover:bg-blue-700 text-white"
-                    : "hover:bg-slate-200 dark:hover:bg-slate-700"
-                }`}
-                onClick={() => setStatusFilter(option.value)}
-              >
-                {option.label} ({option.count})
-              </Badge>
-            ))}
-          </div>
-        </div>
+          
+          <div className="flex flex-col lg:flex-row gap-4 flex-1">
+            {/* Status Filter */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex-shrink-0">Status:</span>
+              <div className="flex flex-wrap gap-2">
+                {statusFilterOptions.map((option) => (
+                  <Badge
+                    key={option.value}
+                    variant={statusFilter === option.value ? "default" : "secondary"}
+                    className={`cursor-pointer transition-colors ${
+                      statusFilter === option.value
+                        ? "bg-blue-600 hover:bg-blue-700 text-white"
+                        : "hover:bg-slate-200 dark:hover:bg-slate-700"
+                    }`}
+                    onClick={() => setStatusFilter(option.value)}
+                  >
+                    {option.label} ({option.count})
+                  </Badge>
+                ))}
+              </div>
+            </div>
 
-        {/* Priority Filter */}
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center">
-            <div className="w-4 h-4 mr-2"></div>
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Priority:</span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {priorityFilterOptions.map((option) => (
-              <Badge
-                key={option.value}
-                variant={priorityFilter === option.value ? "default" : "secondary"}
-                className={`cursor-pointer transition-colors ${
-                  priorityFilter === option.value
-                    ? "bg-orange-600 hover:bg-orange-700 text-white"
-                    : "hover:bg-slate-200 dark:hover:bg-slate-700"
-                }`}
-                onClick={() => setPriorityFilter(option.value)}
-              >
-                {option.label} ({option.count})
-              </Badge>
-            ))}
+            {/* Priority Filter */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex-shrink-0">Priority:</span>
+              <div className="flex flex-wrap gap-2">
+                {priorityFilterOptions.map((option) => (
+                  <Badge
+                    key={option.value}
+                    variant={priorityFilter === option.value ? "default" : "secondary"}
+                    className={`cursor-pointer transition-colors ${
+                      priorityFilter === option.value
+                        ? "bg-orange-600 hover:bg-orange-700 text-white"
+                        : "hover:bg-slate-200 dark:hover:bg-slate-700"
+                    }`}
+                    onClick={() => setPriorityFilter(option.value)}
+                  >
+                    {option.label} ({option.count})
+                  </Badge>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
