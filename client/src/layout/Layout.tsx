@@ -87,7 +87,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium leading-none">
-                          {user.email?.split("@")[0]}
+                          {user.user_metadata?.full_name || user.email?.split("@")[0]}
                         </p>
                         <p className="text-xs leading-none text-muted-foreground">
                           {user.email}
@@ -95,10 +95,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Profile</span>
-                    </DropdownMenuItem>
+                    <Link to="/profile">
+                      <DropdownMenuItem>
+                        <User className="mr-2 h-4 w-4" />
+                        <span>Profile</span>
+                      </DropdownMenuItem>
+                    </Link>
                     <DropdownMenuItem>
                       <Settings className="mr-2 h-4 w-4" />
                       <span>Settings</span>

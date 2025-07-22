@@ -16,6 +16,7 @@ import { DocSafePreviewPage } from "@/pages/DocSafePreviewPage"
 import { BizBuilderToolsPage } from "@/pages/BizBuilderToolsPage"
 import { BizBuilderToolsPreviewPage } from "@/pages/BizBuilderToolsPreviewPage"
 import AuthPage from "@/pages/AuthPage"
+import ProfilePage from "@/pages/ProfilePage"
 import { PrivacyPage } from "@/pages/PrivacyPage"
 import { AuthProvider, useAuth } from "@/hooks/AuthProvider"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
@@ -64,6 +65,7 @@ function App() {
               <Layout>
                 <Route path="/" component={() => <MainRouter />} />
                 <Route path="/auth" component={AuthPage} />
+                <Route path="/profile" component={() => <ProtectedRoute><ProfilePage /></ProtectedRoute>} />
                 <Route path="/dashboard" component={() => <ProtectedRoute><DashboardPage /></ProtectedRoute>} />
                 <Route path="/journal" component={() => <PreviewOrProtected protectedComponent={JournalPage} previewComponent={JournalPreviewPage} />} />
                 <Route path="/goals" component={() => <PreviewOrProtected protectedComponent={GoalsPage} previewComponent={GoalsPreviewPage} />} />
