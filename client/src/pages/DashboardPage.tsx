@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { useLocation } from "wouter"
 import { useAuth } from "@/hooks/AuthProvider"
 import { useQuery } from "@tanstack/react-query"
-import { CalendarDays, Notebook, File, PlayCircle, Target, TrendingUp, Clock, AlertTriangle, Plus, ArrowRight, BarChart3, PieChart } from "lucide-react"
+import { CalendarDays, Calendar, Notebook, File, PlayCircle, Target, TrendingUp, Clock, AlertTriangle, Plus, ArrowRight, BarChart3, PieChart } from "lucide-react"
 import { GoalsService } from "@/lib/services/goals"
 import { Goal } from "@/types/goals"
 import { format, isAfter, differenceInDays } from "date-fns"
@@ -270,55 +270,86 @@ export function DashboardPage() {
         </Card>
       </div>
 
-      {/* Charts Section */}
+      {/* Charts Section Enhanced */}
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
-        {/* Progress Donut Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
+        {/* Progress Donut Chart Enhanced */}
+        <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border-blue-200 dark:border-blue-800">
+          <CardHeader className="border-b border-blue-100 dark:border-blue-800 pb-4">
+            <CardTitle className="text-lg flex items-center gap-2 text-blue-900 dark:text-blue-100">
               <PieChart className="h-5 w-5 text-blue-600" />
               Goal Progress
             </CardTitle>
+            <p className="text-sm text-blue-700 dark:text-blue-300">Overall completion status</p>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             {goalsLoading ? (
               <div className="flex items-center justify-center h-48">
                 <Skeleton className="w-32 h-32 rounded-full" />
               </div>
-            ) : (
+            ) : goals.length > 0 ? (
               <ProgressDonutChart goals={goals} />
+            ) : (
+              <div className="flex items-center justify-center h-48 text-center">
+                <div>
+                  <PieChart className="w-12 h-12 text-blue-400 mx-auto mb-3" />
+                  <p className="text-sm text-blue-600 dark:text-blue-400 mb-2">No goals to display</p>
+                  <Button 
+                    size="sm" 
+                    onClick={() => navigate("/goals")}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    Create Goal
+                  </Button>
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Category Distribution */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
+        {/* Category Distribution Enhanced */}
+        <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 border-purple-200 dark:border-purple-800">
+          <CardHeader className="border-b border-purple-100 dark:border-purple-800 pb-4">
+            <CardTitle className="text-lg flex items-center gap-2 text-purple-900 dark:text-purple-100">
               <BarChart3 className="h-5 w-5 text-purple-600" />
               Categories
             </CardTitle>
+            <p className="text-sm text-purple-700 dark:text-purple-300">Goal distribution by type</p>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             {goalsLoading ? (
               <div className="flex items-center justify-center h-48">
                 <Skeleton className="w-32 h-32 rounded-full" />
               </div>
-            ) : (
+            ) : goals.length > 0 ? (
               <CategoryChart goals={goals} />
+            ) : (
+              <div className="flex items-center justify-center h-48 text-center">
+                <div>
+                  <BarChart3 className="w-12 h-12 text-purple-400 mx-auto mb-3" />
+                  <p className="text-sm text-purple-600 dark:text-purple-400 mb-2">No categories to show</p>
+                  <Button 
+                    size="sm" 
+                    onClick={() => navigate("/goals")}
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    Add Goals
+                  </Button>
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Priority Progress */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
+        {/* Priority Progress Enhanced */}
+        <Card className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 border-orange-200 dark:border-orange-800">
+          <CardHeader className="border-b border-orange-100 dark:border-orange-800 pb-4">
+            <CardTitle className="text-lg flex items-center gap-2 text-orange-900 dark:text-orange-100">
               <Target className="h-5 w-5 text-orange-600" />
               Priority Progress
             </CardTitle>
+            <p className="text-sm text-orange-700 dark:text-orange-300">Progress by priority level</p>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             {goalsLoading ? (
               <div className="space-y-3">
                 {[...Array(3)].map((_, i) => (
@@ -328,8 +359,22 @@ export function DashboardPage() {
                   </div>
                 ))}
               </div>
-            ) : (
+            ) : goals.length > 0 ? (
               <PriorityProgressBars goals={goals} />
+            ) : (
+              <div className="flex items-center justify-center h-48 text-center">
+                <div>
+                  <Target className="w-12 h-12 text-orange-400 mx-auto mb-3" />
+                  <p className="text-sm text-orange-600 dark:text-orange-400 mb-2">No priority data</p>
+                  <Button 
+                    size="sm" 
+                    onClick={() => navigate("/goals")}
+                    className="bg-orange-600 hover:bg-orange-700 text-white"
+                  >
+                    Set Priorities
+                  </Button>
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -353,49 +398,93 @@ export function DashboardPage() {
               View All <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="pt-6">
             {goalsLoading ? (
-              <>
+              <div className="space-y-3">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="flex items-center space-x-3">
-                    <Skeleton className="h-10 w-10 rounded-full" />
+                  <div key={i} className="flex items-center space-x-3 p-3 rounded-lg border border-slate-100 dark:border-slate-700">
+                    <Skeleton className="h-8 w-8 rounded-full" />
                     <div className="space-y-2 flex-1">
                       <Skeleton className="h-4 w-3/4" />
-                      <Skeleton className="h-3 w-1/2" />
+                      <div className="flex items-center space-x-2">
+                        <Skeleton className="h-3 w-12" />
+                        <Skeleton className="h-3 w-16" />
+                      </div>
+                    </div>
+                    <Skeleton className="h-2 w-20 rounded-full" />
+                  </div>
+                ))}
+              </div>
+            ) : recentGoals.length > 0 ? (
+              <div className="space-y-3">
+                {recentGoals.slice(0, 5).map((goal, index) => (
+                  <div 
+                    key={goal.id} 
+                    className="group flex items-center space-x-3 p-3 rounded-lg border border-slate-100 dark:border-slate-700 hover:border-orange-200 dark:hover:border-orange-700 hover:bg-orange-50/50 dark:hover:bg-orange-950/20 cursor-pointer transition-all duration-200"
+                    onClick={() => navigate("/goals")}
+                  >
+                    <div className="flex items-center justify-center w-8 h-8">
+                      <div className={`w-3 h-3 rounded-full group-hover:scale-110 transition-transform duration-200 ${
+                        goal.status === 'completed' ? 'bg-green-500' :
+                        goal.status === 'in_progress' ? 'bg-blue-500' :
+                        goal.status === 'at_risk' ? 'bg-red-500' : 'bg-gray-400'
+                      }`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-slate-900 dark:text-white truncate group-hover:text-orange-700 dark:group-hover:text-orange-300 transition-colors">
+                        {goal.title}
+                      </p>
+                      <div className="flex items-center space-x-3 mt-1">
+                        <Badge 
+                          variant={goal.priority === 'high' ? 'destructive' : goal.priority === 'medium' ? 'default' : 'secondary'} 
+                          className="text-xs px-2 py-1"
+                        >
+                          {goal.priority}
+                        </Badge>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                          {goal.progress}% complete
+                        </span>
+                      </div>
+                    </div>
+                    <div className="w-20">
+                      <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-2 rounded-full transition-all duration-500 ${
+                            goal.status === 'completed' ? 'bg-green-500' :
+                            goal.status === 'in_progress' ? 'bg-blue-500' :
+                            goal.status === 'at_risk' ? 'bg-red-500' : 'bg-gray-400'
+                          }`}
+                          style={{ width: `${goal.progress}%` }}
+                        />
+                      </div>
                     </div>
                   </div>
                 ))}
-              </>
-            ) : recentGoals.length > 0 ? (
-              recentGoals.map((goal) => (
-                <div 
-                  key={goal.id} 
-                  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                  onClick={() => navigate("/goals")}
-                >
-                  <div className={`w-3 h-3 rounded-full ${
-                    goal.status === 'completed' ? 'bg-green-500' :
-                    goal.status === 'in_progress' ? 'bg-blue-500' :
-                    goal.status === 'at_risk' ? 'bg-red-500' : 'bg-gray-400'
-                  }`} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{goal.title}</p>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <Badge variant={goal.priority === 'high' ? 'destructive' : goal.priority === 'medium' ? 'default' : 'secondary'} className="text-xs">
-                        {goal.priority}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">{goal.progress}% complete</span>
-                    </div>
+                {goals.length > 5 && (
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-700">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => navigate("/goals")}
+                      className="w-full text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-950"
+                    >
+                      View {goals.length - 5} more goals <ArrowRight className="w-4 h-4 ml-1" />
+                    </Button>
                   </div>
-                </div>
-              ))
+                )}
+              </div>
             ) : (
-              <div className="text-center py-8">
-                <Target className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground mb-4">No goals yet</p>
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Target className="w-8 h-8 text-slate-400" />
+                </div>
+                <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-2">No goals yet</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 max-w-48 mx-auto">
+                  Start your journey by creating your first business goal
+                </p>
                 <Button 
                   onClick={() => navigate("/goals")}
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Create Your First Goal
@@ -405,62 +494,130 @@ export function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Upcoming Deadlines with Timeline */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Clock className="h-5 w-5 text-orange-600" />
+        {/* Upcoming Deadlines Enhanced */}
+        <Card className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border-amber-200 dark:border-amber-800">
+          <CardHeader className="border-b border-amber-100 dark:border-amber-800 pb-4">
+            <CardTitle className="text-lg font-semibold text-amber-900 dark:text-amber-100 flex items-center gap-2">
+              <Clock className="h-5 w-5 text-amber-600" />
               Upcoming Deadlines
             </CardTitle>
+            <p className="text-sm text-amber-700 dark:text-amber-300">Important dates and milestones</p>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             {goalsLoading ? (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="flex items-center gap-4">
-                    <Skeleton className="w-3 h-3 rounded-full" />
+                  <div key={i} className="flex items-center gap-4 p-3 rounded-lg border border-amber-100 dark:border-amber-800">
+                    <Skeleton className="w-8 h-8 rounded-full" />
                     <div className="space-y-2 flex-1">
                       <Skeleton className="h-4 w-3/4" />
                       <Skeleton className="h-3 w-1/2" />
-                      <Skeleton className="h-1.5 w-full rounded-full" />
                     </div>
+                    <Skeleton className="h-6 w-16 rounded" />
                   </div>
                 ))}
               </div>
+            ) : upcomingDeadlines.length > 0 ? (
+              <div className="space-y-3">
+                {upcomingDeadlines.slice(0, 5).map((goal, index) => {
+                  const deadline = new Date(goal.deadline)
+                  const today = new Date()
+                  const daysDiff = Math.ceil((deadline.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+                  const isOverdue = daysDiff < 0
+                  const isUrgent = daysDiff <= 3 && daysDiff >= 0
+                  
+                  return (
+                    <div 
+                      key={goal.id} 
+                      className={`group flex items-center gap-4 p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
+                        isOverdue 
+                          ? 'border-red-200 dark:border-red-800 hover:border-red-300 dark:hover:border-red-700 hover:bg-red-50/50 dark:hover:bg-red-950/20'
+                          : isUrgent
+                            ? 'border-amber-200 dark:border-amber-700 hover:border-amber-300 dark:hover:border-amber-600 hover:bg-amber-50/50 dark:hover:bg-amber-950/20'
+                            : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50/50 dark:hover:bg-slate-800/50'
+                      }`}
+                      onClick={() => navigate("/goals")}
+                    >
+                      <div className="flex items-center justify-center w-8 h-8">
+                        <div className={`w-3 h-3 rounded-full group-hover:scale-110 transition-transform duration-200 ${
+                          isOverdue ? 'bg-red-500' : isUrgent ? 'bg-amber-500' : 'bg-blue-500'
+                        }`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                          {goal.title}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                          {deadline.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                          isOverdue 
+                            ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300'
+                            : isUrgent
+                              ? 'bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300'
+                              : 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
+                        }`}>
+                          {isOverdue ? 'Overdue' : isUrgent ? `${daysDiff}d left` : `${daysDiff}d left`}
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })}
+                {upcomingDeadlines.length > 5 && (
+                  <div className="pt-2 border-t border-amber-100 dark:border-amber-800">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => navigate("/goals")}
+                      className="w-full text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950"
+                    >
+                      View {upcomingDeadlines.length - 5} more deadlines <ArrowRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  </div>
+                )}
+              </div>
             ) : (
-              <DeadlineTimeline 
-                goals={goals} 
-                onGoalClick={() => navigate("/goals")}
-              />
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-amber-100 dark:bg-amber-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Clock className="w-8 h-8 text-amber-500" />
+                </div>
+                <h3 className="text-sm font-medium text-amber-900 dark:text-amber-100 mb-2">No upcoming deadlines</h3>
+                <p className="text-xs text-amber-700 dark:text-amber-300 mb-6 max-w-48 mx-auto">
+                  Set deadlines for your goals to stay on track
+                </p>
+                <Button 
+                  onClick={() => navigate("/goals")}
+                  className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2"
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Add Deadlines
+                </Button>
+              </div>
             )}
 
             {/* Quick Actions */}
-            <div className="pt-4 border-t">
-              <h4 className="text-sm font-medium mb-3">Quick Actions</h4>
-              <div className="space-y-2">
+            <div className="pt-6 border-t border-amber-100 dark:border-amber-800 mt-6">
+              <h4 className="text-sm font-semibold text-amber-900 dark:text-amber-100 mb-4">Quick Actions</h4>
+              <div className="grid grid-cols-2 gap-3">
                 <Button 
                   variant="outline" 
-                  className="w-full justify-start text-left"
+                  size="sm"
+                  className="justify-start text-left border-amber-200 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/50 text-amber-800 dark:text-amber-200"
                   onClick={() => navigate("/goals")}
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Add New Goal
+                  Add Goal
                 </Button>
                 <Button 
                   variant="outline" 
-                  className="w-full justify-start text-left opacity-75"
+                  size="sm"
+                  className="justify-start text-left border-amber-200 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/50 text-amber-800 dark:text-amber-200"
                   onClick={() => navigate("/journal")}
                 >
                   <Notebook className="w-4 h-4 mr-2" />
-                  Write Journal Entry
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start text-left opacity-75"
-                  onClick={() => navigate("/training")}
-                >
-                  <PlayCircle className="w-4 h-4 mr-2" />
-                  Continue Training
+                  Journal
                 </Button>
               </div>
             </div>
