@@ -56,12 +56,30 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6 p-6">
-      {/* Welcome Section */}
+      {/* Welcome Section with Inspirational Quote */}
       <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 rounded-xl p-6 border border-orange-200/50 dark:border-orange-800/50">
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
           Welcome back, <span className="text-orange-600">{user?.email?.split('@')[0] ?? "Entrepreneur"}</span>!
         </h1>
         <p className="text-slate-600 dark:text-slate-300 mt-2 text-lg">Plan. Track. Grow.</p>
+        
+        {/* Daily Inspirational Quote */}
+        {dailyQuote && (
+          <div className="mt-4 p-4 bg-white/50 dark:bg-slate-800/50 rounded-lg border border-orange-200/30 dark:border-orange-700/30">
+            <blockquote className="text-slate-700 dark:text-slate-300 italic text-base leading-relaxed">
+              "{dailyQuote.text}"
+            </blockquote>
+            <div className="flex items-center justify-between mt-3">
+              <cite className="text-sm text-orange-600 dark:text-orange-400 font-medium not-italic">
+                — {dailyQuote.author}
+              </cite>
+              <span className="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-full capitalize">
+                {dailyQuote.category}
+              </span>
+            </div>
+          </div>
+        )}
+        
         <div className="mt-4 flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
           <span>Today: {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
         </div>
