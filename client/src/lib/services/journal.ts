@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import type { JournalEntry, CreateJournalEntry, UpdateJournalEntry } from '@/types/journal'
-import { analyzeBusinessSentiment } from '@/lib/sentimentAnalysis'
+import { analyzeBusinessSentiment } from '@/lib/aiSentimentAnalysis'
 
 export class JournalService {
   static async getUserEntries(userId: string): Promise<JournalEntry[]> {
@@ -63,8 +63,8 @@ export class JournalService {
       const wordCount = entry.content.split(/\s+/).length
       const readingTime = Math.max(1, Math.ceil(wordCount / 200))
 
-      // Analyze business sentiment
-      const sentiment = analyzeBusinessSentiment(entry.content, entry.title)
+      // Analyze business sentiment with AI
+      const sentiment = await analyzeBusinessSentiment(entry.content, entry.title)
       const sentimentData = {
         primary_mood: sentiment.mood.primary,
         confidence: sentiment.mood.confidence,
@@ -130,7 +130,7 @@ export class JournalService {
         const content = updates.content || ''
         const title = updates.title || ''
         if (content || title) {
-          const sentiment = analyzeBusinessSentiment(content, title)
+          const sentiment = await analyzeBusinessSentiment(content, title)
           updateData.sentiment_data = {
             primary_mood: sentiment.mood.primary,
             confidence: sentiment.mood.confidence,

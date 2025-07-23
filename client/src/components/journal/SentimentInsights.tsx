@@ -1,7 +1,8 @@
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { Brain, TrendingUp, Zap, Heart } from "lucide-react"
+import { Brain, TrendingUp, Zap, Heart, Sparkles } from "lucide-react"
 import { getMoodColor, getMoodEmoji } from "@/lib/sentimentAnalysis"
+import { AIAnalysisIndicator } from "@/components/journal/AIAnalysisIndicator"
 import type { JournalEntry } from "@/types/journal"
 
 interface SentimentInsightsProps {
@@ -42,9 +43,16 @@ export function SentimentInsights({ entry, className = "" }: SentimentInsightsPr
     <Card className={`bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 ${className}`}>
       <CardContent className="p-4 space-y-4">
         {/* Header */}
-        <div className="flex items-center gap-2 text-orange-700">
-          <Brain className="w-5 h-5" />
-          <span className="font-semibold text-sm">AI Business Insights</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-orange-700">
+            <Sparkles className="w-5 h-5" />
+            <span className="font-semibold text-sm">AI Business Insights</span>
+          </div>
+          <AIAnalysisIndicator 
+            confidence={sentiment.confidence}
+            source="ai"
+            className="text-xs"
+          />
         </div>
         
         {/* Energy & Context */}

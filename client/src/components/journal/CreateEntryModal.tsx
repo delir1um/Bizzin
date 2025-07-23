@@ -376,13 +376,23 @@ export function CreateEntryModal({ isOpen, onClose, selectedDate }: CreateEntryM
                 <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
                   <Brain className="w-4 h-4 text-orange-600 dark:text-orange-400" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <h4 className="font-medium text-orange-900 dark:text-orange-100 text-sm">
-                    AI-Powered Analysis
+                    Advanced AI Analysis
                   </h4>
                   <p className="text-sm text-orange-700 dark:text-orange-300">
-                    Your mood, category, and tags will be automatically detected and assigned based on your writing.
+                    Professional-grade sentiment analysis will automatically detect mood, business category, and generate personalized insights from your writing.
                   </p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                      <Zap className="w-3 h-3 mr-1" />
+                      Free & Unlimited
+                    </Badge>
+                    <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                      <Brain className="w-3 h-3 mr-1" />
+                      Smart Caching
+                    </Badge>
+                  </div>
                 </div>
               </div>
             </div>
