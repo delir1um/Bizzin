@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { X, Plus, Save, Lightbulb, RefreshCw } from "lucide-react"
+import { X, Plus, Save, Lightbulb, RefreshCw, Brain } from "lucide-react"
 import { JournalService } from "@/lib/services/journal"
 import { JOURNAL_MOODS, JOURNAL_CATEGORIES } from "@/types/journal"
 import { getDailyPrompt, getRandomPrompt, type ReflectionPrompt } from "@/data/reflectionPrompts"
@@ -315,99 +315,21 @@ export function CreateEntryModal({ isOpen, onClose }: CreateEntryModalProps) {
               </div>
             </div>
 
-            {/* Mood and Category Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Mood */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Mood
-                </label>
-                <Select onValueChange={(value) => setValue("mood", value)}>
-                  <SelectTrigger className="focus:ring-orange-500 focus:border-orange-500">
-                    <SelectValue placeholder="How are you feeling?" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {JOURNAL_MOODS.map((mood) => (
-                      <SelectItem key={mood} value={mood}>
-                        {mood}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Category */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Category
-                </label>
-                <Select onValueChange={(value) => setValue("category", value)}>
-                  <SelectTrigger className="focus:ring-orange-500 focus:border-orange-500">
-                    <SelectValue placeholder="Choose a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {JOURNAL_CATEGORIES.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Tags */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Tags
-              </label>
-              <div className="flex gap-2">
-                <Input
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Add a tag..."
-                  className="flex-1 focus:ring-orange-500 focus:border-orange-500"
-                  maxLength={30}
-                />
-                <Button
-                  type="button"
-                  onClick={addTag}
-                  variant="outline"
-                  size="sm"
-                  disabled={!newTag.trim() || tags.includes(newTag.trim()) || tags.length >= 10}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-              
-              {/* Display Tags */}
-              {tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {tags.map((tag, index) => (
-                    <Badge
-                      key={index}
-                      variant="secondary"
-                      className="flex items-center gap-1"
-                    >
-                      {tag}
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeTag(tag)}
-                        className="h-4 w-4 p-0 hover:bg-transparent"
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </Badge>
-                  ))}
+            {/* AI Processing Notice */}
+            <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
+                  <Brain className="w-4 h-4 text-orange-600 dark:text-orange-400" />
                 </div>
-              )}
-              
-              <p className="text-xs text-slate-500">
-                {tags.length}/10 tags • Press Enter to add a tag
-              </p>
+                <div>
+                  <h4 className="font-medium text-orange-900 dark:text-orange-100 text-sm">
+                    AI-Powered Analysis
+                  </h4>
+                  <p className="text-sm text-orange-700 dark:text-orange-300">
+                    Your mood, category, and tags will be automatically detected and assigned based on your writing.
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Action Buttons */}
