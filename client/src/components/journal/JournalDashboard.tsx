@@ -15,6 +15,10 @@ import {
 } from "lucide-react"
 import { format, isToday, differenceInDays, startOfWeek, endOfWeek } from "date-fns"
 import type { JournalEntry } from "@/types/journal"
+import type { Goal } from "@/types/goals"
+import { useQuery } from "@tanstack/react-query"
+import { GoalsService } from "@/lib/services/goals"
+import { useAuth } from "@/hooks/AuthProvider"
 
 interface JournalDashboardProps {
   entries: JournalEntry[]
@@ -29,6 +33,14 @@ export function JournalDashboard({
   onViewEntry, 
   onJumpToDate 
 }: JournalDashboardProps) {
+  const { user } = useAuth()
+
+  // Fetch user goals to show goal-journal insights
+  const { data: userGoals = [] } = useQuery({
+    queryKey: ['goals', user?.id],
+    queryFn: () => user ? GoalsService.getUserGoals(user.id) : Promise.resolve([]),
+    enabled: !!user
+  })
   
   const analytics = useMemo(() => {
     if (!entries.length) return null
@@ -108,6 +120,24 @@ export function JournalDashboard({
     const topCategory = Object.entries(categories)
       .sort(([,a], [,b]) => b - a)[0]
 
+    // Goal-related analytics
+    const entriesWithGoals = entries.filter(entry => entry.related_goal_id)
+    const goalEngagement = userGoals.length > 0 ? 
+      (entriesWithGoals.length / entries.length) * 100 : 0
+
+    // Most referenced goals
+    const goalReferences = entries.reduce((acc, entry) => {
+      if (entry.related_goal_id) {
+        acc[entry.related_goal_id] = (acc[entry.related_goal_id] || 0) + 1
+      }
+      return acc
+    }, {} as Record<string, number>)
+
+    const topGoalId = Object.entries(goalReferences)
+      .sort(([,a], [,b]) => b - a)[0]?.[0]
+
+    const topGoal = topGoalId ? userGoals.find(g => g.id === topGoalId) : null
+
     return {
       recentEntries: recentEntries.slice(0, 3),
       todayEntries,
@@ -116,7 +146,10 @@ export function JournalDashboard({
       avgEnergy,
       streak,
       topCategory,
-      totalEntries: entries.length
+      totalEntries: entries.length,
+      entriesWithGoals,
+      goalEngagement,
+      topGoal
     }
   }, [entries])
 
@@ -178,8 +211,8 @@ export function JournalDashboard({
 
   return (
     <div className="space-y-6">
-      {/* Quick Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Quick Stats Row */}  
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Today's Progress */}
         <Card className="hover:shadow-md transition-shadow">
           <CardContent className="pt-4">
@@ -257,7 +290,47 @@ export function JournalDashboard({
             </div>
           </CardContent>
         </Card>
+
+        {/* Goal Engagement */}
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="pt-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Goals</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white">
+                  {Math.round(analytics.goalEngagement)}%
+                </p>
+                <p className="text-xs text-slate-500">Entry links</p>
+              </div>
+              <div className="w-10 h-10 bg-pink-100 dark:bg-pink-900 rounded-full flex items-center justify-center">
+                <Target className="w-5 h-5 text-pink-600 dark:text-pink-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Top Goal Insight */}
+      {analytics.topGoal && (
+        <Card className="hover:shadow-md transition-shadow bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border-orange-200 dark:border-orange-800">
+          <CardContent className="pt-4">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-orange-700 dark:text-orange-300 mb-1">Most Journaled Goal</p>
+                <p className="text-lg font-bold text-orange-900 dark:text-orange-100 mb-1">
+                  {analytics.topGoal.title}
+                </p>
+                <p className="text-sm text-orange-600 dark:text-orange-400">
+                  {analytics.entriesWithGoals.filter(e => e.related_goal_id === analytics.topGoal!.id).length} related entries
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-orange-200 dark:bg-orange-800 rounded-full flex items-center justify-center">
+                <Target className="w-6 h-6 text-orange-700 dark:text-orange-300" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Quick Actions */}
       <div className="flex flex-wrap gap-3">
@@ -339,6 +412,16 @@ export function JournalDashboard({
                 </p>
                 
                 <div className="flex items-center gap-2">
+                  {entry.related_goal_id && userGoals.find(g => g.id === entry.related_goal_id) && (
+                    <Badge 
+                      variant="secondary" 
+                      className="text-xs bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+                    >
+                      <Target className="w-3 h-3 mr-1" />
+                      {userGoals.find(g => g.id === entry.related_goal_id)?.title.substring(0, 15)}
+                      {userGoals.find(g => g.id === entry.related_goal_id)?.title.length! > 15 ? '...' : ''}
+                    </Badge>
+                  )}
                   {entry.sentiment_data?.primary_mood && (
                     <Badge variant="secondary" className="text-xs">
                       {getMoodEmoji(entry.sentiment_data.primary_mood)} {entry.sentiment_data.primary_mood}

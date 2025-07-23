@@ -1,10 +1,14 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { X, Clock, BookOpen, Edit } from "lucide-react"
+import { X, Clock, BookOpen, Edit, Target } from "lucide-react"
 import type { JournalEntry } from "@/types/journal"
+import type { Goal } from "@/types/goals"
 import { format } from "date-fns"
 import { SentimentInsights } from "@/components/journal/SentimentInsights"
+import { useQuery } from "@tanstack/react-query"
+import { GoalsService } from "@/lib/services/goals"
+import { useAuth } from "@/hooks/AuthProvider"
 
 interface ViewEntryModalProps {
   isOpen: boolean
@@ -14,6 +18,20 @@ interface ViewEntryModalProps {
 }
 
 export function ViewEntryModal({ isOpen, onClose, entry, onEdit }: ViewEntryModalProps) {
+  const { user } = useAuth()
+  
+  // Fetch user goals to display goal information
+  const { data: userGoals = [] } = useQuery({
+    queryKey: ['goals', user?.id],
+    queryFn: () => user ? GoalsService.getUserGoals(user.id) : Promise.resolve([]),
+    enabled: !!user && isOpen
+  })
+
+  // Helper function to find goal by ID
+  const findGoalById = (goalId: string): Goal | undefined => {
+    return userGoals.find(goal => goal.id === goalId)
+  }
+
   if (!isOpen || !entry) return null
 
   return (
@@ -65,6 +83,53 @@ export function ViewEntryModal({ isOpen, onClose, entry, onEdit }: ViewEntryModa
         </CardHeader>
 
         <CardContent className="space-y-6">
+          {/* Related Goal Section */}
+          {entry.related_goal_id && (() => {
+            const relatedGoal = findGoalById(entry.related_goal_id)
+            return relatedGoal ? (
+              <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <Target className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-orange-800 dark:text-orange-200 mb-1">
+                      Related Goal
+                    </h4>
+                    <p className="text-orange-700 dark:text-orange-300 font-medium mb-2">
+                      {relatedGoal.title}
+                    </p>
+                    {relatedGoal.description && (
+                      <p className="text-orange-600 dark:text-orange-400 text-sm">
+                        {relatedGoal.description}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-2 mt-3">
+                      <Badge 
+                        variant="secondary" 
+                        className="bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100"
+                      >
+                        {relatedGoal.priority} Priority
+                      </Badge>
+                      <Badge 
+                        variant="outline" 
+                        className="border-orange-300 text-orange-700 dark:border-orange-600 dark:text-orange-300"
+                      >
+                        {relatedGoal.status}
+                      </Badge>
+                      {relatedGoal.deadline && (
+                        <Badge 
+                          variant="outline" 
+                          className="border-orange-300 text-orange-700 dark:border-orange-600 dark:text-orange-300"
+                        >
+                          Due {format(new Date(relatedGoal.deadline), 'MMM dd')}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : null
+          })()}
+
           {/* Mood Badge */}
           {entry.mood && (
             <div>

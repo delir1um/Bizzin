@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { PlusCircle, Search, Calendar, Zap, X } from "lucide-react"
 import { SmartSearch } from "@/components/journal/SmartSearch"
 import { JournalService } from "@/lib/services/journal"
+import { GoalsService } from "@/lib/services/goals"
 import { supabase } from "@/lib/supabase"
 import type { JournalEntry } from "@/types/journal"
 import { useToast } from "@/hooks/use-toast"
@@ -32,7 +33,8 @@ export function JournalPage() {
   const [filters, setFilters] = useState<JournalFilters>({
     categories: [],
     moods: [],
-    tags: []
+    tags: [],
+    goals: []
   })
   const queryClient = useQueryClient()
   const { toast } = useToast()
@@ -51,6 +53,13 @@ export function JournalPage() {
     queryKey: ['journal-entries', user?.id],
     queryFn: () => user ? JournalService.getUserEntries(user.id) : [],
     enabled: !!user,
+  })
+
+  // Fetch user goals for filtering
+  const { data: userGoals = [] } = useQuery({
+    queryKey: ['goals', user?.id],
+    queryFn: () => user ? GoalsService.getUserGoals(user.id) : Promise.resolve([]),
+    enabled: !!user
   })
 
   // Search entries
@@ -100,6 +109,13 @@ export function JournalPage() {
           entryTags.some(entryTag => entryTag.toLowerCase().includes(filterTag.toLowerCase()))
         )
         if (!hasMatchingTag) {
+          return false
+        }
+      }
+      
+      // Goal filter (if entry is linked to selected goals)
+      if (filters.goals.length > 0) {
+        if (!entry.related_goal_id || !filters.goals.includes(entry.related_goal_id)) {
           return false
         }
       }
@@ -192,15 +208,15 @@ export function JournalPage() {
               if (filter.type === 'recent') {
                 // Filter recent entries in the last 7 days
                 setSearchTerm("")
-                setFilters(prev => ({ ...prev, categories: [], moods: [], tags: [] }))
+                setFilters(prev => ({ ...prev, categories: [], moods: [], tags: [], goals: [] }))
                 // Could add date range filtering here
               } else if (filter.type === 'energy') {
-                setFilters(prev => ({ ...prev, moods: [], categories: [], tags: [] }))
+                setFilters(prev => ({ ...prev, moods: [], categories: [], tags: [], goals: [] }))
                 // Could add energy level filtering
               } else if (filter.type === 'mood' && filter.value) {
-                setFilters(prev => ({ ...prev, moods: [filter.value!], categories: [], tags: [] }))
+                setFilters(prev => ({ ...prev, moods: [filter.value!], categories: [], tags: [], goals: [] }))
               } else if (filter.type === 'category' && filter.value) {
-                setFilters(prev => ({ ...prev, categories: [filter.value!], moods: [], tags: [] }))
+                setFilters(prev => ({ ...prev, categories: [filter.value!], moods: [], tags: [], goals: [] }))
               }
             }}
           />
@@ -212,6 +228,7 @@ export function JournalPage() {
             activeFilters={filters}
             onFiltersChange={handleFiltersChange}
             allEntries={allEntries || []}
+            userGoals={userGoals || []}
           />
         </div>
 

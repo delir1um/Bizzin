@@ -4,18 +4,20 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Filter, X, Tag } from "lucide-react"
+import { Filter, X, Tag, Target } from "lucide-react"
 
 interface FilterBarProps {
   onFiltersChange: (filters: JournalFilters) => void
   activeFilters: JournalFilters
   allEntries: any[] // To extract available tags
+  userGoals?: any[] // To show available goals for filtering
 }
 
 export interface JournalFilters {
   categories: string[]
   moods: string[]
   tags: string[]
+  goals: string[] // Goal IDs for filtering
 }
 
 const JOURNAL_CATEGORIES = [
@@ -28,7 +30,7 @@ const JOURNAL_MOODS = [
   'Optimistic', 'Grateful', 'Stressed', 'Confident', 'Overwhelmed'
 ]
 
-export function FilterBar({ onFiltersChange, activeFilters, allEntries }: FilterBarProps) {
+export function FilterBar({ onFiltersChange, activeFilters, allEntries, userGoals = [] }: FilterBarProps) {
   const [showFilters, setShowFilters] = useState(false)
   const [tagSearch, setTagSearch] = useState("")
   const [availableTags, setAvailableTags] = useState<string[]>([])
@@ -48,7 +50,8 @@ export function FilterBar({ onFiltersChange, activeFilters, allEntries }: Filter
 
   const hasActiveFilters = activeFilters.categories.length > 0 || 
                           activeFilters.moods.length > 0 || 
-                          activeFilters.tags.length > 0
+                          activeFilters.tags.length > 0 ||
+                          activeFilters.goals.length > 0
 
   const handleCategoryChange = (category: string, checked: boolean) => {
     const newCategories = checked 
@@ -83,6 +86,17 @@ export function FilterBar({ onFiltersChange, activeFilters, allEntries }: Filter
     })
   }
 
+  const handleGoalChange = (goalId: string, checked: boolean) => {
+    const newGoals = checked 
+      ? [...activeFilters.goals, goalId]
+      : activeFilters.goals.filter(g => g !== goalId)
+    
+    onFiltersChange({
+      ...activeFilters,
+      goals: newGoals
+    })
+  }
+
   // Filter tags based on search
   const filteredTags = availableTags.filter(tag => 
     tag.toLowerCase().includes(tagSearch.toLowerCase())
@@ -92,11 +106,12 @@ export function FilterBar({ onFiltersChange, activeFilters, allEntries }: Filter
     onFiltersChange({
       categories: [],
       moods: [],
-      tags: []
+      tags: [],
+      goals: []
     })
   }
 
-  const removeFilter = (type: 'categories' | 'moods' | 'tags', value: string) => {
+  const removeFilter = (type: 'categories' | 'moods' | 'tags' | 'goals', value: string) => {
     onFiltersChange({
       ...activeFilters,
       [type]: activeFilters[type].filter(item => item !== value)
@@ -118,7 +133,7 @@ export function FilterBar({ onFiltersChange, activeFilters, allEntries }: Filter
               Filters
               {hasActiveFilters && (
                 <Badge variant="secondary" className="ml-2 bg-orange-100 text-orange-800 text-xs">
-                  {activeFilters.categories.length + activeFilters.moods.length + activeFilters.tags.length}
+                  {activeFilters.categories.length + activeFilters.moods.length + activeFilters.tags.length + activeFilters.goals.length}
                 </Badge>
               )}
             </Button>
@@ -220,6 +235,33 @@ export function FilterBar({ onFiltersChange, activeFilters, allEntries }: Filter
                   </div>
                 </div>
               )}
+
+              {/* Goals */}
+              {userGoals.length > 0 && (
+                <div>
+                  <h5 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Related Goals</h5>
+                  <div className="max-h-40 overflow-y-auto space-y-2">
+                    {userGoals.map((goal) => (
+                      <div key={goal.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`goal-${goal.id}`}
+                          checked={activeFilters.goals.includes(goal.id)}
+                          onCheckedChange={(checked) => 
+                            handleGoalChange(goal.id, checked as boolean)
+                          }
+                        />
+                        <label
+                          htmlFor={`goal-${goal.id}`}
+                          className="text-sm text-slate-600 dark:text-slate-400 cursor-pointer flex items-center"
+                        >
+                          <Target className="w-3 h-3 mr-1 text-orange-600" />
+                          {goal.title.length > 25 ? `${goal.title.substring(0, 25)}...` : goal.title}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </PopoverContent>
         </Popover>
@@ -279,13 +321,35 @@ export function FilterBar({ onFiltersChange, activeFilters, allEntries }: Filter
             </Button>
           </Badge>
         ))}
+
+        {activeFilters.goals.map((goalId) => {
+          const goal = userGoals.find(g => g.id === goalId)
+          return goal ? (
+            <Badge
+              key={`goal-${goalId}`}
+              variant="secondary"
+              className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+            >
+              <Target className="w-3 h-3 mr-1" />
+              {goal.title.length > 20 ? `${goal.title.substring(0, 20)}...` : goal.title}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => removeFilter('goals', goalId)}
+                className="h-auto p-0 ml-1 text-orange-600 hover:text-orange-800"
+              >
+                <X className="w-3 h-3" />
+              </Button>
+            </Badge>
+          ) : null
+        })}
       </div>
 
       {/* Filter Summary */}
       {hasActiveFilters && (
         <div className="text-sm text-slate-600 dark:text-slate-400">
-          Showing entries matching {activeFilters.categories.length + activeFilters.moods.length + activeFilters.tags.length} filter
-          {(activeFilters.categories.length + activeFilters.moods.length + activeFilters.tags.length) !== 1 ? 's' : ''}
+          Showing entries matching {activeFilters.categories.length + activeFilters.moods.length + activeFilters.tags.length + activeFilters.goals.length} filter
+          {(activeFilters.categories.length + activeFilters.moods.length + activeFilters.tags.length + activeFilters.goals.length) !== 1 ? 's' : ''}
         </div>
       )}
     </div>

@@ -70,7 +70,7 @@ export function DashboardPage() {
   // Get daily inspirational quote
   const dailyQuote = user ? InspirationalQuotes.getDailyInspiration(user) : null
 
-  // Calculate journal insights
+  // Calculate journal insights with goal integration
   const journalInsights = {
     totalEntries: journalEntries.length,
     todayEntries: journalEntries.filter(entry => isToday(new Date(entry.created_at))).length,
@@ -112,7 +112,22 @@ export function DashboardPage() {
       return Object.entries(moodCounts).sort(([,a], [,b]) => b - a)[0]
     })(),
     recentEntry: journalEntries
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0],
+    // Goal-journal integration insights
+    entriesWithGoals: journalEntries.filter(entry => entry.related_goal_id).length,
+    goalEngagementRate: journalEntries.length > 0 ? 
+      Math.round((journalEntries.filter(entry => entry.related_goal_id).length / journalEntries.length) * 100) : 0,
+    mostJournaledGoal: (() => {
+      const goalCounts = journalEntries.reduce((acc, entry) => {
+        if (entry.related_goal_id) {
+          acc[entry.related_goal_id] = (acc[entry.related_goal_id] || 0) + 1
+        }
+        return acc
+      }, {} as Record<string, number>)
+      
+      const topGoalId = Object.entries(goalCounts).sort(([,a], [,b]) => b - a)[0]?.[0]
+      return topGoalId ? goals.find(g => g.id === topGoalId) : null
+    })()
   }
 
   return (
@@ -291,6 +306,11 @@ export function DashboardPage() {
                     ? `${journalInsights.writingStreak} day streak` 
                     : 'Business reflections'
                   }
+                  {journalInsights.goalEngagementRate > 0 && (
+                    <span className="block mt-1">
+                      {journalInsights.goalEngagementRate}% goal-linked
+                    </span>
+                  )}
                 </div>
               </>
             ) : (
@@ -490,6 +510,39 @@ export function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Goal-Journal Integration Insight */}
+      {journalInsights.mostJournaledGoal && journalInsights.entriesWithGoals > 0 && (
+        <Card className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border-orange-200 dark:border-orange-800">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg font-semibold text-orange-900 dark:text-orange-100 flex items-center gap-2">
+              <Target className="h-5 w-5 text-orange-600" />
+              Goal-Journal Connection
+            </CardTitle>
+            <p className="text-sm text-orange-700 dark:text-orange-300">
+              Your most documented goal with {journalInsights.entriesWithGoals} journal entries linked to goals ({journalInsights.goalEngagementRate}% of all entries)
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-lg border border-orange-100 dark:border-orange-700">
+              <div className="flex-1">
+                <h4 className="font-medium text-slate-900 dark:text-white mb-1">
+                  {journalInsights.mostJournaledGoal.title}
+                </h4>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Most journaled about • {journalEntries.filter(e => e.related_goal_id === journalInsights.mostJournaledGoal?.id).length} entries
+                </p>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                  {journalInsights.mostJournaledGoal.progress}%
+                </div>
+                <p className="text-xs text-slate-500">Progress</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Recent Activity & Quick Actions */}
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
