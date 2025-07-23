@@ -1,54 +1,21 @@
 import { useState, useEffect } from "react"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import { PlusCircle, Search, Calendar, Zap, X, AlertTriangle } from "lucide-react"
-import { SmartSearch } from "@/components/journal/SmartSearch"
-import { JournalService } from "@/lib/services/journal"
-import { GoalsService } from "@/lib/services/goals"
+import { Input } from "@/components/ui/input"
+import { PlusCircle, Search, BookOpen, Calendar, Brain } from "lucide-react"
 import { supabase } from "@/lib/supabase"
-import type { JournalEntry } from "@/types/journal"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useToast } from "@/hooks/use-toast"
-import { CreateEntryModal } from "@/components/journal/CreateEntryModal"
-import { EditEntryModal } from "@/components/journal/EditEntryModal"
-import { ViewEntryModal } from "@/components/journal/ViewEntryModal"
-import { QuickEntryModal } from "@/components/journal/QuickEntryModal"
-import { CalendarView } from "@/components/journal/CalendarView"
-import { DailyEntriesView } from "@/components/journal/DailyEntriesView"
-import { FilterBar, type JournalFilters } from "@/components/journal/FilterBar"
-import { BusinessIntelligenceDashboard } from "@/components/journal/BusinessIntelligenceDashboard"
-import { WeeklySummaryModal } from "@/components/journal/WeeklySummaryModal"
-import { MinimalJournalMode } from "@/components/journal/MinimalJournalMode"
-import { AICoachInsights } from "@/components/journal/AICoachInsights"
-import { AppleStyleJournalInterface } from "@/components/journal/AppleStyleJournalInterface"
-import { SimplifiedJournalInterface } from "@/components/journal/SimplifiedJournalInterface"
+import { format } from "date-fns"
+import type { JournalEntry } from "@/types/journal"
 import { InvisibleAIJournal } from "@/components/journal/InvisibleAIJournal"
-import { IntelligentCoachingPanel } from "@/components/journal/IntelligentCoachingPanel"
+import { motion, AnimatePresence } from "framer-motion"
 
 export function JournalPage() {
   const [user, setUser] = useState<any>(null)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [showCreateModal, setShowCreateModal] = useState(false)
-  const [showQuickModal, setShowQuickModal] = useState(false)
-  const [showEditModal, setShowEditModal] = useState(false)
-  const [showViewModal, setShowViewModal] = useState(false)
-  const [showWeeklySummary, setShowWeeklySummary] = useState(false)
-  const [showMinimalMode, setShowMinimalMode] = useState(false)
-  const [showAppleInterface, setShowAppleInterface] = useState(false)
-  const [showSimplifiedInterface, setShowSimplifiedInterface] = useState(false)
-  const [showInvisibleAI, setShowInvisibleAI] = useState(false)
-  const [entryToEdit, setEntryToEdit] = useState<JournalEntry | null>(null)
-  const [entryToView, setEntryToView] = useState<JournalEntry | null>(null)
-  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date())
-  const [viewMode, setViewMode] = useState<'dashboard' | 'calendar' | 'list'>('dashboard')
-  const [filters, setFilters] = useState<JournalFilters>({
-    categories: [],
-    moods: [],
-    tags: [],
-    goals: []
-  })
+  const [showWriteModal, setShowWriteModal] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
@@ -61,410 +28,281 @@ export function JournalPage() {
     getCurrentUser()
   }, [])
 
-  // Fetch all journal entries
-  const { data: allEntries = [], isLoading, error } = useQuery({
-    queryKey: ['journal-entries', user?.id],
-    queryFn: () => user ? JournalService.getUserEntries(user.id) : [],
-    enabled: !!user,
-  })
-
-  // Fetch user goals for filtering
-  const { data: userGoals = [] } = useQuery({
-    queryKey: ['goals', user?.id],
-    queryFn: () => user ? GoalsService.getUserGoals(user.id) : Promise.resolve([]),
+  // Fetch journal entries using direct Supabase query
+  const { data: entries = [], isLoading } = useQuery({
+    queryKey: ['journal-entries'],
+    queryFn: async () => {
+      if (!user) return []
+      
+      const { data, error } = await supabase
+        .from('journal_entries')
+        .select('*')
+        .order('created_at', { ascending: false })
+      
+      if (error) {
+        console.error('Error fetching entries:', error)
+        return []
+      }
+      
+      return data || []
+    },
     enabled: !!user
   })
 
-  // Search entries
-  const { data: searchResults = [] } = useQuery({
-    queryKey: ['journal-search', user?.id, searchTerm],
-    queryFn: () => user && searchTerm ? JournalService.searchEntries(user.id, searchTerm) : [],
-    enabled: !!user && !!searchTerm,
-  })
+  // Filter entries based on search
+  const filteredEntries = entries.filter((entry: JournalEntry) =>
+    entry.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    entry.content.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
-  // Delete entry mutation
-  const deleteEntryMutation = useMutation({
-    mutationFn: (entry: JournalEntry) => JournalService.deleteEntry(entry.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
-      queryClient.invalidateQueries({ queryKey: ['usage-status'] })
-      toast({
-        title: "Entry deleted",
-        description: "Journal entry has been successfully deleted.",
-      })
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete entry",
-        variant: "destructive",
-      })
-    },
-  })
-
-  // Apply filters to entries
-  const applyFilters = (entries: JournalEntry[]) => {
-    return entries.filter(entry => {
-      // Category filter
-      if (filters.categories.length > 0 && (!entry.category || !filters.categories.includes(entry.category))) {
-        return false
-      }
-      
-      // Mood filter
-      if (filters.moods.length > 0 && (!entry.mood || !filters.moods.includes(entry.mood))) {
-        return false
-      }
-      
-      // Tag filter (if entry has tags that match any selected tags)
-      if (filters.tags.length > 0) {
-        const entryTags = entry.tags || []
-        const hasMatchingTag = filters.tags.some(filterTag => 
-          entryTags.some(entryTag => entryTag.toLowerCase().includes(filterTag.toLowerCase()))
-        )
-        if (!hasMatchingTag) {
-          return false
-        }
-      }
-      
-      // Goal filter (if entry is linked to selected goals)
-      if (filters.goals.length > 0) {
-        if (!entry.related_goal_id || !filters.goals.includes(entry.related_goal_id)) {
-          return false
-        }
-      }
-      
-      return true
-    })
-  }
-
-  // Determine which entries to display
-  const baseEntries = searchTerm ? searchResults : allEntries
-  const displayEntries = applyFilters(baseEntries)
-
-  const handleDeleteEntry = (entry: JournalEntry) => {
-    deleteEntryMutation.mutate(entry)
-  }
-
-  const handleDateSelect = (date: Date) => {
-    setSelectedDate(date)
-    // Clear search when selecting a date to show date-specific entries
-    if (date && searchTerm) {
-      setSearchTerm("")
+  const getMoodColor = (mood: string | null | undefined) => {
+    if (!mood) return 'bg-gray-100 text-gray-600'
+    
+    const moodColors: Record<string, string> = {
+      'excited': 'bg-yellow-100 text-yellow-700',
+      'confident': 'bg-blue-100 text-blue-700',
+      'optimistic': 'bg-green-100 text-green-700',
+      'focused': 'bg-purple-100 text-purple-700',
+      'content': 'bg-emerald-100 text-emerald-700',
+      'neutral': 'bg-gray-100 text-gray-600',
+      'concerned': 'bg-orange-100 text-orange-700',
+      'frustrated': 'bg-red-100 text-red-700',
+      'stressed': 'bg-red-200 text-red-800',
+      'overwhelmed': 'bg-red-300 text-red-900'
     }
+    
+    return moodColors[mood.toLowerCase()] || 'bg-gray-100 text-gray-600'
   }
 
-  const handleEditEntry = (entry: JournalEntry) => {
-    setEntryToEdit(entry)
-    setShowEditModal(true)
+  const getCategoryColor = (category: string | null | undefined) => {
+    if (!category) return 'bg-slate-100 text-slate-600'
+    
+    const categoryColors: Record<string, string> = {
+      'planning': 'bg-blue-100 text-blue-700',
+      'strategy': 'bg-purple-100 text-purple-700',
+      'operations': 'bg-green-100 text-green-700',
+      'finance': 'bg-emerald-100 text-emerald-700',
+      'marketing': 'bg-pink-100 text-pink-700',
+      'reflection': 'bg-indigo-100 text-indigo-700',
+      'challenges': 'bg-red-100 text-red-700',
+      'wins': 'bg-yellow-100 text-yellow-700'
+    }
+    
+    return categoryColors[category.toLowerCase()] || 'bg-slate-100 text-slate-600'
   }
 
-  const handleViewEntry = (entry: JournalEntry) => {
-    setEntryToView(entry)
-    setShowViewModal(true)
+  const formatDate = (dateString: string) => {
+    return format(new Date(dateString), 'MMM d, yyyy')
   }
 
-  const handleCloseEditModal = () => {
-    setShowEditModal(false)
-    setEntryToEdit(null)
+  const getThisWeekCount = () => {
+    return entries.filter((e: JournalEntry) => {
+      const today = new Date()
+      const entryDate = new Date(e.created_at || e.entry_date || '')
+      const diffTime = today.getTime() - entryDate.getTime()
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      return diffDays <= 7
+    }).length
   }
 
-  const handleCloseViewModal = () => {
-    setShowViewModal(false)
-    setEntryToView(null)
+  const getAIAnalyzedCount = () => {
+    return entries.filter((e: JournalEntry) => 
+      e.sentiment_data?.confidence && e.sentiment_data.confidence > 50
+    ).length
   }
 
-  const handleClearSearch = () => {
-    setSearchTerm("")
-    // Don't clear selected date when clearing search - keep calendar context
-  }
-
-  const handleFiltersChange = (newFilters: JournalFilters) => {
-    setFilters(newFilters)
-  }
-
-  const handleWeekSummary = () => {
-    setShowWeeklySummary(true)
-  }
-
-  const hasActiveFilters = filters.categories.length > 0 || 
-                          filters.moods.length > 0 || 
-                          filters.tags.length > 0
-
-  if (!user) {
+  if (isLoading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Please sign in to access your journal</h1>
+      <div className="min-h-screen bg-slate-50">
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <div className="text-center py-16">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-4"
+            >
+              <Brain className="w-8 h-8 text-orange-600" />
+            </motion.div>
+            <h3 className="text-lg font-medium text-slate-900 mb-2">Loading your journal</h3>
+            <p className="text-slate-600">Preparing your business insights...</p>
+          </div>
         </div>
       </div>
     )
   }
+
   return (
-    <>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Page Header */}
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Header */}
         <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Business Journal</h1>
-              <p className="mt-2 text-lg text-slate-600 dark:text-slate-300">
-                Track your progress, insights, and business learnings
+              <h1 className="text-3xl font-bold text-slate-900 mb-2">Business Journal</h1>
+              <p className="text-slate-600">
+                Track your thoughts, insights, and business learnings. AI automatically detects mood and category.
               </p>
             </div>
-            <div className="mt-4 sm:mt-0 flex gap-2">
-              <Button 
-                onClick={() => setShowInvisibleAI(true)}
-                className="bg-orange-600 hover:bg-orange-700 text-white"
-              >
-                <PlusCircle className="w-4 h-4 mr-2" />
-                Write
-              </Button>
-              <Button 
-                onClick={() => setShowMinimalMode(true)}
-                variant="outline"
-                className="border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-950/20"
-              >
-                Focus Mode
-              </Button>
-            </div>
-
-          </div>
-        </div>
-
-        {/* View Mode Toggle & Quick Actions */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <div className="flex gap-2">
-            <Button
-              variant={viewMode === 'dashboard' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('dashboard')}
-              className={viewMode === 'dashboard' ? 'bg-orange-500 hover:bg-orange-600' : 'border-orange-200 text-orange-700 hover:bg-orange-50'}
+            <Button 
+              onClick={() => setShowWriteModal(true)}
+              className="bg-orange-600 hover:bg-orange-700 text-white"
             >
-              Dashboard
-            </Button>
-            <Button
-              variant={viewMode === 'calendar' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('calendar')}
-              className={viewMode === 'calendar' ? 'bg-orange-500 hover:bg-orange-600' : 'border-orange-200 text-orange-700 hover:bg-orange-50'}
-            >
-              Calendar
+              <PlusCircle className="w-4 h-4 mr-2" />
+              Write Entry
             </Button>
           </div>
-          
-          {/* Simple Search */}
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <div className="relative flex-1 sm:w-80">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input
-                type="text"
-                placeholder="Search your entries..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 focus:ring-orange-500 focus:border-orange-500"
-              />
-            </div>
-            {(searchTerm || Object.values(filters).some(arr => arr.length > 0)) && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setSearchTerm("")
-                  setFilters({ categories: [], moods: [], tags: [], goals: [] })
-                }}
-                className="text-slate-500 hover:text-slate-700"
-              >
-                <X className="w-4 h-4 mr-1" />
-                Clear
-              </Button>
-            )}
-          </div>
-        </div>
 
-        {/* Advanced Filters (when needed) */}
-        {(searchTerm || Object.values(filters).some(arr => arr.length > 0)) && (
-          <div className="mb-6">
-            <FilterBar
-              activeFilters={filters}
-              onFiltersChange={handleFiltersChange}
-              allEntries={allEntries || []}
-              userGoals={userGoals || []}
+          {/* Search */}
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <Input
+              placeholder="Search your entries..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
             />
           </div>
-        )}
+        </div>
 
-        {/* Main Content */}
-        {isLoading ? (
-          <div className="text-center py-16">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 dark:bg-orange-900 rounded-full mb-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
-            </div>
-            <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">Loading your journal</h3>
-            <p className="text-slate-600 dark:text-slate-400">Preparing your business insights...</p>
-          </div>
-        ) : error ? (
-          <div className="text-center py-16">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 dark:bg-red-900 rounded-full mb-4">
-              <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
-            </div>
-            <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">Unable to load journal</h3>
-            <p className="text-red-600 dark:text-red-400">{error.message}</p>
-          </div>
-        ) : (
-          <div className="space-y-8">
-
-
-            {/* Content based on view mode and context */}
-            {searchTerm || hasActiveFilters ? (
-              /* Search/Filter Results View */
-              <div className="space-y-6">
-                <DailyEntriesView
-                  entries={displayEntries}
-                  selectedDate={null}
-                  onViewEntry={handleViewEntry}
-                  onEditEntry={handleEditEntry}
-                  onDeleteEntry={handleDeleteEntry}
-                  isDeleting={deleteEntryMutation.isPending}
-                  isSearching={true}
-                />
-              </div>
-            ) : viewMode === 'dashboard' ? (
-              /* Business Intelligence Dashboard View with AI Coach */
-              <div className="space-y-6">
-                {/* Intelligent Coaching Panel */}
-                <IntelligentCoachingPanel 
-                  entries={allEntries || []}
-                  goals={userGoals || []}
-                />
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  {/* Main Dashboard */}
-                  <div className="lg:col-span-2">
-                    <BusinessIntelligenceDashboard
-                      entries={allEntries || []}
-                      onCreateEntry={() => setShowCreateModal(true)}
-                      onViewEntry={handleViewEntry}
-                      onJumpToDate={(date) => {
-                        setSelectedDate(date)
-                        setViewMode('calendar')
-                      }}
-                      onWeekSummary={handleWeekSummary}
-                    />
-                  </div>
-                  
-                  {/* AI Business Coach Sidebar */}
-                  <div className="lg:col-span-1">
-                    {user && (
-                      <AICoachInsights 
-                        userId={user.id} 
-                        className="h-fit sticky top-4"
-                      />
-                    )}
-                  </div>
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center">
+                <BookOpen className="w-8 h-8 text-orange-600 mr-3" />
+                <div>
+                  <p className="text-2xl font-bold text-slate-900">{entries.length}</p>
+                  <p className="text-sm text-slate-600">Total Entries</p>
                 </div>
               </div>
-            ) : (
-              /* Calendar View */
-              <div className="space-y-8">
-                <CalendarView
-                  entries={displayEntries}
-                  selectedDate={selectedDate}
-                  onDateSelect={handleDateSelect}
-                  onCreateEntry={() => setShowCreateModal(true)}
-                />
+            </CardContent>
+          </Card>
 
-                <div className="space-y-6">
-                  <DailyEntriesView
-                    entries={displayEntries}
-                    selectedDate={selectedDate}
-                    onViewEntry={handleViewEntry}
-                    onEditEntry={handleEditEntry}
-                    onDeleteEntry={handleDeleteEntry}
-                    isDeleting={deleteEntryMutation.isPending}
-                    isSearching={false}
-                  />
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center">
+                <Calendar className="w-8 h-8 text-orange-600 mr-3" />
+                <div>
+                  <p className="text-2xl font-bold text-slate-900">{getThisWeekCount()}</p>
+                  <p className="text-sm text-slate-600">This Week</p>
                 </div>
               </div>
-            )}
-          </div>
-        )}
+            </CardContent>
+          </Card>
 
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center">
+                <Brain className="w-8 h-8 text-orange-600 mr-3" />
+                <div>
+                  <p className="text-2xl font-bold text-slate-900">{getAIAnalyzedCount()}</p>
+                  <p className="text-sm text-slate-600">AI Analyzed</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Entries */}
+        <div className="space-y-4">
+          {filteredEntries.length === 0 ? (
+            <Card className="p-8 text-center">
+              <BookOpen className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-slate-900 mb-2">
+                {searchQuery ? 'No entries found' : 'Start your business journal'}
+              </h3>
+              <p className="text-slate-600 mb-4">
+                {searchQuery 
+                  ? 'Try a different search term or clear your search.'
+                  : 'Write your first entry to begin tracking your business journey.'
+                }
+              </p>
+              {!searchQuery && (
+                <Button 
+                  onClick={() => setShowWriteModal(true)}
+                  className="bg-orange-600 hover:bg-orange-700 text-white"
+                >
+                  <PlusCircle className="w-4 h-4 mr-2" />
+                  Write First Entry
+                </Button>
+              )}
+            </Card>
+          ) : (
+            <AnimatePresence>
+              {filteredEntries.map((entry: JournalEntry, index: number) => (
+                <motion.div
+                  key={entry.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <Card className="hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <CardTitle className="text-lg font-semibold text-slate-900 mb-2">
+                            {entry.title}
+                          </CardTitle>
+                          <p className="text-sm text-slate-500">
+                            {formatDate(entry.created_at || entry.entry_date || '')}
+                          </p>
+                        </div>
+                        <div className="flex gap-2 ml-4">
+                          {entry.sentiment_data?.primary_mood && (
+                            <Badge className={getMoodColor(entry.sentiment_data.primary_mood)}>
+                              {entry.sentiment_data.primary_mood}
+                            </Badge>
+                          )}
+                          {entry.sentiment_data?.category && (
+                            <Badge className={getCategoryColor(entry.sentiment_data.category)}>
+                              {entry.sentiment_data.category}
+                            </Badge>
+                          )}
+                          {entry.sentiment_data?.confidence && (
+                            <Badge variant="outline" className="text-xs">
+                              AI: {Math.round(entry.sentiment_data.confidence)}%
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <p className="text-slate-700 line-clamp-3">
+                        {entry.content}
+                      </p>
+                      {entry.sentiment_data?.business_insights && (
+                        <div className="mt-3 p-3 bg-orange-50 rounded-lg border border-orange-200">
+                          <div className="flex items-start gap-2">
+                            <Brain className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
+                            <p className="text-sm text-orange-800">
+                              <strong>AI Insight:</strong> {entry.sentiment_data.business_insights}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          )}
+        </div>
       </div>
 
-
-
-      {/* Modals */}
-      <CreateEntryModal
-        isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        selectedDate={selectedDate || undefined}
-        recentEntries={allEntries?.slice(0, 10) || []}
-      />
-
-      <QuickEntryModal
-        isOpen={showQuickModal}
-        onClose={() => setShowQuickModal(false)}
-        selectedDate={selectedDate || undefined}
-      />
-
-      <EditEntryModal
-        isOpen={showEditModal}
-        onClose={handleCloseEditModal}
-        entry={entryToEdit}
-      />
-
-      <ViewEntryModal
-        isOpen={showViewModal}
-        onClose={handleCloseViewModal}
-        entry={entryToView}
-        onEdit={(entry) => {
-          setShowViewModal(false)
-          handleEditEntry(entry)
-        }}
-      />
-
-      <WeeklySummaryModal
-        isOpen={showWeeklySummary}
-        onClose={() => setShowWeeklySummary(false)}
-        entries={allEntries || []}
-        goals={userGoals || []}
-      />
-
-      {showMinimalMode && (
-        <MinimalJournalMode
-          recentEntries={allEntries?.slice(0, 10) || []}
-          activeGoals={userGoals || []}
-          onClose={() => setShowMinimalMode(false)}
-          selectedDate={selectedDate || undefined}
-        />
-      )}
-
-      <AppleStyleJournalInterface
-        isOpen={showAppleInterface}
-        onClose={() => setShowAppleInterface(false)}
-        onEntryCreated={() => {
-          queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
-          setShowAppleInterface(false)
-        }}
-      />
-
-      <SimplifiedJournalInterface
-        isOpen={showSimplifiedInterface}
-        onClose={() => setShowSimplifiedInterface(false)}
-        onEntryCreated={() => {
-          queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
-          setShowSimplifiedInterface(false)
-        }}
-      />
-
+      {/* Write Modal */}
       <InvisibleAIJournal
-        isOpen={showInvisibleAI}
-        onClose={() => setShowInvisibleAI(false)}
+        isOpen={showWriteModal}
+        onClose={() => setShowWriteModal(false)}
         onEntryCreated={() => {
           queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
-          setShowInvisibleAI(false)
+          setShowWriteModal(false)
+          toast({
+            title: "Entry saved",
+            description: "Your business insights have been captured and analyzed by AI",
+            className: "border-green-200 bg-green-50 text-green-800"
+          })
         }}
       />
-    </>
+    </div>
   )
 }
