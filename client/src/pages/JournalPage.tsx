@@ -9,7 +9,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
 import type { JournalEntry } from "@/types/journal"
-import { InvisibleAIJournal } from "@/components/journal/InvisibleAIJournal"
+import { SimpleCreateEntryModal } from "@/components/journal/SimpleCreateEntryModal"
 import { ViewEntryModal } from "@/components/journal/ViewEntryModal"
 import { EditEntryModal } from "@/components/journal/EditEntryModal"
 import { motion, AnimatePresence } from "framer-motion"
@@ -275,19 +275,22 @@ export function JournalPage() {
                             {formatDate(entry.created_at || entry.entry_date || '')}
                           </p>
                         </div>
-                        <div className="flex gap-2 ml-4">
+                        <div className="flex flex-wrap gap-2 ml-4">
                           {entry.sentiment_data?.primary_mood && (
-                            <Badge className={getMoodColor(entry.sentiment_data.primary_mood)}>
+                            <Badge className={`${getMoodColor(entry.sentiment_data.primary_mood)} flex items-center gap-1`}>
+                              <Brain className="w-3 h-3" />
                               {entry.sentiment_data.primary_mood}
                             </Badge>
                           )}
                           {entry.sentiment_data?.category && (
-                            <Badge className={getCategoryColor(entry.sentiment_data.category)}>
+                            <Badge className={`${getCategoryColor(entry.sentiment_data.category)} flex items-center gap-1`}>
+                              <span className="w-2 h-2 rounded-full bg-current opacity-70"></span>
                               {entry.sentiment_data.category}
                             </Badge>
                           )}
-                          {entry.sentiment_data?.confidence && (
-                            <Badge variant="outline" className="text-xs">
+                          {entry.sentiment_data?.confidence && entry.sentiment_data.confidence > 50 && (
+                            <Badge variant="outline" className="text-xs flex items-center gap-1">
+                              <Brain className="w-3 h-3 text-orange-600" />
                               AI: {Math.round(entry.sentiment_data.confidence)}%
                             </Badge>
                           )}
@@ -298,14 +301,27 @@ export function JournalPage() {
                       <p className="text-slate-700 line-clamp-3">
                         {entry.content}
                       </p>
-                      {entry.sentiment_data?.business_insights && (
-                        <div className="mt-3 p-3 bg-orange-50 rounded-lg border border-orange-200">
-                          <div className="flex items-start gap-2">
-                            <Brain className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
-                            <p className="text-sm text-orange-800">
-                              <strong>AI Insight:</strong> {entry.sentiment_data.business_insights}
-                            </p>
-                          </div>
+                      {/* AI Analysis Summary */}
+                      {entry.sentiment_data && (entry.sentiment_data.business_insights || entry.sentiment_data.business_context) && (
+                        <div className="mt-3 space-y-2">
+                          {entry.sentiment_data.business_context && (
+                            <div className="p-2 bg-blue-50 rounded border border-blue-200">
+                              <p className="text-xs text-blue-700">
+                                <strong>Context:</strong> {entry.sentiment_data.business_context}
+                              </p>
+                            </div>
+                          )}
+                          {entry.sentiment_data.business_insights && (
+                            <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+                              <div className="flex items-start gap-2">
+                                <Brain className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
+                                <div>
+                                  <p className="text-xs font-medium text-orange-900 mb-1">AI Business Insight</p>
+                                  <p className="text-sm text-orange-800">{entry.sentiment_data.business_insights}</p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                       <div className="mt-3 pt-3 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -334,17 +350,11 @@ export function JournalPage() {
       </div>
 
       {/* Modals */}
-      <InvisibleAIJournal
+      <SimpleCreateEntryModal
         isOpen={showWriteModal}
         onClose={() => setShowWriteModal(false)}
         onEntryCreated={() => {
           queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
-          setShowWriteModal(false)
-          toast({
-            title: "Entry saved",
-            description: "Your business insights have been captured and analyzed by AI",
-            className: "border-green-200 bg-green-50 text-green-800"
-          })
         }}
       />
 
