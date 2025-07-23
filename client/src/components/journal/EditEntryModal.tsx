@@ -84,9 +84,29 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
     return mapping[businessCategory] || 'Strategy' // Default fallback to existing category
   }
 
-  // Helper function to capitalize mood properly
-  const capitalizeMood = (mood: string): string => {
-    return mood.charAt(0).toUpperCase() + mood.slice(1).toLowerCase()
+  // Helper function to map AI moods to journal moods
+  const mapAIMoodToJournal = (aiMood: string): string => {
+    const mapping: Record<string, string> = {
+      'optimistic': 'Optimistic',
+      'excited': 'Excited',
+      'focused': 'Focused',
+      'frustrated': 'Frustrated',
+      'reflective': 'Reflective',
+      'confident': 'Confident',
+      'determined': 'Determined',
+      'accomplished': 'Motivated', // Map accomplished to motivated
+      'uncertain': 'Thoughtful', // Map uncertain to thoughtful
+      'stressed': 'Frustrated', // Map stressed to frustrated
+      'neutral': 'Neutral',
+      'inspired': 'Inspired'
+    }
+    
+    // First try exact mapping, then capitalize the mood if it doesn't exist
+    const mapped = mapping[aiMood.toLowerCase()]
+    if (mapped) return mapped
+    
+    // Fallback: capitalize the AI mood
+    return aiMood.charAt(0).toUpperCase() + aiMood.slice(1).toLowerCase()
   }
 
   // Reset form when entry changes
@@ -102,7 +122,7 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
       
       // Priority: AI-generated values first, then manual values
       if (entry.sentiment_data?.primary_mood) {
-        displayMood = capitalizeMood(entry.sentiment_data.primary_mood)
+        displayMood = mapAIMoodToJournal(entry.sentiment_data.primary_mood)
       } else if (entry.mood) {
         displayMood = entry.mood
       }
