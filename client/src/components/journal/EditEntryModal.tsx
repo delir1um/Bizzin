@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-import { X, Plus, Save, Trash2 } from "lucide-react"
+import { X, Plus, Save, Trash2, Calendar } from "lucide-react"
 import { JournalService } from "@/lib/services/journal"
 import { GoalsService } from "@/lib/services/goals"
 import { JOURNAL_MOODS, JOURNAL_CATEGORIES } from "@/types/journal"
@@ -18,10 +18,12 @@ import type { JournalEntry, UpdateJournalEntry } from "@/types/journal"
 import type { Goal } from "@/types/goals"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/AuthProvider"
+import { format } from "date-fns"
 
 const editEntrySchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
   content: z.string().min(10, "Content must be at least 10 characters").max(10000, "Content must be less than 10000 characters"),
+  entry_date: z.string().optional(),
   mood: z.string().optional(),
   category: z.string().optional(),
   related_goal_id: z.string().optional(),
@@ -63,6 +65,7 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
     defaultValues: {
       title: "",
       content: "",
+      entry_date: "",
       mood: "",
       category: "",
       related_goal_id: "",
@@ -74,6 +77,7 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
     if (entry && isOpen) {
       setValue("title", entry.title)
       setValue("content", entry.content)
+      setValue("entry_date", entry.entry_date ? format(new Date(entry.entry_date), 'yyyy-MM-dd') : "")
       setValue("mood", entry.mood || "")
       setValue("category", entry.category || "")
       setValue("related_goal_id", entry.related_goal_id || "")
@@ -134,6 +138,7 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
       id: entry.id,
       title: data.title,
       content: data.content,
+      entry_date: data.entry_date || undefined,
       mood: data.mood && data.mood !== "none" ? data.mood : undefined,
       category: data.category && data.category !== "none" ? data.category : undefined,
       related_goal_id: data.related_goal_id && data.related_goal_id !== "none" ? data.related_goal_id : undefined,
@@ -189,6 +194,24 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
 
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {/* Entry Date */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Entry Date
+              </label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  type="date"
+                  {...register("entry_date")}
+                  className="pl-10 focus:ring-orange-500 focus:border-orange-500"
+                />
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Choose the date for this journal entry
+              </p>
+            </div>
+
             {/* Title */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">

@@ -78,6 +78,7 @@ export class JournalService {
       const entryWithUserId = {
         title: entry.title,
         content: entry.content,
+        entry_date: entry.entry_date || null, // Custom date for the entry
         user_id: user.id,
         mood: entry.mood || sentiment.mood.primary, // Use AI mood if no manual mood set
         category: entry.category || null,

@@ -358,6 +358,7 @@ export function JournalPage() {
       <CreateEntryModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
+        selectedDate={selectedDate || undefined}
       />
 
       <QuickEntryModal

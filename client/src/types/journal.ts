@@ -2,6 +2,7 @@ export type JournalEntry = {
   id: string
   title: string
   content: string
+  entry_date?: string // optional custom date for the entry
   mood?: string
   tags: string[]
   category?: string
