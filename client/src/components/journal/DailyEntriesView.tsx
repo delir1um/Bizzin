@@ -313,11 +313,30 @@ export function DailyEntriesView({
                         ) : null
                       })()}
                       
-                      {entry.category && (
-                        <Badge variant="secondary" className="bg-white/70 text-slate-800 dark:bg-slate-800/70 dark:text-slate-200 border border-slate-300/50 dark:border-slate-600/50">
-                          📁 {entry.category}
-                        </Badge>
-                      )}
+                      {(() => {
+                        // Helper function to map AI business categories to journal categories
+                        const mapBusinessCategoryToJournal = (businessCategory: string): string => {
+                          const mapping: Record<string, string> = {
+                            'growth': 'Strategy',
+                            'challenge': 'Research',
+                            'achievement': 'Milestone',
+                            'planning': 'Planning',
+                            'reflection': 'Learning'
+                          }
+                          return mapping[businessCategory] || 'Strategy'
+                        }
+                        
+                        // Determine display category (prioritize AI values, map them properly)
+                        const displayCategory = entry.sentiment_data?.business_category 
+                          ? mapBusinessCategoryToJournal(entry.sentiment_data.business_category) 
+                          : entry.category
+                        
+                        return displayCategory ? (
+                          <Badge variant="secondary" className="bg-white/70 text-slate-800 dark:bg-slate-800/70 dark:text-slate-200 border border-slate-300/50 dark:border-slate-600/50">
+                            📁 {displayCategory}
+                          </Badge>
+                        ) : null
+                      })()}
                     </div>
                     
                     {/* Tags */}

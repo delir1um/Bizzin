@@ -130,37 +130,69 @@ export function SentimentInsights({ entry, className = "" }: SentimentInsightsPr
 export function SentimentBadge({ entry, size = "sm" }: { entry: JournalEntry, size?: "sm" | "xs" }) {
   const sentiment = entry.sentiment_data
   
-  if (!sentiment) {
-    // Fallback to manual mood if no AI sentiment yet
-    if (entry.mood) {
-      return (
-        <Badge 
-          variant="secondary" 
-          className={`${size === "xs" ? "text-xs" : "text-sm"} capitalize`}
-        >
-          😊 {entry.mood}
-        </Badge>
-      )
+  // Helper function to map AI moods to journal moods (same as EditEntryModal)
+  const mapAIMoodToJournal = (aiMood: string): string => {
+    const mapping: Record<string, string> = {
+      'optimistic': 'Optimistic',
+      'excited': 'Excited',
+      'focused': 'Focused',
+      'frustrated': 'Frustrated',
+      'reflective': 'Reflective',
+      'confident': 'Confident',
+      'determined': 'Determined',
+      'accomplished': 'Motivated',
+      'uncertain': 'Thoughtful',
+      'stressed': 'Frustrated',
+      'neutral': 'Neutral',
+      'inspired': 'Inspired'
     }
+    
+    const mapped = mapping[aiMood.toLowerCase()]
+    if (mapped) return mapped
+    
+    return aiMood.charAt(0).toUpperCase() + aiMood.slice(1).toLowerCase()
+  }
+
+  // Helper function to map AI business categories to journal categories
+  const mapBusinessCategoryToJournal = (businessCategory: string): string => {
+    const mapping: Record<string, string> = {
+      'growth': 'Strategy',
+      'challenge': 'Research',
+      'achievement': 'Milestone',
+      'planning': 'Planning',
+      'reflection': 'Learning'
+    }
+    return mapping[businessCategory] || 'Strategy'
+  }
+  
+  // Determine display mood and category (prioritize AI values, map them properly)
+  const displayMood = sentiment?.primary_mood ? mapAIMoodToJournal(sentiment.primary_mood) : entry.mood
+  const displayCategory = sentiment?.business_category ? mapBusinessCategoryToJournal(sentiment.business_category) : entry.category
+  
+  if (!displayMood && !displayCategory) {
     return null
   }
 
-  const moodColor = getMoodColor(sentiment.primary_mood)
-  const moodEmoji = getMoodEmoji(sentiment.primary_mood)
+  const moodColor = getMoodColor(displayMood || '')
+  const moodEmoji = getMoodEmoji(displayMood || '')
   
   return (
     <div className="flex items-center gap-1">
-      <span className={size === "xs" ? "text-sm" : "text-base"}>{moodEmoji}</span>
-      <Badge 
-        variant="secondary" 
-        className={`${size === "xs" ? "text-xs" : "text-sm"} capitalize`}
-        style={{ backgroundColor: `${moodColor}15`, color: moodColor }}
-      >
-        {sentiment.primary_mood}
-      </Badge>
-      {sentiment.confidence > 0.7 && (
+      {displayMood && (
+        <>
+          <span className={size === "xs" ? "text-sm" : "text-base"}>{moodEmoji}</span>
+          <Badge 
+            variant="secondary" 
+            className={`${size === "xs" ? "text-xs" : "text-sm"} capitalize`}
+            style={{ backgroundColor: `${moodColor}15`, color: moodColor }}
+          >
+            {displayMood}
+          </Badge>
+        </>
+      )}
+      {displayCategory && sentiment?.confidence && sentiment.confidence > 0.7 && (
         <Badge variant="outline" className="text-xs">
-          {sentiment.business_category}
+          {displayCategory}
         </Badge>
       )}
     </div>
