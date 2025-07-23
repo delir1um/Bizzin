@@ -10,11 +10,16 @@ import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
 import type { JournalEntry } from "@/types/journal"
 import { InvisibleAIJournal } from "@/components/journal/InvisibleAIJournal"
+import { ViewEntryModal } from "@/components/journal/ViewEntryModal"
+import { EditEntryModal } from "@/components/journal/EditEntryModal"
 import { motion, AnimatePresence } from "framer-motion"
 
 export function JournalPage() {
   const [user, setUser] = useState<any>(null)
   const [showWriteModal, setShowWriteModal] = useState(false)
+  const [showViewModal, setShowViewModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const queryClient = useQueryClient()
   const { toast } = useToast()
@@ -109,6 +114,22 @@ export function JournalPage() {
     return entries.filter((e: JournalEntry) => 
       e.sentiment_data?.confidence && e.sentiment_data.confidence > 50
     ).length
+  }
+
+  const handleViewEntry = (entry: JournalEntry) => {
+    setSelectedEntry(entry)
+    setShowViewModal(true)
+  }
+
+  const handleEditEntry = (entry: JournalEntry) => {
+    setSelectedEntry(entry)
+    setShowEditModal(true)
+  }
+
+  const handleCloseModals = () => {
+    setShowViewModal(false)
+    setShowEditModal(false)
+    setSelectedEntry(null)
   }
 
   if (isLoading) {
@@ -236,11 +257,18 @@ export function JournalPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                 >
-                  <Card className="hover:shadow-md transition-shadow">
+                  <Card 
+                    className="hover:shadow-md transition-shadow cursor-pointer group"
+                    onClick={() => handleViewEntry(entry)}
+                    onContextMenu={(e) => {
+                      e.preventDefault()
+                      handleEditEntry(entry)
+                    }}
+                  >
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <CardTitle className="text-lg font-semibold text-slate-900 mb-2">
+                          <CardTitle className="text-lg font-semibold text-slate-900 mb-2 group-hover:text-orange-600 transition-colors">
                             {entry.title}
                           </CardTitle>
                           <p className="text-sm text-slate-500">
@@ -280,6 +308,22 @@ export function JournalPage() {
                           </div>
                         </div>
                       )}
+                      <div className="mt-3 pt-3 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-slate-400">Click to view • Right-click to edit</p>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleEditEntry(entry)
+                            }}
+                          >
+                            Edit
+                          </Button>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -289,7 +333,7 @@ export function JournalPage() {
         </div>
       </div>
 
-      {/* Write Modal */}
+      {/* Modals */}
       <InvisibleAIJournal
         isOpen={showWriteModal}
         onClose={() => setShowWriteModal(false)}
@@ -300,6 +344,31 @@ export function JournalPage() {
             title: "Entry saved",
             description: "Your business insights have been captured and analyzed by AI",
             className: "border-green-200 bg-green-50 text-green-800"
+          })
+        }}
+      />
+
+      <ViewEntryModal
+        isOpen={showViewModal}
+        onClose={handleCloseModals}
+        entry={selectedEntry}
+        onEdit={() => {
+          setShowViewModal(false)
+          setShowEditModal(true)
+        }}
+      />
+
+      <EditEntryModal
+        isOpen={showEditModal}
+        onClose={handleCloseModals}
+        entry={selectedEntry}
+        onSave={() => {
+          queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
+          handleCloseModals()
+          toast({
+            title: "Entry updated",
+            description: "Your changes have been saved and re-analyzed by AI",
+            className: "border-blue-200 bg-blue-50 text-blue-800"
           })
         }}
       />
