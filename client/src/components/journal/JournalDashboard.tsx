@@ -341,15 +341,6 @@ export function JournalDashboard({
           <Plus className="w-4 h-4 mr-2" />
           Write Entry
         </Button>
-        
-        <Button 
-          variant="outline"
-          onClick={() => onJumpToDate(new Date())}
-          className="border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-800 dark:text-orange-300 dark:hover:bg-orange-950"
-        >
-          <Calendar className="w-4 h-4 mr-2" />
-          View Calendar
-        </Button>
 
         {analytics.weekEntries.length > 0 && (
           <Button 
