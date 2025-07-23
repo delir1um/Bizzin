@@ -76,12 +76,12 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
   const mapBusinessCategoryToJournal = (businessCategory: string): string => {
     const mapping: Record<string, string> = {
       'growth': 'Strategy',
-      'challenge': 'Problem-Solving',
+      'challenge': 'Research', // Map to existing category
       'achievement': 'Milestone',
       'planning': 'Planning',
       'reflection': 'Learning'
     }
-    return mapping[businessCategory] || businessCategory
+    return mapping[businessCategory] || 'Strategy' // Default fallback to existing category
   }
 
   // Helper function to capitalize mood properly
@@ -92,16 +92,41 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
   // Reset form when entry changes
   useEffect(() => {
     if (entry && isOpen) {
+      console.log("EditEntryModal - Entry data:", entry)
+      console.log("EditEntryModal - Sentiment data:", entry.sentiment_data)
+      
       setValue("title", entry.title)
       setValue("content", entry.content)
       setValue("entry_date", entry.entry_date ? format(new Date(entry.entry_date), 'yyyy-MM-dd') : "")
       
-      // Use AI-generated values if available, otherwise use manual values
-      const aiMood = entry.sentiment_data?.primary_mood ? capitalizeMood(entry.sentiment_data.primary_mood) : ""
-      const aiCategory = entry.sentiment_data?.business_category ? mapBusinessCategoryToJournal(entry.sentiment_data.business_category) : ""
+      // Debug: Log all mood and category values
+      console.log("Manual mood:", entry.mood)
+      console.log("AI mood:", entry.sentiment_data?.primary_mood)
+      console.log("Manual category:", entry.category)
+      console.log("AI category:", entry.sentiment_data?.business_category)
       
-      setValue("mood", entry.mood || aiMood)
-      setValue("category", entry.category || aiCategory)
+      // Use AI-generated values if available, otherwise use manual values
+      let displayMood = ""
+      let displayCategory = ""
+      
+      if (entry.sentiment_data?.primary_mood) {
+        displayMood = capitalizeMood(entry.sentiment_data.primary_mood)
+        console.log("Using AI mood:", displayMood)
+      } else if (entry.mood) {
+        displayMood = entry.mood
+        console.log("Using manual mood:", displayMood)
+      }
+      
+      if (entry.sentiment_data?.business_category) {
+        displayCategory = mapBusinessCategoryToJournal(entry.sentiment_data.business_category)
+        console.log("Using AI category:", displayCategory, "from", entry.sentiment_data.business_category)
+      } else if (entry.category) {
+        displayCategory = entry.category
+        console.log("Using manual category:", displayCategory)
+      }
+      
+      setValue("mood", displayMood)
+      setValue("category", displayCategory)
       setValue("related_goal_id", entry.related_goal_id || "")
       setTags(entry.tags || [])
     }
