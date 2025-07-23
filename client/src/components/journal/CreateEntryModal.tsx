@@ -9,9 +9,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { X, Plus, Save } from "lucide-react"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { X, Plus, Save, Lightbulb, RefreshCw } from "lucide-react"
 import { JournalService } from "@/lib/services/journal"
 import { JOURNAL_MOODS, JOURNAL_CATEGORIES } from "@/types/journal"
+import { getDailyPrompt, getRandomPrompt, type ReflectionPrompt } from "@/data/reflectionPrompts"
 import type { CreateJournalEntry } from "@/types/journal"
 import { useToast } from "@/hooks/use-toast"
 
@@ -32,6 +34,8 @@ interface CreateEntryModalProps {
 export function CreateEntryModal({ isOpen, onClose }: CreateEntryModalProps) {
   const [tags, setTags] = useState<string[]>([])
   const [newTag, setNewTag] = useState("")
+  const [currentPrompt, setCurrentPrompt] = useState<ReflectionPrompt>(() => getDailyPrompt())
+  const [showPrompt, setShowPrompt] = useState(true)
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
@@ -104,6 +108,24 @@ export function CreateEntryModal({ isOpen, onClose }: CreateEntryModalProps) {
     }
   }
 
+  const refreshPrompt = () => {
+    setCurrentPrompt(getRandomPrompt())
+  }
+
+  const usePromptAsTitle = () => {
+    setValue('title', currentPrompt.question.replace('?', ''))
+    setShowPrompt(false)
+  }
+
+  const handleCloseModal = () => {
+    reset()
+    setTags([])
+    setNewTag("")
+    setShowPrompt(true)
+    setCurrentPrompt(getDailyPrompt())
+    onClose()
+  }
+
   if (!isOpen) return null
 
   return (
@@ -114,7 +136,7 @@ export function CreateEntryModal({ isOpen, onClose }: CreateEntryModalProps) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={onClose}
+            onClick={handleCloseModal}
             className="h-8 w-8 p-0"
           >
             <X className="h-4 w-4" />
@@ -122,7 +144,85 @@ export function CreateEntryModal({ isOpen, onClose }: CreateEntryModalProps) {
         </CardHeader>
         
         <CardContent>
+          {/* Reflection Prompt Section */}
+          {showPrompt && (
+            <Card className="mb-6 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border-orange-200 dark:border-orange-800">
+              <CardContent className="pt-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
+                    <Lightbulb className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h4 className="font-medium text-orange-900 dark:text-orange-100">
+                        Daily Reflection Prompt
+                      </h4>
+                      <Badge variant="outline" className="text-xs border-orange-300 text-orange-700 dark:border-orange-700 dark:text-orange-300">
+                        {currentPrompt.category}
+                      </Badge>
+                    </div>
+                    <p className="text-orange-800 dark:text-orange-200 mb-3 leading-relaxed">
+                      {currentPrompt.question}
+                    </p>
+                    {currentPrompt.followUp && (
+                      <p className="text-sm text-orange-600 dark:text-orange-400 mb-3 italic">
+                        Follow-up: {currentPrompt.followUp}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={usePromptAsTitle}
+                        className="text-orange-700 border-orange-300 hover:bg-orange-100 dark:text-orange-300 dark:border-orange-700 dark:hover:bg-orange-900"
+                      >
+                        Use as Title
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={refreshPrompt}
+                        className="text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300"
+                      >
+                        <RefreshCw className="w-3 h-3 mr-1" />
+                        New Prompt
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowPrompt(false)}
+                        className="text-orange-500 hover:text-orange-600 dark:text-orange-500 dark:hover:text-orange-400"
+                      >
+                        <X className="w-3 h-3 mr-1" />
+                        Dismiss
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {/* Show prompt toggle when dismissed */}
+            {!showPrompt && (
+              <div className="mb-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowPrompt(true)}
+                  className="text-orange-600 border-orange-300 hover:bg-orange-50 dark:text-orange-400 dark:border-orange-700 dark:hover:bg-orange-950"
+                >
+                  <Lightbulb className="w-3 h-3 mr-1" />
+                  Show Reflection Prompt
+                </Button>
+              </div>
+            )}
+
             {/* Title */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -145,7 +245,7 @@ export function CreateEntryModal({ isOpen, onClose }: CreateEntryModalProps) {
               </label>
               <Textarea
                 {...register("content")}
-                placeholder="Share your thoughts, insights, learnings, or reflections..."
+                placeholder={showPrompt || !currentPrompt ? "Share your thoughts, insights, learnings, or reflections..." : `Reflect on: ${currentPrompt.question}`}
                 className="min-h-[200px] focus:ring-orange-500 focus:border-orange-500"
                 maxLength={10000}
               />
