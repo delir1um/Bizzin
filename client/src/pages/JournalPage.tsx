@@ -366,6 +366,7 @@ export function JournalPage() {
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         selectedDate={selectedDate || undefined}
+        recentEntries={allEntries?.slice(0, 10) || []}
       />
 
       <QuickEntryModal

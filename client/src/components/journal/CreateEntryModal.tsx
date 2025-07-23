@@ -16,6 +16,8 @@ import { JournalService } from "@/lib/services/journal"
 import { GoalsService } from "@/lib/services/goals"
 import { JOURNAL_MOODS, JOURNAL_CATEGORIES } from "@/types/journal"
 import { getDailyPrompt, getRandomPrompt, type ReflectionPrompt } from "@/data/reflectionPrompts"
+import { SmartPromptSelector } from "@/components/journal/SmartPromptSelector"
+import type { SmartPrompt } from "@/lib/aiPromptGenerator"
 import type { CreateJournalEntry } from "@/types/journal"
 import type { Goal } from "@/types/goals"
 import { useToast } from "@/hooks/use-toast"
@@ -34,13 +36,15 @@ interface CreateEntryModalProps {
   isOpen: boolean
   onClose: () => void
   selectedDate?: Date
+  recentEntries?: JournalEntry[]
 }
 
-export function CreateEntryModal({ isOpen, onClose, selectedDate }: CreateEntryModalProps) {
+export function CreateEntryModal({ isOpen, onClose, selectedDate, recentEntries = [] }: CreateEntryModalProps) {
   const [tags, setTags] = useState<string[]>([])
   const [newTag, setNewTag] = useState("")
   const [currentPrompt, setCurrentPrompt] = useState<ReflectionPrompt>(() => getDailyPrompt())
   const [showPrompt, setShowPrompt] = useState(true)
+  const [useSmartPrompts, setUseSmartPrompts] = useState(true)
   const queryClient = useQueryClient()
   const { toast } = useToast()
   const { user } = useAuth()
@@ -180,11 +184,32 @@ export function CreateEntryModal({ isOpen, onClose, selectedDate }: CreateEntryM
     setShowPrompt(false)
   }
 
+  const handleSmartPromptSelect = (prompt: SmartPrompt) => {
+    setValue('content', `Reflecting on: ${prompt.question}\n\n`)
+    setShowPrompt(false)
+  }
+
+  const handleSmartPromptTitle = (prompt: SmartPrompt) => {
+    // Convert question to statement for title
+    const title = prompt.question
+      .replace(/^What /, "What ")
+      .replace(/^How /, "How ")
+      .replace(/^When /, "When ")
+      .replace(/^Which /, "Which ")
+      .replace(/^If /, "If ")
+      .replace(/\?$/, '')
+    
+    setValue('title', title)
+    setValue('content', `${prompt.followUp ? `${prompt.followUp}\n\n` : ''}`)
+    setShowPrompt(false)
+  }
+
   const handleCloseModal = () => {
     reset()
     setTags([])
     setNewTag("")
     setShowPrompt(true)
+    setUseSmartPrompts(true)
     setCurrentPrompt(getDailyPrompt())
     onClose()
   }
@@ -207,8 +232,46 @@ export function CreateEntryModal({ isOpen, onClose, selectedDate }: CreateEntryM
         </CardHeader>
         
         <CardContent>
-          {/* Reflection Prompt Section */}
+          {/* Smart Prompt Toggle */}
           {showPrompt && (
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-sm font-medium text-slate-700">Choose your reflection style:</h3>
+              <div className="flex gap-2">
+                <Button
+                  variant={useSmartPrompts ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setUseSmartPrompts(true)}
+                  className={useSmartPrompts ? "bg-orange-600 hover:bg-orange-700" : ""}
+                >
+                  <Brain className="w-3 h-3 mr-1" />
+                  Smart AI
+                </Button>
+                <Button
+                  variant={!useSmartPrompts ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setUseSmartPrompts(false)}
+                  className={!useSmartPrompts ? "bg-orange-600 hover:bg-orange-700" : ""}
+                >
+                  <Lightbulb className="w-3 h-3 mr-1" />
+                  Classic
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Smart AI Prompts */}
+          {showPrompt && useSmartPrompts && (
+            <SmartPromptSelector
+              recentEntries={recentEntries}
+              activeGoals={userGoals}
+              onPromptSelect={handleSmartPromptSelect}
+              onUseAsTitle={handleSmartPromptTitle}
+              className="mb-6"
+            />
+          )}
+
+          {/* Classic Reflection Prompt Section */}
+          {showPrompt && !useSmartPrompts && (
             <Card className="mb-6 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border-orange-200 dark:border-orange-800">
               <CardContent className="pt-4">
                 <div className="flex items-start gap-3">
@@ -280,8 +343,8 @@ export function CreateEntryModal({ isOpen, onClose, selectedDate }: CreateEntryM
                   onClick={() => setShowPrompt(true)}
                   className="text-orange-600 border-orange-300 hover:bg-orange-50 dark:text-orange-400 dark:border-orange-700 dark:hover:bg-orange-950"
                 >
-                  <Lightbulb className="w-3 h-3 mr-1" />
-                  Show Reflection Prompt
+                  <Brain className="w-3 h-3 mr-1" />
+                  Show AI Reflection Prompts
                 </Button>
               </div>
             )}
