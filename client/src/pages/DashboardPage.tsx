@@ -258,16 +258,14 @@ export function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Journal Insights */}
+        {/* Journal Enhanced */}
         <Card 
           className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-950 dark:to-indigo-900 border-purple-200 dark:border-purple-800 relative overflow-hidden group" 
           onClick={() => navigate("/journal")}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-            <CardTitle className="text-sm font-medium text-purple-900 dark:text-purple-100">
-              {journalInsights.writingStreak > 0 ? `${journalInsights.writingStreak} Day Streak` : 'Journal'}
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-purple-900 dark:text-purple-100">Journal</CardTitle>
             <div className="p-2 bg-purple-500 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-300">
               <Notebook className="h-4 w-4 text-white" />
             </div>
@@ -281,7 +279,7 @@ export function DashboardPage() {
             ) : journalEntries.length > 0 ? (
               <>
                 <div className="text-3xl font-bold text-purple-900 dark:text-purple-100 mb-1">
-                  {journalInsights.todayEntries || journalInsights.totalEntries}
+                  {journalInsights.todayEntries > 0 ? journalInsights.todayEntries : journalInsights.totalEntries}
                 </div>
                 <p className="text-xs text-purple-700 dark:text-purple-300 font-medium">
                   {journalInsights.todayEntries > 0 
@@ -289,15 +287,15 @@ export function DashboardPage() {
                     : `${journalInsights.totalEntries} total entries`}
                 </p>
                 <div className="mt-2 text-xs text-purple-600 dark:text-purple-400">
-                  {journalInsights.dominantMood ? 
-                    `Mostly ${journalInsights.dominantMood[0].toLowerCase()}` : 
-                    'Business reflections'
+                  {journalInsights.writingStreak > 0 
+                    ? `${journalInsights.writingStreak} day streak` 
+                    : 'Business reflections'
                   }
                 </div>
               </>
             ) : (
               <>
-                <div className="text-3xl font-bold text-purple-900 dark:text-purple-100 mb-1">0</div>
+                <div className="text-3xl font-bold text-purple-900 dark:text-purple-100 mb-1">-</div>
                 <p className="text-xs text-purple-700 dark:text-purple-300 font-medium">Write your thoughts</p>
                 <div className="mt-2 text-xs text-purple-600 dark:text-purple-400">
                   Start journaling today
@@ -607,30 +605,20 @@ export function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Recent Journal Entries */}
-        <Card className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 border-purple-200 dark:border-purple-800">
-          <CardHeader className="flex flex-row items-center justify-between border-b border-purple-100 dark:border-purple-800 pb-4">
-            <div>
-              <CardTitle className="text-lg font-semibold text-purple-900 dark:text-purple-100 flex items-center gap-2">
-                <Notebook className="h-5 w-5 text-purple-600" />
-                Recent Reflections
-              </CardTitle>
-              <p className="text-sm text-purple-700 dark:text-purple-300">Your latest business insights</p>
-            </div>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => navigate("/journal")}
-              className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-950 transition-colors"
-            >
-              View All <ArrowRight className="w-4 h-4 ml-1" />
-            </Button>
+        {/* Upcoming Deadlines Enhanced */}
+        <Card className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border-amber-200 dark:border-amber-800">
+          <CardHeader className="border-b border-amber-100 dark:border-amber-800 pb-4">
+            <CardTitle className="text-lg font-semibold text-amber-900 dark:text-amber-100 flex items-center gap-2">
+              <Clock className="h-5 w-5 text-amber-600" />
+              Upcoming Deadlines
+            </CardTitle>
+            <p className="text-sm text-amber-700 dark:text-amber-300">Important dates and milestones</p>
           </CardHeader>
           <CardContent className="pt-6">
-            {journalLoading ? (
+            {goalsLoading ? (
               <div className="space-y-3">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="flex items-center gap-4 p-3 rounded-lg border border-purple-100 dark:border-purple-800">
+                  <div key={i} className="flex items-center gap-4 p-3 rounded-lg border border-amber-100 dark:border-amber-800">
                     <Skeleton className="w-8 h-8 rounded-full" />
                     <div className="space-y-2 flex-1">
                       <Skeleton className="h-4 w-3/4" />
@@ -640,125 +628,26 @@ export function DashboardPage() {
                   </div>
                 ))}
               </div>
-            ) : journalEntries.length > 0 ? (
-              <div className="space-y-3">
-                {journalEntries.slice(0, 5).map((entry, index) => {
-                  const createdDate = new Date(entry.created_at)
-                  const isToday = format(createdDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')
-                  const timeAgo = isToday ? 
-                    format(createdDate, 'h:mm a') : 
-                    format(createdDate, 'MMM d')
-                  
-                  const getMoodColor = (mood?: string) => {
-                    if (!mood) return 'bg-slate-400'
-                    const moodColors: Record<string, string> = {
-                      'Excited': 'bg-yellow-400',
-                      'Motivated': 'bg-green-400',
-                      'Focused': 'bg-blue-400',
-                      'Confident': 'bg-purple-400',
-                      'Optimistic': 'bg-emerald-400',
-                      'Grateful': 'bg-pink-400',
-                      'Reflective': 'bg-indigo-400',
-                      'Challenged': 'bg-orange-400',
-                      'Stressed': 'bg-red-400',
-                      'Overwhelmed': 'bg-amber-400',
-                      'Frustrated': 'bg-rose-400'
-                    }
-                    return moodColors[mood] || 'bg-slate-400'
-                  }
-                  
-                  return (
-                    <div 
-                      key={entry.id} 
-                      className="group flex items-center gap-4 p-3 rounded-lg border border-purple-100 dark:border-purple-800 hover:border-purple-200 dark:hover:border-purple-700 hover:bg-purple-50/50 dark:hover:bg-purple-950/20 cursor-pointer transition-all duration-200"
-                      onClick={() => navigate("/journal")}
-                    >
-                      <div className="flex items-center justify-center w-8 h-8">
-                        <div className={`w-3 h-3 rounded-full group-hover:scale-110 transition-transform duration-200 ${
-                          getMoodColor(entry.sentiment_data?.primary_mood)
-                        }`} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-purple-900 dark:text-purple-100 truncate group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors">
-                          {entry.title}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          {entry.category && (
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-800 text-purple-700 dark:text-purple-300">
-                              {entry.category}
-                            </span>
-                          )}
-                          <span className="text-xs text-purple-600 dark:text-purple-400">
-                            {timeAgo}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        {entry.sentiment_data?.primary_mood && (
-                          <span className="text-xs font-medium px-2 py-1 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300">
-                            {entry.sentiment_data.primary_mood}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-                {journalEntries.length > 5 && (
-                  <div className="pt-2 border-t border-purple-100 dark:border-purple-800">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => navigate("/journal")}
-                      className="w-full text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-950"
-                    >
-                      View {journalEntries.length - 5} more entries <ArrowRight className="w-4 h-4 ml-1" />
-                    </Button>
-                  </div>
-                )}
-              </div>
+            ) : upcomingDeadlines.length > 0 ? (
+              <DeadlineTimeline goals={upcomingDeadlines} />
             ) : (
               <div className="text-center py-12">
-                <div className="w-16 h-16 bg-purple-100 dark:bg-purple-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Notebook className="w-8 h-8 text-purple-500" />
+                <div className="w-16 h-16 bg-amber-100 dark:bg-amber-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Clock className="w-8 h-8 text-amber-500" />
                 </div>
-                <h3 className="text-sm font-medium text-purple-900 dark:text-purple-100 mb-2">No journal entries yet</h3>
-                <p className="text-xs text-purple-700 dark:text-purple-300 mb-6 max-w-48 mx-auto">
-                  Start documenting your business journey and insights
+                <h3 className="text-sm font-medium text-amber-900 dark:text-amber-100 mb-2">No upcoming deadlines</h3>
+                <p className="text-xs text-amber-700 dark:text-amber-300 mb-6 max-w-48 mx-auto">
+                  Set deadlines for your goals to stay on track
                 </p>
                 <Button 
-                  onClick={() => navigate("/journal")}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2"
+                  onClick={() => navigate("/goals")}
+                  className="bg-amber-600 hover:bg-amber-700 text-white"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Start Journaling
+                  <CalendarDays className="w-4 h-4 mr-2" />
+                  Add Deadlines
                 </Button>
               </div>
             )}
-
-            {/* Quick Actions */}
-            <div className="pt-6 border-t border-purple-100 dark:border-purple-800 mt-6">
-              <h4 className="text-sm font-semibold text-purple-900 dark:text-purple-100 mb-4">Quick Actions</h4>
-              <div className="grid grid-cols-2 gap-3">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="justify-start text-left border-purple-200 dark:border-purple-700 hover:bg-purple-50 dark:hover:bg-purple-950/50 text-purple-800 dark:text-purple-200"
-                  onClick={() => navigate("/journal")}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Write Entry
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="justify-start text-left border-purple-200 dark:border-purple-700 hover:bg-purple-50 dark:hover:bg-purple-950/50 text-purple-800 dark:text-purple-200"
-                  onClick={() => navigate("/goals")}
-                >
-                  <Target className="w-4 h-4 mr-2" />
-                  Set Goal
-                </Button>
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>
