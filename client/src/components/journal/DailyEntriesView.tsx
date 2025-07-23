@@ -3,10 +3,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-import { BookOpen, Edit, Trash2, Clock } from "lucide-react"
+import { BookOpen, Edit, Trash2, Clock, Target } from "lucide-react"
 import { format, isSameDay, isToday, isYesterday, startOfWeek, endOfWeek, isWithinInterval } from "date-fns"
 import type { JournalEntry } from "@/types/journal"
+import type { Goal } from "@/types/goals"
 import { SentimentBadge } from "@/components/journal/SentimentInsights"
+import { useQuery } from "@tanstack/react-query"
+import { GoalsService } from "@/lib/services/goals"
+import { useAuth } from "@/hooks/AuthProvider"
 
 interface DailyEntriesViewProps {
   entries: JournalEntry[]
@@ -36,6 +40,19 @@ export function DailyEntriesView({
 }: DailyEntriesViewProps) {
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set())
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<string | null>(null)
+  const { user } = useAuth()
+
+  // Fetch user goals to display goal titles
+  const { data: userGoals = [] } = useQuery({
+    queryKey: ['goals', user?.id],
+    queryFn: () => user ? GoalsService.getUserGoals(user.id) : Promise.resolve([]),
+    enabled: !!user
+  })
+
+  // Helper function to find goal by ID
+  const findGoalById = (goalId: string): Goal | undefined => {
+    return userGoals.find(goal => goal.id === goalId)
+  }
 
   // Group entries by date
   const groupEntriesByDate = (): GroupedEntries[] => {
@@ -281,6 +298,21 @@ export function DailyEntriesView({
                     {/* AI Sentiment Badge */}
                     <div className="flex flex-wrap gap-2 mb-4">
                       <SentimentBadge entry={entry} size="sm" />
+                      
+                      {/* Related Goal Badge */}
+                      {entry.related_goal_id && (() => {
+                        const relatedGoal = findGoalById(entry.related_goal_id)
+                        return relatedGoal ? (
+                          <Badge 
+                            variant="secondary" 
+                            className="bg-orange-100/70 text-orange-800 dark:bg-orange-900/70 dark:text-orange-200 border border-orange-200/50 dark:border-orange-800/50"
+                          >
+                            <Target className="w-3 h-3 mr-1" />
+                            {relatedGoal.title.length > 20 ? `${relatedGoal.title.substring(0, 20)}...` : relatedGoal.title}
+                          </Badge>
+                        ) : null
+                      })()}
+                      
                       {entry.category && (
                         <Badge variant="secondary" className="bg-white/70 text-slate-800 dark:bg-slate-800/70 dark:text-slate-200 border border-slate-300/50 dark:border-slate-600/50">
                           📁 {entry.category}

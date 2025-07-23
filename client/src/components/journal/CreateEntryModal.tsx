@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query"
 import * as z from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,16 +12,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { X, Plus, Save, Lightbulb, RefreshCw, Brain } from "lucide-react"
 import { JournalService } from "@/lib/services/journal"
+import { GoalsService } from "@/lib/services/goals"
 import { JOURNAL_MOODS, JOURNAL_CATEGORIES } from "@/types/journal"
 import { getDailyPrompt, getRandomPrompt, type ReflectionPrompt } from "@/data/reflectionPrompts"
 import type { CreateJournalEntry } from "@/types/journal"
+import type { Goal } from "@/types/goals"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/hooks/AuthProvider"
 
 const createEntrySchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
   content: z.string().min(10, "Content must be at least 10 characters").max(10000, "Content must be less than 10000 characters"),
   mood: z.string().optional(),
   category: z.string().optional(),
+  related_goal_id: z.string().optional(),
 })
 
 type FormData = z.infer<typeof createEntrySchema>
@@ -38,6 +42,14 @@ export function CreateEntryModal({ isOpen, onClose }: CreateEntryModalProps) {
   const [showPrompt, setShowPrompt] = useState(true)
   const queryClient = useQueryClient()
   const { toast } = useToast()
+  const { user } = useAuth()
+
+  // Fetch user goals for linking
+  const { data: userGoals = [] } = useQuery({
+    queryKey: ['goals', user?.id],
+    queryFn: () => user ? GoalsService.getUserGoals(user.id) : Promise.resolve([]),
+    enabled: !!user && isOpen
+  })
 
   const {
     register,
@@ -53,6 +65,7 @@ export function CreateEntryModal({ isOpen, onClose }: CreateEntryModalProps) {
       content: "",
       mood: "",
       category: "",
+      related_goal_id: "",
     }
   })
 
@@ -85,6 +98,7 @@ export function CreateEntryModal({ isOpen, onClose }: CreateEntryModalProps) {
       content: data.content,
       mood: data.mood || undefined,
       category: data.category || undefined,
+      related_goal_id: data.related_goal_id && data.related_goal_id !== "none" ? data.related_goal_id : undefined,
       tags: tags,
     }
     createEntryMutation.mutate(entryData)
@@ -314,6 +328,36 @@ export function CreateEntryModal({ isOpen, onClose }: CreateEntryModalProps) {
                 <span>{watch("content")?.length || 0}/10000</span>
               </div>
             </div>
+
+            {/* Related Goal (Optional) */}
+            {userGoals.length > 0 && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Related Goal (Optional)
+                </label>
+                <Select
+                  value={watch("related_goal_id") || "none"}
+                  onValueChange={(value) => setValue("related_goal_id", value === "none" ? "" : value)}
+                >
+                  <SelectTrigger className="focus:ring-orange-500 focus:border-orange-500">
+                    <SelectValue placeholder="Link to a goal..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No goal selected</SelectItem>
+                    {userGoals
+                      .filter(goal => goal.status !== 'completed')
+                      .map((goal) => (
+                        <SelectItem key={goal.id} value={goal.id}>
+                          {goal.title}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Connect this journal entry to one of your active goals
+                </p>
+              </div>
+            )}
 
             {/* AI Processing Notice */}
             <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">

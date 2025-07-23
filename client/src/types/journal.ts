@@ -9,6 +9,7 @@ export type JournalEntry = {
   updated_at: string
   user_id: string
   reading_time?: number // estimated reading time in minutes
+  related_goal_id?: string // linked goal for cross-feature integration
   sentiment_data?: {
     primary_mood: string
     confidence: number

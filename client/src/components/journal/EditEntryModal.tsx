@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query"
 import * as z from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,15 +12,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { X, Plus, Save, Trash2 } from "lucide-react"
 import { JournalService } from "@/lib/services/journal"
+import { GoalsService } from "@/lib/services/goals"
 import { JOURNAL_MOODS, JOURNAL_CATEGORIES } from "@/types/journal"
 import type { JournalEntry, UpdateJournalEntry } from "@/types/journal"
+import type { Goal } from "@/types/goals"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/hooks/AuthProvider"
 
 const editEntrySchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
   content: z.string().min(10, "Content must be at least 10 characters").max(10000, "Content must be less than 10000 characters"),
   mood: z.string().optional(),
   category: z.string().optional(),
+  related_goal_id: z.string().optional(),
 })
 
 type FormData = z.infer<typeof editEntrySchema>
@@ -38,6 +42,14 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const queryClient = useQueryClient()
   const { toast } = useToast()
+  const { user } = useAuth()
+
+  // Fetch user goals for linking
+  const { data: userGoals = [] } = useQuery({
+    queryKey: ['goals', user?.id],
+    queryFn: () => user ? GoalsService.getUserGoals(user.id) : Promise.resolve([]),
+    enabled: !!user && isOpen
+  })
 
   const {
     register,
@@ -53,6 +65,7 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
       content: "",
       mood: "",
       category: "",
+      related_goal_id: "",
     }
   })
 
@@ -63,6 +76,7 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
       setValue("content", entry.content)
       setValue("mood", entry.mood || "")
       setValue("category", entry.category || "")
+      setValue("related_goal_id", entry.related_goal_id || "")
       setTags(entry.tags || [])
     }
   }, [entry, isOpen, setValue])
@@ -122,6 +136,7 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
       content: data.content,
       mood: data.mood && data.mood !== "none" ? data.mood : undefined,
       category: data.category && data.category !== "none" ? data.category : undefined,
+      related_goal_id: data.related_goal_id && data.related_goal_id !== "none" ? data.related_goal_id : undefined,
       tags: tags.length > 0 ? tags : undefined,
     }
 
@@ -302,6 +317,36 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
                 </div>
               )}
             </div>
+
+            {/* Related Goal (Optional) */}
+            {userGoals.length > 0 && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Related Goal (Optional)
+                </label>
+                <Select
+                  value={watch("related_goal_id") || "none"}
+                  onValueChange={(value) => setValue("related_goal_id", value === "none" ? "" : value)}
+                >
+                  <SelectTrigger className="focus:ring-orange-500 focus:border-orange-500">
+                    <SelectValue placeholder="Link to a goal..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No goal selected</SelectItem>
+                    {userGoals
+                      .filter(goal => goal.status !== 'completed')
+                      .map((goal) => (
+                        <SelectItem key={goal.id} value={goal.id}>
+                          {goal.title}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Connect this journal entry to one of your active goals
+                </p>
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex justify-between items-center pt-4">
