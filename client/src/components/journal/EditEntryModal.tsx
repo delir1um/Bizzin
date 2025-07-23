@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { X, Plus, Save } from "lucide-react"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { X, Plus, Save, Trash2 } from "lucide-react"
 import { JournalService } from "@/lib/services/journal"
 import { JOURNAL_MOODS, JOURNAL_CATEGORIES } from "@/types/journal"
 import type { JournalEntry, UpdateJournalEntry } from "@/types/journal"
@@ -28,11 +29,13 @@ interface EditEntryModalProps {
   isOpen: boolean
   onClose: () => void
   entry: JournalEntry | null
+  onDeleteEntry?: (entry: JournalEntry) => void
 }
 
-export function EditEntryModal({ isOpen, onClose, entry }: EditEntryModalProps) {
+export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEntryModalProps) {
   const [tags, setTags] = useState<string[]>([])
   const [newTag, setNewTag] = useState("")
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
@@ -87,6 +90,29 @@ export function EditEntryModal({ isOpen, onClose, entry }: EditEntryModalProps) 
     },
   })
 
+  const deleteEntryMutation = useMutation({
+    mutationFn: (entryId: string) => JournalService.deleteEntry(entryId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
+      toast({
+        title: "Entry deleted",
+        description: "Your journal entry has been successfully deleted.",
+      })
+      setDeleteDialogOpen(false)
+      onClose()
+      reset()
+      setTags([])
+      setNewTag("")
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete entry",
+        variant: "destructive",
+      })
+    },
+  })
+
   const onSubmit = (data: FormData) => {
     if (!entry) return
     
@@ -111,6 +137,20 @@ export function EditEntryModal({ isOpen, onClose, entry }: EditEntryModalProps) 
 
   const removeTag = (tagToRemove: string) => {
     setTags(tags.filter(tag => tag !== tagToRemove))
+  }
+
+  const handleDeleteEntry = () => {
+    if (!entry) return
+    
+    // If onDeleteEntry is provided, use it (for consistency with existing patterns)
+    if (onDeleteEntry) {
+      onDeleteEntry(entry)
+      setDeleteDialogOpen(false)
+      onClose()
+    } else {
+      // Otherwise use the mutation directly
+      deleteEntryMutation.mutate(entry.id)
+    }
   }
 
   if (!isOpen || !entry) return null
@@ -263,24 +303,62 @@ export function EditEntryModal({ isOpen, onClose, entry }: EditEntryModalProps) 
               )}
             </div>
 
-            {/* Submit Button */}
-            <div className="flex justify-end space-x-3 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="bg-orange-600 hover:bg-orange-700 text-white"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                {isSubmitting ? "Updating..." : "Update Entry"}
-              </Button>
+            {/* Action Buttons */}
+            <div className="flex justify-between items-center pt-4">
+              {/* Delete Button */}
+              <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete Entry
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Journal Entry</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete "{entry?.title}"? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteEntry}
+                      className="bg-red-600 hover:bg-red-700"
+                      disabled={deleteEntryMutation.isPending}
+                    >
+                      {deleteEntryMutation.isPending ? "Deleting..." : "Delete"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
+              {/* Update/Cancel Buttons */}
+              <div className="flex space-x-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onClose}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-orange-600 hover:bg-orange-700 text-white"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  {isSubmitting ? "Updating..." : "Update Entry"}
+                </Button>
+              </div>
             </div>
           </form>
         </CardContent>
