@@ -377,5 +377,20 @@ function generateBusinessInsights(primaryEmotion: string, category: string, emot
   return insights.slice(0, 2); // Return top 2 insights
 }
 
-// Maintain backward compatibility
-export const analyzeBusinessSentiment = analyzeBusinessSentimentAI;
+// Main export - formatted for UI compatibility
+export async function analyzeBusinessSentiment(content: string, title?: string): Promise<any> {
+  const result = await analyzeBusinessSentimentAI(content, title);
+  
+  // Format exactly as expected by UI components
+  return {
+    primary_mood: result.mood.primary,
+    confidence: result.mood.confidence, // Keep as decimal for UI components
+    energy: result.mood.energy,
+    category: result.category,
+    business_category: result.category, // For compatibility
+    insights: result.insights, // Array format expected by SentimentInsights
+    business_insights: result.insights.length > 0 ? result.insights[0] : "Analyzing business patterns and growth opportunities",
+    business_context: `${result.mood.primary} energy with ${result.category} focus`,
+    emotions: result.mood.emotions
+  };
+}
