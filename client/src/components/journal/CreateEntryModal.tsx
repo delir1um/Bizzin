@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { X, Plus, Save, Lightbulb, RefreshCw, Brain, Calendar } from "lucide-react"
+import { X, Plus, Save, Lightbulb, RefreshCw, Brain, Calendar, Zap } from "lucide-react"
 import { format } from "date-fns"
 import { JournalService } from "@/lib/services/journal"
 import { GoalsService } from "@/lib/services/goals"
