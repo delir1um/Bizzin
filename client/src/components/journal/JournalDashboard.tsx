@@ -25,13 +25,15 @@ interface JournalDashboardProps {
   onCreateEntry: () => void
   onViewEntry: (entry: JournalEntry) => void
   onJumpToDate: (date: Date) => void
+  onWeekSummary: () => void
 }
 
 export function JournalDashboard({ 
   entries, 
   onCreateEntry, 
   onViewEntry, 
-  onJumpToDate 
+  onJumpToDate,
+  onWeekSummary
 }: JournalDashboardProps) {
   const { user } = useAuth()
 
@@ -345,7 +347,7 @@ export function JournalDashboard({
         {analytics.weekEntries.length > 0 && (
           <Button 
             variant="outline"
-            onClick={() => {/* Could open week summary */}}
+            onClick={onWeekSummary}
             className="border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
           >
             <TrendingUp className="w-4 h-4 mr-2" />

@@ -19,6 +19,7 @@ import { CalendarView } from "@/components/journal/CalendarView"
 import { DailyEntriesView } from "@/components/journal/DailyEntriesView"
 import { FilterBar, type JournalFilters } from "@/components/journal/FilterBar"
 import { JournalDashboard } from "@/components/journal/JournalDashboard"
+import { WeeklySummaryModal } from "@/components/journal/WeeklySummaryModal"
 
 export function JournalPage() {
   const [user, setUser] = useState<any>(null)
@@ -27,6 +28,7 @@ export function JournalPage() {
   const [showQuickModal, setShowQuickModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showViewModal, setShowViewModal] = useState(false)
+  const [showWeeklySummary, setShowWeeklySummary] = useState(false)
   const [entryToEdit, setEntryToEdit] = useState<JournalEntry | null>(null)
   const [entryToView, setEntryToView] = useState<JournalEntry | null>(null)
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date())
@@ -168,6 +170,10 @@ export function JournalPage() {
 
   const handleFiltersChange = (newFilters: JournalFilters) => {
     setFilters(newFilters)
+  }
+
+  const handleWeekSummary = () => {
+    setShowWeeklySummary(true)
   }
 
   const hasActiveFilters = filters.categories.length > 0 || 
@@ -323,6 +329,7 @@ export function JournalPage() {
                   setSelectedDate(date)
                   setViewMode('calendar')
                 }}
+                onWeekSummary={handleWeekSummary}
               />
             ) : (
               /* Calendar View */
@@ -381,6 +388,13 @@ export function JournalPage() {
           setShowViewModal(false)
           handleEditEntry(entry)
         }}
+      />
+
+      <WeeklySummaryModal
+        isOpen={showWeeklySummary}
+        onClose={() => setShowWeeklySummary(false)}
+        entries={allEntries || []}
+        goals={userGoals || []}
       />
     </>
   )
