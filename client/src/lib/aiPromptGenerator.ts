@@ -1,6 +1,7 @@
 // AI-powered intelligent prompt generation for business journaling
 import type { JournalEntry } from '@/types/journal'
 import type { Goal } from '@/types/goals'
+import { aiBusinessCoach } from '@/lib/aiBusinessCoach'
 
 export interface SmartPrompt {
   id: string
@@ -247,6 +248,19 @@ function generateContextualPrompts(context: PromptContext): SmartPrompt[] {
 
 // Main function to get smart prompts
 export function generateSmartPrompts(context: PromptContext): SmartPrompt[] {
+  // Try to get AI Business Coach insights first
+  const memory = aiBusinessCoach.getMemory()
+  const insights = aiBusinessCoach.getInsights()
+  
+  if (memory && insights.length > 0) {
+    // Generate coaching-based prompts from AI memory
+    const coachingPrompts = generateCoachingPrompts(memory, insights)
+    if (coachingPrompts.length > 0) {
+      return coachingPrompts
+    }
+  }
+  
+  // Fallback to contextual prompts
   const contextualPrompts = generateContextualPrompts(context)
   
   // Sort by relevance and depth preference
@@ -259,8 +273,113 @@ export function generateSmartPrompts(context: PromptContext): SmartPrompt[] {
     .slice(0, 3) // Return top 3 most relevant prompts
 }
 
+// Generate prompts based on AI Business Coach memory and insights
+function generateCoachingPrompts(memory: any, insights: any[]): SmartPrompt[] {
+  const prompts: SmartPrompt[] = []
+  const context = memory.context
+  
+  // High-priority insights become prompts
+  const urgentInsights = insights.filter((i: any) => i.urgency === 'high')
+  if (urgentInsights.length > 0) {
+    const insight = urgentInsights[0]
+    prompts.push({
+      id: 'urgent-coaching',
+      question: `${insight.message.split('.')[0]}?`,
+      followUp: 'What specific action could you take this week to address this?',
+      category: 'strategic',
+      reasoning: `AI Coach detected an urgent pattern: ${insight.type}`,
+      depth: 'deep',
+      tags: ['ai-coaching', 'urgent', 'pattern-based']
+    })
+  }
+  
+  // Business stage specific coaching
+  if (context.businessStage === 'growth' && context.currentChallenges.length > 0) {
+    prompts.push({
+      id: 'growth-challenge',
+      question: `You're in growth mode but facing ${context.currentChallenges.length} key challenges. Which one, if solved, would unlock the most progress?`,
+      followUp: 'What resources or expertise do you need to tackle this?',
+      category: 'strategic',
+      reasoning: `AI Coach analysis: Growth stage with ${context.currentChallenges.length} active challenges`,
+      depth: 'deep',
+      tags: ['growth', 'challenge-solving', 'prioritization']
+    })
+  }
+  
+  // Pattern-based prompts
+  const emotionalPatterns = memory.patterns.filter((p: any) => p.type === 'emotional' && p.frequency > 2)
+  if (emotionalPatterns.length > 0) {
+    const dominantPattern = emotionalPatterns.sort((a: any, b: any) => b.frequency - a.frequency)[0]
+    
+    if (dominantPattern.pattern === 'frustrated' || dominantPattern.pattern === 'stressed') {
+      prompts.push({
+        id: 'stress-pattern',
+        question: `I've noticed you've been feeling ${dominantPattern.pattern} frequently. What pattern or situation keeps triggering this?`,
+        followUp: 'What would need to change for you to feel more in control?',
+        category: 'mood-based',
+        reasoning: `AI Coach detected recurring emotional pattern: ${dominantPattern.pattern} (${dominantPattern.frequency}x)`,
+        depth: 'deep',
+        tags: ['emotional-intelligence', 'pattern-recognition', 'stress-management']
+      })
+    } else if (dominantPattern.pattern === 'confident' || dominantPattern.pattern === 'excited') {
+      prompts.push({
+        id: 'confidence-pattern',
+        question: `Your confidence has been building! What's driving this positive momentum in your business?`,
+        followUp: 'How can you amplify or replicate this success pattern?',
+        category: 'mood-based',
+        reasoning: `AI Coach detected positive momentum: ${dominantPattern.pattern} (${dominantPattern.frequency}x)`,
+        depth: 'medium',
+        tags: ['success-amplification', 'confidence-building', 'momentum']
+      })
+    }
+  }
+  
+  // Recent wins coaching  
+  if (context.recentWins.length > 0) {
+    prompts.push({
+      id: 'win-analysis',
+      question: `You've had ${context.recentWins.length} recent wins! What common factors made these successes possible?`,
+      followUp: 'What does this reveal about your strengths as a business owner?',
+      category: 'reflection',
+      reasoning: `AI Coach analysis: ${context.recentWins.length} recent wins identified`,
+      depth: 'medium',
+      tags: ['success-analysis', 'strength-identification', 'pattern-recognition']
+    })
+  }
+  
+  // Writing style adapted prompts
+  if (context.writingStyle === 'strategic') {
+    prompts.push({
+      id: 'strategic-coaching',
+      question: aiBusinessCoach.generateCoachingPrompt(),
+      followUp: 'What data or insights would help you make this decision with confidence?',
+      category: 'strategic',
+      reasoning: 'AI Coach adapted to your strategic thinking style',
+      depth: 'deep',
+      tags: ['strategic-thinking', 'decision-making', 'personalized']
+    })
+  }
+  
+  return prompts.slice(0, 3)
+}
+
 // Get single best prompt for quick access
 export function getBestPrompt(context: PromptContext): SmartPrompt {
+  // Try AI Business Coach first
+  const memory = aiBusinessCoach.getMemory()
+  if (memory && memory.entryCount > 0) {
+    const coachingPrompt = aiBusinessCoach.generateCoachingPrompt()
+    return {
+      id: 'ai-coaching',
+      question: coachingPrompt,
+      category: 'strategic',
+      reasoning: `AI Business Coach personalized prompt based on ${memory.entryCount} entries`,
+      depth: memory.context.reflectionDepth === 'surface' ? 'quick' : 
+             memory.context.reflectionDepth === 'deep' ? 'deep' : 'medium',
+      tags: ['ai-coaching', 'personalized', memory.context.businessStage]
+    }
+  }
+  
   const prompts = generateSmartPrompts(context)
   return prompts[0] || {
     id: 'default',

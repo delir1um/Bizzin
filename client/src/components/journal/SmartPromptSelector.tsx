@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Brain, Lightbulb, RefreshCw, Clock, Target, TrendingUp, Sparkles, Zap } from "lucide-react"
 import { generateSmartPrompts, getBestPrompt, getTimeOptimizedPrompt, type SmartPrompt, type PromptContext } from "@/lib/aiPromptGenerator"
+import { aiBusinessCoach } from '@/lib/aiBusinessCoach'
 import type { JournalEntry } from "@/types/journal"
 import type { Goal } from "@/types/goals"
 
@@ -28,23 +29,48 @@ export function SmartPromptSelector({
 
   // Generate initial prompts
   useEffect(() => {
-    const context: PromptContext = {
-      recentEntries: recentEntries.slice(0, 10), // Last 10 entries for context
-      activeGoals: activeGoals.filter(goal => goal.status !== 'completed'),
-      currentMood: recentEntries[0]?.sentiment_data?.primary_mood,
-      timeOfDay: getTimeOfDay(),
-      availableTime: 'medium'
+    const generatePrompts = async () => {
+      // Check if AI Business Coach has insights to offer personalized prompts
+      const memory = aiBusinessCoach.getMemory()
+      const insights = aiBusinessCoach.getInsights()
+      
+      const context: PromptContext = {
+        recentEntries: recentEntries.slice(0, 10), // Last 10 entries for context
+        activeGoals: activeGoals.filter(goal => goal.status !== 'completed'),
+        currentMood: recentEntries[0]?.sentiment_data?.primary_mood,
+        timeOfDay: getTimeOfDay(),
+        availableTime: 'medium'
+      }
+
+      let smartPrompts = generateSmartPrompts(context)
+      
+      // Add AI coaching prompt if available
+      if (memory && memory.entryCount > 0) {
+        const coachingPrompt = aiBusinessCoach.generateCoachingPrompt()
+        const aiPrompt: SmartPrompt = {
+          id: 'ai-coaching-main',
+          question: coachingPrompt,
+          category: 'strategic',
+          reasoning: `AI Business Coach personalized insight (${memory.entryCount} entries analyzed)`,
+          depth: memory.context.reflectionDepth === 'surface' ? 'quick' : 
+                 memory.context.reflectionDepth === 'deep' ? 'deep' : 'medium',
+          tags: ['ai-coaching', 'personalized', memory.context.businessStage]
+        }
+        
+        // Prioritize AI coaching prompt
+        smartPrompts = [aiPrompt, ...smartPrompts.slice(0, 2)]
+      }
+
+      // Add time-optimized prompt if we don't have enough variety
+      if (smartPrompts.length < 3) {
+        smartPrompts.push(getTimeOptimizedPrompt())
+      }
+
+      setCurrentPrompts(smartPrompts)
+      setSelectedPrompt(smartPrompts[0] || null)
     }
 
-    const smartPrompts = generateSmartPrompts(context)
-    
-    // Add time-optimized prompt if we don't have enough variety
-    if (smartPrompts.length < 3) {
-      smartPrompts.push(getTimeOptimizedPrompt())
-    }
-
-    setCurrentPrompts(smartPrompts)
-    setSelectedPrompt(smartPrompts[0] || null)
+    generatePrompts()
   }, [recentEntries, activeGoals])
 
   const getTimeOfDay = (): 'morning' | 'afternoon' | 'evening' => {
