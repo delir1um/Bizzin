@@ -72,14 +72,36 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
     }
   })
 
+  // Helper function to map AI business categories to journal categories  
+  const mapBusinessCategoryToJournal = (businessCategory: string): string => {
+    const mapping: Record<string, string> = {
+      'growth': 'Strategy',
+      'challenge': 'Problem-Solving',
+      'achievement': 'Milestone',
+      'planning': 'Planning',
+      'reflection': 'Learning'
+    }
+    return mapping[businessCategory] || businessCategory
+  }
+
+  // Helper function to capitalize mood properly
+  const capitalizeMood = (mood: string): string => {
+    return mood.charAt(0).toUpperCase() + mood.slice(1).toLowerCase()
+  }
+
   // Reset form when entry changes
   useEffect(() => {
     if (entry && isOpen) {
       setValue("title", entry.title)
       setValue("content", entry.content)
       setValue("entry_date", entry.entry_date ? format(new Date(entry.entry_date), 'yyyy-MM-dd') : "")
-      setValue("mood", entry.mood || "")
-      setValue("category", entry.category || "")
+      
+      // Use AI-generated values if available, otherwise use manual values
+      const aiMood = entry.sentiment_data?.primary_mood ? capitalizeMood(entry.sentiment_data.primary_mood) : ""
+      const aiCategory = entry.sentiment_data?.business_category ? mapBusinessCategoryToJournal(entry.sentiment_data.business_category) : ""
+      
+      setValue("mood", entry.mood || aiMood)
+      setValue("category", entry.category || aiCategory)
       setValue("related_goal_id", entry.related_goal_id || "")
       setTags(entry.tags || [])
     }
