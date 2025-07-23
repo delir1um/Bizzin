@@ -216,108 +216,67 @@ export function JournalPage() {
           </div>
         </div>
 
-        {/* Journal Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800">
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-orange-500 rounded-lg shadow-sm">
-                  <PlusCircle className="w-5 h-5 text-white" />
-                </div>
-                <div className="ml-4">
-                  <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">{allEntries?.length || 0}</div>
-                  <p className="text-sm font-medium text-orange-700 dark:text-orange-300">Total Entries</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-900 border-blue-200 dark:border-blue-800">
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-blue-500 rounded-lg shadow-sm">
-                  <Calendar className="w-5 h-5 text-white" />
-                </div>
-                <div className="ml-4">
-                  <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                    {allEntries?.filter(entry => {
-                      const entryDate = new Date(entry.created_at)
-                      const today = new Date()
-                      return entryDate.toDateString() === today.toDateString()
-                    }).length || 0}
-                  </div>
-                  <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Today's Entries</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900 border-green-200 dark:border-green-800">
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-green-500 rounded-lg shadow-sm">
-                  <Zap className="w-5 h-5 text-white" />
-                </div>
-                <div className="ml-4">
-                  <div className="text-2xl font-bold text-green-900 dark:text-green-100">
-                    {allEntries?.filter(entry => entry.related_goal_id).length || 0}
-                  </div>
-                  <p className="text-sm font-medium text-green-700 dark:text-green-300">Goal-Linked</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-purple-50 to-pink-100 dark:from-purple-950 dark:to-pink-900 border-purple-200 dark:border-purple-800">
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-purple-500 rounded-lg shadow-sm">
-                  <Search className="w-5 h-5 text-white" />
-                </div>
-                <div className="ml-4">
-                  <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">
-                    {Array.from(new Set(allEntries?.map(entry => entry.category))).length || 0}
-                  </div>
-                  <p className="text-sm font-medium text-purple-700 dark:text-purple-300">Categories</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* View Mode Toggle & Quick Actions */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <div className="flex gap-2">
+            <Button
+              variant={viewMode === 'dashboard' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('dashboard')}
+              className={viewMode === 'dashboard' ? 'bg-orange-500 hover:bg-orange-600' : 'border-orange-200 text-orange-700 hover:bg-orange-50'}
+            >
+              Dashboard
+            </Button>
+            <Button
+              variant={viewMode === 'calendar' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('calendar')}
+              className={viewMode === 'calendar' ? 'bg-orange-500 hover:bg-orange-600' : 'border-orange-200 text-orange-700 hover:bg-orange-50'}
+            >
+              Calendar
+            </Button>
+          </div>
+          
+          {/* Simple Search */}
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <div className="relative flex-1 sm:w-80">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Input
+                type="text"
+                placeholder="Search your entries..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 focus:ring-orange-500 focus:border-orange-500"
+              />
+            </div>
+            {(searchTerm || Object.values(filters).some(arr => arr.length > 0)) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSearchTerm("")
+                  setFilters({ categories: [], moods: [], tags: [], goals: [] })
+                }}
+                className="text-slate-500 hover:text-slate-700"
+              >
+                <X className="w-4 h-4 mr-1" />
+                Clear
+              </Button>
+            )}
+          </div>
         </div>
 
-        {/* Smart Search */}
-        <div className="mb-6">
-          <SmartSearch
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            entries={allEntries || []}
-            onQuickFilter={(filter) => {
-              if (filter.type === 'recent') {
-                // Filter recent entries in the last 7 days
-                setSearchTerm("")
-                setFilters(prev => ({ ...prev, categories: [], moods: [], tags: [], goals: [] }))
-                // Could add date range filtering here
-              } else if (filter.type === 'energy') {
-                setFilters(prev => ({ ...prev, moods: [], categories: [], tags: [], goals: [] }))
-                // Could add energy level filtering
-              } else if (filter.type === 'mood' && filter.value) {
-                setFilters(prev => ({ ...prev, moods: [filter.value!], categories: [], tags: [], goals: [] }))
-              } else if (filter.type === 'category' && filter.value) {
-                setFilters(prev => ({ ...prev, categories: [filter.value!], moods: [], tags: [], goals: [] }))
-              }
-            }}
-          />
-        </div>
-
-        {/* Filter Bar */}
-        <div className="mb-6">
-          <FilterBar
-            activeFilters={filters}
-            onFiltersChange={handleFiltersChange}
-            allEntries={allEntries || []}
-            userGoals={userGoals || []}
-          />
-        </div>
+        {/* Advanced Filters (when needed) */}
+        {(searchTerm || Object.values(filters).some(arr => arr.length > 0)) && (
+          <div className="mb-6">
+            <FilterBar
+              activeFilters={filters}
+              onFiltersChange={handleFiltersChange}
+              allEntries={allEntries || []}
+              userGoals={userGoals || []}
+            />
+          </div>
+        )}
 
         {/* Main Content */}
         {isLoading ? (
@@ -338,33 +297,7 @@ export function JournalPage() {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* View Mode Navigation */}
-            {!searchTerm && !hasActiveFilters && (
-              <div className="flex items-center gap-2 mb-6">
-                <Button 
-                  variant={viewMode === 'dashboard' ? 'default' : 'outline'}
-                  onClick={() => {
-                    setViewMode('dashboard')
-                    setSelectedDate(null)
-                  }}
-                  className={viewMode === 'dashboard' ? 'bg-orange-600 hover:bg-orange-700 text-white' : 'border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-800 dark:text-orange-300 dark:hover:bg-orange-950'}
-                >
-                  <Zap className="w-4 h-4 mr-2" />
-                  Dashboard
-                </Button>
-                <Button 
-                  variant={viewMode === 'calendar' ? 'default' : 'outline'}
-                  onClick={() => {
-                    setViewMode('calendar')
-                    setSelectedDate(new Date())
-                  }}
-                  className={viewMode === 'calendar' ? 'bg-orange-600 hover:bg-orange-700 text-white' : 'border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-800 dark:text-orange-300 dark:hover:bg-orange-950'}
-                >
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Calendar
-                </Button>
-              </div>
-            )}
+
 
             {/* Content based on view mode and context */}
             {searchTerm || hasActiveFilters ? (
