@@ -200,6 +200,7 @@ export function JournalPage() {
           <FilterBar
             activeFilters={filters}
             onFiltersChange={handleFiltersChange}
+            allEntries={allEntries || []}
           />
         </div>
 

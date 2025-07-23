@@ -1,14 +1,15 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Filter, X } from "lucide-react"
+import { Filter, X, Tag } from "lucide-react"
 
 interface FilterBarProps {
   onFiltersChange: (filters: JournalFilters) => void
   activeFilters: JournalFilters
+  allEntries: any[] // To extract available tags
 }
 
 export interface JournalFilters {
@@ -27,8 +28,21 @@ const JOURNAL_MOODS = [
   'Optimistic', 'Grateful', 'Stressed', 'Confident', 'Overwhelmed'
 ]
 
-export function FilterBar({ onFiltersChange, activeFilters }: FilterBarProps) {
+export function FilterBar({ onFiltersChange, activeFilters, allEntries }: FilterBarProps) {
   const [showFilters, setShowFilters] = useState(false)
+  const [tagSearch, setTagSearch] = useState("")
+  const [availableTags, setAvailableTags] = useState<string[]>([])
+
+  // Extract all unique tags from entries
+  useEffect(() => {
+    const tagSet = new Set<string>()
+    allEntries.forEach(entry => {
+      if (entry.tags && Array.isArray(entry.tags)) {
+        entry.tags.forEach(tag => tagSet.add(tag))
+      }
+    })
+    setAvailableTags(Array.from(tagSet).sort())
+  }, [allEntries])
 
   const hasActiveFilters = activeFilters.categories.length > 0 || 
                           activeFilters.moods.length > 0 || 
@@ -55,6 +69,22 @@ export function FilterBar({ onFiltersChange, activeFilters }: FilterBarProps) {
       moods: newMoods
     })
   }
+
+  const handleTagChange = (tag: string, checked: boolean) => {
+    const newTags = checked 
+      ? [...activeFilters.tags, tag]
+      : activeFilters.tags.filter(t => t !== tag)
+    
+    onFiltersChange({
+      ...activeFilters,
+      tags: newTags
+    })
+  }
+
+  // Filter tags based on search
+  const filteredTags = availableTags.filter(tag => 
+    tag.toLowerCase().includes(tagSearch.toLowerCase())
+  )
 
   const clearAllFilters = () => {
     onFiltersChange({
@@ -154,6 +184,40 @@ export function FilterBar({ onFiltersChange, activeFilters }: FilterBarProps) {
                   ))}
                 </div>
               </div>
+
+              {/* Tags */}
+              {availableTags.length > 0 && (
+                <div>
+                  <h5 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tags</h5>
+                  <div className="space-y-2">
+                    <Input
+                      placeholder="Search tags..."
+                      value={tagSearch}
+                      onChange={(e) => setTagSearch(e.target.value)}
+                      className="text-sm h-8"
+                    />
+                    <div className="max-h-32 overflow-y-auto space-y-2">
+                      {filteredTags.map((tag) => (
+                        <div key={tag} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`tag-${tag}`}
+                            checked={activeFilters.tags.includes(tag)}
+                            onCheckedChange={(checked) => 
+                              handleTagChange(tag, checked as boolean)
+                            }
+                          />
+                          <label
+                            htmlFor={`tag-${tag}`}
+                            className="text-sm text-slate-600 dark:text-slate-400 cursor-pointer"
+                          >
+                            {tag}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </PopoverContent>
         </Popover>
@@ -189,6 +253,25 @@ export function FilterBar({ onFiltersChange, activeFilters }: FilterBarProps) {
               size="sm"
               onClick={() => removeFilter('moods', mood)}
               className="h-auto p-0 ml-1 text-green-600 hover:text-green-800"
+            >
+              <X className="w-3 h-3" />
+            </Button>
+          </Badge>
+        ))}
+
+        {activeFilters.tags.map((tag) => (
+          <Badge
+            key={`tag-${tag}`}
+            variant="secondary"
+            className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+          >
+            <Tag className="w-3 h-3 mr-1" />
+            {tag}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => removeFilter('tags', tag)}
+              className="h-auto p-0 ml-1 text-purple-600 hover:text-purple-800"
             >
               <X className="w-3 h-3" />
             </Button>
