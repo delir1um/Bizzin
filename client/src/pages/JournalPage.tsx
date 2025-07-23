@@ -25,6 +25,7 @@ import { AICoachInsights } from "@/components/journal/AICoachInsights"
 import { AppleStyleJournalInterface } from "@/components/journal/AppleStyleJournalInterface"
 import { SimplifiedJournalInterface } from "@/components/journal/SimplifiedJournalInterface"
 import { InvisibleAIJournal } from "@/components/journal/InvisibleAIJournal"
+import { IntelligentCoachingPanel } from "@/components/journal/IntelligentCoachingPanel"
 
 export function JournalPage() {
   const [user, setUser] = useState<any>(null)
@@ -329,29 +330,37 @@ export function JournalPage() {
               </div>
             ) : viewMode === 'dashboard' ? (
               /* Business Intelligence Dashboard View with AI Coach */
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Main Dashboard */}
-                <div className="lg:col-span-2">
-                  <BusinessIntelligenceDashboard
-                    entries={allEntries || []}
-                    onCreateEntry={() => setShowCreateModal(true)}
-                    onViewEntry={handleViewEntry}
-                    onJumpToDate={(date) => {
-                      setSelectedDate(date)
-                      setViewMode('calendar')
-                    }}
-                    onWeekSummary={handleWeekSummary}
-                  />
-                </div>
-                
-                {/* AI Business Coach Sidebar */}
-                <div className="lg:col-span-1">
-                  {user && (
-                    <AICoachInsights 
-                      userId={user.id} 
-                      className="h-fit sticky top-4"
+              <div className="space-y-6">
+                {/* Intelligent Coaching Panel */}
+                <IntelligentCoachingPanel 
+                  entries={allEntries || []}
+                  goals={userGoals || []}
+                />
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Main Dashboard */}
+                  <div className="lg:col-span-2">
+                    <BusinessIntelligenceDashboard
+                      entries={allEntries || []}
+                      onCreateEntry={() => setShowCreateModal(true)}
+                      onViewEntry={handleViewEntry}
+                      onJumpToDate={(date) => {
+                        setSelectedDate(date)
+                        setViewMode('calendar')
+                      }}
+                      onWeekSummary={handleWeekSummary}
                     />
-                  )}
+                  </div>
+                  
+                  {/* AI Business Coach Sidebar */}
+                  <div className="lg:col-span-1">
+                    {user && (
+                      <AICoachInsights 
+                        userId={user.id} 
+                        className="h-fit sticky top-4"
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
             ) : (
