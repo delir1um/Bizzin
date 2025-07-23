@@ -74,11 +74,11 @@ export class JournalService {
         business_category: sentiment.category
       }
 
-      // Create entry data with full schema (works after proper database setup)
+      // Create entry data (temporarily removing entry_date until database migration)
       const entryWithUserId = {
         title: entry.title,
         content: entry.content,
-        entry_date: entry.entry_date || null, // Custom date for the entry
+        // entry_date: entry.entry_date || null, // Commented out until database migration
         user_id: user.id,
         mood: entry.mood || sentiment.mood.primary, // Use AI mood if no manual mood set
         category: entry.category || null,
