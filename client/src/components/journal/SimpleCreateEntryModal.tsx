@@ -20,7 +20,6 @@ interface SimpleCreateEntryModalProps {
 }
 
 export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: SimpleCreateEntryModalProps) {
-  const [title, setTitle] = useState("")
   const [content, setContent] = useState("")
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [aiPreview, setAiPreview] = useState<any>(null)
@@ -31,16 +30,20 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('No user found')
 
-      // Analyze content with AI
+      // Analyze content with AI and generate title
       setIsAnalyzing(true)
       const sentimentData = await analyzeBusinessSentiment(content)
+      
+      // Generate AI title from content
+      const aiTitle = generateTitleFromContent(content)
+      
       setIsAnalyzing(false)
-      setAiPreview(sentimentData)
+      setAiPreview({ ...sentimentData, generated_title: aiTitle })
 
       const { data, error } = await supabase
         .from('journal_entries')
         .insert({
-          title: title.trim(),
+          title: aiPreview?.generated_title || generateTitleFromContent(content),
           content: content.trim(),
           user_id: user.id,
           sentiment_data: sentimentData,
@@ -72,10 +75,10 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!title.trim() || !content.trim()) {
+    if (!content.trim() || content.trim().length < 10) {
       toast({
-        title: "Missing information",
-        description: "Please provide both title and content for your entry",
+        title: "Content required",
+        description: "Please write at least 10 characters for your journal entry",
         variant: "destructive"
       })
       return
@@ -84,11 +87,42 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
   }
 
   const handleClose = () => {
-    setTitle("")
     setContent("")
     setAiPreview(null)
     setIsAnalyzing(false)
     onClose()
+  }
+
+  // Generate a smart title from content
+  const generateTitleFromContent = (text: string): string => {
+    if (!text.trim()) return "Journal Entry"
+    
+    // Remove extra whitespace and get first sentence
+    const cleanText = text.trim().replace(/\s+/g, ' ')
+    const firstSentence = cleanText.split(/[.!?]/)[0]
+    
+    // If first sentence is too long, take first meaningful part
+    if (firstSentence.length > 50) {
+      const words = firstSentence.split(' ')
+      const meaningfulWords = words.filter(word => 
+        word.length > 2 && 
+        !['the', 'and', 'but', 'for', 'are', 'was', 'were', 'been', 'have', 'has', 'had', 'will', 'would', 'could', 'should'].includes(word.toLowerCase())
+      )
+      
+      if (meaningfulWords.length >= 3) {
+        return meaningfulWords.slice(0, 6).join(' ')
+      }
+      
+      return words.slice(0, 8).join(' ')
+    }
+    
+    // Return first sentence if reasonable length
+    if (firstSentence.length >= 10) {
+      return firstSentence
+    }
+    
+    // Fallback to first few words
+    return cleanText.split(' ').slice(0, 6).join(' ')
   }
 
   const getMoodColor = (mood: string | null | undefined) => {
@@ -135,6 +169,9 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
             <PlusCircle className="w-5 h-5 text-orange-600" />
             Create Business Journal Entry
           </DialogTitle>
+          <p className="text-sm text-slate-600">
+            Just write your thoughts - AI will automatically generate a title and analyze your entry
+          </p>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -142,27 +179,19 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
           <div className="space-y-4">
             <div>
               <label className="text-sm font-medium text-slate-700 mb-2 block">
-                Entry Title
-              </label>
-              <Input
-                placeholder="What's on your mind today?"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-slate-700 mb-2 block">
-                Your Thoughts & Insights
+                What's on your mind?
               </label>
               <Textarea
-                placeholder="Share your business thoughts, challenges, wins, or reflections. The AI will automatically detect your mood and categorize your entry..."
+                placeholder="Share your business thoughts, challenges, wins, or reflections. The AI will automatically generate a title, detect your mood, and categorize your entry..."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 className="min-h-[120px] resize-none"
                 rows={6}
+                autoFocus
               />
+              <p className="text-xs text-slate-500 mt-1">
+                AI will automatically create a title based on your content
+              </p>
             </div>
           </div>
 
@@ -198,6 +227,19 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
               ) : aiPreview ? (
                 <Card className="border-orange-200">
                   <CardContent className="p-4 space-y-3">
+                    {/* Generated Title */}
+                    {aiPreview.generated_title && (
+                      <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                        <div className="flex items-start gap-2">
+                          <PlusCircle className="w-4 h-4 text-slate-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="text-sm font-medium text-slate-700 mb-1">Generated Title</p>
+                            <p className="text-sm text-slate-600 font-medium">{aiPreview.generated_title}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Mood and Category */}
                     <div className="flex flex-wrap gap-2">
                       {aiPreview.primary_mood && (
@@ -261,7 +303,8 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
                 onClick={() => {
                   setIsAnalyzing(true)
                   analyzeBusinessSentiment(content).then(result => {
-                    setAiPreview(result)
+                    const aiTitle = generateTitleFromContent(content)
+                    setAiPreview({ ...result, generated_title: aiTitle })
                     setIsAnalyzing(false)
                   })
                 }}
@@ -274,7 +317,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
 
             <Button
               type="submit"
-              disabled={createEntryMutation.isPending || !title.trim() || !content.trim()}
+              disabled={createEntryMutation.isPending || !content.trim() || content.trim().length < 10}
               className="bg-orange-600 hover:bg-orange-700 text-white"
             >
               {createEntryMutation.isPending ? (
