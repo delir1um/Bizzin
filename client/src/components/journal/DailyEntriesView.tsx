@@ -35,6 +35,7 @@ export function DailyEntriesView({
   isSearching = false
 }: DailyEntriesViewProps) {
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set())
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<string | null>(null)
 
   // Group entries by date
   const groupEntriesByDate = (): GroupedEntries[] => {
@@ -110,6 +111,7 @@ export function DailyEntriesView({
 
   const handleDeleteEntry = (entryToDelete: JournalEntry) => {
     onDeleteEntry(entryToDelete)
+    setDeleteDialogOpen(null) // Close the dialog after deletion
   }
 
   const groupedEntries = groupEntriesByDate()
@@ -222,7 +224,10 @@ export function DailyEntriesView({
                           >
                             <Edit className="w-4 h-4" />
                           </Button>
-                          <AlertDialog>
+                          <AlertDialog 
+                            open={deleteDialogOpen === entry.id} 
+                            onOpenChange={(open) => setDeleteDialogOpen(open ? entry.id : null)}
+                          >
                             <AlertDialogTrigger asChild>
                               <Button 
                                 variant="ghost" 
