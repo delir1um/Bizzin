@@ -156,6 +156,7 @@ export function CreateEntryModal({ isOpen, onClose }: CreateEntryModalProps) {
     const categoryMapping = {
       'daily': 'Reflection',
       'weekly': 'Planning', 
+      'monthly': 'Planning',
       'challenge': 'Problem-Solving',
       'success': 'Wins',
       'strategy': 'Strategy'
