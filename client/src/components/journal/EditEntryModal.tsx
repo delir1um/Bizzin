@@ -194,8 +194,7 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
       title: data.title,
       content: data.content,
       entry_date: data.entry_date || undefined,
-      mood: data.mood && data.mood !== "none" ? data.mood : undefined,
-      category: data.category && data.category !== "none" ? data.category : undefined,
+      // Note: mood and category are now handled by AI, not manual selection
       related_goal_id: data.related_goal_id && data.related_goal_id !== "none" ? data.related_goal_id : undefined,
       tags: tags.length > 0 ? tags : undefined,
     }
@@ -298,46 +297,20 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
               )}
             </div>
 
-            {/* Mood and Category Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Mood */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Mood
-                </label>
-                <Select value={watch("mood")} onValueChange={(value) => setValue("mood", value)}>
-                  <SelectTrigger className="focus:ring-orange-500 focus:border-orange-500">
-                    <SelectValue placeholder="How are you feeling?" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    {JOURNAL_MOODS.map((mood) => (
-                      <SelectItem key={mood} value={mood}>
-                        {mood}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Category */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Category
-                </label>
-                <Select value={watch("category")} onValueChange={(value) => setValue("category", value)}>
-                  <SelectTrigger className="focus:ring-orange-500 focus:border-orange-500">
-                    <SelectValue placeholder="Choose a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    {JOURNAL_CATEGORIES.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            {/* AI Analysis Note */}
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-medium text-orange-800 mb-1">AI Analysis</h4>
+                  <p className="text-sm text-orange-700">
+                    Mood and category are automatically detected by AI based on your content. Edit the content above and the AI will update the analysis.
+                  </p>
+                </div>
               </div>
             </div>
 

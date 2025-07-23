@@ -140,7 +140,7 @@ function analyzeLocalSentiment(content: string, title?: string): BusinessSentime
   // Normalize confidence (enhanced algorithm)
   const maxExpectedScore = 3;
   const confidence = Math.min(rawConfidence / maxExpectedScore, 1.0);
-  const finalConfidence = rawConfidence > 0 ? Math.max(confidence, 0.4) : 0.5; // Higher baseline
+  const finalConfidence = rawConfidence > 0 ? Math.max(confidence, 0.6) : 0.7; // Higher baseline for better UX
   
   // Calculate energy
   const avgEnergy = energyCount > 0 ? totalEnergyScore / energyCount : 2;
