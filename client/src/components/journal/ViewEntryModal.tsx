@@ -50,12 +50,63 @@ export function ViewEntryModal({ isOpen, onClose, entry, onEdit }: ViewEntryModa
                   {entry.reading_time} min read
                 </span>
               )}
-              {entry.category && (
-                <div className="flex items-center gap-1">
-                  <BookOpen className="w-4 h-4 text-orange-600" />
-                  <span className="text-orange-600 font-medium">{entry.category}</span>
-                </div>
-              )}
+              {/* Show mood and category from AI analysis or manual entry */}
+              {(() => {
+                // Helper function to map AI moods to journal moods
+                const mapAIMoodToJournal = (aiMood: string): string => {
+                  const mapping: Record<string, string> = {
+                    'optimistic': 'Optimistic',
+                    'excited': 'Excited',
+                    'focused': 'Focused',
+                    'frustrated': 'Frustrated',
+                    'reflective': 'Reflective',
+                    'confident': 'Confident',
+                    'determined': 'Determined',
+                    'accomplished': 'Motivated',
+                    'uncertain': 'Thoughtful',
+                    'stressed': 'Frustrated',
+                    'neutral': 'Neutral',
+                    'inspired': 'Inspired'
+                  }
+                  
+                  const mapped = mapping[aiMood.toLowerCase()]
+                  if (mapped) return mapped
+                  
+                  return aiMood.charAt(0).toUpperCase() + aiMood.slice(1).toLowerCase()
+                }
+
+                // Helper function to map AI business categories to journal categories
+                const mapBusinessCategoryToJournal = (businessCategory: string): string => {
+                  const mapping: Record<string, string> = {
+                    'growth': 'Strategy',
+                    'challenge': 'Research',
+                    'achievement': 'Milestone',
+                    'planning': 'Planning',
+                    'reflection': 'Learning'
+                  }
+                  return mapping[businessCategory] || 'Strategy'
+                }
+                
+                // Determine display mood and category (prioritize AI values, map them properly)
+                const displayMood = entry.sentiment_data?.primary_mood ? mapAIMoodToJournal(entry.sentiment_data.primary_mood) : entry.mood
+                const displayCategory = entry.sentiment_data?.business_category ? mapBusinessCategoryToJournal(entry.sentiment_data.business_category) : entry.category
+                
+                return (
+                  <div className="flex items-center gap-3">
+                    {displayMood && (
+                      <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                        {displayMood}
+                      </Badge>
+                    )}
+                    {displayCategory && (
+                      <div className="flex items-center gap-1">
+                        <BookOpen className="w-4 h-4 text-orange-600" />
+                        <span className="text-orange-600 font-medium">{displayCategory}</span>
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
             </div>
           </div>
           

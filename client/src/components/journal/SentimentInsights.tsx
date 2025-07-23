@@ -47,28 +47,13 @@ export function SentimentInsights({ entry, className = "" }: SentimentInsightsPr
           <span className="font-semibold text-sm">AI Business Insights</span>
         </div>
         
-        {/* Primary Mood */}
+        {/* Energy & Context */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">{moodEmoji}</span>
-            <div>
-              <div className="font-medium text-gray-900 capitalize">
-                {sentiment.primary_mood}
-              </div>
-              <div className="text-xs text-gray-600">
-                Primary Business Mood
-              </div>
-            </div>
-          </div>
-          
           <div className="flex items-center gap-2 text-sm text-gray-600">
             {getEnergyIcon(sentiment.energy)}
             <span>{getEnergyLabel(sentiment.energy)}</span>
           </div>
-        </div>
-        
-        {/* Confidence & Business Category */}
-        <div className="flex items-center justify-between">
+          
           <div className="flex items-center gap-2">
             <Badge 
               variant="secondary" 
@@ -77,47 +62,18 @@ export function SentimentInsights({ entry, className = "" }: SentimentInsightsPr
             >
               {Math.round(sentiment.confidence * 100)}% confidence
             </Badge>
-            <Badge variant="outline" className="text-xs capitalize">
-              {sentiment.business_category}
-            </Badge>
           </div>
         </div>
         
-        {/* Emotions */}
-        {sentiment.emotions.length > 0 && (
+        {/* Business Context */}
+        {sentiment.insights && sentiment.insights.length > 0 && (
           <div>
-            <div className="text-xs font-medium text-gray-700 mb-2">Detected Emotions</div>
-            <div className="flex flex-wrap gap-1">
-              {sentiment.emotions.slice(0, 4).map((emotion, index) => (
-                <Badge 
-                  key={index} 
-                  variant="secondary" 
-                  className="text-xs capitalize"
-                  style={{ backgroundColor: `${moodColor}10`, color: moodColor }}
-                >
-                  {emotion}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
-        
-        {/* AI Insights */}
-        {sentiment.insights.length > 0 && (
-          <div>
-            <div className="text-xs font-medium text-gray-700 mb-2">Business Insights</div>
-            <div className="space-y-2">
-              {sentiment.insights.map((insight, index) => (
-                <div 
-                  key={index}
-                  className="text-sm text-gray-700 bg-white/60 rounded-lg p-3 border border-orange-200/50"
-                >
-                  <div className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-orange-500 mt-2 flex-shrink-0" />
-                    <span className="leading-relaxed">{insight}</span>
-                  </div>
-                </div>
-              ))}
+            <div className="text-xs font-medium text-gray-700 mb-2">Key Business Insight</div>
+            <div className="text-sm text-gray-600 bg-white/60 rounded-lg p-3 border border-orange-200/50">
+              <div className="flex items-start gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-orange-500 mt-2 flex-shrink-0" />
+                <span className="leading-relaxed">{sentiment.insights[0]}</span>
+              </div>
             </div>
           </div>
         )}
