@@ -22,6 +22,9 @@ import { BusinessIntelligenceDashboard } from "@/components/journal/BusinessInte
 import { WeeklySummaryModal } from "@/components/journal/WeeklySummaryModal"
 import { MinimalJournalMode } from "@/components/journal/MinimalJournalMode"
 import { AICoachInsights } from "@/components/journal/AICoachInsights"
+import { AppleStyleJournalInterface } from "@/components/journal/AppleStyleJournalInterface"
+import { SimplifiedJournalInterface } from "@/components/journal/SimplifiedJournalInterface"
+import { InvisibleAIJournal } from "@/components/journal/InvisibleAIJournal"
 
 export function JournalPage() {
   const [user, setUser] = useState<any>(null)
@@ -32,6 +35,9 @@ export function JournalPage() {
   const [showViewModal, setShowViewModal] = useState(false)
   const [showWeeklySummary, setShowWeeklySummary] = useState(false)
   const [showMinimalMode, setShowMinimalMode] = useState(false)
+  const [showAppleInterface, setShowAppleInterface] = useState(false)
+  const [showSimplifiedInterface, setShowSimplifiedInterface] = useState(false)
+  const [showInvisibleAI, setShowInvisibleAI] = useState(false)
   const [entryToEdit, setEntryToEdit] = useState<JournalEntry | null>(null)
   const [entryToView, setEntryToView] = useState<JournalEntry | null>(null)
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date())
@@ -206,18 +212,18 @@ export function JournalPage() {
             </div>
             <div className="mt-4 sm:mt-0 flex gap-2">
               <Button 
-                onClick={() => setShowMinimalMode(true)}
+                onClick={() => setShowInvisibleAI(true)}
                 className="bg-orange-600 hover:bg-orange-700 text-white"
               >
                 <PlusCircle className="w-4 h-4 mr-2" />
                 Write
               </Button>
               <Button 
-                onClick={() => setShowCreateModal(true)}
+                onClick={() => setShowMinimalMode(true)}
                 variant="outline"
                 className="border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-950/20"
               >
-                Detailed Entry
+                Focus Mode
               </Button>
             </div>
 
@@ -423,6 +429,33 @@ export function JournalPage() {
           selectedDate={selectedDate || undefined}
         />
       )}
+
+      <AppleStyleJournalInterface
+        isOpen={showAppleInterface}
+        onClose={() => setShowAppleInterface(false)}
+        onEntryCreated={() => {
+          queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
+          setShowAppleInterface(false)
+        }}
+      />
+
+      <SimplifiedJournalInterface
+        isOpen={showSimplifiedInterface}
+        onClose={() => setShowSimplifiedInterface(false)}
+        onEntryCreated={() => {
+          queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
+          setShowSimplifiedInterface(false)
+        }}
+      />
+
+      <InvisibleAIJournal
+        isOpen={showInvisibleAI}
+        onClose={() => setShowInvisibleAI(false)}
+        onEntryCreated={() => {
+          queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
+          setShowInvisibleAI(false)
+        }}
+      />
     </>
   )
 }
