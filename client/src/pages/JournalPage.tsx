@@ -20,6 +20,7 @@ import { DailyEntriesView } from "@/components/journal/DailyEntriesView"
 import { FilterBar, type JournalFilters } from "@/components/journal/FilterBar"
 import { BusinessIntelligenceDashboard } from "@/components/journal/BusinessIntelligenceDashboard"
 import { WeeklySummaryModal } from "@/components/journal/WeeklySummaryModal"
+import { MinimalJournalMode } from "@/components/journal/MinimalJournalMode"
 
 export function JournalPage() {
   const [user, setUser] = useState<any>(null)
@@ -29,6 +30,7 @@ export function JournalPage() {
   const [showEditModal, setShowEditModal] = useState(false)
   const [showViewModal, setShowViewModal] = useState(false)
   const [showWeeklySummary, setShowWeeklySummary] = useState(false)
+  const [showMinimalMode, setShowMinimalMode] = useState(false)
   const [entryToEdit, setEntryToEdit] = useState<JournalEntry | null>(null)
   const [entryToView, setEntryToView] = useState<JournalEntry | null>(null)
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date())
@@ -203,19 +205,18 @@ export function JournalPage() {
             </div>
             <div className="mt-4 sm:mt-0 flex gap-2">
               <Button 
-                onClick={() => setShowCreateModal(true)}
+                onClick={() => setShowMinimalMode(true)}
                 className="bg-orange-600 hover:bg-orange-700 text-white"
               >
                 <PlusCircle className="w-4 h-4 mr-2" />
-                New Entry
+                Write
               </Button>
               <Button 
-                onClick={() => setShowQuickModal(true)}
+                onClick={() => setShowCreateModal(true)}
                 variant="outline"
                 className="border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-950/20"
               >
-                <Zap className="w-4 h-4 mr-2" />
-                Quick Note
+                Detailed Entry
               </Button>
             </div>
 
@@ -397,6 +398,15 @@ export function JournalPage() {
         entries={allEntries || []}
         goals={userGoals || []}
       />
+
+      {showMinimalMode && (
+        <MinimalJournalMode
+          recentEntries={allEntries?.slice(0, 10) || []}
+          activeGoals={userGoals || []}
+          onClose={() => setShowMinimalMode(false)}
+          selectedDate={selectedDate || undefined}
+        />
+      )}
     </>
   )
 }
