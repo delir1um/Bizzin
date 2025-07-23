@@ -128,7 +128,16 @@ export function JournalPage() {
                 Track your progress, insights, and business learnings
               </p>
             </div>
-
+            <div className="mt-4 sm:mt-0">
+              <Button 
+                onClick={() => setShowCreateModal(true)}
+                variant="outline"
+                className="border-orange-200 text-orange-600 hover:bg-orange-50"
+              >
+                <PlusCircle className="w-4 h-4 mr-2" />
+                Full Entry
+              </Button>
+            </div>
           </div>
         </div>
 
