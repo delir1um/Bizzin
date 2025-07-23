@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { PlusCircle, Search, Calendar, Zap, X } from "lucide-react"
+import { PlusCircle, Search, Calendar, Zap, X, AlertTriangle } from "lucide-react"
 import { SmartSearch } from "@/components/journal/SmartSearch"
 import { JournalService } from "@/lib/services/journal"
 import { GoalsService } from "@/lib/services/goals"
@@ -194,6 +194,23 @@ export function JournalPage() {
                 Track your progress, insights, and business learnings
               </p>
             </div>
+            <div className="mt-4 sm:mt-0 flex gap-2">
+              <Button 
+                onClick={() => setShowCreateModal(true)}
+                className="bg-orange-600 hover:bg-orange-700 text-white"
+              >
+                <PlusCircle className="w-4 h-4 mr-2" />
+                New Entry
+              </Button>
+              <Button 
+                onClick={() => setShowQuickModal(true)}
+                variant="outline"
+                className="border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-950/20"
+              >
+                <Zap className="w-4 h-4 mr-2" />
+                Quick Note
+              </Button>
+            </div>
 
           </div>
         </div>
@@ -234,13 +251,20 @@ export function JournalPage() {
 
         {/* Main Content */}
         {isLoading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
-            <p className="mt-4 text-slate-600 dark:text-slate-400">Loading your journal...</p>
+          <div className="text-center py-16">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 dark:bg-orange-900 rounded-full mb-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+            </div>
+            <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">Loading your journal</h3>
+            <p className="text-slate-600 dark:text-slate-400">Preparing your business insights...</p>
           </div>
         ) : error ? (
-          <div className="text-center py-12">
-            <p className="text-red-600 dark:text-red-400">Error loading journal entries: {error.message}</p>
+          <div className="text-center py-16">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 dark:bg-red-900 rounded-full mb-4">
+              <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
+            </div>
+            <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">Unable to load journal</h3>
+            <p className="text-red-600 dark:text-red-400">{error.message}</p>
           </div>
         ) : (
           <div className="space-y-8">

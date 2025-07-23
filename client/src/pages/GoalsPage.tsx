@@ -229,7 +229,7 @@ export function GoalsPage() {
           <div className="mt-4 sm:mt-0">
             <Button 
               onClick={() => setAddGoalModalOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-orange-600 hover:bg-orange-700 text-white"
             >
               <Plus className="w-4 h-4 mr-2" />
               New Goal
@@ -239,74 +239,74 @@ export function GoalsPage() {
       </div>
 
       {/* Goal Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card className="bg-white dark:bg-slate-800">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800">
           <CardContent className="p-6">
             <div className="flex items-center">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-                <Target className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <div className="p-2 bg-orange-500 rounded-lg shadow-sm">
+                <Target className="w-5 h-5 text-white" />
               </div>
               <div className="ml-4">
                 {isLoading ? (
-                  <Skeleton className="h-6 w-8 mb-1" />
+                  <Skeleton className="h-8 w-12 mb-1" />
                 ) : (
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.total}</p>
+                  <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">{stats.total}</div>
                 )}
-                <p className="text-sm text-slate-600 dark:text-slate-400">Total Goals</p>
+                <p className="text-sm font-medium text-orange-700 dark:text-orange-300">Total Goals</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white dark:bg-slate-800">
+        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900 border-green-200 dark:border-green-800">
           <CardContent className="p-6">
             <div className="flex items-center">
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <div className="p-2 bg-green-500 rounded-lg shadow-sm">
+                <CheckCircle className="w-5 h-5 text-white" />
               </div>
               <div className="ml-4">
                 {isLoading ? (
-                  <Skeleton className="h-6 w-8 mb-1" />
+                  <Skeleton className="h-8 w-12 mb-1" />
                 ) : (
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.completed}</p>
+                  <div className="text-2xl font-bold text-green-900 dark:text-green-100">{stats.completed}</div>
                 )}
-                <p className="text-sm text-slate-600 dark:text-slate-400">Completed</p>
+                <p className="text-sm font-medium text-green-700 dark:text-green-300">Completed</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white dark:bg-slate-800">
+        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-900 border-blue-200 dark:border-blue-800">
           <CardContent className="p-6">
             <div className="flex items-center">
-              <div className="w-12 h-12 bg-yellow-100 dark:bg-yellow-900 rounded-lg flex items-center justify-center">
-                <Clock className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+              <div className="p-2 bg-blue-500 rounded-lg shadow-sm">
+                <Clock className="w-5 h-5 text-white" />
               </div>
               <div className="ml-4">
                 {isLoading ? (
-                  <Skeleton className="h-6 w-8 mb-1" />
+                  <Skeleton className="h-8 w-12 mb-1" />
                 ) : (
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.inProgress}</p>
+                  <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">{stats.inProgress}</div>
                 )}
-                <p className="text-sm text-slate-600 dark:text-slate-400">In Progress</p>
+                <p className="text-sm font-medium text-blue-700 dark:text-blue-300">In Progress</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white dark:bg-slate-800">
+        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-purple-50 to-pink-100 dark:from-purple-950 dark:to-pink-900 border-purple-200 dark:border-purple-800">
           <CardContent className="p-6">
             <div className="flex items-center">
-              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              <div className="p-2 bg-purple-500 rounded-lg shadow-sm">
+                <TrendingUp className="w-5 h-5 text-white" />
               </div>
               <div className="ml-4">
                 {isLoading ? (
-                  <Skeleton className="h-6 w-8 mb-1" />
+                  <Skeleton className="h-8 w-12 mb-1" />
                 ) : (
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.successRate}%</p>
+                  <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">{Math.round(stats.successRate)}%</div>
                 )}
-                <p className="text-sm text-slate-600 dark:text-slate-400">Success Rate</p>
+                <p className="text-sm font-medium text-purple-700 dark:text-purple-300">Success Rate</p>
               </div>
             </div>
           </CardContent>
@@ -490,7 +490,7 @@ export function GoalsPage() {
               </p>
               <Button 
                 onClick={() => setAddGoalModalOpen(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-orange-600 hover:bg-orange-700 text-white"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Create Your First Goal
