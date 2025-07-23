@@ -157,6 +157,7 @@ export function DocSafePage() {
               }}
               variant="outline"
               size="sm"
+              className="border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-950/20"
             >
               Refresh
             </Button>
@@ -194,35 +195,35 @@ export function DocSafePage() {
       )}
 
       {/* Storage Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <Card className="bg-white dark:bg-slate-800">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-900 border-blue-200 dark:border-blue-800">
           <CardContent className="p-6">
             <div className="flex items-center">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-                <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <div className="p-2 bg-blue-500 rounded-lg shadow-sm">
+                <FileText className="w-5 h-5 text-white" />
               </div>
               <div className="ml-4">
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
                   {stats?.total_documents || allDocuments.length || 0}
-                </p>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Total Documents</p>
+                </div>
+                <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Total Documents</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white dark:bg-slate-800">
+        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800">
           <CardContent className="p-6">
             <div className="flex items-center">
-              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
-                <Lock className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+              <div className="p-2 bg-orange-500 rounded-lg shadow-sm">
+                <Lock className="w-5 h-5 text-white" />
               </div>
               <div className="ml-4">
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">
                   {stats?.storage_used ? DocumentService.formatFileSize(stats.storage_used) : 
                    allDocuments.length > 0 ? DocumentService.formatFileSize(allDocuments.reduce((total, doc) => total + doc.file_size, 0)) : '0 B'}
-                </p>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Storage Used</p>
+                </div>
+                <p className="text-sm font-medium text-orange-700 dark:text-orange-300">Storage Used</p>
                 {((stats && stats.storage_used > 0) || allDocuments.length > 0) && (
                   <div className="mt-2 w-32 bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
                     <div 
@@ -233,6 +234,22 @@ export function DocSafePage() {
                     ></div>
                   </div>
                 )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900 border-green-200 dark:border-green-800">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-green-500 rounded-lg shadow-sm">
+                <Folder className="w-5 h-5 text-white" />
+              </div>
+              <div className="ml-4">
+                <div className="text-2xl font-bold text-green-900 dark:text-green-100">
+                  {Array.from(new Set(allDocuments.map(doc => doc.category))).length || 0}
+                </div>
+                <p className="text-sm font-medium text-green-700 dark:text-green-300">Categories</p>
               </div>
             </div>
           </CardContent>

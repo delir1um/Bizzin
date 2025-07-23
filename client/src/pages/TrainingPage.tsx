@@ -17,7 +17,10 @@ export function TrainingPage() {
             </p>
           </div>
           <div className="mt-4 sm:mt-0">
-            <Button variant="outline">
+            <Button 
+              variant="outline"
+              className="border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-950/20"
+            >
               <Search className="w-4 h-4 mr-2" />
               Browse All Courses
             </Button>
@@ -26,44 +29,44 @@ export function TrainingPage() {
       </div>
 
       {/* Progress Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card className="bg-white dark:bg-slate-800">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-900 border-blue-200 dark:border-blue-800">
           <CardContent className="p-6">
             <div className="flex items-center">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <div className="p-2 bg-blue-500 rounded-lg shadow-sm">
+                <BookOpen className="w-5 h-5 text-white" />
               </div>
               <div className="ml-4">
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">24</p>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Courses Available</p>
+                <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">24</div>
+                <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Courses Available</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white dark:bg-slate-800">
+        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900 border-green-200 dark:border-green-800">
           <CardContent className="p-6">
             <div className="flex items-center">
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
-                <Award className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <div className="p-2 bg-green-500 rounded-lg shadow-sm">
+                <Award className="w-5 h-5 text-white" />
               </div>
               <div className="ml-4">
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">3</p>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Completed</p>
+                <div className="text-2xl font-bold text-green-900 dark:text-green-100">3</div>
+                <p className="text-sm font-medium text-green-700 dark:text-green-300">Completed</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white dark:bg-slate-800">
+        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-purple-50 to-pink-100 dark:from-purple-950 dark:to-pink-900 border-purple-200 dark:border-purple-800">
           <CardContent className="p-6">
             <div className="flex items-center">
-              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
-                <Clock className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              <div className="p-2 bg-purple-500 rounded-lg shadow-sm">
+                <Clock className="w-5 h-5 text-white" />
               </div>
               <div className="ml-4">
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">45h</p>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Learning Time</p>
+                <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">45h</div>
+                <p className="text-sm font-medium text-purple-700 dark:text-purple-300">Learning Time</p>
               </div>
             </div>
           </CardContent>
