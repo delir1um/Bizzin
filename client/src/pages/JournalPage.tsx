@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { PlusCircle, Search, Calendar, Zap, X } from "lucide-react"
+import { SmartSearch } from "@/components/journal/SmartSearch"
 import { JournalService } from "@/lib/services/journal"
 import { supabase } from "@/lib/supabase"
 import type { JournalEntry } from "@/types/journal"
@@ -15,6 +16,7 @@ import { QuickEntryModal } from "@/components/journal/QuickEntryModal"
 import { CalendarView } from "@/components/journal/CalendarView"
 import { DailyEntriesView } from "@/components/journal/DailyEntriesView"
 import { FilterBar, type JournalFilters } from "@/components/journal/FilterBar"
+import { JournalDashboard } from "@/components/journal/JournalDashboard"
 
 export function JournalPage() {
   const [user, setUser] = useState<any>(null)
@@ -26,6 +28,7 @@ export function JournalPage() {
   const [entryToEdit, setEntryToEdit] = useState<JournalEntry | null>(null)
   const [entryToView, setEntryToView] = useState<JournalEntry | null>(null)
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date())
+  const [viewMode, setViewMode] = useState<'dashboard' | 'calendar' | 'list'>('dashboard')
   const [filters, setFilters] = useState<JournalFilters>({
     categories: [],
     moods: [],
@@ -179,28 +182,28 @@ export function JournalPage() {
           </div>
         </div>
 
-        {/* Search Bar */}
+        {/* Smart Search */}
         <div className="mb-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <Input
-              type="text"
-              placeholder="Search journal entries..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 focus:ring-orange-500 focus:border-orange-500"
-            />
-            {searchTerm && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleClearSearch}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 h-auto p-1 text-slate-400 hover:text-slate-600"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
+          <SmartSearch
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            entries={allEntries || []}
+            onQuickFilter={(filter) => {
+              if (filter.type === 'recent') {
+                // Filter recent entries in the last 7 days
+                setSearchTerm("")
+                setFilters(prev => ({ ...prev, categories: [], moods: [], tags: [] }))
+                // Could add date range filtering here
+              } else if (filter.type === 'energy') {
+                setFilters(prev => ({ ...prev, moods: [], categories: [], tags: [] }))
+                // Could add energy level filtering
+              } else if (filter.type === 'mood' && filter.value) {
+                setFilters(prev => ({ ...prev, moods: [filter.value!], categories: [], tags: [] }))
+              } else if (filter.type === 'category' && filter.value) {
+                setFilters(prev => ({ ...prev, categories: [filter.value!], moods: [], tags: [] }))
+              }
+            }}
+          />
         </div>
 
         {/* Filter Bar */}
@@ -224,26 +227,82 @@ export function JournalPage() {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* Calendar Section */}
-            <CalendarView
-              entries={displayEntries}
-              selectedDate={selectedDate}
-              onDateSelect={handleDateSelect}
-              onCreateEntry={() => setShowCreateModal(true)}
-            />
+            {/* View Mode Navigation */}
+            {!searchTerm && !hasActiveFilters && (
+              <div className="flex items-center gap-2 mb-6">
+                <Button 
+                  variant={viewMode === 'dashboard' ? 'default' : 'outline'}
+                  onClick={() => {
+                    setViewMode('dashboard')
+                    setSelectedDate(null)
+                  }}
+                  className={viewMode === 'dashboard' ? 'bg-orange-600 hover:bg-orange-700 text-white' : 'border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-800 dark:text-orange-300 dark:hover:bg-orange-950'}
+                >
+                  <Zap className="w-4 h-4 mr-2" />
+                  Dashboard
+                </Button>
+                <Button 
+                  variant={viewMode === 'calendar' ? 'default' : 'outline'}
+                  onClick={() => {
+                    setViewMode('calendar')
+                    setSelectedDate(new Date())
+                  }}
+                  className={viewMode === 'calendar' ? 'bg-orange-600 hover:bg-orange-700 text-white' : 'border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-800 dark:text-orange-300 dark:hover:bg-orange-950'}
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Calendar
+                </Button>
+              </div>
+            )}
 
-            {/* Selected Date Entries Section */}
-            <div className="space-y-6">
-              <DailyEntriesView
-                entries={displayEntries}
-                selectedDate={selectedDate}
+            {/* Content based on view mode and context */}
+            {searchTerm || hasActiveFilters ? (
+              /* Search/Filter Results View */
+              <div className="space-y-6">
+                <DailyEntriesView
+                  entries={displayEntries}
+                  selectedDate={null}
+                  onViewEntry={handleViewEntry}
+                  onEditEntry={handleEditEntry}
+                  onDeleteEntry={handleDeleteEntry}
+                  isDeleting={deleteEntryMutation.isPending}
+                  isSearching={true}
+                />
+              </div>
+            ) : viewMode === 'dashboard' ? (
+              /* Dashboard View */
+              <JournalDashboard
+                entries={allEntries || []}
+                onCreateEntry={() => setShowCreateModal(true)}
                 onViewEntry={handleViewEntry}
-                onEditEntry={handleEditEntry}
-                onDeleteEntry={handleDeleteEntry}
-                isDeleting={deleteEntryMutation.isPending}
-                isSearching={!!searchTerm || hasActiveFilters}
+                onJumpToDate={(date) => {
+                  setSelectedDate(date)
+                  setViewMode('calendar')
+                }}
               />
-            </div>
+            ) : (
+              /* Calendar View */
+              <div className="space-y-8">
+                <CalendarView
+                  entries={displayEntries}
+                  selectedDate={selectedDate}
+                  onDateSelect={handleDateSelect}
+                  onCreateEntry={() => setShowCreateModal(true)}
+                />
+
+                <div className="space-y-6">
+                  <DailyEntriesView
+                    entries={displayEntries}
+                    selectedDate={selectedDate}
+                    onViewEntry={handleViewEntry}
+                    onEditEntry={handleEditEntry}
+                    onDeleteEntry={handleDeleteEntry}
+                    isDeleting={deleteEntryMutation.isPending}
+                    isSearching={false}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         )}
 
