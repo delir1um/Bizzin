@@ -134,20 +134,20 @@ export function CalendarView({ entries, selectedDate, onDateSelect, onCreateEntr
 
         {/* Selected Date Info */}
         {selectedDate && (
-          <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
+          <div className="mt-4 p-4 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 rounded-lg border border-orange-100 dark:border-orange-800">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-slate-900 dark:text-white">
+                <p className="font-semibold text-lg text-slate-900 dark:text-white">
                   {format(selectedDate, 'EEEE, MMMM d, yyyy')}
                 </p>
                 <p className="text-sm text-slate-600 dark:text-slate-400">
-                  {getEntriesForDate(selectedDate).length} entries
+                  {getEntriesForDate(selectedDate).length} {getEntriesForDate(selectedDate).length === 1 ? 'entry' : 'entries'} for this date
                 </p>
               </div>
               <Button
                 onClick={onCreateEntry}
                 size="sm"
-                className="bg-orange-600 hover:bg-orange-700 text-white"
+                className="bg-orange-600 hover:bg-orange-700 text-white shadow-sm"
               >
                 <Calendar className="w-4 h-4 mr-2" />
                 Add Entry

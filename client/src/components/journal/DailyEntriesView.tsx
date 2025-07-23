@@ -2,9 +2,8 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-import { ChevronDown, ChevronRight, BookOpen, Edit, Trash2, Clock } from "lucide-react"
+import { BookOpen, Edit, Trash2, Clock } from "lucide-react"
 import { format, isSameDay, isToday, isYesterday, startOfWeek, endOfWeek, isWithinInterval } from "date-fns"
 import type { JournalEntry } from "@/types/journal"
 
@@ -41,6 +40,8 @@ export function DailyEntriesView({
       // If a specific date is selected, only show entries from that date
       const dateEntries = entries.filter(entry => 
         isSameDay(new Date(entry.created_at), selectedDate)
+      ).sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       )
       
       if (dateEntries.length === 0) return []
@@ -116,17 +117,22 @@ export function DailyEntriesView({
 
   if (groupedEntries.length === 0) {
     return (
-      <div className="text-center py-12">
+      <div className="text-center py-16 bg-slate-50 dark:bg-slate-800/50 rounded-lg border-2 border-dashed border-slate-200 dark:border-slate-700">
         <BookOpen className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
         <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
           {selectedDate ? "No entries for this date" : "No journal entries yet"}
         </h3>
-        <p className="text-slate-600 dark:text-slate-400">
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
           {selectedDate 
-            ? `No entries found for ${format(selectedDate, 'MMMM d, yyyy')}`
+            ? `No entries found for ${format(selectedDate, 'MMMM d, yyyy')}. Start writing about your day!`
             : "Start documenting your business journey by creating your first entry."
           }
         </p>
+        {selectedDate && (
+          <p className="text-sm text-orange-600 dark:text-orange-400">
+            Click "Add Entry" above or use the floating button to create your first entry for this date.
+          </p>
+        )}
       </div>
     )
   }
@@ -138,35 +144,7 @@ export function DailyEntriesView({
         const isExpanded = group.isExpanded || expandedDates.has(dateKey)
 
         return (
-          <Collapsible
-            key={dateKey}
-            open={isExpanded}
-            onOpenChange={() => toggleDateExpansion(dateKey)}
-          >
-            <CollapsibleTrigger asChild>
-              <Button
-                variant="ghost"
-                className="w-full justify-between p-4 h-auto text-left hover:bg-slate-50 dark:hover:bg-slate-800"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    {isExpanded ? (
-                      <ChevronDown className="w-4 h-4 text-slate-400" />
-                    ) : (
-                      <ChevronRight className="w-4 h-4 text-slate-400" />
-                    )}
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                      {group.label}
-                    </h3>
-                  </div>
-                  <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
-                    {group.entries.length} {group.entries.length === 1 ? 'entry' : 'entries'}
-                  </Badge>
-                </div>
-              </Button>
-            </CollapsibleTrigger>
-
-            <CollapsibleContent className="space-y-4 mt-4">
+          <div key={dateKey} className="space-y-4">
               {group.entries.map((entry) => (
                 <Card 
                   key={entry.id} 
@@ -283,8 +261,7 @@ export function DailyEntriesView({
                   </CardContent>
                 </Card>
               ))}
-            </CollapsibleContent>
-          </Collapsible>
+          </div>
         )
       })}
     </div>

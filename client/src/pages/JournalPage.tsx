@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PlusCircle, Search, Calendar, Zap, X } from "lucide-react"
 import { JournalService } from "@/lib/services/journal"
 import { supabase } from "@/lib/supabase"
@@ -25,8 +24,7 @@ export function JournalPage() {
   const [showViewModal, setShowViewModal] = useState(false)
   const [entryToEdit, setEntryToEdit] = useState<JournalEntry | null>(null)
   const [entryToView, setEntryToView] = useState<JournalEntry | null>(null)
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
-  const [activeTab, setActiveTab] = useState("calendar")
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date())
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
@@ -82,7 +80,6 @@ export function JournalPage() {
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date)
-    setActiveTab("entries")
   }
 
   const handleEditEntry = (entry: JournalEntry) => {
@@ -186,22 +183,17 @@ export function JournalPage() {
             <p className="text-red-600 dark:text-red-400">Error loading journal entries: {error.message}</p>
           </div>
         ) : (
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="calendar">Calendar View</TabsTrigger>
-              <TabsTrigger value="entries">Entries</TabsTrigger>
-            </TabsList>
+          <div className="space-y-8">
+            {/* Calendar Section */}
+            <CalendarView
+              entries={displayEntries}
+              selectedDate={selectedDate}
+              onDateSelect={handleDateSelect}
+              onCreateEntry={() => setShowQuickModal(true)}
+            />
 
-            <TabsContent value="calendar" className="space-y-6">
-              <CalendarView
-                entries={displayEntries}
-                selectedDate={selectedDate}
-                onDateSelect={handleDateSelect}
-                onCreateEntry={() => setShowQuickModal(true)}
-              />
-            </TabsContent>
-
-            <TabsContent value="entries" className="space-y-6">
+            {/* Selected Date Entries Section */}
+            <div className="space-y-6">
               <DailyEntriesView
                 entries={displayEntries}
                 selectedDate={selectedDate}
@@ -210,8 +202,8 @@ export function JournalPage() {
                 onDeleteEntry={handleDeleteEntry}
                 isDeleting={deleteEntryMutation.isPending}
               />
-            </TabsContent>
-          </Tabs>
+            </div>
+          </div>
         )}
 
       </div>
