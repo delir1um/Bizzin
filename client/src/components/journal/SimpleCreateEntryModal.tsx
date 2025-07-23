@@ -167,126 +167,29 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <PlusCircle className="w-5 h-5 text-orange-600" />
-            Create Business Journal Entry
+            New Journal Entry
           </DialogTitle>
-          <p className="text-sm text-slate-600">
-            Just write your thoughts - AI will automatically generate a title and analyze your entry
-          </p>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Entry Form */}
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-slate-700 mb-2 block">
-                What's on your mind?
-              </label>
               <Textarea
-                placeholder="Share your business thoughts, challenges, wins, or reflections. The AI will automatically generate a title, detect your mood, and categorize your entry..."
+                placeholder="What's on your mind?"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 className="min-h-[120px] resize-none"
                 rows={6}
                 autoFocus
               />
-              <p className="text-xs text-slate-500 mt-1">
-                AI will automatically create a title based on your content
-              </p>
             </div>
           </div>
 
-          {/* AI Analysis Preview */}
-          {(isAnalyzing || aiPreview) && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-4"
-            >
-              <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                <Brain className="w-4 h-4 text-orange-600" />
-                AI Analysis Preview
-              </div>
 
-              {isAnalyzing ? (
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                        className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center"
-                      >
-                        <Sparkles className="w-3 h-3 text-orange-600" />
-                      </motion.div>
-                      <span className="text-sm text-slate-600">
-                        Analyzing your business insights...
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : aiPreview ? (
-                <Card className="border-orange-200">
-                  <CardContent className="p-4 space-y-3">
-                    {/* Generated Title */}
-                    {aiPreview.generated_title && (
-                      <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                        <div className="flex items-start gap-2">
-                          <PlusCircle className="w-4 h-4 text-slate-600 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <p className="text-sm font-medium text-slate-700 mb-1">Generated Title</p>
-                            <p className="text-sm text-slate-600 font-medium">{aiPreview.generated_title}</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Mood and Category */}
-                    <div className="flex flex-wrap gap-2">
-                      {aiPreview.primary_mood && (
-                        <Badge className={getMoodColor(aiPreview.primary_mood)}>
-                          Mood: {aiPreview.primary_mood}
-                        </Badge>
-                      )}
-                      {aiPreview.category && (
-                        <Badge className={getCategoryColor(aiPreview.category)}>
-                          Category: {aiPreview.category}
-                        </Badge>
-                      )}
-                      {aiPreview.confidence && (
-                        <Badge variant="outline" className="text-xs">
-                          AI Confidence: {Math.round(aiPreview.confidence)}%
-                        </Badge>
-                      )}
-                    </div>
-
-                    {/* Business Context */}
-                    {aiPreview.business_context && (
-                      <div className="text-sm">
-                        <span className="font-medium text-slate-700">Business Context: </span>
-                        <span className="text-slate-600">{aiPreview.business_context}</span>
-                      </div>
-                    )}
-
-                    {/* AI Insights */}
-                    {aiPreview.business_insights && (
-                      <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
-                        <div className="flex items-start gap-2">
-                          <Brain className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <p className="text-sm font-medium text-orange-900 mb-1">AI Business Insight</p>
-                            <p className="text-sm text-orange-800">{aiPreview.business_insights}</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ) : null}
-            </motion.div>
-          )}
 
           {/* Action Buttons */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
+          <div className="flex justify-end gap-3 pt-4">
             <Button
               type="button"
               variant="outline"
@@ -295,25 +198,6 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
             >
               Cancel
             </Button>
-            
-            {content.trim() && !aiPreview && !isAnalyzing && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setIsAnalyzing(true)
-                  analyzeBusinessSentiment(content).then(result => {
-                    const aiTitle = generateTitleFromContent(content)
-                    setAiPreview({ ...result, generated_title: aiTitle })
-                    setIsAnalyzing(false)
-                  })
-                }}
-                className="border-orange-200 text-orange-700 hover:bg-orange-50"
-              >
-                <Brain className="w-4 h-4 mr-2" />
-                Preview AI Analysis
-              </Button>
-            )}
 
             <Button
               type="submit"
@@ -327,15 +211,12 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                     className="w-4 h-4 mr-2"
                   >
-                    <Sparkles className="w-4 h-4" />
+                    <Brain className="w-4 h-4" />
                   </motion.div>
-                  Saving Entry...
+                  Saving...
                 </>
               ) : (
-                <>
-                  <PlusCircle className="w-4 h-4 mr-2" />
-                  Create Entry
-                </>
+                "Save Entry"
               )}
             </Button>
           </div>
