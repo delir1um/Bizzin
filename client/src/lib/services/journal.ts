@@ -83,7 +83,7 @@ export class JournalService {
         category: entry.category || null,
         tags: entry.tags || null,
         reading_time: readingTime,
-        // sentiment_data: sentimentData, // Temporarily disabled until database column is added
+        sentiment_data: sentimentData,
       }
 
       console.log('Creating journal entry for user:', user.id)
@@ -129,14 +129,14 @@ export class JournalService {
         const title = updates.title || ''
         if (content || title) {
           const sentiment = analyzeBusinessSentiment(content, title)
-          // updateData.sentiment_data = { // Temporarily disabled until database column is added
-          //   primary_mood: sentiment.mood.primary,
-          //   confidence: sentiment.mood.confidence,
-          //   energy: sentiment.mood.energy,
-          //   emotions: sentiment.mood.emotions,
-          //   insights: sentiment.insights,
-          //   business_category: sentiment.category
-          // }
+          updateData.sentiment_data = {
+            primary_mood: sentiment.mood.primary,
+            confidence: sentiment.mood.confidence,
+            energy: sentiment.mood.energy,
+            emotions: sentiment.mood.emotions,
+            insights: sentiment.insights,
+            business_category: sentiment.category
+          }
           
           // Update mood if not manually set
           if (!updates.mood) {
