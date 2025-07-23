@@ -36,11 +36,13 @@ export function FilterBar({ onFiltersChange, activeFilters, allEntries }: Filter
   // Extract all unique tags from entries
   useEffect(() => {
     const tagSet = new Set<string>()
-    allEntries.forEach(entry => {
-      if (entry.tags && Array.isArray(entry.tags)) {
-        entry.tags.forEach(tag => tagSet.add(tag))
-      }
-    })
+    if (allEntries && Array.isArray(allEntries)) {
+      allEntries.forEach(entry => {
+        if (entry.tags && Array.isArray(entry.tags)) {
+          entry.tags.forEach((tag: string) => tagSet.add(tag))
+        }
+      })
+    }
     setAvailableTags(Array.from(tagSet).sort())
   }, [allEntries])
 

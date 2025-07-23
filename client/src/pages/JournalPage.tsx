@@ -115,6 +115,10 @@ export function JournalPage() {
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date)
+    // Clear search when selecting a date to show date-specific entries
+    if (date && searchTerm) {
+      setSearchTerm("")
+    }
   }
 
   const handleEditEntry = (entry: JournalEntry) => {
@@ -139,12 +143,16 @@ export function JournalPage() {
 
   const handleClearSearch = () => {
     setSearchTerm("")
-    setSelectedDate(null)
+    // Don't clear selected date when clearing search - keep calendar context
   }
 
   const handleFiltersChange = (newFilters: JournalFilters) => {
     setFilters(newFilters)
   }
+
+  const hasActiveFilters = filters.categories.length > 0 || 
+                          filters.moods.length > 0 || 
+                          filters.tags.length > 0
 
   if (!user) {
     return (
@@ -233,6 +241,7 @@ export function JournalPage() {
                 onEditEntry={handleEditEntry}
                 onDeleteEntry={handleDeleteEntry}
                 isDeleting={deleteEntryMutation.isPending}
+                isSearching={!!searchTerm || hasActiveFilters}
               />
             </div>
           </div>

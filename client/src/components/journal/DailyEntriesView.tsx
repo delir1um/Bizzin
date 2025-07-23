@@ -14,6 +14,7 @@ interface DailyEntriesViewProps {
   onEditEntry: (entry: JournalEntry) => void
   onDeleteEntry: (entry: JournalEntry) => void
   isDeleting: boolean
+  isSearching?: boolean // New prop to indicate if we're showing search results
 }
 
 interface GroupedEntries {
@@ -29,15 +30,16 @@ export function DailyEntriesView({
   onViewEntry, 
   onEditEntry, 
   onDeleteEntry,
-  isDeleting 
+  isDeleting,
+  isSearching = false
 }: DailyEntriesViewProps) {
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set())
   const [entryToDelete, setEntryToDelete] = useState<JournalEntry | null>(null)
 
   // Group entries by date
   const groupEntriesByDate = (): GroupedEntries[] => {
-    if (selectedDate) {
-      // If a specific date is selected, only show entries from that date
+    if (selectedDate && !isSearching) {
+      // If a specific date is selected and not searching, only show entries from that date
       const dateEntries = entries.filter(entry => 
         isSameDay(new Date(entry.created_at), selectedDate)
       ).sort((a, b) => 
