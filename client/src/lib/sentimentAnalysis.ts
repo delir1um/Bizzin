@@ -105,7 +105,14 @@ export function analyzeBusinessSentiment(content: string, title?: string): Busin
     .sort(([,a], [,b]) => b - a);
   
   const primaryEmotion = sortedEmotions[0]?.[0] || 'neutral';
-  const confidence = sortedEmotions[0]?.[1] || 0;
+  const rawConfidence = sortedEmotions[0]?.[1] || 0;
+  
+  // Normalize confidence to 0-1 range (cap at reasonable levels)
+  const maxExpectedScore = 5; // Reasonable cap for typical entries
+  const confidence = Math.min(rawConfidence / maxExpectedScore, 1.0);
+  
+  // Ensure minimum confidence for detected emotions
+  const finalConfidence = rawConfidence > 0 ? Math.max(confidence, 0.3) : 0;
   
   // Calculate overall energy
   const avgEnergy = energyCount > 0 ? totalEnergyScore / energyCount : 2;
@@ -136,7 +143,7 @@ export function analyzeBusinessSentiment(content: string, title?: string): Busin
   return {
     mood: {
       primary: primaryEmotion,
-      confidence: Math.min(confidence, 1),
+      confidence: finalConfidence,
       energy,
       emotions: topEmotions
     },

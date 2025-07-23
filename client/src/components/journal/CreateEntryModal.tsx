@@ -25,8 +25,6 @@ const createEntrySchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
   content: z.string().min(10, "Content must be at least 10 characters").max(10000, "Content must be less than 10000 characters"),
   entry_date: z.string().optional(),
-  mood: z.string().optional(),
-  category: z.string().optional(),
   related_goal_id: z.string().optional(),
 })
 
@@ -67,8 +65,6 @@ export function CreateEntryModal({ isOpen, onClose, selectedDate }: CreateEntryM
       title: "",
       content: "",
       entry_date: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
-      mood: "",
-      category: "",
       related_goal_id: "",
     }
   })
@@ -108,8 +104,6 @@ export function CreateEntryModal({ isOpen, onClose, selectedDate }: CreateEntryM
       title: data.title,
       content: data.content,
       entry_date: data.entry_date || undefined,
-      mood: data.mood || undefined,
-      category: data.category || undefined,
       related_goal_id: data.related_goal_id && data.related_goal_id !== "none" ? data.related_goal_id : undefined,
       tags: tags,
     }
@@ -178,24 +172,11 @@ export function CreateEntryModal({ isOpen, onClose, selectedDate }: CreateEntryM
       .replace(/did you/g, "I")
       .replace(/\?$/, '') // Remove question mark at end
     
-    // Auto-assign category based on prompt category and tags
-    const categoryMapping = {
-      'daily': 'Reflection',
-      'weekly': 'Planning', 
-      'monthly': 'Planning',
-      'challenge': 'Problem-Solving',
-      'success': 'Wins',
-      'strategy': 'Strategy'
-    }
-    
-    const suggestedCategory = categoryMapping[currentPrompt.category] || 'Reflection'
-    
     // Auto-assign relevant tags from the prompt
     const promptTags = currentPrompt.tags.slice(0, 3) // Limit to first 3 tags to avoid overwhelming
     setTags(promptTags)
     
     setValue('title', title)
-    setValue('category', suggestedCategory)
     setShowPrompt(false)
   }
 
