@@ -5,21 +5,27 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-import { PlusCircle, Search, Calendar, BookOpen, Edit, Trash2, Clock, Filter } from "lucide-react"
+import { PlusCircle, Search, Calendar, BookOpen, Edit, Trash2, Clock, Filter, X } from "lucide-react"
 import { JournalService } from "@/lib/services/journal"
 import { supabase } from "@/lib/supabase"
 import type { JournalEntry } from "@/types/journal"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
 import { CreateEntryModal } from "@/components/journal/CreateEntryModal"
+import { EditEntryModal } from "@/components/journal/EditEntryModal"
+import { ViewEntryModal } from "@/components/journal/ViewEntryModal"
 import { DateFilterModal } from "@/components/journal/DateFilterModal"
 
 export function JournalPage() {
   const [user, setUser] = useState<any>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showViewModal, setShowViewModal] = useState(false)
   const [showDateFilter, setShowDateFilter] = useState(false)
   const [entryToDelete, setEntryToDelete] = useState<JournalEntry | null>(null)
+  const [entryToEdit, setEntryToEdit] = useState<JournalEntry | null>(null)
+  const [entryToView, setEntryToView] = useState<JournalEntry | null>(null)
   const [dateFilter, setDateFilter] = useState<{
     startDate: string
     endDate: string
@@ -111,6 +117,26 @@ export function JournalPage() {
     setDateFilter(null)
   }
 
+  const handleEditEntry = (entry: JournalEntry) => {
+    setEntryToEdit(entry)
+    setShowEditModal(true)
+  }
+
+  const handleViewEntry = (entry: JournalEntry) => {
+    setEntryToView(entry)
+    setShowViewModal(true)
+  }
+
+  const handleCloseEditModal = () => {
+    setShowEditModal(false)
+    setEntryToEdit(null)
+  }
+
+  const handleCloseViewModal = () => {
+    setShowViewModal(false)
+    setEntryToView(null)
+  }
+
   const handleNextPage = () => {
     if (currentPage < totalPages - 1) {
       setCurrentPage(currentPage + 1)
@@ -177,6 +203,17 @@ export function JournalPage() {
           {dateFilter && (
             <Badge variant="secondary" className="ml-2 bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
               {dateFilter.label}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleClearDateFilter()
+                }}
+                className="h-auto p-0 ml-1 text-orange-600 hover:text-orange-800"
+              >
+                <X className="w-3 h-3" />
+              </Button>
             </Badge>
           )}
         </Button>
@@ -260,6 +297,7 @@ export function JournalPage() {
                       <Button 
                         variant="ghost" 
                         size="sm"
+                        onClick={() => handleEditEntry(entry)}
                         className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600"
                       >
                         <Edit className="w-4 h-4" />
@@ -301,11 +339,17 @@ export function JournalPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
+                <p 
+                  className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4 cursor-pointer hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
+                  onClick={() => handleViewEntry(entry)}
+                >
                   {entry.content.length > 200 
                     ? `${entry.content.substring(0, 200)}...` 
                     : entry.content
                   }
+                  {entry.content.length > 200 && (
+                    <span className="text-orange-600 font-medium ml-2">Read more</span>
+                  )}
                 </p>
                 
                 {/* Mood Badge */}
@@ -384,6 +428,24 @@ export function JournalPage() {
       <CreateEntryModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
+      />
+
+      {/* Edit Entry Modal */}
+      <EditEntryModal
+        isOpen={showEditModal}
+        onClose={handleCloseEditModal}
+        entry={entryToEdit}
+      />
+
+      {/* View Entry Modal */}
+      <ViewEntryModal
+        isOpen={showViewModal}
+        onClose={handleCloseViewModal}
+        entry={entryToView}
+        onEdit={(entry) => {
+          setShowViewModal(false)
+          handleEditEntry(entry)
+        }}
       />
 
       {/* Date Filter Modal */}
