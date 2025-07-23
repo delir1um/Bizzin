@@ -79,15 +79,15 @@ export const reflectionPrompts: ReflectionPrompt[] = [
   {
     id: 'challenge-02',
     category: 'challenge',
-    question: 'When you think about your biggest business fear, what comes up?',
-    followUp: 'How might this fear be protecting you, and how might it be limiting you?',
+    question: 'When I think about my biggest business fear, what comes up?',
+    followUp: 'How might this fear be protecting me, and how might it be limiting me?',
     tags: ['fears', 'mindset', 'growth']
   },
   {
     id: 'challenge-03',
     category: 'challenge',
-    question: 'What skill do you wish you had right now?',
-    followUp: 'What\'s one way you could start developing it this week?',
+    question: 'What skill do I wish I had right now?',
+    followUp: 'What\'s one way I could start developing it this week?',
     tags: ['skills', 'development', 'learning']
   },
 
@@ -102,15 +102,15 @@ export const reflectionPrompts: ReflectionPrompt[] = [
   {
     id: 'success-02',
     category: 'success',
-    question: 'When did you feel most confident as a business owner recently?',
+    question: 'When did I feel most confident as a business owner recently?',
     followUp: 'What circumstances created that confidence?',
     tags: ['confidence', 'leadership', 'mindset']
   },
   {
     id: 'success-03',
     category: 'success',
-    question: 'What compliment or positive feedback did you receive recently?',
-    followUp: 'What does this tell you about your unique value?',
+    question: 'What compliment or positive feedback did I receive recently?',
+    followUp: 'What does this tell me about my unique value?',
     tags: ['feedback', 'value-proposition', 'strengths']
   },
 
@@ -118,21 +118,21 @@ export const reflectionPrompts: ReflectionPrompt[] = [
   {
     id: 'strategy-01',
     category: 'strategy',
-    question: 'If you could only focus on three things next month, what would they be?',
-    followUp: 'What would you need to stop doing to make room for these priorities?',
+    question: 'If I could only focus on three things next month, what would they be?',
+    followUp: 'What would I need to stop doing to make room for these priorities?',
     tags: ['priorities', 'focus', 'strategy']
   },
   {
     id: 'strategy-02',
     category: 'strategy',
-    question: 'What opportunity are you most excited about right now?',
-    followUp: 'What\'s your next step to pursue it?',
+    question: 'What opportunity am I most excited about right now?',
+    followUp: 'What\'s my next step to pursue it?',
     tags: ['opportunities', 'excitement', 'action']
   },
   {
     id: 'strategy-03',
     category: 'strategy',
-    question: 'How has your vision for your business evolved recently?',
+    question: 'How has my vision for my business evolved recently?',
     followUp: 'What experiences or insights sparked this evolution?',
     tags: ['vision', 'evolution', 'growth']
   }

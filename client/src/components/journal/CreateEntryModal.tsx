@@ -113,7 +113,19 @@ export function CreateEntryModal({ isOpen, onClose }: CreateEntryModalProps) {
   }
 
   const usePromptAsTitle = () => {
-    setValue('title', currentPrompt.question.replace('?', ''))
+    // Convert question from second person to first person for personal journaling
+    let title = currentPrompt.question
+      .replace(/What's/g, "What's")
+      .replace(/you're/g, "I'm")
+      .replace(/your/g, "my")
+      .replace(/you /g, "I ")
+      .replace(/You /g, "I ")
+      .replace(/are you/g, "am I")
+      .replace(/do you/g, "do I")
+      .replace(/did you/g, "did I")
+      .replace(/\?$/, '') // Remove question mark at end
+    
+    setValue('title', title)
     setShowPrompt(false)
   }
 
