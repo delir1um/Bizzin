@@ -18,7 +18,7 @@ import { QuickEntryModal } from "@/components/journal/QuickEntryModal"
 import { CalendarView } from "@/components/journal/CalendarView"
 import { DailyEntriesView } from "@/components/journal/DailyEntriesView"
 import { FilterBar, type JournalFilters } from "@/components/journal/FilterBar"
-import { JournalDashboard } from "@/components/journal/JournalDashboard"
+import { BusinessIntelligenceDashboard } from "@/components/journal/BusinessIntelligenceDashboard"
 import { WeeklySummaryModal } from "@/components/journal/WeeklySummaryModal"
 
 export function JournalPage() {
@@ -320,8 +320,8 @@ export function JournalPage() {
                 />
               </div>
             ) : viewMode === 'dashboard' ? (
-              /* Dashboard View */
-              <JournalDashboard
+              /* Business Intelligence Dashboard View */
+              <BusinessIntelligenceDashboard
                 entries={allEntries || []}
                 onCreateEntry={() => setShowCreateModal(true)}
                 onViewEntry={handleViewEntry}
