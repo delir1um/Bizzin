@@ -35,7 +35,6 @@ export function DailyEntriesView({
   isSearching = false
 }: DailyEntriesViewProps) {
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set())
-  const [entryToDelete, setEntryToDelete] = useState<JournalEntry | null>(null)
 
   // Group entries by date
   const groupEntriesByDate = (): GroupedEntries[] => {
@@ -109,11 +108,8 @@ export function DailyEntriesView({
     setExpandedDates(newExpanded)
   }
 
-  const handleDeleteEntry = () => {
-    if (entryToDelete) {
-      onDeleteEntry(entryToDelete)
-      setEntryToDelete(null)
-    }
+  const handleDeleteEntry = (entryToDelete: JournalEntry) => {
+    onDeleteEntry(entryToDelete)
   }
 
   const groupedEntries = groupEntriesByDate()
@@ -234,7 +230,6 @@ export function DailyEntriesView({
                                 className="h-8 w-8 p-0 text-slate-400 hover:text-red-600"
                                 onClick={(e) => {
                                   e.stopPropagation()
-                                  setEntryToDelete(entry)
                                 }}
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -248,11 +243,11 @@ export function DailyEntriesView({
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
-                                <AlertDialogCancel onClick={() => setEntryToDelete(null)}>
+                                <AlertDialogCancel>
                                   Cancel
                                 </AlertDialogCancel>
                                 <AlertDialogAction
-                                  onClick={handleDeleteEntry}
+                                  onClick={() => handleDeleteEntry(entry)}
                                   className="bg-red-600 hover:bg-red-700"
                                   disabled={isDeleting}
                                 >
