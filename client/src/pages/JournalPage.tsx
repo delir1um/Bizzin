@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { PlusCircle, Search, Calendar, BookOpen, Edit, Trash2, Clock, Filter } from "lucide-react"
 import { JournalService } from "@/lib/services/journal"
 import { supabase } from "@/lib/supabase"
@@ -18,6 +19,7 @@ export function JournalPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showDateFilter, setShowDateFilter] = useState(false)
+  const [entryToDelete, setEntryToDelete] = useState<JournalEntry | null>(null)
   const [dateFilter, setDateFilter] = useState<{
     startDate: string
     endDate: string
@@ -93,9 +95,10 @@ export function JournalPage() {
     setCurrentPage(0)
   }, [searchTerm, dateFilter])
 
-  const handleDeleteEntry = (entryId: string) => {
-    if (confirm("Are you sure you want to delete this journal entry?")) {
-      deleteEntryMutation.mutate(entryId)
+  const handleDeleteEntry = () => {
+    if (entryToDelete) {
+      deleteEntryMutation.mutate(entryToDelete.id)
+      setEntryToDelete(null)
     }
   }
 
@@ -261,14 +264,38 @@ export function JournalPage() {
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => handleDeleteEntry(entry.id)}
-                        className="h-8 w-8 p-0 text-slate-400 hover:text-red-600"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            className="h-8 w-8 p-0 text-slate-400 hover:text-red-600"
+                            onClick={() => setEntryToDelete(entry)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Journal Entry</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete "{entry.title}"? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel onClick={() => setEntryToDelete(null)}>
+                              Cancel
+                            </AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={handleDeleteEntry}
+                              className="bg-red-600 hover:bg-red-700"
+                              disabled={deleteEntryMutation.isPending}
+                            >
+                              {deleteEntryMutation.isPending ? "Deleting..." : "Delete"}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                 </div>
