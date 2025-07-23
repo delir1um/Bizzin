@@ -13,7 +13,18 @@ export function SentimentInsights({ entry, className = "" }: SentimentInsightsPr
   const sentiment = entry.sentiment_data
   
   if (!sentiment) {
-    return null
+    // Show a placeholder until database is updated
+    return (
+      <div className={`bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-4 ${className}`}>
+        <div className="flex items-center gap-2 text-orange-700 mb-2">
+          <Brain className="w-5 h-5" />
+          <span className="font-semibold text-sm">AI Business Insights</span>
+        </div>
+        <div className="text-sm text-orange-600">
+          🔄 Database update required - Run the SQL migration to enable AI sentiment analysis
+        </div>
+      </div>
+    )
   }
 
   const moodColor = getMoodColor(sentiment.primary_mood)
@@ -131,6 +142,17 @@ export function SentimentBadge({ entry, size = "sm" }: { entry: JournalEntry, si
   const sentiment = entry.sentiment_data
   
   if (!sentiment) {
+    // Fallback to manual mood if no AI sentiment yet
+    if (entry.mood) {
+      return (
+        <Badge 
+          variant="secondary" 
+          className={`${size === "xs" ? "text-xs" : "text-sm"} capitalize`}
+        >
+          😊 {entry.mood}
+        </Badge>
+      )
+    }
     return null
   }
 
