@@ -189,7 +189,8 @@ export function DailyEntriesView({
               {group.entries.map((entry) => (
                 <Card 
                   key={entry.id} 
-                  className={`${getCardColors(entry)} hover:shadow-lg transition-all duration-200 hover:scale-[1.01]`}
+                  className={`${getCardColors(entry)} hover:shadow-lg transition-all duration-200 hover:scale-[1.01] cursor-pointer`}
+                  onClick={() => onViewEntry(entry)}
                 >
                   <CardHeader>
                     <div className="flex items-start justify-between">
@@ -216,7 +217,10 @@ export function DailyEntriesView({
                           <Button 
                             variant="ghost" 
                             size="sm"
-                            onClick={() => onEditEntry(entry)}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              onEditEntry(entry)
+                            }}
                             className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600"
                           >
                             <Edit className="w-4 h-4" />
@@ -227,7 +231,10 @@ export function DailyEntriesView({
                                 variant="ghost" 
                                 size="sm"
                                 className="h-8 w-8 p-0 text-slate-400 hover:text-red-600"
-                                onClick={() => setEntryToDelete(entry)}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setEntryToDelete(entry)
+                                }}
                               >
                                 <Trash2 className="w-4 h-4" />
                               </Button>
@@ -259,8 +266,7 @@ export function DailyEntriesView({
                   </CardHeader>
                   <CardContent>
                     <p 
-                      className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4 cursor-pointer hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
-                      onClick={() => onViewEntry(entry)}
+                      className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4"
                     >
                       {entry.content.length > 200 
                         ? `${entry.content.substring(0, 200)}...` 
