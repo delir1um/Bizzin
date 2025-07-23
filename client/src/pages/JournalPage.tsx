@@ -14,6 +14,7 @@ import { ViewEntryModal } from "@/components/journal/ViewEntryModal"
 import { QuickEntryModal } from "@/components/journal/QuickEntryModal"
 import { CalendarView } from "@/components/journal/CalendarView"
 import { DailyEntriesView } from "@/components/journal/DailyEntriesView"
+import { FilterBar, type JournalFilters } from "@/components/journal/FilterBar"
 
 export function JournalPage() {
   const [user, setUser] = useState<any>(null)
@@ -25,6 +26,11 @@ export function JournalPage() {
   const [entryToEdit, setEntryToEdit] = useState<JournalEntry | null>(null)
   const [entryToView, setEntryToView] = useState<JournalEntry | null>(null)
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date())
+  const [filters, setFilters] = useState<JournalFilters>({
+    categories: [],
+    moods: [],
+    tags: []
+  })
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
@@ -71,8 +77,37 @@ export function JournalPage() {
     },
   })
 
+  // Apply filters to entries
+  const applyFilters = (entries: JournalEntry[]) => {
+    return entries.filter(entry => {
+      // Category filter
+      if (filters.categories.length > 0 && (!entry.category || !filters.categories.includes(entry.category))) {
+        return false
+      }
+      
+      // Mood filter
+      if (filters.moods.length > 0 && (!entry.mood || !filters.moods.includes(entry.mood))) {
+        return false
+      }
+      
+      // Tag filter (if entry has tags that match any selected tags)
+      if (filters.tags.length > 0) {
+        const entryTags = entry.tags || []
+        const hasMatchingTag = filters.tags.some(filterTag => 
+          entryTags.some(entryTag => entryTag.toLowerCase().includes(filterTag.toLowerCase()))
+        )
+        if (!hasMatchingTag) {
+          return false
+        }
+      }
+      
+      return true
+    })
+  }
+
   // Determine which entries to display
-  const displayEntries = searchTerm ? searchResults : allEntries
+  const baseEntries = searchTerm ? searchResults : allEntries
+  const displayEntries = applyFilters(baseEntries)
 
   const handleDeleteEntry = (entry: JournalEntry) => {
     deleteEntryMutation.mutate(entry)
@@ -105,6 +140,10 @@ export function JournalPage() {
   const handleClearSearch = () => {
     setSearchTerm("")
     setSelectedDate(null)
+  }
+
+  const handleFiltersChange = (newFilters: JournalFilters) => {
+    setFilters(newFilters)
   }
 
   if (!user) {
@@ -154,6 +193,14 @@ export function JournalPage() {
               </Button>
             )}
           </div>
+        </div>
+
+        {/* Filter Bar */}
+        <div className="mb-6">
+          <FilterBar
+            activeFilters={filters}
+            onFiltersChange={handleFiltersChange}
+          />
         </div>
 
         {/* Main Content */}

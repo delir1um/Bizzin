@@ -144,18 +144,21 @@ export function DailyEntriesView({
         const isExpanded = group.isExpanded || expandedDates.has(dateKey)
 
         const getCardColors = (entry: JournalEntry) => {
-          const categoryColors = {
-            'Strategy': 'bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/30 border-blue-200 dark:border-blue-800',
-            'Marketing': 'bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/20 dark:to-emerald-900/30 border-green-200 dark:border-green-800',
-            'Product Development': 'bg-gradient-to-br from-purple-50 to-violet-100 dark:from-purple-900/20 dark:to-violet-900/30 border-purple-200 dark:border-purple-800',
-            'Finance': 'bg-gradient-to-br from-yellow-50 to-amber-100 dark:from-yellow-900/20 dark:to-amber-900/30 border-yellow-200 dark:border-yellow-800',
-            'Operations': 'bg-gradient-to-br from-red-50 to-rose-100 dark:from-red-900/20 dark:to-rose-900/30 border-red-200 dark:border-red-800',
-            'Personal Growth': 'bg-gradient-to-br from-pink-50 to-rose-100 dark:from-pink-900/20 dark:to-rose-900/30 border-pink-200 dark:border-pink-800',
-            'Networking': 'bg-gradient-to-br from-cyan-50 to-blue-100 dark:from-cyan-900/20 dark:to-blue-900/30 border-cyan-200 dark:border-cyan-800',
+          const categoryColors: { [key: string]: string } = {
+            'Research': 'bg-gradient-to-br from-blue-50 to-sky-100 dark:from-blue-900/20 dark:to-sky-900/30 border-blue-200 dark:border-blue-800',
+            'Planning': 'bg-gradient-to-br from-purple-50 to-violet-100 dark:from-purple-900/20 dark:to-violet-900/30 border-purple-200 dark:border-purple-800',
+            'Strategy': 'bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-indigo-900/20 dark:to-blue-900/30 border-indigo-200 dark:border-indigo-800',
+            'Feedback': 'bg-gradient-to-br from-orange-50 to-amber-100 dark:from-orange-900/20 dark:to-amber-900/30 border-orange-200 dark:border-orange-800',
+            'Milestone': 'bg-gradient-to-br from-yellow-50 to-gold-100 dark:from-yellow-900/20 dark:to-yellow-900/30 border-yellow-200 dark:border-yellow-800',
             'Learning': 'bg-gradient-to-br from-teal-50 to-cyan-100 dark:from-teal-900/20 dark:to-cyan-900/30 border-teal-200 dark:border-teal-800',
+            'Team': 'bg-gradient-to-br from-pink-50 to-rose-100 dark:from-pink-900/20 dark:to-rose-900/30 border-pink-200 dark:border-pink-800',
+            'Product': 'bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/20 dark:to-emerald-900/30 border-green-200 dark:border-green-800',
+            'Marketing': 'bg-gradient-to-br from-emerald-50 to-lime-100 dark:from-emerald-900/20 dark:to-lime-900/30 border-emerald-200 dark:border-emerald-800',
+            'Finance': 'bg-gradient-to-br from-amber-50 to-yellow-100 dark:from-amber-900/20 dark:to-yellow-900/30 border-amber-200 dark:border-amber-800',
+            'Personal': 'bg-gradient-to-br from-rose-50 to-pink-100 dark:from-rose-900/20 dark:to-pink-900/30 border-rose-200 dark:border-rose-800',
           }
           
-          const moodColors = {
+          const moodColors: { [key: string]: string } = {
             'Excited': 'bg-gradient-to-br from-orange-50 to-yellow-100 dark:from-orange-900/20 dark:to-yellow-900/30 border-orange-200 dark:border-orange-800',
             'Motivated': 'bg-gradient-to-br from-green-50 to-lime-100 dark:from-green-900/20 dark:to-lime-900/30 border-green-200 dark:border-green-800',
             'Focused': 'bg-gradient-to-br from-blue-50 to-sky-100 dark:from-blue-900/20 dark:to-sky-900/30 border-blue-200 dark:border-blue-800',
