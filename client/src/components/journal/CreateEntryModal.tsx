@@ -113,16 +113,43 @@ export function CreateEntryModal({ isOpen, onClose }: CreateEntryModalProps) {
   }
 
   const usePromptAsTitle = () => {
-    // Convert question from second person to first person for personal journaling
+    // Convert question to declarative statement for journal entry titles
     let title = currentPrompt.question
-      .replace(/What's/g, "What's")
+    
+    // Transform question patterns to declarative statements
+    title = title
+      .replace(/^What's the biggest challenge you're avoiding right now\?/, "The biggest challenge I'm avoiding right now")
+      .replace(/^What was your biggest win today.*\?/, "My biggest win today")
+      .replace(/^What obstacle did you overcome today\?/, "The obstacle I overcame today")
+      .replace(/^What decision are you most proud of today\?/, "The decision I'm most proud of today")
+      .replace(/^How did you move your business forward today\?/, "How I moved my business forward today")
+      .replace(/^What did you learn about your customers.*today\?/, "What I learned about my customers today")
+      .replace(/^Which of your business goals made the most progress this week\?/, "The business goals that made the most progress this week")
+      .replace(/^What relationship.*grew stronger this week\?/, "The relationship that grew stronger this week")
+      .replace(/^What's working really well in your business right now\?/, "What's working really well in my business right now")
+      .replace(/^When did you feel most confident.*recently\?/, "When I felt most confident as a business owner recently")
+      .replace(/^What compliment or positive feedback did you receive recently\?/, "The compliment or positive feedback I received recently")
+      .replace(/^What opportunity are you most excited about right now\?/, "The opportunity I'm most excited about right now")
+      .replace(/^If you could only focus on three things next month.*\?/, "The three things I want to focus on next month")
+      .replace(/^How has your vision for your business evolved recently\?/, "How my vision for my business has evolved recently")
+      .replace(/^What skill do you wish you had right now\?/, "The skill I wish I had right now")
+      .replace(/^When you think about your biggest business fear.*\?/, "My biggest business fear and what it brings up")
+      
+    // Generic fallback patterns
+    title = title
+      .replace(/^What's/, "What is")
+      .replace(/^What /, "What ")
+      .replace(/^Which /, "Which ")
+      .replace(/^How /, "How ")
+      .replace(/^When /, "When ")
+      .replace(/^If /, "If ")
       .replace(/you're/g, "I'm")
       .replace(/your/g, "my")
       .replace(/you /g, "I ")
       .replace(/You /g, "I ")
-      .replace(/are you/g, "am I")
-      .replace(/do you/g, "do I")
-      .replace(/did you/g, "did I")
+      .replace(/are you/g, "I am")
+      .replace(/do you/g, "I")
+      .replace(/did you/g, "I")
       .replace(/\?$/, '') // Remove question mark at end
     
     setValue('title', title)
