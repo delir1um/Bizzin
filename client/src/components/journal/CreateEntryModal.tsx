@@ -152,7 +152,23 @@ export function CreateEntryModal({ isOpen, onClose }: CreateEntryModalProps) {
       .replace(/did you/g, "I")
       .replace(/\?$/, '') // Remove question mark at end
     
+    // Auto-assign category based on prompt category and tags
+    const categoryMapping = {
+      'daily': 'Reflection',
+      'weekly': 'Planning', 
+      'challenge': 'Problem-Solving',
+      'success': 'Wins',
+      'strategy': 'Strategy'
+    }
+    
+    const suggestedCategory = categoryMapping[currentPrompt.category] || 'Reflection'
+    
+    // Auto-assign relevant tags from the prompt
+    const promptTags = currentPrompt.tags.slice(0, 3) // Limit to first 3 tags to avoid overwhelming
+    setTags(promptTags)
+    
     setValue('title', title)
+    setValue('category', suggestedCategory)
     setShowPrompt(false)
   }
 
