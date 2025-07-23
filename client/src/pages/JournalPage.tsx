@@ -128,16 +128,7 @@ export function JournalPage() {
                 Track your progress, insights, and business learnings
               </p>
             </div>
-            <div className="mt-4 sm:mt-0">
-              <Button 
-                onClick={() => setShowCreateModal(true)}
-                variant="outline"
-                className="border-orange-200 text-orange-600 hover:bg-orange-50"
-              >
-                <PlusCircle className="w-4 h-4 mr-2" />
-                Full Entry
-              </Button>
-            </div>
+
           </div>
         </div>
 
@@ -182,7 +173,7 @@ export function JournalPage() {
               entries={displayEntries}
               selectedDate={selectedDate}
               onDateSelect={handleDateSelect}
-              onCreateEntry={() => setShowQuickModal(true)}
+              onCreateEntry={() => setShowCreateModal(true)}
             />
 
             {/* Selected Date Entries Section */}
@@ -201,13 +192,7 @@ export function JournalPage() {
 
       </div>
 
-      {/* Floating Quick Entry Button */}
-      <Button 
-        onClick={() => setShowQuickModal(true)}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-orange-600 hover:bg-orange-700 text-white shadow-lg hover:shadow-xl transition-all z-40"
-      >
-        <Zap className="w-6 h-6" />
-      </Button>
+
 
       {/* Modals */}
       <CreateEntryModal

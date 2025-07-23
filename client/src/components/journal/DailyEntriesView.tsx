@@ -143,17 +143,53 @@ export function DailyEntriesView({
         const dateKey = format(group.date, 'yyyy-MM-dd')
         const isExpanded = group.isExpanded || expandedDates.has(dateKey)
 
+        const getCardColors = (entry: JournalEntry) => {
+          const categoryColors = {
+            'Strategy': 'bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/30 border-blue-200 dark:border-blue-800',
+            'Marketing': 'bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/20 dark:to-emerald-900/30 border-green-200 dark:border-green-800',
+            'Product Development': 'bg-gradient-to-br from-purple-50 to-violet-100 dark:from-purple-900/20 dark:to-violet-900/30 border-purple-200 dark:border-purple-800',
+            'Finance': 'bg-gradient-to-br from-yellow-50 to-amber-100 dark:from-yellow-900/20 dark:to-amber-900/30 border-yellow-200 dark:border-yellow-800',
+            'Operations': 'bg-gradient-to-br from-red-50 to-rose-100 dark:from-red-900/20 dark:to-rose-900/30 border-red-200 dark:border-red-800',
+            'Personal Growth': 'bg-gradient-to-br from-pink-50 to-rose-100 dark:from-pink-900/20 dark:to-rose-900/30 border-pink-200 dark:border-pink-800',
+            'Networking': 'bg-gradient-to-br from-cyan-50 to-blue-100 dark:from-cyan-900/20 dark:to-blue-900/30 border-cyan-200 dark:border-cyan-800',
+            'Learning': 'bg-gradient-to-br from-teal-50 to-cyan-100 dark:from-teal-900/20 dark:to-cyan-900/30 border-teal-200 dark:border-teal-800',
+          }
+          
+          const moodColors = {
+            'Excited': 'bg-gradient-to-br from-orange-50 to-yellow-100 dark:from-orange-900/20 dark:to-yellow-900/30 border-orange-200 dark:border-orange-800',
+            'Motivated': 'bg-gradient-to-br from-green-50 to-lime-100 dark:from-green-900/20 dark:to-lime-900/30 border-green-200 dark:border-green-800',
+            'Focused': 'bg-gradient-to-br from-blue-50 to-sky-100 dark:from-blue-900/20 dark:to-sky-900/30 border-blue-200 dark:border-blue-800',
+            'Challenged': 'bg-gradient-to-br from-red-50 to-orange-100 dark:from-red-900/20 dark:to-orange-900/30 border-red-200 dark:border-red-800',
+            'Reflective': 'bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-900/20 dark:to-indigo-900/30 border-purple-200 dark:border-purple-800',
+            'Optimistic': 'bg-gradient-to-br from-emerald-50 to-teal-100 dark:from-emerald-900/20 dark:to-teal-900/30 border-emerald-200 dark:border-emerald-800',
+            'Grateful': 'bg-gradient-to-br from-pink-50 to-rose-100 dark:from-pink-900/20 dark:to-rose-900/30 border-pink-200 dark:border-pink-800',
+            'Stressed': 'bg-gradient-to-br from-gray-50 to-slate-100 dark:from-gray-900/20 dark:to-slate-900/30 border-gray-200 dark:border-gray-800',
+            'Confident': 'bg-gradient-to-br from-violet-50 to-purple-100 dark:from-violet-900/20 dark:to-purple-900/30 border-violet-200 dark:border-violet-800',
+            'Overwhelmed': 'bg-gradient-to-br from-amber-50 to-orange-100 dark:from-amber-900/20 dark:to-orange-900/30 border-amber-200 dark:border-amber-800',
+          }
+          
+          if (entry.category && categoryColors[entry.category]) {
+            return categoryColors[entry.category]
+          }
+          
+          if (entry.mood && moodColors[entry.mood]) {
+            return moodColors[entry.mood]
+          }
+          
+          return 'bg-gradient-to-br from-slate-50 to-gray-100 dark:from-slate-800 dark:to-slate-900 border-slate-200 dark:border-slate-700'
+        }
+
         return (
           <div key={dateKey} className="space-y-4">
               {group.entries.map((entry) => (
                 <Card 
                   key={entry.id} 
-                  className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow"
+                  className={`${getCardColors(entry)} hover:shadow-lg transition-all duration-200 hover:scale-[1.01]`}
                 >
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <CardTitle className="text-xl text-slate-900 dark:text-white">
+                        <CardTitle className="text-xl text-slate-900 dark:text-white font-semibold">
                           {entry.title}
                         </CardTitle>
                         <CardDescription className="text-slate-600 dark:text-slate-400 flex items-center gap-2">
@@ -170,12 +206,7 @@ export function DailyEntriesView({
                         </CardDescription>
                       </div>
                       <div className="flex items-center space-x-2">
-                        {entry.category && (
-                          <div className="flex items-center space-x-1">
-                            <BookOpen className="w-4 h-4 text-orange-600" />
-                            <span className="text-sm text-orange-600 font-medium">{entry.category}</span>
-                          </div>
-                        )}
+
                         <div className="flex items-center space-x-1">
                           <Button 
                             variant="ghost" 
@@ -235,14 +266,19 @@ export function DailyEntriesView({
                       )}
                     </p>
                     
-                    {/* Mood Badge */}
-                    {entry.mood && (
-                      <div className="mb-4">
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                          {entry.mood}
+                    {/* Mood and Category Badges */}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {entry.mood && (
+                        <Badge variant="secondary" className="bg-white/70 text-slate-800 dark:bg-slate-800/70 dark:text-slate-200 border border-slate-300/50 dark:border-slate-600/50">
+                          😊 {entry.mood}
                         </Badge>
-                      </div>
-                    )}
+                      )}
+                      {entry.category && (
+                        <Badge variant="secondary" className="bg-white/70 text-slate-800 dark:bg-slate-800/70 dark:text-slate-200 border border-slate-300/50 dark:border-slate-600/50">
+                          📁 {entry.category}
+                        </Badge>
+                      )}
+                    </div>
                     
                     {/* Tags */}
                     {entry.tags && entry.tags.length > 0 && (
