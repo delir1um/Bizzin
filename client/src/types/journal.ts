@@ -9,6 +9,14 @@ export type JournalEntry = {
   updated_at: string
   user_id: string
   reading_time?: number // estimated reading time in minutes
+  sentiment_data?: {
+    primary_mood: string
+    confidence: number
+    energy: string
+    emotions: string[]
+    insights: string[]
+    business_category: string
+  }
 }
 
 export type CreateJournalEntry = Omit<JournalEntry, 'id' | 'created_at' | 'updated_at' | 'user_id' | 'reading_time'>

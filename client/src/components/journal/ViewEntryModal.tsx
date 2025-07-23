@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { X, Clock, BookOpen, Edit } from "lucide-react"
 import type { JournalEntry } from "@/types/journal"
 import { format } from "date-fns"
+import { SentimentInsights } from "@/components/journal/SentimentInsights"
 
 interface ViewEntryModalProps {
   isOpen: boolean
@@ -79,6 +80,9 @@ export function ViewEntryModal({ isOpen, onClose, entry, onEdit }: ViewEntryModa
               {entry.content}
             </div>
           </div>
+
+          {/* AI Business Insights */}
+          <SentimentInsights entry={entry} />
 
           {/* Tags */}
           {entry.tags && entry.tags.length > 0 && (

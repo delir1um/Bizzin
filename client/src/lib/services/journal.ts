@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import type { JournalEntry, CreateJournalEntry, UpdateJournalEntry } from '@/types/journal'
+import { analyzeBusinessSentiment } from '@/lib/sentimentAnalysis'
 
 export class JournalService {
   static async getUserEntries(userId: string): Promise<JournalEntry[]> {
@@ -62,15 +63,27 @@ export class JournalService {
       const wordCount = entry.content.split(/\s+/).length
       const readingTime = Math.max(1, Math.ceil(wordCount / 200))
 
+      // Analyze business sentiment
+      const sentiment = analyzeBusinessSentiment(entry.content, entry.title)
+      const sentimentData = {
+        primary_mood: sentiment.mood.primary,
+        confidence: sentiment.mood.confidence,
+        energy: sentiment.mood.energy,
+        emotions: sentiment.mood.emotions,
+        insights: sentiment.insights,
+        business_category: sentiment.category
+      }
+
       // Create entry data with full schema (works after proper database setup)
       const entryWithUserId = {
         title: entry.title,
         content: entry.content,
         user_id: user.id,
-        mood: entry.mood || null,
+        mood: entry.mood || sentiment.mood.primary, // Use AI mood if no manual mood set
         category: entry.category || null,
         tags: entry.tags || null,
         reading_time: readingTime,
+        sentiment_data: sentimentData,
       }
 
       console.log('Creating journal entry for user:', user.id)
@@ -103,11 +116,33 @@ export class JournalService {
 
       console.log('Updating journal entry:', entryId, 'for user:', user.id)
 
-      // Recalculate reading time if content is being updated
+      // Recalculate reading time and sentiment if content is being updated
       let updateData = { ...updates }
-      if (updates.content) {
-        const wordCount = updates.content.split(/\s+/).length
-        updateData.reading_time = Math.max(1, Math.ceil(wordCount / 200))
+      if (updates.content || updates.title) {
+        if (updates.content) {
+          const wordCount = updates.content.split(/\s+/).length
+          updateData.reading_time = Math.max(1, Math.ceil(wordCount / 200))
+        }
+        
+        // Re-analyze sentiment for updated content
+        const content = updates.content || ''
+        const title = updates.title || ''
+        if (content || title) {
+          const sentiment = analyzeBusinessSentiment(content, title)
+          updateData.sentiment_data = {
+            primary_mood: sentiment.mood.primary,
+            confidence: sentiment.mood.confidence,
+            energy: sentiment.mood.energy,
+            emotions: sentiment.mood.emotions,
+            insights: sentiment.insights,
+            business_category: sentiment.category
+          }
+          
+          // Update mood if not manually set
+          if (!updates.mood) {
+            updateData.mood = sentiment.mood.primary
+          }
+        }
       }
 
       // Remove any undefined fields

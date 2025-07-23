@@ -6,6 +6,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { BookOpen, Edit, Trash2, Clock } from "lucide-react"
 import { format, isSameDay, isToday, isYesterday, startOfWeek, endOfWeek, isWithinInterval } from "date-fns"
 import type { JournalEntry } from "@/types/journal"
+import { SentimentBadge } from "@/components/journal/SentimentInsights"
 
 interface DailyEntriesViewProps {
   entries: JournalEntry[]
@@ -277,13 +278,9 @@ export function DailyEntriesView({
                       )}
                     </p>
                     
-                    {/* Mood and Category Badges */}
+                    {/* AI Sentiment Badge */}
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {entry.mood && (
-                        <Badge variant="secondary" className="bg-white/70 text-slate-800 dark:bg-slate-800/70 dark:text-slate-200 border border-slate-300/50 dark:border-slate-600/50">
-                          😊 {entry.mood}
-                        </Badge>
-                      )}
+                      <SentimentBadge entry={entry} size="sm" />
                       {entry.category && (
                         <Badge variant="secondary" className="bg-white/70 text-slate-800 dark:bg-slate-800/70 dark:text-slate-200 border border-slate-300/50 dark:border-slate-600/50">
                           📁 {entry.category}
