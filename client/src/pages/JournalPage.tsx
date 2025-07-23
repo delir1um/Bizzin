@@ -139,8 +139,6 @@ export function JournalPage() {
     if (date && searchTerm) {
       setSearchTerm("")
     }
-    // Auto-open create modal when clicking on a date
-    setShowCreateModal(true)
   }
 
   const handleEditEntry = (entry: JournalEntry) => {

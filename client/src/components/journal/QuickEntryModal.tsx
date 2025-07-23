@@ -85,6 +85,7 @@ export function QuickEntryModal({ isOpen, onClose, selectedDate }: QuickEntryMod
     const entryData: CreateJournalEntry = {
       title: title || `Entry from ${format(selectedDate || new Date(), 'MMM d')}`,
       content: data.content,
+      entry_date: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined,
       tags: [],
     }
 

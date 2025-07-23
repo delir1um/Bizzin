@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query"
@@ -72,6 +72,13 @@ export function CreateEntryModal({ isOpen, onClose, selectedDate }: CreateEntryM
       related_goal_id: "",
     }
   })
+
+  // Update form when selectedDate changes
+  useEffect(() => {
+    if (selectedDate && isOpen) {
+      setValue("entry_date", format(selectedDate, 'yyyy-MM-dd'))
+    }
+  }, [selectedDate, setValue, isOpen])
 
   const createEntryMutation = useMutation({
     mutationFn: (entry: CreateJournalEntry) => JournalService.createEntry(entry),
