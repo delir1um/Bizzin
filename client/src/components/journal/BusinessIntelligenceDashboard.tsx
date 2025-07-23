@@ -86,6 +86,30 @@ export function BusinessIntelligenceDashboard({
     if (!entries.length) return null
 
     const today = new Date()
+    
+    // Dynamic date ranges based on selected timeframe
+    let currentStart: Date, currentEnd: Date, previousStart: Date, previousEnd: Date
+    
+    if (selectedTimeframe === 'week') {
+      currentStart = startOfWeek(today)
+      currentEnd = endOfWeek(today)
+      previousStart = startOfWeek(subDays(today, 7))
+      previousEnd = endOfWeek(subDays(today, 7))
+    } else if (selectedTimeframe === 'month') {
+      currentStart = startOfMonth(today)
+      currentEnd = endOfMonth(today)
+      previousStart = startOfMonth(subDays(today, 30))
+      previousEnd = endOfMonth(subDays(today, 30))
+    } else { // quarter
+      const quarterStart = new Date(today.getFullYear(), Math.floor(today.getMonth() / 3) * 3, 1)
+      const quarterEnd = new Date(quarterStart.getFullYear(), quarterStart.getMonth() + 3, 0)
+      currentStart = quarterStart
+      currentEnd = quarterEnd
+      previousStart = new Date(quarterStart.getFullYear(), quarterStart.getMonth() - 3, 1)
+      previousEnd = new Date(previousStart.getFullYear(), previousStart.getMonth() + 3, 0)
+    }
+    
+    // Keep original week/month calculations for backwards compatibility
     const weekStart = startOfWeek(today)
     const weekEnd = endOfWeek(today)
     const monthStart = startOfMonth(today)
@@ -93,7 +117,18 @@ export function BusinessIntelligenceDashboard({
     const lastWeekStart = startOfWeek(subDays(today, 7))
     const lastWeekEnd = endOfWeek(subDays(today, 7))
 
-    // Time-based entry filtering
+    // Time-based entry filtering (current period)
+    const currentPeriodEntries = entries.filter(entry => {
+      const entryDate = new Date(entry.created_at)
+      return entryDate >= currentStart && entryDate <= currentEnd
+    })
+
+    const previousPeriodEntries = entries.filter(entry => {
+      const entryDate = new Date(entry.created_at)
+      return entryDate >= previousStart && entryDate <= previousEnd
+    })
+
+    // Keep original filters for backward compatibility
     const thisWeekEntries = entries.filter(entry => {
       const entryDate = new Date(entry.created_at)
       return entryDate >= weekStart && entryDate <= weekEnd
@@ -111,8 +146,8 @@ export function BusinessIntelligenceDashboard({
 
     // Business Intelligence Metrics
     const businessMetrics = {
-      // Strategic Focus Analysis
-      strategicFocus: thisWeekEntries.reduce((acc, entry) => {
+      // Strategic Focus Analysis (use current period)
+      strategicFocus: currentPeriodEntries.reduce((acc, entry) => {
         const category = entry.sentiment_data?.business_category || entry.category
         if (category) {
           acc[category] = (acc[category] || 0) + 1
@@ -129,9 +164,13 @@ export function BusinessIntelligenceDashboard({
 
       // Business Momentum Indicators
       momentum: {
-        weeklyGrowth: ((thisWeekEntries.length - lastWeekEntries.length) / Math.max(lastWeekEntries.length, 1)) * 100,
-        consistencyScore: (thisWeekEntries.length / 7) * 100,
-        insightDensity: thisWeekEntries.reduce((total, entry) => 
+        weeklyGrowth: ((currentPeriodEntries.length - previousPeriodEntries.length) / Math.max(previousPeriodEntries.length, 1)) * 100,
+        consistencyScore: selectedTimeframe === 'week' 
+          ? (currentPeriodEntries.length / 7) * 100 
+          : selectedTimeframe === 'month' 
+            ? (currentPeriodEntries.length / 30) * 100 
+            : (currentPeriodEntries.length / 90) * 100,
+        insightDensity: currentPeriodEntries.reduce((total, entry) => 
           total + (entry.sentiment_data?.insights?.length || 0), 0
         )
       },
@@ -193,20 +232,20 @@ export function BusinessIntelligenceDashboard({
         }
       }).sort((a, b) => b.strategicPriority - a.strategicPriority),
 
-      // Business Health Indicators
+      // Business Health Indicators (use current period)
       businessHealth: {
-        energyTrend: thisWeekEntries.map(entry => ({
+        energyTrend: currentPeriodEntries.map(entry => ({
           date: entry.created_at,
           energy: entry.sentiment_data?.energy === 'high' ? 3 : 
                  entry.sentiment_data?.energy === 'medium' ? 2 : 1
         })),
-        challengePatterns: thisWeekEntries.filter(entry =>
+        challengePatterns: currentPeriodEntries.filter(entry =>
           entry.sentiment_data?.primary_mood === 'stressed' ||
           entry.sentiment_data?.primary_mood === 'overwhelmed' ||
           entry.content.toLowerCase().includes('challenge') ||
           entry.content.toLowerCase().includes('problem')
         ),
-        opportunitySignals: thisWeekEntries.filter(entry =>
+        opportunitySignals: currentPeriodEntries.filter(entry =>
           entry.sentiment_data?.primary_mood === 'excited' ||
           entry.sentiment_data?.primary_mood === 'optimistic' ||
           entry.content.toLowerCase().includes('opportunity') ||
@@ -214,8 +253,8 @@ export function BusinessIntelligenceDashboard({
         )
       },
 
-      // Strategic Insights & Actions with Goal Context
-      strategicInsights: thisWeekEntries
+      // Strategic Insights & Actions with Goal Context (use current period)
+      strategicInsights: currentPeriodEntries
         .filter(entry => entry.sentiment_data?.insights?.length)
         .flatMap(entry => entry.sentiment_data!.insights)
         .slice(0, 3),
@@ -261,35 +300,35 @@ export function BusinessIntelligenceDashboard({
         totalEntries: entries.length,
         weeklyEntries: thisWeekEntries.length,
         monthlyEntries: thisMonthEntries.length,
-        avgWordsPerEntry: entries.reduce((sum, entry) => sum + entry.content.split(' ').length, 0) / entries.length,
+        avgWordsPerEntry: entries.length > 0 ? entries.reduce((sum, entry) => sum + entry.content.split(' ').length, 0) / entries.length : 0,
         streakDays: calculateStreakDays(entries),
-        goalAlignment: (entries.filter(entry => entry.related_goal_id).length / entries.length) * 100,
+        goalAlignment: entries.length > 0 ? (entries.filter(entry => entry.related_goal_id).length / entries.length) * 100 : 0,
         
-        // Goal-specific KPIs
+        // Goal-specific KPIs (use current period)
         activeGoals: userGoals.filter(goal => 
           entries.some(entry => entry.related_goal_id === goal.id && 
-          new Date(entry.created_at) >= weekStart)
+          new Date(entry.created_at) >= currentStart)
         ).length,
         stagnantGoals: userGoals.filter(goal => 
           !entries.some(entry => entry.related_goal_id === goal.id && 
-          new Date(entry.created_at) >= weekStart)
+          new Date(entry.created_at) >= currentStart)
         ).length,
         goalProgressRate: userGoals.length > 0 ? 
-          (entries.filter(e => e.related_goal_id && 
+          (currentPeriodEntries.filter(e => e.related_goal_id && 
            e.content.toLowerCase().includes('progress')).length / userGoals.length) : 0,
         
-        // Strategic execution metrics
-        decisionToActionRatio: entries.filter(e => 
+        // Strategic execution metrics (use current period)
+        decisionToActionRatio: currentPeriodEntries.filter(e => 
           e.content.toLowerCase().includes('decision')).length / 
-          Math.max(entries.filter(e => 
+          Math.max(currentPeriodEntries.filter(e => 
           e.content.toLowerCase().includes('action')).length, 1),
-        strategicReflectionTime: thisWeekEntries.reduce((sum, entry) => 
+        strategicReflectionTime: currentPeriodEntries.reduce((sum, entry) => 
           sum + entry.content.split(' ').length, 0) / 60 // Rough minutes estimate
       }
     }
 
     return businessMetrics
-  }, [entries, userGoals, calculateStreakDays])
+  }, [entries, userGoals, calculateStreakDays, selectedTimeframe])
 
   if (!businessIntelligence) {
     return (
@@ -326,7 +365,7 @@ export function BusinessIntelligenceDashboard({
               Strategic Business Intelligence
             </h2>
             <p className="text-orange-700 dark:text-orange-300">
-              Real-time insights from your business journey
+              Real-time insights from your business journey • {selectedTimeframe.charAt(0).toUpperCase() + selectedTimeframe.slice(1)} View
             </p>
           </div>
           <div className="flex gap-2">
