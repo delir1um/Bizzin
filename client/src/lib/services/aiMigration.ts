@@ -4,7 +4,7 @@ import type { JournalEntry } from '@/types/journal'
 
 export class AIMigrationService {
   private static readonly MIGRATION_VERSION_KEY = 'ai_migration_version'
-  private static readonly CURRENT_VERSION = 10 // Enhanced AI title generation and improved Hugging Face integration
+  private static readonly CURRENT_VERSION = 11 // Enhanced AI title generation with actual title updates in database
 
   // Check if migration is needed
   static needsMigration(): boolean {
@@ -46,15 +46,23 @@ export class AIMigrationService {
               // Re-analyze the entry with latest AI
               const aiAnalysis = await analyzeBusinessSentimentAI(entry.content, entry.title)
               
-              // Update the entry with new AI analysis
+              // Update the entry with new AI analysis and improved title
+              const updateData: any = {
+                sentiment_data: aiAnalysis,
+                // Update category and mood with new AI analysis (allow AI to override for better accuracy)
+                category: this.mapBusinessCategoryToJournal(aiAnalysis.business_category),
+                mood: this.mapAIMoodToJournal(aiAnalysis.primary_mood)
+              }
+              
+              // Update title if AI suggests a better one
+              if (aiAnalysis.suggested_title && aiAnalysis.suggested_title !== entry.title) {
+                updateData.title = aiAnalysis.suggested_title
+                console.log(`📝 Title update: "${entry.title}" → "${aiAnalysis.suggested_title}"`)
+              }
+              
               const { error: updateError } = await supabase
                 .from('journal_entries')
-                .update({
-                  sentiment_data: aiAnalysis,
-                  // Update category and mood with new AI analysis (allow AI to override for better accuracy)
-                  category: this.mapBusinessCategoryToJournal(aiAnalysis.business_category),
-                  mood: this.mapAIMoodToJournal(aiAnalysis.primary_mood)
-                })
+                .update(updateData)
                 .eq('id', entry.id)
               
               if (updateError) {
@@ -62,7 +70,7 @@ export class AIMigrationService {
               }
               
               results.success++
-              console.log(`✓ Migrated entry: ${entry.title?.substring(0, 50)}...`)
+              console.log(`✓ Migrated entry: ${updateData.title || entry.title?.substring(0, 50)}...`)
             } catch (error) {
               results.failed++
               console.error(`✗ Failed to migrate entry ${entry.id}:`, error)
