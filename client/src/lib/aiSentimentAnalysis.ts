@@ -23,7 +23,7 @@ export interface BusinessSentiment {
 
 // Hugging Face model endpoints (free inference API)
 const HF_MODELS = {
-  sentiment: 'cardiffnlp/twitter-roberta-base-sentiment-latest',
+  sentiment: 'cardiffnlp/twitter-roberta-base-sentiment',
   emotion: 'j-hartmann/emotion-english-distilroberta-base',
   business: 'nlptown/bert-base-multilingual-uncased-sentiment'
 };
