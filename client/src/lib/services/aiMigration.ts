@@ -4,7 +4,7 @@ import type { JournalEntry } from '@/types/journal'
 
 export class AIMigrationService {
   private static readonly MIGRATION_VERSION_KEY = 'ai_migration_version'
-  private static readonly CURRENT_VERSION = 26 // DEBUG: Added debug logging to trace emoji mapping issues for conflicted mood entries
+  private static readonly CURRENT_VERSION = 27 // FINAL FIX: Removed duplicate getMoodEmoji functions from SmartSearch and JournalDashboard - all components now use centralized utility
 
   // Check if migration is needed
   static needsMigration(): boolean {

@@ -16,6 +16,7 @@ import {
 import { format, isToday, differenceInDays, startOfWeek, endOfWeek } from "date-fns"
 import type { JournalEntry } from "@/types/journal"
 import type { Goal } from "@/types/goals"
+import { getMoodEmoji } from "@/lib/journalDisplayUtils"
 import { useQuery } from "@tanstack/react-query"
 import { GoalsService } from "@/lib/services/goals"
 import { useAuth } from "@/hooks/AuthProvider"
@@ -186,22 +187,7 @@ export function JournalDashboard({
     )
   }
 
-  const getMoodEmoji = (mood: string) => {
-    const moodEmojis: Record<string, string> = {
-      'Excited': '🚀',
-      'Motivated': '💪',
-      'Focused': '🎯',
-      'Confident': '⭐',
-      'Optimistic': '🌟',
-      'Grateful': '🙏',
-      'Reflective': '🤔',
-      'Challenged': '⚡',
-      'Stressed': '😤',
-      'Overwhelmed': '🌀',
-      'Frustrated': '😠'
-    }
-    return moodEmojis[mood] || '💭'
-  }
+
 
   const getEnergyLevel = (avg: number) => {
     if (avg >= 2.5) return { label: 'High Energy', color: 'text-green-600', icon: '⚡' }

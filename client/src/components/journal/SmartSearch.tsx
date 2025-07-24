@@ -14,6 +14,7 @@ import {
   Sparkles
 } from "lucide-react"
 import type { JournalEntry } from "@/types/journal"
+import { getMoodEmoji } from "@/lib/journalDisplayUtils"
 
 interface SmartSearchProps {
   searchTerm: string
@@ -147,22 +148,7 @@ export function SmartSearch({
     }
   }, [entries])
   
-  const getMoodEmoji = (mood: string) => {
-    const moodEmojis: Record<string, string> = {
-      'Excited': '🚀',
-      'Motivated': '💪',
-      'Focused': '🎯',
-      'Confident': '⭐',
-      'Optimistic': '🌟',
-      'Grateful': '🙏',
-      'Reflective': '🤔',
-      'Challenged': '⚡',
-      'Stressed': '😤',
-      'Overwhelmed': '🌀',
-      'Frustrated': '😠'
-    }
-    return moodEmojis[mood] || '💭'
-  }
+
   
   const getCategoryEmoji = (category: string) => {
     const categoryEmojis: Record<string, string> = {
