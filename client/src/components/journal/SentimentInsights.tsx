@@ -17,8 +17,34 @@ export function SentimentInsights({ entry, className = "" }: SentimentInsightsPr
     return null
   }
 
-  const moodColor = getMoodColor(sentiment.primary_mood)
-  const moodEmoji = getMoodEmoji(sentiment.primary_mood)
+  // Helper function to map AI moods to journal moods (same as other components)
+  const mapAIMoodToJournal = (aiMood: string): string => {
+    const mapping: Record<string, string> = {
+      'optimistic': 'Optimistic',
+      'excited': 'Excited',
+      'focused': 'Focused',
+      'frustrated': 'Frustrated',
+      'reflective': 'Reflective',
+      'confident': 'Confident',
+      'determined': 'Determined',
+      'accomplished': 'Motivated',
+      'uncertain': 'Thoughtful',
+      'stressed': 'Frustrated',
+      'neutral': 'Neutral',
+      'inspired': 'Inspired',
+      'conflicted': 'Conflicted'
+    }
+    
+    const mapped = mapping[aiMood.toLowerCase()]
+    if (mapped) return mapped
+    
+    return aiMood.charAt(0).toUpperCase() + aiMood.slice(1).toLowerCase()
+  }
+
+  // Get display mood (mapped properly)
+  const displayMood = sentiment.primary_mood ? mapAIMoodToJournal(sentiment.primary_mood) : ''
+  const moodColor = getMoodColor(displayMood)
+  const moodEmoji = getMoodEmoji(displayMood)
   
   // Energy level display
   const getEnergyIcon = (energy: string) => {

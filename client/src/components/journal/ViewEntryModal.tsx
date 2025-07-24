@@ -191,15 +191,14 @@ export function ViewEntryModal({ isOpen, onClose, entry, onEdit }: ViewEntryModa
             </div>
           )}
 
-          {/* Footer Info */}
-          <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-            <div className="text-sm text-slate-500 dark:text-slate-400">
-              Created on {format(new Date(entry.created_at), 'EEEE, MMMM dd, yyyy')}
-              {entry.updated_at !== entry.created_at && (
-                <span> • Last updated {format(new Date(entry.updated_at), 'MMM dd, yyyy')}</span>
-              )}
+          {/* Footer Info - Only show if updated */}
+          {entry.updated_at !== entry.created_at && (
+            <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+              <div className="text-sm text-slate-500 dark:text-slate-400">
+                Last updated {format(new Date(entry.updated_at), 'MMM dd, yyyy')}
+              </div>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>

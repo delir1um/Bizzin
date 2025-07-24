@@ -4,7 +4,7 @@ import type { JournalEntry } from '@/types/journal'
 
 export class AIMigrationService {
   private static readonly MIGRATION_VERSION_KEY = 'ai_migration_version'
-  private static readonly CURRENT_VERSION = 22 // Fixed emoji and category mapping consistency across all components - added 'learning' category mapping and synchronized mood emojis
+  private static readonly CURRENT_VERSION = 23 // Debug: Force re-analysis to check why Confident mood shows 🏆 instead of 💪 emoji
 
   // Check if migration is needed
   static needsMigration(): boolean {
