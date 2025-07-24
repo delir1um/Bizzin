@@ -100,6 +100,9 @@ const businessContexts = {
 
 // Enhanced Hugging Face API implementation for business sentiment analysis
 async function callEnhancedHuggingFaceAnalysis(text: string): Promise<BusinessSentiment | null> {
+  const token = process.env.HUGGINGFACE_TOKEN;
+  console.log(`Using Hugging Face API with${token ? ' authenticated' : ' unauthenticated'} access`);
+  
   try {
     // Use multiple models for better accuracy
     const [sentimentResult, emotionResult] = await Promise.all([
@@ -108,9 +111,11 @@ async function callEnhancedHuggingFaceAnalysis(text: string): Promise<BusinessSe
     ]);
 
     if (sentimentResult && emotionResult) {
+      console.log('AI sentiment analysis successful - using Hugging Face results');
       return processEnhancedHuggingFaceResults(sentimentResult, emotionResult, text);
     }
     
+    console.log('Hugging Face API returned incomplete results, falling back to local analysis');
     return null;
   } catch (error) {
     console.warn('Enhanced Hugging Face analysis failed:', error);
@@ -118,15 +123,24 @@ async function callEnhancedHuggingFaceAnalysis(text: string): Promise<BusinessSe
   }
 }
 
-// Improved Hugging Face API call with retry logic
+// Improved Hugging Face API call with authentication and retry logic
 async function callHuggingFaceModel(text: string, model: string, retries = 2): Promise<any> {
+  const token = process.env.HUGGINGFACE_TOKEN;
+  
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      // Add authentication if token is available
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({ 
           inputs: text,
           options: { wait_for_model: true } // Wait for model to load
