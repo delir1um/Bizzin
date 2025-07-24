@@ -46,8 +46,8 @@ const businessEmotions = {
     energy: 'high' as const
   },
   stressed: {
-    keywords: ['stressed', 'overwhelmed', 'pressure', 'deadline', 'rushed', 'tight', 'demanding', 'intense', 'burnout'],
-    weight: 0.7,
+    keywords: ['stressed', 'overwhelmed', 'pressure', 'deadline', 'rushed', 'tight', 'demanding', 'intense', 'burnout', 'anxious', 'worried', 'tense', 'strain', 'burden'],
+    weight: 0.8,
     energy: 'low' as const
   },
   uncertain: {
@@ -56,9 +56,9 @@ const businessEmotions = {
     energy: 'low' as const
   },
   frustrated: {
-    keywords: ['frustrated', 'stuck', 'blocked', 'difficult', 'challenging', 'obstacle', 'setback', 'problem', 'annoyed'],
-    weight: 0.6,
-    energy: 'medium' as const
+    keywords: ['frustrated', 'stuck', 'blocked', 'difficult', 'challenging', 'obstacle', 'setback', 'problem', 'annoyed', 'dont feel like', 'tired', 'exhausted', 'drained', 'unmotivated', 'reluctant', 'sluggish', 'weary'],
+    weight: 0.8,
+    energy: 'low' as const
   },
   accomplished: {
     keywords: ['accomplished', 'achieved', 'completed', 'finished', 'success', 'breakthrough', 'milestone', 'progress', 'victory'],
@@ -79,7 +79,7 @@ const businessEmotions = {
 
 const businessContexts = {
   growth: ['scaling', 'expansion', 'growing', 'increase', 'revenue', 'customers', 'market', 'opportunity', 'profit', 'sales'],
-  challenge: ['problem', 'issue', 'difficulty', 'obstacle', 'setback', 'failure', 'mistake', 'error', 'crisis', 'struggle'],
+  challenge: ['problem', 'issue', 'difficulty', 'obstacle', 'setback', 'failure', 'mistake', 'error', 'crisis', 'struggle', 'tired', 'exhausted', 'dont feel like', 'unmotivated', 'burnout', 'stressed'],
   achievement: ['success', 'win', 'accomplished', 'milestone', 'breakthrough', 'completed', 'achieved', 'goal', 'victory', 'triumph'],
   planning: ['strategy', 'plan', 'roadmap', 'timeline', 'schedule', 'prepare', 'organize', 'structure', 'blueprint', 'framework'],
   reflection: ['learned', 'realize', 'understand', 'insight', 'feedback', 'review', 'analyze', 'think', 'contemplate', 'evaluate']
@@ -339,7 +339,11 @@ function generateBusinessInsights(primaryEmotion: string, category: string, emot
         "This systematic approach suggests you're building sustainable business habits");
       break;
     case 'frustrated':
-      insights.push("Obstacles often reveal opportunities - consider what this challenge is teaching you about your market");
+      if (text && /(tired|exhausted|dont feel like|unmotivated)/i.test(text)) {
+        insights.push("Low energy days are normal for entrepreneurs - consider what your body and mind need to recharge");
+      } else {
+        insights.push("Obstacles often reveal opportunities - consider what this challenge is teaching you about your market");
+      }
       break;
     case 'uncertain':
       insights.push("Uncertainty is where innovation happens - trust the process and seek data to guide decisions");
@@ -361,7 +365,11 @@ function generateBusinessInsights(primaryEmotion: string, category: string, emot
       insights.push("Growth phases require both vision and systems - balance scaling with operational excellence");
       break;
     case 'challenge':
-      insights.push("Every challenge contains valuable market intelligence - document lessons for future decision-making");
+      if (text && /(tired|exhausted|dont feel like|unmotivated|burnout)/i.test(text)) {
+        insights.push("Burnout signals need attention - successful entrepreneurs prioritize sustainable work-life balance");
+      } else {
+        insights.push("Every challenge contains valuable market intelligence - document lessons for future decision-making");
+      }
       break;
     case 'achievement':
       insights.push("Success patterns are your roadmap - analyze what worked to replicate these results");

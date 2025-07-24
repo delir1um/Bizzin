@@ -89,7 +89,7 @@ export function ViewEntryModal({ isOpen, onClose, entry, onEdit }: ViewEntryModa
                 
                 // Determine display mood and category (prioritize AI values, map them properly)
                 const displayMood = entry.sentiment_data?.primary_mood ? mapAIMoodToJournal(entry.sentiment_data.primary_mood) : entry.mood
-                const displayCategory = entry.sentiment_data?.category ? mapBusinessCategoryToJournal(entry.sentiment_data.category) : entry.category
+                const displayCategory = entry.sentiment_data?.business_category ? mapBusinessCategoryToJournal(entry.sentiment_data.business_category) : entry.category
                 
                 return (
                   <div className="flex items-center gap-3">
