@@ -19,6 +19,7 @@ import { CategoryChart } from "@/components/dashboard/CategoryChart"
 import { PriorityProgressBars } from "@/components/dashboard/PriorityProgressBars"
 import { DeadlineTimeline } from "@/components/dashboard/DeadlineTimeline"
 import { InspirationalQuotes } from "@/lib/inspirationalQuotes"
+import { AnimatedCard, AnimatedGrid, AnimatedItem } from "@/components/ui/animated-card"
 
 export function DashboardPage() {
   const { user } = useAuth()
@@ -168,9 +169,10 @@ export function DashboardPage() {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
+      <AnimatedGrid className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-4" stagger={0.1}>
         {/* Goals Stats - Enhanced */}
-        <Card 
+        <AnimatedItem>
+          <Card 
           className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800 relative overflow-hidden group" 
           onClick={() => navigate("/goals")}
         >
@@ -203,8 +205,10 @@ export function DashboardPage() {
             )}
           </CardContent>
         </Card>
+        </AnimatedItem>
 
         {/* Goal Completion Rate Enhanced */}
+        <AnimatedItem>
         <Card 
           className={`cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] relative overflow-hidden group ${
             stats.successRate >= 70 
@@ -272,8 +276,10 @@ export function DashboardPage() {
             )}
           </CardContent>
         </Card>
+        </AnimatedItem>
 
         {/* Journal Enhanced */}
+        <AnimatedItem>
         <Card 
           className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-950 dark:to-indigo-900 border-purple-200 dark:border-purple-800 relative overflow-hidden group" 
           onClick={() => navigate("/journal")}
@@ -399,7 +405,8 @@ export function DashboardPage() {
             )}
           </CardContent>
         </Card>
-      </div>
+        </AnimatedItem>
+      </AnimatedGrid>
 
       {/* Charts Section Enhanced */}
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
