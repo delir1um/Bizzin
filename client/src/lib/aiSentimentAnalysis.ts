@@ -218,8 +218,14 @@ function detectBusinessCategory(lowerText: string): string {
     categoryScores.Learning += 2;
   }
   
-  // Research indicators - should be checked BEFORE planning to avoid conflicts
-  if (lowerText.match(/\b(research|find out|discover|investigate|competitors|competition|market|analyze|study|explore|who|what|how|where|when|why)\b/)) {
+  // Reflection indicators (uncertainty, contemplation, feelings)
+  if (lowerText.match(/\b(not sure|unsure|uncertain|wonder|wondering|feel|feeling|think|thinking|contemplate|reflect)\b/)) {
+    categoryScores.Learning += 3; // Higher priority for reflection
+  }
+  
+  // Research indicators - more specific patterns to avoid false matches
+  if (lowerText.match(/\b(research|find out|discover|investigate|competitors|competition|market research|market analysis|analyze competitors|study market)\b/) ||
+      (lowerText.includes('need to find') || lowerText.includes('who are my') || lowerText.includes('top competitors'))) {
     categoryScores.Research += 3; // Higher priority than planning
   }
   
@@ -234,17 +240,49 @@ function detectBusinessCategory(lowerText: string): string {
 function generateEnhancedBusinessInsights(text: string, mood: string, category: string): string[] {
   const insights = [];
   
-  // Category-specific insights
+  // Category-specific insights with more variety
   if (category === 'Challenge') {
-    insights.push("Every challenge is a stepping stone to business growth and resilience.");
+    const challengeInsights = [
+      "Every challenge is a stepping stone to business growth and resilience.",
+      "Difficult moments reveal the true strength of your entrepreneurial spirit.",
+      "Challenges often present hidden opportunities for innovation and growth."
+    ];
+    insights.push(challengeInsights[Math.floor(Math.random() * challengeInsights.length)]);
   } else if (category === 'Growth') {
-    insights.push("Growth opportunities require strategic planning and consistent execution.");
+    const growthInsights = [
+      "Growth opportunities require strategic planning and consistent execution.",
+      "Scaling your business is about systems, not just expanding operations.",
+      "Sustainable growth comes from understanding your market and customers deeply."
+    ];
+    insights.push(growthInsights[Math.floor(Math.random() * growthInsights.length)]);
   } else if (category === 'Planning') {
-    insights.push("Strategic planning transforms business ideas into actionable roadmaps.");
+    const planningInsights = [
+      "Strategic planning transforms business ideas into actionable roadmaps.",
+      "Clear planning today prevents costly mistakes tomorrow.",
+      "The best businesses are built on solid foundations of thoughtful planning."
+    ];
+    insights.push(planningInsights[Math.floor(Math.random() * planningInsights.length)]);
   } else if (category === 'Learning') {
-    insights.push("Customer insights and feedback are invaluable assets for business improvement.");
+    const learningInsights = [
+      "Self-reflection and uncertainty are natural parts of the entrepreneurial journey.",
+      "Taking time to understand your feelings helps make better business decisions.",
+      "Emotional awareness is a crucial skill for successful entrepreneurs."
+    ];
+    insights.push(learningInsights[Math.floor(Math.random() * learningInsights.length)]);
+  } else if (category === 'Research') {
+    const researchInsights = [
+      "Knowledge of your competition is essential for strategic positioning.",
+      "Market research provides the foundation for smart business decisions.",
+      "Understanding your landscape helps identify untapped opportunities."
+    ];
+    insights.push(researchInsights[Math.floor(Math.random() * researchInsights.length)]);
   } else if (category === 'Achievement') {
-    insights.push("Celebrate milestones - they fuel motivation for the next breakthrough.");
+    const achievementInsights = [
+      "Celebrate milestones - they fuel motivation for the next breakthrough.",
+      "Success is built one achievement at a time - acknowledge your progress.",
+      "Each accomplishment proves your capability to overcome future challenges."
+    ];
+    insights.push(achievementInsights[Math.floor(Math.random() * achievementInsights.length)]);
   } else {
     insights.push("Regular documentation helps track patterns and progress in your entrepreneurial journey.");
   }
