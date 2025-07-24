@@ -82,20 +82,42 @@ export function JournalPage() {
     
     const results = {
       today: entries.filter(entry => {
-        const entryDate = new Date(entry.created_at || entry.entry_date || '')
+        // Prioritize entry_date, fall back to created_at
+        const entryDate = new Date(entry.entry_date || entry.created_at || '')
         return isToday(entryDate)
       }),
       thisWeek: entries.filter(entry => {
-        const entryDate = new Date(entry.created_at || entry.entry_date || '')
+        const entryDate = new Date(entry.entry_date || entry.created_at || '')
         return !isToday(entryDate) && isThisWeek(entryDate)
       }),
       thisMonth: entries.filter(entry => {
-        const entryDate = new Date(entry.created_at || entry.entry_date || '')
+        const entryDate = new Date(entry.entry_date || entry.created_at || '')
         return !isThisWeek(entryDate) && isThisMonth(entryDate)
       }),
       thisYear: entries.filter(entry => {
-        const entryDate = new Date(entry.created_at || entry.entry_date || '')
+        const entryDate = new Date(entry.entry_date || entry.created_at || '')
         return !isThisMonth(entryDate) && isThisYear(entryDate)
+      })
+    }
+    
+    console.log('Time organization results:', {
+      today: results.today.length,
+      thisWeek: results.thisWeek.length,
+      thisMonth: results.thisMonth.length,
+      thisYear: results.thisYear.length
+    })
+    
+    // Debug the entry with July 18 date
+    const july18Entry = entries.find(e => e.title.includes('customers love when respond'))
+    if (july18Entry) {
+      console.log('July 18 entry details:', {
+        title: july18Entry.title,
+        entry_date: july18Entry.entry_date,
+        created_at: july18Entry.created_at,
+        finalDate: july18Entry.entry_date || july18Entry.created_at,
+        isToday: isToday(new Date(july18Entry.entry_date || july18Entry.created_at || '')),
+        isThisWeek: isThisWeek(new Date(july18Entry.entry_date || july18Entry.created_at || '')),
+        isThisMonth: isThisMonth(new Date(july18Entry.entry_date || july18Entry.created_at || ''))
       })
     }
     
