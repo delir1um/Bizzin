@@ -4,7 +4,7 @@ import type { JournalEntry } from '@/types/journal'
 
 export class AIMigrationService {
   private static readonly MIGRATION_VERSION_KEY = 'ai_migration_version'
-  private static readonly CURRENT_VERSION = 11 // Enhanced AI title generation with actual title updates in database
+  private static readonly CURRENT_VERSION = 13 // Improved contextual title generation with category detection
 
   // Check if migration is needed
   static needsMigration(): boolean {
@@ -55,9 +55,11 @@ export class AIMigrationService {
               }
               
               // Update title if AI suggests a better one
-              if (aiAnalysis.suggested_title && aiAnalysis.suggested_title !== entry.title) {
+              if (aiAnalysis.suggested_title) {
                 updateData.title = aiAnalysis.suggested_title
                 console.log(`📝 Title update: "${entry.title}" → "${aiAnalysis.suggested_title}"`)
+              } else {
+                console.log(`⚠️ No suggested title for entry: ${entry.title}`)
               }
               
               const { error: updateError } = await supabase

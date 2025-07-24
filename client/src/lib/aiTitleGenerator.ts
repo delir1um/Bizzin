@@ -18,7 +18,12 @@ export class BusinessTitleGenerator {
     
     // Extract key business elements from content
     const businessElements = this.extractBusinessElements(content);
-    const titleTemplates = this.getTitleTemplates(category, mood, energy);
+    
+    // Auto-detect category if needed based on content
+    const detectedCategory = this.detectCategoryFromContent(content, businessElements);
+    const finalCategory = detectedCategory || category;
+    
+    const titleTemplates = this.getTitleTemplates(finalCategory, mood, energy);
     
     // Generate multiple title options and select the best one
     const titleOptions = titleTemplates.map(template => 
@@ -259,6 +264,34 @@ export class BusinessTitleGenerator {
     else if (wordCount <= 6) score += 1;
     
     return score;
+  }
+
+  // Auto-detect category from content patterns
+  private static detectCategoryFromContent(content: string, elements: any): string {
+    const lowerContent = content.toLowerCase();
+    
+    // Challenge patterns
+    if (elements.challenge || /sad|energy|challenging|difficult|problem|issue/i.test(content)) {
+      return 'Challenge';
+    }
+    
+    // Planning patterns  
+    if (/need|want|looking for|plan|strategy|future|next|year from now/i.test(content)) {
+      return 'Planning';
+    }
+    
+    // Research patterns
+    if (/competitors|find out|research|expensive|market|analysis/i.test(content)) {
+      return 'Research';
+    }
+    
+    // Achievement patterns
+    if (elements.success || /love|customers|respond|great|amazing|accomplished/i.test(content)) {
+      return 'Achievement';
+    }
+    
+    // Growth patterns (default)
+    return 'Growth';
   }
 
   // Clean and format the final title
