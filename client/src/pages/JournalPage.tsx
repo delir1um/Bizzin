@@ -282,10 +282,10 @@ export function JournalPage() {
                               {entry.sentiment_data.primary_mood}
                             </Badge>
                           )}
-                          {entry.sentiment_data?.category && (
-                            <Badge className={`${getCategoryColor(entry.sentiment_data.category)} flex items-center gap-1`}>
+                          {entry.sentiment_data?.business_category && (
+                            <Badge className={`${getCategoryColor(entry.sentiment_data.business_category)} flex items-center gap-1`}>
                               <span className="w-2 h-2 rounded-full bg-current opacity-70"></span>
-                              {entry.sentiment_data.category}
+                              {entry.sentiment_data.business_category}
                             </Badge>
                           )}
                           {entry.sentiment_data?.confidence && entry.sentiment_data.confidence > 50 && (
@@ -302,7 +302,7 @@ export function JournalPage() {
                         {entry.content}
                       </p>
                       {/* AI Analysis Summary */}
-                      {entry.sentiment_data && (entry.sentiment_data.business_insights || entry.sentiment_data.business_context) && (
+                      {entry.sentiment_data && (entry.sentiment_data.insights?.[0] || entry.sentiment_data.business_context) && (
                         <div className="mt-3 space-y-2">
                           {entry.sentiment_data.business_context && (
                             <div className="p-2 bg-blue-50 rounded border border-blue-200">
@@ -311,13 +311,13 @@ export function JournalPage() {
                               </p>
                             </div>
                           )}
-                          {entry.sentiment_data.business_insights && (
+                          {entry.sentiment_data.insights?.[0] && (
                             <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
                               <div className="flex items-start gap-2">
                                 <Brain className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
                                 <div>
                                   <p className="text-xs font-medium text-orange-900 mb-1">AI Business Insight</p>
-                                  <p className="text-sm text-orange-800">{entry.sentiment_data.business_insights}</p>
+                                  <p className="text-sm text-orange-800">{entry.sentiment_data.insights[0]}</p>
                                 </div>
                               </div>
                             </div>
@@ -325,8 +325,7 @@ export function JournalPage() {
                         </div>
                       )}
                       <div className="mt-3 pt-3 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="flex items-center justify-between">
-                          <p className="text-xs text-slate-400">Click to view • Right-click to edit</p>
+                        <div className="flex items-center justify-end">
                           <Button
                             variant="ghost"
                             size="sm"
@@ -372,15 +371,6 @@ export function JournalPage() {
         isOpen={showEditModal}
         onClose={handleCloseModals}
         entry={selectedEntry}
-        onSave={() => {
-          queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
-          handleCloseModals()
-          toast({
-            title: "Entry updated",
-            description: "Your changes have been saved and re-analyzed by AI",
-            className: "border-blue-200 bg-blue-50 text-blue-800"
-          })
-        }}
       />
     </div>
   )
