@@ -247,7 +247,7 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
                       <SelectTrigger className="w-full">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="z-[9999]">
                         <SelectItem key={`ai-${displayData?.mood}`} value={displayData?.mood || ''}>✨ Use AI: {displayData?.mood}</SelectItem>
                         {JOURNAL_MOODS.filter(mood => mood !== displayData?.mood).map((mood) => (
                           <SelectItem key={`manual-${mood}`} value={mood}>{mood}</SelectItem>
@@ -268,7 +268,7 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
                       <SelectTrigger className="w-full">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="z-[9999]">
                         <SelectItem key={`ai-${displayData?.category}`} value={displayData?.category || ''}>✨ Use AI: {displayData?.category}</SelectItem>
                         {JOURNAL_CATEGORIES.filter(category => category !== displayData?.category).map((category) => (
                           <SelectItem key={`manual-${category}`} value={category}>{category}</SelectItem>

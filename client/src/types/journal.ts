@@ -36,7 +36,14 @@ export const JOURNAL_MOODS = [
   'Motivated',
   'Neutral',
   'Confident',
-  'Determined'
+  'Determined',
+  'Conflicted',
+  'Curious',
+  'Sad',
+  'Tired',
+  'Stressed',
+  'Uncertain',
+  'Accomplished'
 ] as const
 
 export type JournalMood = typeof JOURNAL_MOODS[number]
