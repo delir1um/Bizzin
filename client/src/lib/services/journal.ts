@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import type { JournalEntry, CreateJournalEntry, UpdateJournalEntry } from '@/types/journal'
-import { analyzeBusinessSentiment } from '@/lib/aiSentimentAnalysis'
+import { analyzeBusinessSentimentAI } from '@/lib/aiSentimentAnalysis'
 import { aiBusinessCoach } from '@/lib/aiBusinessCoach'
 
 export class JournalService {
@@ -65,14 +65,14 @@ export class JournalService {
       const readingTime = Math.max(1, Math.ceil(wordCount / 200))
 
       // Analyze business sentiment with AI
-      const sentiment = await analyzeBusinessSentiment(entry.content, entry.title)
+      const sentiment = await analyzeBusinessSentimentAI(entry.content, entry.title)
       const sentimentData = {
-        primary_mood: sentiment.mood.primary,
-        confidence: sentiment.mood.confidence,
-        energy: sentiment.mood.energy,
-        emotions: sentiment.mood.emotions,
+        primary_mood: sentiment.primary_mood,
+        confidence: sentiment.confidence,
+        energy: sentiment.energy,
+        emotions: sentiment.emotions,
         insights: sentiment.insights,
-        business_category: sentiment.category
+        business_category: sentiment.business_category
       }
 
       // Create entry data (temporarily removing entry_date until database migration)

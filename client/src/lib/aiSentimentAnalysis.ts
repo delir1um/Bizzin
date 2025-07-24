@@ -7,9 +7,12 @@ export interface BusinessMood {
 }
 
 export interface BusinessSentiment {
-  mood: BusinessMood;
+  primary_mood: string;
+  confidence: number;
+  energy: 'low' | 'medium' | 'high';
+  emotions: string[];
   insights: string[];
-  category: 'growth' | 'challenge' | 'achievement' | 'planning' | 'reflection';
+  business_category: 'growth' | 'challenge' | 'achievement' | 'planning' | 'reflection';
 }
 
 // Hugging Face model endpoints (free inference API)

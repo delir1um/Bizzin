@@ -10,7 +10,7 @@ import { supabase } from "@/lib/supabase"
 import { useMutation } from "@tanstack/react-query"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
-import { analyzeBusinessSentiment } from "@/lib/aiSentimentAnalysis"
+import { analyzeBusinessSentimentAI } from "@/lib/aiSentimentAnalysis"
 import { motion, AnimatePresence } from "framer-motion"
 
 interface SimpleCreateEntryModalProps {
@@ -32,7 +32,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
 
       // Analyze content with AI and generate title
       setIsAnalyzing(true)
-      const sentimentData = await analyzeBusinessSentiment(content)
+      const sentimentData = await analyzeBusinessSentimentAI(content)
       
       // Generate AI title from content
       const aiTitle = generateTitleFromContent(content)
