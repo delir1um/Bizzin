@@ -79,7 +79,9 @@ export function JournalPage() {
       'inspired': '✨',
       'content': '😌',
       'concerned': '😟',
-      'overwhelmed': '😵‍💫'
+      'overwhelmed': '😵‍💫',
+      'sad': '😢',
+      'tired': '😴'
     }
     
     return moodEmojis[mood.toLowerCase()] || '📝'
@@ -103,7 +105,9 @@ export function JournalPage() {
       'accomplished': 'text-green-700 bg-green-50',
       'uncertain': 'text-gray-700 bg-gray-50',
       'inspired': 'text-purple-700 bg-purple-50',
-      'reflective': 'text-indigo-700 bg-indigo-50'
+      'reflective': 'text-indigo-700 bg-indigo-50',
+      'sad': 'text-blue-700 bg-blue-50',
+      'tired': 'text-slate-700 bg-slate-50'
     }
     
     return moodColors[mood.toLowerCase()] || 'text-gray-600 bg-gray-50'
@@ -316,8 +320,8 @@ export function JournalPage() {
                       {/* Header with Emoji + Title + AI Confidence */}
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-3 flex-1">
-                          <span className="text-2xl" title={entry.sentiment_data?.primary_mood || 'No mood detected'}>
-                            {getMoodEmoji(entry.sentiment_data?.primary_mood)}
+                          <span className="text-2xl" title={entry.mood || entry.sentiment_data?.primary_mood || 'No mood detected'}>
+                            {getMoodEmoji(entry.mood || entry.sentiment_data?.primary_mood)}
                           </span>
                           <CardTitle className="text-lg font-semibold text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-1">
                             {entry.title}
@@ -331,9 +335,9 @@ export function JournalPage() {
                         {entry.reading_time && (
                           <span>• {entry.reading_time} min read</span>
                         )}
-                        {entry.sentiment_data?.business_category && (
-                          <Badge className={`${getCategoryColor(entry.sentiment_data.business_category)} text-xs px-2 py-0.5`}>
-                            {entry.sentiment_data.business_category}
+                        {(entry.category || entry.sentiment_data?.business_category) && (
+                          <Badge className={`${getCategoryColor(entry.category || entry.sentiment_data?.business_category)} text-xs px-2 py-0.5`}>
+                            {entry.category || entry.sentiment_data.business_category}
                           </Badge>
                         )}
                         {entry.sentiment_data?.energy && (

@@ -59,7 +59,17 @@ const businessEmotions = {
     energy: 'low' as const
   },
   frustrated: {
-    keywords: ['frustrated', 'stuck', 'blocked', 'difficult', 'challenging', 'obstacle', 'setback', 'problem', 'annoyed', 'dont feel like', 'tired', 'exhausted', 'drained', 'unmotivated', 'reluctant', 'sluggish', 'weary'],
+    keywords: ['frustrated', 'stuck', 'blocked', 'difficult', 'challenging', 'obstacle', 'setback', 'problem', 'annoyed'],
+    weight: 0.8,
+    energy: 'low' as const
+  },
+  sad: {
+    keywords: ['sad', 'depressed', 'down', 'blue', 'unhappy', 'melancholy', 'gloomy', 'dejected', 'despondent'],
+    weight: 0.9,
+    energy: 'low' as const
+  },
+  tired: {
+    keywords: ['tired', 'exhausted', 'drained', 'unmotivated', 'reluctant', 'sluggish', 'weary', 'dont feel like', 'no energy', 'dont have the energy'],
     weight: 0.8,
     energy: 'low' as const
   },
@@ -82,7 +92,7 @@ const businessEmotions = {
 
 const businessContexts = {
   growth: ['scaling', 'expansion', 'growing', 'increase', 'revenue', 'customers', 'market', 'opportunity', 'profit', 'sales', 'opportunities', 'new', 'potential', 'promising'],
-  challenge: ['problem', 'issue', 'difficulty', 'obstacle', 'setback', 'failure', 'mistake', 'error', 'crisis', 'struggle', 'tired', 'exhausted', 'dont feel like', 'unmotivated', 'burnout', 'stressed'],
+  challenge: ['problem', 'issue', 'difficulty', 'obstacle', 'setback', 'failure', 'mistake', 'error', 'crisis', 'struggle', 'tired', 'exhausted', 'dont feel like', 'unmotivated', 'burnout', 'stressed', 'sad', 'depressed', 'down'],
   achievement: ['success', 'win', 'accomplished', 'milestone', 'breakthrough', 'completed', 'achieved', 'goal', 'victory', 'triumph', 'good day', 'great', 'excellent'],
   planning: ['strategy', 'plan', 'roadmap', 'timeline', 'schedule', 'prepare', 'organize', 'structure', 'blueprint', 'framework'],
   reflection: ['learned', 'realize', 'understand', 'insight', 'feedback', 'review', 'analyze', 'think', 'contemplate', 'evaluate']
