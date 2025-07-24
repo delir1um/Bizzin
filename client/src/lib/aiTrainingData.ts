@@ -87,6 +87,14 @@ export const BUSINESS_JOURNAL_TRAINING_DATA: TrainingExample[] = [
     confidence_range: [80, 90],
     business_context: "International expansion planning for business growth"
   },
+  {
+    text: "What an incredible week! We just signed three major enterprise clients, bringing our monthly recurring revenue to $50K - a 150% increase from last quarter. I'm beyond excited but also feeling the pressure to scale our operations quickly. We need to hire at least two more developers and a customer success manager within the next month. I've been working on our hiring strategy and setting up interviews. The team is energized by the growth, and everyone is stepping up to handle the increased workload. I can finally see our vision becoming reality. We're moving from survival mode to growth mode, and it feels amazing.",
+    expected_category: "Growth",
+    expected_mood: "Excited",
+    expected_energy: "high",
+    confidence_range: [90, 95],
+    business_context: "Rapid business expansion requiring strategic scaling and team growth"
+  },
 
   // Achievement scenarios
   {

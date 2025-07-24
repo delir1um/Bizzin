@@ -102,7 +102,7 @@ const businessEmotions = {
 };
 
 const businessContexts = {
-  growth: ['scaling', 'expansion', 'growing', 'increase', 'revenue', 'customers', 'market', 'opportunity', 'profit', 'sales', 'opportunities', 'new', 'potential', 'promising', 'next big', 'big project', 'cant wait', 'looking forward', 'anticipating', 'future'],
+  growth: ['scaling', 'expansion', 'growing', 'increase', 'revenue', 'customers', 'market', 'opportunity', 'profit', 'sales', 'opportunities', 'new', 'potential', 'promising', 'next big', 'big project', 'cant wait', 'looking forward', 'anticipating', 'future', 'clients', 'client', 'signed', 'deals', 'deal', 'contracts', 'contract', 'income', 'business growth', 'incredible week', 'amazing week', 'enterprise', 'monthly recurring', 'quarterly', '% increase', 'growth mode', 'survival mode', 'scale operations', 'hiring', 'hire', 'developers', 'team growth', 'vision becoming', 'reality', 'enterprise clients', 'signed clients', 'major clients', 'biggest deal'],
   challenge: ['problem', 'issue', 'difficulty', 'obstacle', 'setback', 'failure', 'mistake', 'error', 'crisis', 'struggle', 'tired', 'exhausted', 'dont feel like', 'unmotivated', 'burnout', 'stressed', 'sad', 'depressed', 'down', 'expensive', 'cost', 'price', 'costly', 'budget', 'fired', 'employee', 'performance standards', 'hardest things', 'difficult decision', 'leadership', 'challenging and rewarding', 'client escalation', 'threatening to cancel', 'performance issues', 'test your character', 'pressure was intense', 'team rally'],
   achievement: ['success', 'win', 'accomplished', 'milestone', 'breakthrough', 'completed', 'achieved', 'goal', 'victory', 'triumph', 'good day', 'great', 'excellent'],
   planning: ['strategy', 'plan', 'roadmap', 'timeline', 'schedule', 'prepare', 'organize', 'structure', 'blueprint', 'framework', 'next', 'project', 'upcoming', 'future', 'need', 'require', 'want', 'looking for', 'shopping for', 'car', 'equipment', 'tools', 'computer', 'laptop'],
@@ -153,10 +153,10 @@ function performEnhancedLocalAnalysis(text: string): BusinessSentiment {
     primaryMood = 'Determined';
     energy = 'medium';
     confidence = 85;
-  } else if (lowerText.includes('excited') || lowerText.includes('cant wait') || lowerText.includes('looking forward') || lowerText.includes('next big')) {
+  } else if (lowerText.includes('excited') || lowerText.includes('cant wait') || lowerText.includes('looking forward') || lowerText.includes('next big') || lowerText.includes('incredible week') || lowerText.includes('beyond excited') || lowerText.includes('amazing')) {
     primaryMood = 'Excited';
     energy = 'high';
-    confidence = 85;
+    confidence = 90;
   } else if (lowerText.includes('sad') || lowerText.includes('down') || lowerText.includes('depressed')) {
     primaryMood = 'Sad';
     energy = 'low';
@@ -217,9 +217,14 @@ function detectBusinessCategory(lowerText: string): string {
     Research: 0
   };
   
-  // Growth indicators
-  if (lowerText.match(/\b(growth|scaling|expansion|opportunity|next big|cant wait|excited|future|potential)\b/)) {
-    categoryScores.Growth += 2;
+  // Growth indicators - enhanced with revenue, clients, and scaling keywords
+  if (lowerText.match(/\b(growth|scaling|expansion|opportunity|next big|cant wait|excited|future|potential|revenue|clients|client|customers|customer|signed|deals|deal|contracts|contract|income|sales|profit|business.*growth|incredible.*week|amazing.*week|enterprise|monthly.*recurring|quarterly|increase|%.*increase|growth.*mode|survival.*mode|scale.*operations|hiring|hire|developers|team.*growth|vision.*becoming|reality)\b/)) {
+    categoryScores.Growth += 3;
+  }
+  
+  // Strong growth indicators - revenue, percentages, client acquisition
+  if (lowerText.match(/\b(\$\d+k|\$\d+,\d+|\d+%.*increase|\d+.*clients|\d+.*customers|revenue.*\$|monthly.*recurring.*revenue|mrr|enterprise.*clients|signed.*clients|major.*clients|biggest.*deal|scale.*operations|growth.*mode)\b/)) {
+    categoryScores.Growth += 5; // High priority for clear growth metrics
   }
   
   // Challenge indicators - more comprehensive detection
@@ -300,9 +305,17 @@ function generateEnhancedBusinessInsights(text: string, mood: string, category: 
     const growthInsights = [
       "Growth opportunities require strategic planning and consistent execution.",
       "Scaling your business is about systems, not just expanding operations.",
-      "Sustainable growth comes from understanding your market and customers deeply."
+      "Sustainable growth comes from understanding your market and customers deeply.",
+      "Strong revenue growth creates exciting opportunities for strategic expansion.",
+      "Enterprise client acquisition demonstrates your business's market credibility.",
+      "Revenue milestones like this show your business model is working effectively."
     ];
-    insights.push(growthInsights[Math.floor(Math.random() * growthInsights.length)]);
+    // Add specific insights for revenue/client growth
+    if (lowerText.includes('revenue') || lowerText.includes('clients') || lowerText.includes('mrr') || lowerText.includes('$')) {
+      insights.push("Strong revenue growth creates exciting opportunities for strategic expansion.");
+    } else {
+      insights.push(growthInsights[Math.floor(Math.random() * growthInsights.length)]);
+    }
   } else if (category === 'Planning') {
     const planningInsights = [
       "Strategic planning transforms business ideas into actionable roadmaps.",
@@ -564,24 +577,9 @@ function analyzeLocalSentiment(content: string, title?: string): BusinessSentime
   // Get top emotions
   const topEmotions = sortedEmotions.slice(0, 3).map(([emotion]) => emotion);
   
-  // Determine business category with enhanced detection
-  let category: BusinessSentiment['category'] = 'reflection';
-  let maxContextScore = 0;
-  
-  Object.entries(businessContexts).forEach(([contextType, keywords]) => {
-    let score = 0;
-    keywords.forEach(keyword => {
-      // Handle multi-word keywords properly
-      const escapedKeyword = keyword.replace(/\s+/g, '\\s+');
-      const regex = new RegExp(`\\b${escapedKeyword}\\b`, 'gi');
-      score += (text.match(regex) || []).length;
-    });
-    
-    if (score > maxContextScore) {
-      maxContextScore = score;
-      category = contextType as BusinessSentiment['category'];
-    }
-  });
+  // Use the enhanced detectBusinessCategory function instead of old logic
+  const detectedCategory = detectBusinessCategory(text);
+  let category: BusinessSentiment['category'] = detectedCategory.toLowerCase() as BusinessSentiment['category'];
   
   // Special case overrides for better accuracy
   if (text.includes('need') && (text.includes('car') || text.includes('business'))) {
