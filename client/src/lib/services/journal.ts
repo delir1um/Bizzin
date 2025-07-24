@@ -84,7 +84,7 @@ export class JournalService {
         mood: entry.mood || sentiment.primary_mood, // Use AI mood if no manual mood set
         category: entry.category || null,
         tags: entry.tags || null,
-        related_goal_id: entry.related_goal_id || null, // Add goal linking support
+
         reading_time: readingTime,
         sentiment_data: sentimentData,
       }

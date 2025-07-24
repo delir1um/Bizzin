@@ -1,13 +1,11 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { X, Clock, BookOpen, Edit, Target, Brain, Zap, Sparkles } from "lucide-react"
+import { X, Clock, BookOpen, Edit } from "lucide-react"
 import type { JournalEntry } from "@/types/journal"
-import type { Goal } from "@/types/goals"
+
 import { format } from "date-fns"
 import { SentimentInsights } from "@/components/journal/SentimentInsights"
-import { useQuery } from "@tanstack/react-query"
-import { GoalsService } from "@/lib/services/goals"
 import { useAuth } from "@/hooks/AuthProvider"
 
 interface ViewEntryModalProps {
@@ -18,19 +16,6 @@ interface ViewEntryModalProps {
 }
 
 export function ViewEntryModal({ isOpen, onClose, entry, onEdit }: ViewEntryModalProps) {
-  const { user } = useAuth()
-  
-  // Fetch user goals to display goal information
-  const { data: userGoals = [] } = useQuery({
-    queryKey: ['goals', user?.id],
-    queryFn: () => user ? GoalsService.getUserGoals(user.id) : Promise.resolve([]),
-    enabled: !!user && isOpen
-  })
-
-  // Helper function to find goal by ID
-  const findGoalById = (goalId: string): Goal | undefined => {
-    return userGoals.find(goal => goal.id === goalId)
-  }
 
   if (!isOpen || !entry) return null
 
@@ -141,87 +126,8 @@ export function ViewEntryModal({ isOpen, onClose, entry, onEdit }: ViewEntryModa
             </div>
           </div>
 
-          {/* Compact Bottom Section - Related Goal and AI Insights Side by Side */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Related Goal - Compact Version */}
-            {entry.related_goal_id && (() => {
-              const relatedGoal = findGoalById(entry.related_goal_id)
-              return relatedGoal ? (
-                <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Target className="w-4 h-4 text-orange-600 flex-shrink-0" />
-                    <h4 className="font-semibold text-orange-800 dark:text-orange-200 text-sm">
-                      Related Goal
-                    </h4>
-                  </div>
-                  <p className="text-orange-700 dark:text-orange-300 font-medium text-sm mb-2">
-                    {relatedGoal.title}
-                  </p>
-                  {relatedGoal.description && (
-                    <p className="text-orange-600 dark:text-orange-400 text-xs mb-3 line-clamp-2">
-                      {relatedGoal.description}
-                    </p>
-                  )}
-                  <div className="flex flex-wrap items-center gap-1">
-                    <Badge 
-                      variant="secondary" 
-                      className="bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100 text-xs px-2 py-0.5"
-                    >
-                      {relatedGoal.priority} Priority
-                    </Badge>
-                    <Badge 
-                      variant="outline" 
-                      className="border-orange-300 text-orange-700 dark:border-orange-600 dark:text-orange-300 text-xs px-2 py-0.5"
-                    >
-                      {relatedGoal.status}
-                    </Badge>
-                    {relatedGoal.deadline && (
-                      <Badge 
-                        variant="outline" 
-                        className="border-orange-300 text-orange-700 dark:border-orange-600 dark:text-orange-300 text-xs px-2 py-0.5"
-                      >
-                        Due {format(new Date(relatedGoal.deadline), 'MMM dd')}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              ) : null
-            })()}
-
-            {/* AI Business Insights - Compact Version */}
-            <div className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 border rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2 text-orange-700">
-                  <Sparkles className="w-4 h-4" />
-                  <span className="font-semibold text-sm">AI Business Insights</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Badge 
-                    variant="outline" 
-                    className="text-xs bg-green-100 text-green-700 border-green-200"
-                  >
-                    <Brain className="w-3 h-3 mr-1" />
-                    AI Analyzed • {Math.round(entry.sentiment_data?.confidence || 0)}%
-                  </Badge>
-                </div>
-              </div>
-              
-              {entry.sentiment_data?.energy && (
-                <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                  <Zap className="w-3 h-3 text-yellow-500" />
-                  <span className="text-xs">High Energy</span>
-                </div>
-              )}
-              
-              {entry.sentiment_data?.insights && entry.sentiment_data.insights.length > 0 && (
-                <div className="text-xs text-gray-700">
-                  <p className="line-clamp-2">
-                    {entry.sentiment_data.insights[0]}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
+          {/* AI Business Insights */}
+          <SentimentInsights entry={entry} />
 
           {/* Tags */}
           {entry.tags && entry.tags.length > 0 && (
