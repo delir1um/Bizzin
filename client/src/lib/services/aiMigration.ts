@@ -4,7 +4,7 @@ import type { JournalEntry } from '@/types/journal'
 
 export class AIMigrationService {
   private static readonly MIGRATION_VERSION_KEY = 'ai_migration_version'
-  private static readonly CURRENT_VERSION = 20 // Added specific pattern for "challenging and rewarding" to force Challenge category with high priority
+  private static readonly CURRENT_VERSION = 21 // Fixed category mapping inconsistency - all Challenge categories should display as "Challenge" not "Research"
 
   // Check if migration is needed
   static needsMigration(): boolean {

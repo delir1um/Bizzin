@@ -64,7 +64,7 @@ export function ViewEntryModal({ isOpen, onClose, entry, onEdit }: ViewEntryModa
                 const mapBusinessCategoryToJournal = (businessCategory: string): string => {
                   const mapping: Record<string, string> = {
                     'growth': 'Strategy',
-                    'challenge': 'Research',
+                    'challenge': 'Challenge',
                     'achievement': 'Milestone',
                     'planning': 'Planning',
                     'reflection': 'Learning'
