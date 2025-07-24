@@ -236,51 +236,27 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
               )}
             </div>
 
-            {/* AI Override Options */}
+            {/* AI Analysis Section - Always Visible */}
             <div className="border-t border-slate-200 pt-4">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowAdvanced(!showAdvanced)}
-                className="text-slate-600 hover:text-slate-800 mb-3"
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                {showAdvanced ? 'Hide' : 'Show'} AI Overrides
-              </Button>
-
-              {showAdvanced && (
-                <div className="space-y-4 bg-slate-50 p-4 rounded-lg">
-                  <p className="text-sm text-slate-600 mb-3">
-                    The AI automatically detects mood and category. You can override these if needed:
-                  </p>
-                  
-                  {/* Current AI Analysis Display */}
-                  {entry?.sentiment_data && (
-                    <div className="mb-4 p-3 bg-white rounded-md border">
-                      <h4 className="text-sm font-medium text-slate-700 mb-2">AI Detected:</h4>
-                      <div className="flex gap-2">
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                          Mood: {entry.sentiment_data.primary_mood}
-                        </Badge>
-                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                          Category: {mapBusinessCategoryToJournal(entry.sentiment_data.business_category)}
-                        </Badge>
-                      </div>
+              <h3 className="text-base font-medium text-slate-900 mb-4">AI Analysis & Classification</h3>
+              
+              {/* Current AI Detection with Easy Edit */}
+              {entry?.sentiment_data && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  {/* Mood Selection */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium text-slate-700">Mood</label>
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
+                        AI: {entry.sentiment_data.primary_mood}
+                      </Badge>
                     </div>
-                  )}
-
-                  {/* Mood Override */}
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Override Mood
-                    </label>
-                    <Select value={watch("mood") || ""} onValueChange={(value) => setValue("mood", value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Keep AI detection or choose manually" />
+                    <Select value={watch("mood") || "__keep_ai__"} onValueChange={(value) => setValue("mood", value === "__keep_ai__" ? "" : value)}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Keep AI Detection</SelectItem>
+                        <SelectItem value="__keep_ai__">✨ Use AI: {entry.sentiment_data.primary_mood}</SelectItem>
                         {JOURNAL_MOODS.map((mood) => (
                           <SelectItem key={mood} value={mood}>{mood}</SelectItem>
                         ))}
@@ -288,22 +264,42 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
                     </Select>
                   </div>
 
-                  {/* Category Override */}
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Override Category
-                    </label>
-                    <Select value={watch("category") || ""} onValueChange={(value) => setValue("category", value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Keep AI detection or choose manually" />
+                  {/* Category Selection */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium text-slate-700">Category</label>
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
+                        AI: {mapBusinessCategoryToJournal(entry.sentiment_data.business_category)}
+                      </Badge>
+                    </div>
+                    <Select value={watch("category") || "__keep_ai__"} onValueChange={(value) => setValue("category", value === "__keep_ai__" ? "" : value)}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Keep AI Detection</SelectItem>
+                        <SelectItem value="__keep_ai__">✨ Use AI: {mapBusinessCategoryToJournal(entry.sentiment_data.business_category)}</SelectItem>
                         {JOURNAL_CATEGORIES.map((category) => (
                           <SelectItem key={category} value={category}>{category}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+                </div>
+              )}
+
+              {/* AI Insights Preview */}
+              {entry?.sentiment_data?.insights && entry.sentiment_data.insights.length > 0 && (
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                  <div className="flex items-start gap-2">
+                    <div className="w-5 h-5 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      💡
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-medium text-orange-800 text-sm mb-1">AI Business Insight</h4>
+                      <p className="text-sm text-orange-700 leading-relaxed">
+                        {entry.sentiment_data.insights[0]}
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}
