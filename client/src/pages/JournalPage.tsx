@@ -76,6 +76,7 @@ export function JournalPage() {
     if (!mood) return '📝'
     
     const moodEmojis: Record<string, string> = {
+      // Lowercase versions
       'optimistic': '😊',
       'frustrated': '😤', 
       'focused': '🎯',
@@ -84,23 +85,26 @@ export function JournalPage() {
       'excited': '⚡',
       'determined': '🔥',
       'accomplished': '🏆',
-      'uncertain': '😕',
-      'stressed': '😰',
-      'neutral': '😐',
-      'inspired': '✨',
-      'content': '😌',
-      'concerned': '😟',
-      'overwhelmed': '😵‍💫',
+      'thoughtful': '🤔',
+      'curious': '🤔',
       'sad': '😢',
       'tired': '😴',
-      'thinking': '🤔',
-      'planning': '📋',
-      'Thoughtful': '🤷',
-      'Curious': '🧐',
-      'Focused': '🎯'
+      // Capitalized versions (from AI)
+      'Optimistic': '😊',
+      'Frustrated': '😤', 
+      'Focused': '🎯',
+      'Reflective': '🤔',
+      'Confident': '💪',
+      'Excited': '⚡',
+      'Determined': '🔥',
+      'Accomplished': '🏆',
+      'Thoughtful': '🤔',
+      'Curious': '🤔',
+      'Sad': '😢',
+      'Tired': '😴'
     }
     
-    return moodEmojis[mood.toLowerCase()] || '📝'
+    return moodEmojis[mood] || moodEmojis[mood.toLowerCase()] || '📝'
   }
 
   const getMoodColor = (mood: string | null | undefined) => {

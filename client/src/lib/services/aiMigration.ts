@@ -4,7 +4,7 @@ import type { JournalEntry } from '@/types/journal'
 
 export class AIMigrationService {
   private static readonly MIGRATION_VERSION_KEY = 'ai_migration_version'
-  private static readonly CURRENT_VERSION = 7 // Fixed mood mapping to properly display AI-detected moods with correct emojis
+  private static readonly CURRENT_VERSION = 8 // Fixed category mapping and mood emoji display issues
 
   // Check if migration is needed
   static needsMigration(): boolean {
@@ -91,13 +91,23 @@ export class AIMigrationService {
   // Helper functions for mapping (same as other components for consistency)
   private static mapBusinessCategoryToJournal(businessCategory: string): string {
     const mapping: Record<string, string> = {
-      'growth': 'Strategy',
-      'challenge': 'Challenge',
-      'achievement': 'Milestone',
+      // Lowercase versions (from AI analysis)
+      'growth': 'Growth',
+      'challenge': 'Challenge', 
+      'achievement': 'Achievement',
       'planning': 'Planning',
-      'reflection': 'Learning'
+      'learning': 'Learning',
+      'research': 'Research',
+      'reflection': 'Learning',
+      // Capitalized versions (for consistency)
+      'Growth': 'Growth',
+      'Challenge': 'Challenge',
+      'Achievement': 'Achievement', 
+      'Planning': 'Planning',
+      'Learning': 'Learning',
+      'Research': 'Research'
     }
-    return mapping[businessCategory] || 'Strategy'
+    return mapping[businessCategory] || businessCategory
   }
 
   private static mapAIMoodToJournal(aiMood: string): string {
