@@ -48,6 +48,7 @@ export const JOURNAL_CATEGORIES = [
   'Feedback',
   'Milestone',
   'Learning',
+  'Challenge',
   'Team',
   'Product',
   'Marketing',

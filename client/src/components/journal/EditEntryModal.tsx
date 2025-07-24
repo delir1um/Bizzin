@@ -74,7 +74,7 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
   const mapBusinessCategoryToJournal = (businessCategory: string): string => {
     const mapping: Record<string, string> = {
       'growth': 'Strategy',
-      'challenge': 'Research',
+      'challenge': 'Challenge',
       'achievement': 'Milestone',
       'planning': 'Planning',
       'reflection': 'Learning'

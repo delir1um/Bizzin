@@ -169,6 +169,7 @@ export function DailyEntriesView({
             'Feedback': 'bg-gradient-to-br from-orange-50 to-amber-100 dark:from-orange-900/20 dark:to-amber-900/30 border-orange-200 dark:border-orange-800',
             'Milestone': 'bg-gradient-to-br from-yellow-50 to-gold-100 dark:from-yellow-900/20 dark:to-yellow-900/30 border-yellow-200 dark:border-yellow-800',
             'Learning': 'bg-gradient-to-br from-teal-50 to-cyan-100 dark:from-teal-900/20 dark:to-cyan-900/30 border-teal-200 dark:border-teal-800',
+            'Challenge': 'bg-gradient-to-br from-red-50 to-rose-100 dark:from-red-900/20 dark:to-rose-900/30 border-red-200 dark:border-red-800',
             'Team': 'bg-gradient-to-br from-pink-50 to-rose-100 dark:from-pink-900/20 dark:to-rose-900/30 border-pink-200 dark:border-pink-800',
             'Product': 'bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/20 dark:to-emerald-900/30 border-green-200 dark:border-green-800',
             'Marketing': 'bg-gradient-to-br from-emerald-50 to-lime-100 dark:from-emerald-900/20 dark:to-lime-900/30 border-emerald-200 dark:border-emerald-800',
@@ -318,7 +319,7 @@ export function DailyEntriesView({
                         const mapBusinessCategoryToJournal = (businessCategory: string): string => {
                           const mapping: Record<string, string> = {
                             'growth': 'Strategy',
-                            'challenge': 'Research',
+                            'challenge': 'Challenge',
                             'achievement': 'Milestone',
                             'planning': 'Planning',
                             'reflection': 'Learning'
