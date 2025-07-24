@@ -68,7 +68,7 @@ export function SentimentInsights({ entry, className = "" }: SentimentInsightsPr
               className="text-xs"
               style={{ backgroundColor: `${moodColor}15`, color: moodColor }}
             >
-              {Math.round(sentiment.confidence * 100)}% confidence
+              {Math.round(sentiment.confidence)}% confidence
             </Badge>
           </div>
         </div>

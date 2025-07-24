@@ -141,19 +141,19 @@ export class JournalService {
         const content = updates.content || ''
         const title = updates.title || ''
         if (content || title) {
-          const sentiment = await analyzeBusinessSentiment(content, title)
+          const sentiment = await analyzeBusinessSentimentAI(content, title)
           updateData.sentiment_data = {
-            primary_mood: sentiment.mood.primary,
-            confidence: sentiment.mood.confidence,
-            energy: sentiment.mood.energy,
-            emotions: sentiment.mood.emotions,
+            primary_mood: sentiment.primary_mood,
+            confidence: sentiment.confidence,
+            energy: sentiment.energy,
+            emotions: sentiment.emotions,
             insights: sentiment.insights,
-            business_category: sentiment.category
+            business_category: sentiment.business_category
           }
           
           // Update mood if not manually set
           if (!updates.mood) {
-            updateData.mood = sentiment.mood.primary
+            updateData.mood = sentiment.primary_mood
           }
         }
       }
