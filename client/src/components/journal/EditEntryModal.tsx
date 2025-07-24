@@ -77,11 +77,6 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
   // Initialize form with entry data when modal opens - only once per entry
   useEffect(() => {
     if (entry && isOpen && displayData) {
-      console.log("🔧 Initializing form with entry data:", {
-        title: entry.title,
-        mood: entry.mood || displayData.mood,
-        category: entry.category || displayData.category
-      })
       reset({
         title: entry.title || "",
         content: entry.content || "",
@@ -251,9 +246,7 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
                     <Select 
                       value={watch("mood") || displayData?.mood || ''} 
                       onValueChange={(value) => {
-                        console.log("🔧 Mood selection changed:", { from: watch("mood"), to: value })
                         setValue("mood", value, { shouldValidate: true, shouldDirty: true })
-                        console.log("🔧 Form state after mood change:", watch())
                       }}
                     >
                       <SelectTrigger className="w-full">
@@ -281,9 +274,7 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
                     <Select 
                       value={watch("category") || displayData?.category || ''} 
                       onValueChange={(value) => {
-                        console.log("🔧 Category selection changed:", { from: watch("category"), to: value })
                         setValue("category", value, { shouldValidate: true, shouldDirty: true })
-                        console.log("🔧 Form state after category change:", watch())
                       }}
                     >
                       <SelectTrigger className="w-full">

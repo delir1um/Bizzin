@@ -16,6 +16,7 @@ import { AIMigrationDialog } from "@/components/journal/AIMigrationDialog"
 import { AIMigrationService } from "@/lib/services/aiMigration"
 import { motion, AnimatePresence } from "framer-motion"
 import { Skeleton } from "@/components/ui/skeleton"
+import { getDisplayMoodEmoji } from "@/lib/journalDisplayUtils"
 
 export function JournalPage() {
   const [user, setUser] = useState<any>(null)
@@ -131,41 +132,7 @@ export function JournalPage() {
     }))
   }
 
-  // Helper function to get mood emoji
-  const getMoodEmoji = (mood: string | null | undefined): string => {
-    if (!mood) return '📝'
-    
-    const moodEmojis: Record<string, string> = {
-      // Lowercase versions
-      'optimistic': '😊',
-      'frustrated': '😤', 
-      'focused': '🎯',
-      'reflective': '🤔',
-      'confident': '💪',
-      'excited': '⚡',
-      'determined': '🔥',
-      'accomplished': '🏆',
-      'thoughtful': '🤔',
-      'curious': '🤔',
-      'sad': '😢',
-      'tired': '😴',
-      // Capitalized versions (from AI)
-      'Optimistic': '😊',
-      'Frustrated': '😤', 
-      'Focused': '🎯',
-      'Reflective': '🤔',
-      'Confident': '💪',
-      'Excited': '⚡',
-      'Determined': '🔥',
-      'Accomplished': '🏆',
-      'Thoughtful': '🤔',
-      'Curious': '🤔',
-      'Sad': '😢',
-      'Tired': '😴'
-    }
-    
-    return moodEmojis[mood] || moodEmojis[mood.toLowerCase()] || '📝'
-  }
+
 
   const getMoodColor = (mood: string | null | undefined) => {
     if (!mood) return 'text-gray-600 bg-gray-50'
@@ -523,7 +490,7 @@ export function JournalPage() {
                             <div className="flex items-start justify-between mb-3">
                               <div className="flex items-center gap-3 flex-1">
                                 <span className="text-2xl" title={entry.mood || entry.sentiment_data?.primary_mood || 'No mood detected'}>
-                                  {getMoodEmoji(entry.mood || entry.sentiment_data?.primary_mood)}
+                                  {getDisplayMoodEmoji(entry)}
                                 </span>
                                 <CardTitle className="text-lg font-semibold text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-1">
                                   {entry.title}
@@ -622,7 +589,7 @@ export function JournalPage() {
                             <CardContent className="p-4">
                               <div className="flex items-center gap-2 mb-2">
                                 <span className="text-lg" title={entry.mood || entry.sentiment_data?.primary_mood || 'No mood detected'}>
-                                  {getMoodEmoji(entry.mood || entry.sentiment_data?.primary_mood)}
+                                  {getDisplayMoodEmoji(entry)}
                                 </span>
                                 <h3 className="font-medium text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-1">
                                   {entry.title}
@@ -687,7 +654,7 @@ export function JournalPage() {
                             <CardContent className="p-3">
                               <div className="flex items-center gap-2 mb-1">
                                 <span className="text-sm" title={entry.mood || entry.sentiment_data?.primary_mood || 'No mood detected'}>
-                                  {getMoodEmoji(entry.mood || entry.sentiment_data?.primary_mood)}
+                                  {getDisplayMoodEmoji(entry)}
                                 </span>
                                 <h3 className="font-medium text-sm text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-1">
                                   {entry.title}
@@ -746,7 +713,7 @@ export function JournalPage() {
                             onClick={() => handleViewEntry(entry)}
                           >
                             <span className="text-sm" title={entry.mood || entry.sentiment_data?.primary_mood || 'No mood detected'}>
-                              {getMoodEmoji(entry.mood || entry.sentiment_data?.primary_mood)}
+                              {getDisplayMoodEmoji(entry)}
                             </span>
                             <div className="flex-1 min-w-0">
                               <h3 className="font-medium text-sm text-slate-900 group-hover:text-orange-600 transition-colors truncate">
@@ -808,7 +775,7 @@ export function JournalPage() {
                                 onClick={() => handleViewEntry(entry)}
                               >
                                 <span className="text-xs" title={entry.mood || (entry.sentiment_data && entry.sentiment_data.primary_mood) || 'No mood detected'}>
-                                  {getMoodEmoji(entry.mood || (entry.sentiment_data && entry.sentiment_data.primary_mood))}
+                                  {getDisplayMoodEmoji(entry)}
                                 </span>
                                 <div className="flex-1 min-w-0">
                                   <h3 className="font-medium text-xs text-slate-900 group-hover:text-orange-600 transition-colors truncate">

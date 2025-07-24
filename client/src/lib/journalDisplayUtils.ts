@@ -101,20 +101,7 @@ export function getDisplayEnergy(entry: JournalEntry): string {
 
 export function getDisplayMoodEmoji(entry: JournalEntry): string {
   const displayMood = getDisplayMood(entry)
-  const emoji = getMoodEmoji(displayMood)
-  
-  // Debug logging for conflicted mood issue
-  if (entry.title?.includes("Key Insights: Key Learning")) {
-    console.log("🐛 DEBUG Key Insights entry:", {
-      title: entry.title,
-      rawAIMood: entry.sentiment_data?.primary_mood,
-      mappedDisplayMood: displayMood,
-      finalEmoji: emoji,
-      sentimentData: entry.sentiment_data
-    })
-  }
-  
-  return emoji
+  return getMoodEmoji(displayMood)
 }
 
 // Single source of truth for all entry display data
