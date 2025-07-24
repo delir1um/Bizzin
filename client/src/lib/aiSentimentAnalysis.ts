@@ -98,26 +98,189 @@ const businessContexts = {
   reflection: ['learned', 'realize', 'understand', 'insight', 'feedback', 'review', 'analyze', 'think', 'contemplate', 'evaluate']
 };
 
-// Hugging Face API call with error handling
-async function callHuggingFace(text: string, model: string): Promise<any> {
+// Enhanced Hugging Face API implementation for business sentiment analysis
+async function callEnhancedHuggingFaceAnalysis(text: string): Promise<BusinessSentiment | null> {
   try {
-    const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ inputs: text }),
-    });
+    // Use multiple models for better accuracy
+    const [sentimentResult, emotionResult] = await Promise.all([
+      callHuggingFaceModel(text, HF_MODELS.sentiment),
+      callHuggingFaceModel(text.substring(0, 500), HF_MODELS.emotion)
+    ]);
 
-    if (!response.ok) {
-      throw new Error(`HF API error: ${response.status}`);
+    if (sentimentResult && emotionResult) {
+      return processEnhancedHuggingFaceResults(sentimentResult, emotionResult, text);
     }
-
-    return await response.json();
+    
+    return null;
   } catch (error) {
-    console.warn('Hugging Face API error:', error);
+    console.warn('Enhanced Hugging Face analysis failed:', error);
     return null;
   }
+}
+
+// Improved Hugging Face API call with retry logic
+async function callHuggingFaceModel(text: string, model: string, retries = 2): Promise<any> {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          inputs: text,
+          options: { wait_for_model: true } // Wait for model to load
+        }),
+      });
+
+      if (response.status === 503 && attempt < retries) {
+        // Model is loading, wait and retry
+        await new Promise(resolve => setTimeout(resolve, 2000 * (attempt + 1)));
+        continue;
+      }
+
+      if (!response.ok) {
+        throw new Error(`HF API error: ${response.status} ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      
+      // Handle error responses
+      if (result.error) {
+        throw new Error(`HF API error: ${result.error}`);
+      }
+
+      return result;
+    } catch (error) {
+      if (attempt === retries) {
+        console.warn(`Hugging Face API error after ${retries + 1} attempts:`, error);
+        return null;
+      }
+    }
+  }
+  return null;
+}
+
+// Enhanced processing of Hugging Face results for business contexts
+function processEnhancedHuggingFaceResults(sentimentData: any, emotionData: any, text: string): BusinessSentiment {
+  const lowercaseText = text.toLowerCase();
+  
+  // Map HF sentiment to business emotions with context awareness
+  let primaryEmotion = 'reflective';
+  let confidence = 0.6;
+  
+  // Process sentiment data
+  if (Array.isArray(sentimentData) && sentimentData.length > 0) {
+    const topSentiment = sentimentData[0];
+    confidence = Math.max(topSentiment.score || 0.6, 0.5);
+    
+    // Context-aware emotion mapping
+    if (topSentiment.label === 'POSITIVE') {
+      if (lowercaseText.includes('cant wait') || lowercaseText.includes('excited') || lowercaseText.includes('next big')) {
+        primaryEmotion = 'excited';
+      } else if (lowercaseText.includes('confident') || lowercaseText.includes('ready')) {
+        primaryEmotion = 'confident';
+      } else if (lowercaseText.includes('accomplished') || lowercaseText.includes('success')) {
+        primaryEmotion = 'accomplished';
+      } else {
+        primaryEmotion = 'optimistic';
+      }
+    } else if (topSentiment.label === 'NEGATIVE') {
+      if (lowercaseText.includes('expensive') || lowercaseText.includes('costly')) {
+        primaryEmotion = 'frustrated';
+      } else if (lowercaseText.includes('stressed') || lowercaseText.includes('overwhelmed')) {
+        primaryEmotion = 'stressed';
+      } else if (lowercaseText.includes('sad') || lowercaseText.includes('down')) {
+        primaryEmotion = 'sad';
+      } else if (lowercaseText.includes('tired') || lowercaseText.includes('exhausted')) {
+        primaryEmotion = 'tired';
+      } else {
+        primaryEmotion = 'frustrated';
+      }
+    } else {
+      // NEUTRAL or unknown
+      if (lowercaseText.includes('need') || lowercaseText.includes('require')) {
+        primaryEmotion = 'focused';
+      } else {
+        primaryEmotion = 'reflective';
+      }
+    }
+  }
+  
+  // Process emotion data for additional context
+  let emotions = [primaryEmotion];
+  if (Array.isArray(emotionData) && emotionData.length > 0) {
+    const emotionMapping: Record<string, string> = {
+      'joy': 'excited',
+      'optimism': 'optimistic',
+      'anger': 'frustrated',
+      'sadness': 'sad',
+      'fear': 'uncertain',
+      'surprise': 'excited',
+      'love': 'confident',
+      'disgust': 'frustrated'
+    };
+    
+    const topEmotions = emotionData
+      .sort((a: any, b: any) => (b.score || 0) - (a.score || 0))
+      .slice(0, 3)
+      .map((emotion: any) => emotionMapping[emotion.label] || emotion.label)
+      .filter(Boolean);
+    
+    if (topEmotions.length > 0 && emotionData[0].score > 0.3) {
+      primaryEmotion = topEmotions[0];
+      emotions = topEmotions;
+    }
+  }
+  
+  // Determine energy level based on emotion
+  const highEnergyEmotions = ['excited', 'confident', 'optimistic', 'determined', 'accomplished'];
+  const lowEnergyEmotions = ['frustrated', 'uncertain', 'sad', 'tired', 'stressed'];
+  
+  let energy: 'high' | 'medium' | 'low' = 'medium';
+  if (highEnergyEmotions.includes(primaryEmotion)) energy = 'high';
+  else if (lowEnergyEmotions.includes(primaryEmotion)) energy = 'low';
+  
+  // Determine business category using enhanced local analysis
+  let category: BusinessSentiment['category'] = 'reflection';
+  let maxContextScore = 0;
+  
+  Object.entries(businessContexts).forEach(([contextType, keywords]) => {
+    let score = 0;
+    keywords.forEach(keyword => {
+      const escapedKeyword = keyword.replace(/\s+/g, '\\s+');
+      const regex = new RegExp(`\\b${escapedKeyword}\\b`, 'gi');
+      score += (lowercaseText.match(regex) || []).length;
+    });
+    
+    if (score > maxContextScore) {
+      maxContextScore = score;
+      category = contextType as BusinessSentiment['category'];
+    }
+  });
+  
+  // Context-specific overrides
+  if (lowercaseText.includes('need') && (lowercaseText.includes('car') || lowercaseText.includes('business'))) {
+    category = 'planning';
+  }
+  if (lowercaseText.includes('expensive') || lowercaseText.includes('costly')) {
+    category = 'challenge';
+  }
+  if (lowercaseText.includes('cant wait') || lowercaseText.includes('next big')) {
+    category = 'growth';
+  }
+  
+  // Generate contextual business insights
+  const insights = generateAdvancedBusinessInsights(primaryEmotion, category, lowercaseText, confidence);
+  
+  return {
+    primary_mood: primaryEmotion,
+    confidence: Math.round(Math.min(confidence, 1.0) * 100),
+    energy,
+    emotions: emotions.slice(0, 3),
+    insights,
+    business_category: category
+  };
 }
 
 // Enhanced local sentiment analysis as fallback
@@ -213,9 +376,22 @@ export async function analyzeBusinessSentimentAI(content: string, title?: string
     return cached.data;
   }
   
-  // Skip Hugging Face for now since it's not working properly
-  // Force use of local analysis for consistent results
-  console.log('Using enhanced local analysis for reliable sentiment detection');
+  try {
+    // Try enhanced Hugging Face API implementation
+    const aiResult = await callEnhancedHuggingFaceAnalysis(text);
+    
+    if (aiResult) {
+      // Cache successful result
+      sentimentCache.set(cacheKey, {
+        data: aiResult,
+        timestamp: Date.now()
+      });
+      
+      return aiResult;
+    }
+  } catch (error) {
+    console.warn('AI sentiment analysis failed, using local analysis:', error);
+  }
   
   // Fallback to enhanced local analysis
   const localResult = analyzeLocalSentiment(content, title);
