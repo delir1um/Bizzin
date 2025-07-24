@@ -15,7 +15,7 @@ import { EditEntryModal } from "@/components/journal/EditEntryModal"
 import { AIMigrationDialog } from "@/components/journal/AIMigrationDialog"
 import { AIMigrationService } from "@/lib/services/aiMigration"
 import { motion, AnimatePresence } from "framer-motion"
-import { StandardPageLayout, createStatCard } from "@/components/layout/StandardPageLayout"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function JournalPage() {
   const [user, setUser] = useState<any>(null)
@@ -351,67 +351,130 @@ export function JournalPage() {
     )
   }
 
-  const statCards = [
-    createStatCard(
-      'streak',
-      'Day Streak',
-      stats.streak,
-      'Day Streak',
-      <Flame className="w-6 h-6 text-white" />,
-      'orange'
-    ),
-    createStatCard(
-      'growth',
-      'Growth Wins',
-      stats.growthEntries,
-      'Growth Wins',
-      <TrendingUp className="w-6 h-6 text-white" />,
-      'green'
-    ),
-    createStatCard(
-      'mood',
-      'Dominant Mood',
-      `${getMoodEmoji(stats.dominantMood)} ${stats.dominantMood}`,
-      'Dominant Mood',
-      <Heart className="w-6 h-6 text-white" />,
-      'blue'
-    ),
-    createStatCard(
-      'confidence',
-      'AI Confidence',
-      `${stats.avgConfidence}%`,
-      'AI Confidence',
-      <Brain className="w-6 h-6 text-white" />,
-      'purple'
-    )
-  ]
-
-  const primaryAction = {
-    label: 'Write Entry',
-    icon: <PlusCircle className="w-4 h-4 mr-2" />,
-    onClick: () => setShowWriteModal(true)
-  }
-
-  const secondaryActions = AIMigrationService.needsMigration() && entries.length > 0 ? [{
-    label: 'Update AI Analysis',
-    icon: <Brain className="w-4 h-4 mr-2" />,
-    onClick: () => setShowMigrationDialog(true),
-    variant: 'outline' as const,
-    className: 'border-orange-200 text-orange-700 hover:bg-orange-50'
-  }] : []
+  // Statistics are now directly rendered in JSX
 
   return (
-    <StandardPageLayout
-      title="Business Journal"
-      subtitle="Track your thoughts, insights, and business learnings. AI automatically detects mood and category."
-      primaryAction={primaryAction}
-      secondaryActions={secondaryActions}
-      stats={statCards}
-      searchPlaceholder="Search your entries..."
-      searchValue={searchQuery}
-      onSearchChange={setSearchQuery}
-      showFilters={false}
-    >
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Page Header */}
+      <div className="mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Business Journal</h1>
+            <p className="mt-2 text-lg text-slate-600 dark:text-slate-300">
+              Track your thoughts, insights, and business learnings. AI automatically detects mood and category.
+            </p>
+          </div>
+          <div className="mt-4 sm:mt-0 flex gap-2">
+            {AIMigrationService.needsMigration() && entries.length > 0 && (
+              <Button 
+                onClick={() => setShowMigrationDialog(true)}
+                variant="outline"
+                size="sm"
+                className="border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-950/20"
+              >
+                <Brain className="w-4 h-4 mr-2" />
+                Update AI Analysis
+              </Button>
+            )}
+            <Button 
+              onClick={() => setShowWriteModal(true)}
+              className="bg-orange-600 hover:bg-orange-700 text-white"
+            >
+              <PlusCircle className="w-4 h-4 mr-2" />
+              Write Entry
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Statistics Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-orange-500 rounded-lg shadow-sm">
+                <Calendar className="w-5 h-5 text-white" />
+              </div>
+              <div className="ml-4">
+                {isLoading ? (
+                  <Skeleton className="h-8 w-12 mb-1" />
+                ) : (
+                  <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">{stats.streak}</div>
+                )}
+                <p className="text-sm font-medium text-orange-700 dark:text-orange-300">Day Streak</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900 border-green-200 dark:border-green-800">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-green-500 rounded-lg shadow-sm">
+                <TrendingUp className="w-5 h-5 text-white" />
+              </div>
+              <div className="ml-4">
+                {isLoading ? (
+                  <Skeleton className="h-8 w-12 mb-1" />
+                ) : (
+                  <div className="text-2xl font-bold text-green-900 dark:text-green-100">{stats.growthEntries}</div>
+                )}
+                <p className="text-sm font-medium text-green-700 dark:text-green-300">Growth Wins</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-900 border-blue-200 dark:border-blue-800">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-blue-500 rounded-lg shadow-sm">
+                <Heart className="w-5 h-5 text-white" />
+              </div>
+              <div className="ml-4">
+                {isLoading ? (
+                  <Skeleton className="h-8 w-12 mb-1" />
+                ) : (
+                  <div className="text-2xl font-bold text-blue-900 dark:text-blue-100 capitalize">{stats.dominantMood}</div>
+                )}
+                <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Dominant Mood</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-purple-50 to-pink-100 dark:from-purple-950 dark:to-pink-900 border-purple-200 dark:border-purple-800">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-purple-500 rounded-lg shadow-sm">
+                <Brain className="w-5 h-5 text-white" />
+              </div>
+              <div className="ml-4">
+                {isLoading ? (
+                  <Skeleton className="h-8 w-12 mb-1" />
+                ) : (
+                  <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">{stats.avgConfidence}%</div>
+                )}
+                <p className="text-sm font-medium text-purple-700 dark:text-purple-300">AI Confidence</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Search */}
+      <div className="mb-8 flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Input
+            type="text"
+            placeholder="Search your entries..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 focus:ring-orange-500 focus:border-orange-500"
+          />
+        </div>
+      </div>
 
         {/* Chronological Entries */}
         <div className="space-y-6">
@@ -475,8 +538,8 @@ export function JournalPage() {
                             <div className="flex items-center gap-4 text-sm text-slate-500">
                               <span>{formatDate(entry.created_at || entry.entry_date || '')}</span>
                               {(entry.category || entry.sentiment_data?.business_category) && (
-                                <Badge className={`${getCategoryColor(entry.category || entry.sentiment_data?.business_category)} text-xs px-2 py-0.5`}>
-                                  {entry.category || entry.sentiment_data.business_category}
+                                <Badge className={`${getCategoryColor(entry.category || (entry.sentiment_data && entry.sentiment_data.business_category))} text-xs px-2 py-0.5`}>
+                                  {entry.category || (entry.sentiment_data && entry.sentiment_data.business_category)}
                                 </Badge>
                               )}
                               {entry.sentiment_data?.energy && (
@@ -749,8 +812,8 @@ export function JournalPage() {
                                 className="flex items-center gap-2 p-2.5 hover:bg-slate-50/80 rounded-lg cursor-pointer group transition-all duration-200 border border-transparent hover:border-slate-200"
                                 onClick={() => handleViewEntry(entry)}
                               >
-                                <span className="text-xs" title={entry.mood || entry.sentiment_data?.primary_mood || 'No mood detected'}>
-                                  {getMoodEmoji(entry.mood || entry.sentiment_data?.primary_mood)}
+                                <span className="text-xs" title={entry.mood || (entry.sentiment_data && entry.sentiment_data.primary_mood) || 'No mood detected'}>
+                                  {getMoodEmoji(entry.mood || (entry.sentiment_data && entry.sentiment_data.primary_mood))}
                                 </span>
                                 <div className="flex-1 min-w-0">
                                   <h3 className="font-medium text-xs text-slate-900 group-hover:text-orange-600 transition-colors truncate">
@@ -759,9 +822,9 @@ export function JournalPage() {
                                 </div>
                                 <div className="flex items-center gap-1 text-xs text-slate-500">
                                   <span className="text-xs">{format(new Date(entry.entry_date || entry.created_at || ''), 'MMM d')}</span>
-                                  {(entry.category || entry.sentiment_data?.business_category) && (
-                                    <div className={`w-1 h-1 rounded-full ${getCategoryColor(entry.category || entry.sentiment_data?.business_category).includes('bg-') ? getCategoryColor(entry.category || entry.sentiment_data?.business_category).split(' ')[1] : 'bg-slate-300'}`} 
-                                         title={entry.category || entry.sentiment_data?.business_category}></div>
+                                  {(entry.category || (entry.sentiment_data && entry.sentiment_data.business_category)) && (
+                                    <div className={`w-1 h-1 rounded-full ${getCategoryColor(entry.category || (entry.sentiment_data && entry.sentiment_data.business_category)).includes('bg-') ? getCategoryColor(entry.category || (entry.sentiment_data && entry.sentiment_data.business_category)).split(' ')[1] : 'bg-slate-300'}`} 
+                                         title={entry.category || (entry.sentiment_data && entry.sentiment_data.business_category)}></div>
                                   )}
                                 </div>
                               </div>
@@ -812,6 +875,6 @@ export function JournalPage() {
           })
         }}
       />
-    </StandardPageLayout>
+    </div>
   )
 }
