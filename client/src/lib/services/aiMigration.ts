@@ -4,7 +4,7 @@ import type { JournalEntry } from '@/types/journal'
 
 export class AIMigrationService {
   private static readonly MIGRATION_VERSION_KEY = 'ai_migration_version'
-  private static readonly CURRENT_VERSION = 9 // Fixed AI analysis consistency between display and edit modal
+  private static readonly CURRENT_VERSION = 10 // Enhanced AI title generation and improved Hugging Face integration
 
   // Check if migration is needed
   static needsMigration(): boolean {
