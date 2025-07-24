@@ -4,7 +4,7 @@ import type { JournalEntry } from '@/types/journal'
 
 export class AIMigrationService {
   private static readonly MIGRATION_VERSION_KEY = 'ai_migration_version'
-  private static readonly CURRENT_VERSION = 24 // COMPLETE CONSISTENCY FIX: Created centralized journalDisplayUtils.ts to ensure ALL components use identical data mapping and display functions
+  private static readonly CURRENT_VERSION = 25 // Added missing mood mappings for conflicted/thoughtful/curious/sad/tired to ensure all AI moods display correct emojis
 
   // Check if migration is needed
   static needsMigration(): boolean {

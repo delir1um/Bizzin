@@ -58,7 +58,11 @@ export function mapAIMoodToJournal(aiMood: string): string {
     'stressed': 'Frustrated',
     'neutral': 'Neutral',
     'inspired': 'Inspired',
-    'conflicted': 'Conflicted'
+    'conflicted': 'Conflicted',
+    'thoughtful': 'Thoughtful',
+    'curious': 'Curious',
+    'sad': 'Sad',
+    'tired': 'Tired'
   }
   
   const mapped = mapping[aiMood.toLowerCase()]
