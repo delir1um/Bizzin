@@ -100,26 +100,7 @@ export function JournalPage() {
       })
     }
     
-    console.log('Time organization results:', {
-      today: results.today.length,
-      thisWeek: results.thisWeek.length,
-      thisMonth: results.thisMonth.length,
-      thisYear: results.thisYear.length
-    })
-    
-    // Debug the entry with July 18 date
-    const july18Entry = entries.find(e => e.title.includes('customers love when respond'))
-    if (july18Entry) {
-      console.log('July 18 entry details:', {
-        title: july18Entry.title,
-        entry_date: july18Entry.entry_date,
-        created_at: july18Entry.created_at,
-        finalDate: july18Entry.entry_date || july18Entry.created_at,
-        isToday: isToday(new Date(july18Entry.entry_date || july18Entry.created_at || '')),
-        isThisWeek: isThisWeek(new Date(july18Entry.entry_date || july18Entry.created_at || '')),
-        isThisMonth: isThisMonth(new Date(july18Entry.entry_date || july18Entry.created_at || ''))
-      })
-    }
+
     
     return results
   }
