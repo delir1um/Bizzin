@@ -79,6 +79,7 @@ export function JournalPage() {
   // Organize entries by time periods
   const organizeEntriesByTime = (entries: JournalEntry[]) => {
     const now = new Date()
+    const currentYear = now.getFullYear()
     
     const results = {
       today: entries.filter(entry => {
@@ -97,17 +98,32 @@ export function JournalPage() {
       thisYear: entries.filter(entry => {
         const entryDate = new Date(entry.entry_date || entry.created_at || '')
         return !isThisMonth(entryDate) && isThisYear(entryDate)
-      })
+      }),
+      previousYears: {} as Record<number, JournalEntry[]>
     }
     
-
+    // Group entries from previous years
+    const previousYearEntries = entries.filter(entry => {
+      const entryDate = new Date(entry.entry_date || entry.created_at || '')
+      return entryDate.getFullYear() < currentYear
+    })
+    
+    // Group by year
+    previousYearEntries.forEach(entry => {
+      const entryDate = new Date(entry.entry_date || entry.created_at || '')
+      const year = entryDate.getFullYear()
+      if (!results.previousYears[year]) {
+        results.previousYears[year] = []
+      }
+      results.previousYears[year].push(entry)
+    })
     
     return results
   }
 
   const organizedEntries = organizeEntriesByTime(filteredEntries)
 
-  const toggleSection = (section: 'thisWeek' | 'thisMonth' | 'thisYear') => {
+  const toggleSection = (section: 'thisWeek' | 'thisMonth' | 'thisYear' | string) => {
     setExpandedSections(prev => ({
       ...prev,
       [section]: !prev[section]
@@ -646,6 +662,68 @@ export function JournalPage() {
                   )}
                 </div>
               )}
+
+              {/* Previous Years - Ultra Dense List */}
+              {Object.keys(organizedEntries.previousYears).length > 0 && 
+                Object.keys(organizedEntries.previousYears)
+                  .sort((a, b) => parseInt(b) - parseInt(a)) // Sort years in descending order
+                  .map(year => (
+                    <div key={year} className="space-y-2">
+                      <Button
+                        variant="ghost"
+                        className="flex items-center justify-between w-full p-3 hover:bg-slate-100 rounded-lg"
+                        onClick={() => toggleSection(year as any)}
+                      >
+                        <div className="flex items-center gap-2">
+                          <h2 className="text-lg font-semibold text-slate-900">{year}</h2>
+                          <Badge variant="secondary" className="text-xs">
+                            {organizedEntries.previousYears[parseInt(year)].length} entries
+                          </Badge>
+                        </div>
+                        {(expandedSections as any)[year] ? (
+                          <ChevronDown className="w-4 h-4 text-slate-500" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4 text-slate-500" />
+                        )}
+                      </Button>
+                      
+                      {(expandedSections as any)[year] && (
+                        <AnimatePresence>
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="space-y-1 ml-4"
+                          >
+                            {organizedEntries.previousYears[parseInt(year)].map((entry: JournalEntry) => (
+                              <div 
+                                key={entry.id}
+                                className="flex items-center gap-2 p-1.5 hover:bg-slate-50 rounded cursor-pointer group transition-colors"
+                                onClick={() => handleViewEntry(entry)}
+                              >
+                                <span className="text-xs" title={entry.mood || entry.sentiment_data?.primary_mood || 'No mood detected'}>
+                                  {getMoodEmoji(entry.mood || entry.sentiment_data?.primary_mood)}
+                                </span>
+                                <div className="flex-1 min-w-0">
+                                  <h3 className="font-medium text-xs text-slate-900 group-hover:text-orange-600 transition-colors truncate">
+                                    {entry.title}
+                                  </h3>
+                                </div>
+                                <div className="flex items-center gap-1 text-xs text-slate-500">
+                                  <span className="text-xs">{format(new Date(entry.entry_date || entry.created_at || ''), 'MMM d')}</span>
+                                  {(entry.category || entry.sentiment_data?.business_category) && (
+                                    <div className={`w-1 h-1 rounded-full ${getCategoryColor(entry.category || entry.sentiment_data?.business_category).includes('bg-') ? getCategoryColor(entry.category || entry.sentiment_data?.business_category).split(' ')[1] : 'bg-slate-300'}`} 
+                                         title={entry.category || entry.sentiment_data.business_category}></div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </motion.div>
+                        </AnimatePresence>
+                      )}
+                    </div>
+                  ))
+              }
             </>
           )}
         </div>
