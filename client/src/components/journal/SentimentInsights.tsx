@@ -108,7 +108,8 @@ export function SentimentBadge({ entry, size = "sm" }: { entry: JournalEntry, si
       'uncertain': 'Thoughtful',
       'stressed': 'Frustrated',
       'neutral': 'Neutral',
-      'inspired': 'Inspired'
+      'inspired': 'Inspired',
+      'conflicted': 'Conflicted'  // Added missing mapping for 'conflicted' mood
     }
     
     const mapped = mapping[aiMood.toLowerCase()]
@@ -124,7 +125,8 @@ export function SentimentBadge({ entry, size = "sm" }: { entry: JournalEntry, si
       'challenge': 'Challenge',
       'achievement': 'Milestone',
       'planning': 'Planning',
-      'reflection': 'Learning'
+      'reflection': 'Learning',
+      'learning': 'Learning'  // Added missing mapping for 'learning' category
     }
     return mapping[businessCategory] || 'Strategy'
   }

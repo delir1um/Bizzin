@@ -86,7 +86,8 @@ export function ViewEntryModal({ isOpen, onClose, entry, onEdit }: ViewEntryModa
       'challenge': 'Challenge',
       'achievement': 'Milestone',
       'planning': 'Planning',
-      'reflection': 'Learning'
+      'reflection': 'Learning',
+      'learning': 'Learning'  // Added missing mapping for 'learning' category
     }
     return mapping[businessCategory] || 'Strategy'
   }

@@ -211,37 +211,81 @@ function generateBusinessInsights(primaryEmotion: string, category: string, emot
 // Get mood color for UI display
 export function getMoodColor(mood: string): string {
   const colorMap: Record<string, string> = {
-    confident: '#10B981', // green
-    excited: '#F59E0B', // orange
-    focused: '#6366F1', // indigo
-    optimistic: '#06B6D4', // cyan
-    stressed: '#EF4444', // red
-    uncertain: '#6B7280', // gray
-    frustrated: '#DC2626', // red
-    accomplished: '#059669', // emerald
-    reflective: '#7C3AED', // violet
-    determined: '#EA580C', // orange-red
-    neutral: '#9CA3AF' // gray
+    // Lowercase versions
+    'confident': '#10B981',
+    'excited': '#F59E0B',
+    'focused': '#6366F1',
+    'optimistic': '#06B6D4',
+    'stressed': '#EF4444',
+    'uncertain': '#6B7280',
+    'frustrated': '#DC2626',
+    'accomplished': '#059669',
+    'reflective': '#7C3AED',
+    'determined': '#EA580C',
+    'neutral': '#9CA3AF',
+    'conflicted': '#6B7280',
+    'thoughtful': '#7C3AED',
+    'curious': '#06B6D4',
+    'sad': '#3B82F6',
+    'tired': '#6B7280',
+    // Capitalized versions (from AI)
+    'Confident': '#10B981',
+    'Excited': '#F59E0B',
+    'Focused': '#6366F1',
+    'Optimistic': '#06B6D4',
+    'Stressed': '#EF4444',
+    'Uncertain': '#6B7280',
+    'Frustrated': '#DC2626',
+    'Accomplished': '#059669',
+    'Reflective': '#7C3AED',
+    'Determined': '#EA580C',
+    'Conflicted': '#6B7280',
+    'Thoughtful': '#7C3AED',
+    'Curious': '#06B6D4',
+    'Sad': '#3B82F6',
+    'Tired': '#6B7280'
   };
   
-  return colorMap[mood] || colorMap.neutral;
+  return colorMap[mood] || colorMap[mood.toLowerCase()] || colorMap.neutral;
 }
 
 // Get mood emoji for display
 export function getMoodEmoji(mood: string): string {
   const emojiMap: Record<string, string> = {
-    confident: '💪',
-    excited: '🚀',
-    focused: '🎯',
-    optimistic: '✨',
-    stressed: '😰',
-    uncertain: '🤔',
-    frustrated: '😤',
-    accomplished: '🎉',
-    reflective: '💭',
-    determined: '🔥',
-    neutral: '😐'
+    // Lowercase versions
+    'optimistic': '😊',
+    'frustrated': '😤',
+    'focused': '🎯',
+    'reflective': '🤔',
+    'confident': '💪',
+    'excited': '⚡',
+    'determined': '🔥',
+    'accomplished': '🏆',
+    'thoughtful': '🤔',
+    'curious': '🤔',
+    'sad': '😢',
+    'tired': '😴',
+    'conflicted': '😔',
+    'stressed': '😰',
+    'uncertain': '🤔',
+    'neutral': '😐',
+    // Capitalized versions (from AI)
+    'Optimistic': '😊',
+    'Frustrated': '😤',
+    'Focused': '🎯',
+    'Reflective': '🤔',
+    'Confident': '💪',
+    'Excited': '⚡',
+    'Determined': '🔥',
+    'Accomplished': '🏆',
+    'Thoughtful': '🤔',
+    'Curious': '🤔',
+    'Sad': '😢',
+    'Tired': '😴',
+    'Conflicted': '😔',
+    'Stressed': '😰',
+    'Uncertain': '🤔'
   };
   
-  return emojiMap[mood] || emojiMap.neutral;
+  return emojiMap[mood] || emojiMap[mood.toLowerCase()] || emojiMap.neutral;
 }
