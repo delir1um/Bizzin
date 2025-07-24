@@ -12,6 +12,8 @@ import type { JournalEntry } from "@/types/journal"
 import { SimpleCreateEntryModal } from "@/components/journal/SimpleCreateEntryModal"
 import { ViewEntryModal } from "@/components/journal/ViewEntryModal"
 import { EditEntryModal } from "@/components/journal/EditEntryModal"
+import { AIMigrationDialog } from "@/components/journal/AIMigrationDialog"
+import { AIMigrationService } from "@/lib/services/aiMigration"
 import { motion, AnimatePresence } from "framer-motion"
 
 export function JournalPage() {
@@ -19,6 +21,7 @@ export function JournalPage() {
   const [showWriteModal, setShowWriteModal] = useState(false)
   const [showViewModal, setShowViewModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showMigrationDialog, setShowMigrationDialog] = useState(false)
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const queryClient = useQueryClient()
@@ -53,6 +56,14 @@ export function JournalPage() {
     },
     enabled: !!user
   })
+
+  // Check for migration needs when entries are loaded
+  useEffect(() => {
+    if (entries.length > 0 && AIMigrationService.needsMigration()) {
+      // Auto-show migration dialog if entries need updating
+      setShowMigrationDialog(true)
+    }
+  }, [entries])
 
   // Filter entries based on search
   const filteredEntries = entries.filter((entry: JournalEntry) =>
@@ -221,13 +232,25 @@ export function JournalPage() {
                 Track your thoughts, insights, and business learnings. AI automatically detects mood and category.
               </p>
             </div>
-            <Button 
-              onClick={() => setShowWriteModal(true)}
-              className="bg-orange-600 hover:bg-orange-700 text-white"
-            >
-              <PlusCircle className="w-4 h-4 mr-2" />
-              Write Entry
-            </Button>
+            <div className="flex gap-3">
+              {AIMigrationService.needsMigration() && entries.length > 0 && (
+                <Button 
+                  onClick={() => setShowMigrationDialog(true)}
+                  variant="outline"
+                  className="border-orange-200 text-orange-700 hover:bg-orange-50"
+                >
+                  <Brain className="w-4 h-4 mr-2" />
+                  Update AI Analysis
+                </Button>
+              )}
+              <Button 
+                onClick={() => setShowWriteModal(true)}
+                className="bg-orange-600 hover:bg-orange-700 text-white"
+              >
+                <PlusCircle className="w-4 h-4 mr-2" />
+                Write Entry
+              </Button>
+            </div>
           </div>
 
           {/* Search */}
@@ -417,6 +440,18 @@ export function JournalPage() {
         isOpen={showEditModal}
         onClose={handleCloseModals}
         entry={selectedEntry}
+      />
+
+      <AIMigrationDialog
+        isOpen={showMigrationDialog}
+        onClose={() => setShowMigrationDialog(false)}
+        onComplete={() => {
+          queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
+          toast({
+            title: "AI Analysis Updated",
+            description: "Your journal entries have been enhanced with improved AI analysis.",
+          })
+        }}
       />
     </div>
   )
