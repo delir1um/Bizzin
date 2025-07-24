@@ -274,7 +274,7 @@ export function JournalPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50">
-        <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="text-center py-16">
             <motion.div
               animate={{ rotate: 360 }}
@@ -293,7 +293,7 @@ export function JournalPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
@@ -337,7 +337,7 @@ export function JournalPage() {
         </div>
 
         {/* Enhanced Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {(() => {
             // Calculate writing streak
             const sortedEntries = [...entries].sort((a, b) => 
@@ -660,7 +660,7 @@ export function JournalPage() {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="grid grid-cols-1 md:grid-cols-2 gap-3 ml-4"
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 ml-4"
                       >
                         {organizedEntries.thisMonth.map((entry: JournalEntry) => (
                           <Card 
