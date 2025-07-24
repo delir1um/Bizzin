@@ -170,7 +170,7 @@ function analyzeLocalSentiment(content: string, title?: string): BusinessSentime
   });
   
   // Generate insights
-  const insights = generateAdvancedBusinessInsights(primaryEmotion, category, text, finalConfidence * 100);
+  const insights = generateAdvancedBusinessInsights(primaryEmotion, category, text, finalConfidence);
   
   return {
     primary_mood: primaryEmotion,
@@ -301,7 +301,7 @@ function processHuggingFaceResults(sentimentData: any, emotionData: any, content
   });
   
   // Generate AI-enhanced insights
-  const insights = generateAdvancedBusinessInsights(primaryEmotion, category, text, confidence * 100);
+  const insights = generateAdvancedBusinessInsights(primaryEmotion, category, text, confidence);
   
   return {
     primary_mood: primaryEmotion,
@@ -314,7 +314,7 @@ function processHuggingFaceResults(sentimentData: any, emotionData: any, content
 }
 
 // Advanced business insights with emotional intelligence
-function generateAdvancedBusinessInsights(emotion: string, category: string, text: string, confidence: number): string[] {
+function generateAdvancedBusinessInsights(emotion: string, category: string, text: string, confidenceRatio: number): string[] {
   const insights: string[] = [];
   
   // Advanced context detection
@@ -325,8 +325,8 @@ function generateAdvancedBusinessInsights(emotion: string, category: string, tex
   const hasOpportunity = /opportunity|opportunities|potential|promising|new|innovation/i.test(text);
   const hasChallenges = /problem|issue|difficulty|obstacle|setback|challenge|struggle/i.test(text);
   
-  // High-confidence insights (above 70%)
-  const isHighConfidence = confidence > 70;
+  // High-confidence insights (above 0.7)
+  const isHighConfidence = confidenceRatio > 0.7;
   
   // Emotion-based business intelligence
   switch (emotion) {
