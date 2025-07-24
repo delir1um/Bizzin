@@ -18,8 +18,8 @@ import { useAuth } from "@/hooks/AuthProvider"
 import { Goal } from "@/types/goals"
 import { ConfettiCelebration, CelebrationToast } from "@/components/ConfettiCelebration"
 import { StandardPageLayout, createStatCard } from "@/components/layout/StandardPageLayout"
-import { motion, AnimatePresence } from "framer-motion"
 import { AnimatedCard, AnimatedGrid, AnimatedItem } from "@/components/ui/animated-card"
+import { motion, AnimatePresence } from "framer-motion"
 
 type FilterStatus = 'all' | 'active' | 'completed' | 'at_risk'
 type FilterPriority = 'all' | 'high' | 'medium' | 'low'
@@ -516,21 +516,26 @@ export function GoalsPage() {
           </div>
 
           {/* Goals Grid/List */}
-          <div className={
-            viewMode === 'grid' 
-              ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8"
-              : "space-y-4 mb-8"
-          }>
-            {paginatedGoals.map((goal: Goal) => (
-              <GoalCard 
+          <AnimatedGrid 
+            className={
+              viewMode === 'grid' 
+                ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8"
+                : "space-y-4 mb-8"
+            }
+            stagger={0.1}
+          >
+            {paginatedGoals.map((goal: Goal, index) => (
+              <AnimatedItem key={goal.id}>
+                <GoalCard 
                 key={goal.id} 
                 goal={goal} 
                 onEdit={handleEditGoal} 
                 onDelete={handleDeleteGoal}
                 viewMode={viewMode}
               />
+              </AnimatedItem>
             ))}
-          </div>
+          </AnimatedGrid>
 
           {/* Pagination Controls */}
           {totalPages > 1 && (

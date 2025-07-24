@@ -17,6 +17,8 @@ import { UpgradeModal } from "@/components/plans/UpgradeModal"
 import { usePlans } from "@/hooks/usePlans"
 import { format } from "date-fns"
 import { StandardPageLayout, createStatCard } from "@/components/layout/StandardPageLayout"
+import { motion, AnimatePresence } from "framer-motion"
+import { AnimatedCard, AnimatedGrid, AnimatedItem } from "@/components/ui/animated-card"
 
 export function DocSafePage() {
   const [user, setUser] = useState<any>(null)
@@ -366,9 +368,10 @@ export function DocSafePage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
-            {displayDocs.map((doc) => (
-              <Card key={doc.id} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
+          <AnimatedGrid className="space-y-4" stagger={0.1}>
+            {displayDocs.map((doc, index) => (
+              <AnimatedItem key={doc.id}>
+                <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
@@ -428,8 +431,9 @@ export function DocSafePage() {
                   </div>
                 </CardContent>
               </Card>
+              </AnimatedItem>
             ))}
-          </div>
+          </AnimatedGrid>
         )}
       </div>
 
