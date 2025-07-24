@@ -25,8 +25,8 @@ export function JournalPage() {
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [expandedSections, setExpandedSections] = useState({
-    thisWeek: false,
-    thisMonth: false,
+    thisWeek: true,  // Start expanded so users can see content
+    thisMonth: true,
     thisYear: false
   })
   const queryClient = useQueryClient()
@@ -79,24 +79,27 @@ export function JournalPage() {
   // Organize entries by time periods
   const organizeEntriesByTime = (entries: JournalEntry[]) => {
     const now = new Date()
-    const weekAgo = subWeeks(now, 1)
-    const monthAgo = subMonths(now, 1)
-
-    return {
-      today: entries.filter(entry => isToday(new Date(entry.created_at || entry.entry_date || ''))),
+    
+    const results = {
+      today: entries.filter(entry => {
+        const entryDate = new Date(entry.created_at || entry.entry_date || '')
+        return isToday(entryDate)
+      }),
       thisWeek: entries.filter(entry => {
         const entryDate = new Date(entry.created_at || entry.entry_date || '')
-        return !isToday(entryDate) && isThisWeek(entryDate) && entryDate >= weekAgo
+        return !isToday(entryDate) && isThisWeek(entryDate)
       }),
       thisMonth: entries.filter(entry => {
         const entryDate = new Date(entry.created_at || entry.entry_date || '')
-        return !isThisWeek(entryDate) && isThisMonth(entryDate) && entryDate >= monthAgo
+        return !isThisWeek(entryDate) && isThisMonth(entryDate)
       }),
       thisYear: entries.filter(entry => {
         const entryDate = new Date(entry.created_at || entry.entry_date || '')
         return !isThisMonth(entryDate) && isThisYear(entryDate)
       })
     }
+    
+    return results
   }
 
   const organizedEntries = organizeEntriesByTime(filteredEntries)
