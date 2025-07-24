@@ -3,6 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Calculator, TrendingUp, DollarSign, Car, Home, BarChart3, Target, Activity } from "lucide-react"
+import { motion } from "framer-motion"
+import { AnimatedCard, AnimatedGrid, AnimatedItem } from "@/components/ui/animated-card"
 
 const tools = [
   {
@@ -135,15 +137,15 @@ export function BizBuilderToolsPage() {
       </div>
 
       {/* Tools Grid */}
-      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {filteredTools.map((tool) => {
+      <AnimatedGrid className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" stagger={0.1}>
+        {filteredTools.map((tool, index) => {
           const IconComponent = tool.icon
           return (
-            <Card 
-              key={tool.id}
-              className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-orange-200 dark:hover:border-orange-800"
-              onClick={() => handleToolSelect(tool.id)}
-            >
+            <AnimatedItem key={tool.id}>
+              <Card 
+                className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-orange-200 dark:hover:border-orange-800"
+                onClick={() => handleToolSelect(tool.id)}
+              >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mb-3">
@@ -171,9 +173,10 @@ export function BizBuilderToolsPage() {
                 </Button>
               </CardContent>
             </Card>
+            </AnimatedItem>
           )
         })}
-      </div>
+      </AnimatedGrid>
 
       {/* Usage & Access Info */}
       <div className="mt-12">

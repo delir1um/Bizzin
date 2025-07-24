@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Play, BookOpen, Clock, Star, Users, Award, Search } from "lucide-react"
 import { StandardPageLayout, createStatCard } from "@/components/layout/StandardPageLayout"
+import { motion } from "framer-motion"
+import { AnimatedCard, AnimatedGrid, AnimatedItem } from "@/components/ui/animated-card"
 
 export function TrainingPage() {
   const statCards = [
@@ -94,8 +96,9 @@ export function TrainingPage() {
       {/* Course Categories */}
       <div className="mb-8">
         <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">Popular Categories</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer">
+        <AnimatedGrid className="grid grid-cols-2 md:grid-cols-4 gap-4" stagger={0.1}>
+          <AnimatedItem>
+            <Card className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer">
             <CardContent className="p-6 text-center">
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mx-auto mb-3">
                 <BookOpen className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -105,44 +108,52 @@ export function TrainingPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mx-auto mb-3">
-                <Users className="w-6 h-6 text-green-600 dark:text-green-400" />
-              </div>
-              <h3 className="font-semibold text-slate-900 dark:text-white">Marketing</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">6 courses</p>
-            </CardContent>
-          </Card>
+          </AnimatedItem>
+          <AnimatedItem>
+            <Card className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer">
+              <CardContent className="p-6 text-center">
+                <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Users className="w-6 h-6 text-green-600 dark:text-green-400" />
+                </div>
+                <h3 className="font-semibold text-slate-900 dark:text-white">Marketing</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">6 courses</p>
+              </CardContent>
+            </Card>
+          </AnimatedItem>
 
-          <Card className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mx-auto mb-3">
-                <Award className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-              </div>
-              <h3 className="font-semibold text-slate-900 dark:text-white">Finance</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">5 courses</p>
-            </CardContent>
-          </Card>
+          <AnimatedItem>
+            <Card className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer">
+              <CardContent className="p-6 text-center">
+                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Award className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                </div>
+                <h3 className="font-semibold text-slate-900 dark:text-white">Finance</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">5 courses</p>
+              </CardContent>
+            </Card>
+          </AnimatedItem>
 
-          <Card className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mx-auto mb-3">
-                <Star className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-              </div>
-              <h3 className="font-semibold text-slate-900 dark:text-white">Leadership</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">5 courses</p>
-            </CardContent>
-          </Card>
-        </div>
+          <AnimatedItem>
+            <Card className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer">
+              <CardContent className="p-6 text-center">
+                <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Star className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                </div>
+                <h3 className="font-semibold text-slate-900 dark:text-white">Leadership</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">5 courses</p>
+              </CardContent>
+            </Card>
+          </AnimatedItem>
+        </AnimatedGrid>
       </div>
 
       {/* Featured Courses */}
       <div>
         <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">Featured Courses</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <AnimatedGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" stagger={0.15}>
           {/* Course 1 */}
-          <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
+          <AnimatedItem>
+            <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div>
@@ -174,9 +185,11 @@ export function TrainingPage() {
               </Button>
             </CardContent>
           </Card>
+          </AnimatedItem>
 
           {/* Course 2 */}
-          <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
+          <AnimatedItem>
+            <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div>
@@ -208,9 +221,11 @@ export function TrainingPage() {
               </Button>
             </CardContent>
           </Card>
+          </AnimatedItem>
 
           {/* Course 3 */}
-          <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
+          <AnimatedItem>
+            <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div>
@@ -242,7 +257,8 @@ export function TrainingPage() {
               </Button>
             </CardContent>
           </Card>
-        </div>
+          </AnimatedItem>
+        </AnimatedGrid>
       </div>
     </StandardPageLayout>
   )

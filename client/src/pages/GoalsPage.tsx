@@ -18,6 +18,8 @@ import { useAuth } from "@/hooks/AuthProvider"
 import { Goal } from "@/types/goals"
 import { ConfettiCelebration, CelebrationToast } from "@/components/ConfettiCelebration"
 import { StandardPageLayout, createStatCard } from "@/components/layout/StandardPageLayout"
+import { motion, AnimatePresence } from "framer-motion"
+import { AnimatedCard, AnimatedGrid, AnimatedItem } from "@/components/ui/animated-card"
 
 type FilterStatus = 'all' | 'active' | 'completed' | 'at_risk'
 type FilterPriority = 'all' | 'high' | 'medium' | 'low'
