@@ -81,7 +81,7 @@ export class JournalService {
         content: entry.content,
         // entry_date: entry.entry_date || null, // Commented out until database migration
         user_id: user.id,
-        mood: entry.mood || sentiment.mood.primary, // Use AI mood if no manual mood set
+        mood: entry.mood || sentiment.primary_mood, // Use AI mood if no manual mood set
         category: entry.category || null,
         tags: entry.tags || null,
         related_goal_id: entry.related_goal_id || null, // Add goal linking support
@@ -158,7 +158,7 @@ export class JournalService {
         }
       }
 
-      // Remove any undefined fields
+      // Remove any undefined fields, but keep null values (needed for unlinking goals)
       const cleanUpdateData = Object.fromEntries(
         Object.entries(updateData).filter(([_, value]) => value !== undefined)
       )

@@ -195,7 +195,7 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
       content: data.content,
       entry_date: data.entry_date || undefined,
       // Note: mood and category are now handled by AI, not manual selection
-      related_goal_id: data.related_goal_id && data.related_goal_id !== "none" ? data.related_goal_id : undefined,
+      related_goal_id: data.related_goal_id && data.related_goal_id !== "none" ? data.related_goal_id : null,
       tags: tags.length > 0 ? tags : undefined,
     }
 
