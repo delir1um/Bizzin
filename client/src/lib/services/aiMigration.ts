@@ -4,7 +4,7 @@ import type { JournalEntry } from '@/types/journal'
 
 export class AIMigrationService {
   private static readonly MIGRATION_VERSION_KEY = 'ai_migration_version'
-  private static readonly CURRENT_VERSION = 1
+  private static readonly CURRENT_VERSION = 2 // Enhanced local analysis with better business context
 
   // Check if migration is needed
   static needsMigration(): boolean {
@@ -76,10 +76,10 @@ export class AIMigrationService {
         }
       }
 
-      // Mark migration as complete
-      localStorage.setItem(this.MIGRATION_VERSION_KEY, this.CURRENT_VERSION.toString())
-      
       console.log(`Migration complete: ${results.success} success, ${results.failed} failed`)
+      
+      // Mark migration as complete for this version
+      localStorage.setItem(this.MIGRATION_VERSION_KEY, this.CURRENT_VERSION.toString())
       return results
       
     } catch (error) {
