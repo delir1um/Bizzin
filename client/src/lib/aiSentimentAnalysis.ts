@@ -34,7 +34,7 @@ const businessEmotions = {
     energy: 'high' as const
   },
   excited: {
-    keywords: ['excited', 'thrilled', 'energized', 'motivated', 'enthusiastic', 'passionate', 'pumped', 'inspired', 'eager', 'full of', 'new', 'ready'],
+    keywords: ['excited', 'thrilled', 'energized', 'motivated', 'enthusiastic', 'passionate', 'pumped', 'inspired', 'eager', 'full of', 'new', 'ready', 'cant wait', 'looking forward', 'anticipating', 'next big', 'big project'],
     weight: 0.9,
     energy: 'high' as const
   },
@@ -91,10 +91,10 @@ const businessEmotions = {
 };
 
 const businessContexts = {
-  growth: ['scaling', 'expansion', 'growing', 'increase', 'revenue', 'customers', 'market', 'opportunity', 'profit', 'sales', 'opportunities', 'new', 'potential', 'promising'],
+  growth: ['scaling', 'expansion', 'growing', 'increase', 'revenue', 'customers', 'market', 'opportunity', 'profit', 'sales', 'opportunities', 'new', 'potential', 'promising', 'next big', 'big project', 'cant wait', 'looking forward', 'anticipating', 'future'],
   challenge: ['problem', 'issue', 'difficulty', 'obstacle', 'setback', 'failure', 'mistake', 'error', 'crisis', 'struggle', 'tired', 'exhausted', 'dont feel like', 'unmotivated', 'burnout', 'stressed', 'sad', 'depressed', 'down'],
   achievement: ['success', 'win', 'accomplished', 'milestone', 'breakthrough', 'completed', 'achieved', 'goal', 'victory', 'triumph', 'good day', 'great', 'excellent'],
-  planning: ['strategy', 'plan', 'roadmap', 'timeline', 'schedule', 'prepare', 'organize', 'structure', 'blueprint', 'framework'],
+  planning: ['strategy', 'plan', 'roadmap', 'timeline', 'schedule', 'prepare', 'organize', 'structure', 'blueprint', 'framework', 'next', 'project', 'upcoming', 'future'],
   reflection: ['learned', 'realize', 'understand', 'insight', 'feedback', 'review', 'analyze', 'think', 'contemplate', 'evaluate']
 };
 
@@ -334,6 +334,7 @@ function generateAdvancedBusinessInsights(emotion: string, category: string, tex
   const hasMetrics = /data|analytics|metrics|numbers|performance|results|kpi/i.test(text);
   const hasOpportunity = /opportunity|opportunities|potential|promising|new|innovation/i.test(text);
   const hasChallenges = /problem|issue|difficulty|obstacle|setback|challenge|struggle/i.test(text);
+  const hasProject = /project|projects|next big|upcoming|cant wait|looking forward/i.test(text);
   
   // High-confidence insights (above 0.7)
   const isHighConfidence = confidenceRatio > 0.7;
@@ -351,7 +352,9 @@ function generateAdvancedBusinessInsights(emotion: string, category: string, tex
       break;
       
     case 'excited':
-      if (hasOpportunity && isHighConfidence) {
+      if (hasProject && isHighConfidence) {
+        insights.push("Project excitement signals strong product-market fit intuition - your anticipation often identifies high-impact opportunities");
+      } else if (hasOpportunity && isHighConfidence) {
         insights.push("Excitement about opportunities is entrepreneurial radar - your enthusiasm often identifies market gaps before competitors");
       } else if (hasRevenue) {
         insights.push("Revenue excitement drives sustainable growth - this energy fuels the persistence needed for scaling");
