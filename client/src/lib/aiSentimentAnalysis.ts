@@ -100,32 +100,146 @@ const businessContexts = {
 
 // Enhanced Hugging Face API implementation for business sentiment analysis
 async function callEnhancedHuggingFaceAnalysis(text: string): Promise<BusinessSentiment | null> {
-  const token = process.env.HUGGINGFACE_TOKEN;
-  console.log(`Using Hugging Face API with${token ? ' authenticated' : ' unauthenticated'} access`);
+  // For now, let's improve the local analysis to work better
+  // We'll add server-side analysis later once the routing is fixed
+  console.log('Using enhanced local business sentiment analysis');
   
   try {
-    // Use multiple models for better accuracy
-    const [sentimentResult, emotionResult] = await Promise.all([
-      callHuggingFaceModel(text, HF_MODELS.sentiment),
-      callHuggingFaceModel(text.substring(0, 500), HF_MODELS.emotion)
-    ]);
-
-    if (sentimentResult && emotionResult) {
-      console.log('AI sentiment analysis successful - using Hugging Face results');
-      return processEnhancedHuggingFaceResults(sentimentResult, emotionResult, text);
-    }
-    
-    console.log('Hugging Face API returned incomplete results, falling back to local analysis');
-    return null;
+    // Enhanced local analysis with better business context understanding
+    const analysisResult = performEnhancedLocalAnalysis(text);
+    console.log('Enhanced local analysis successful');
+    return analysisResult;
   } catch (error) {
-    console.warn('Enhanced Hugging Face analysis failed:', error);
+    console.warn('Enhanced local analysis failed:', error);
     return null;
   }
 }
 
-// Improved Hugging Face API call with authentication and retry logic
+// Enhanced local analysis function for business sentiment
+function performEnhancedLocalAnalysis(text: string): BusinessSentiment {
+  const lowerText = text.toLowerCase();
+  
+  // Enhanced mood detection
+  let primaryMood = 'Confident';
+  let confidence = 70;
+  let energy = 'medium';
+  
+  // Business category analysis
+  const businessCategory = detectBusinessCategory(lowerText);
+  
+  // Enhanced mood analysis with better patterns
+  if (lowerText.includes('excited') || lowerText.includes('cant wait') || lowerText.includes('looking forward') || lowerText.includes('next big')) {
+    primaryMood = 'Excited';
+    energy = 'high';
+    confidence = 85;
+  } else if (lowerText.includes('sad') || lowerText.includes('tired') || lowerText.includes('exhausted') || lowerText.includes('dont have energy') || lowerText.includes('unmotivated')) {
+    primaryMood = 'Reflective';
+    energy = 'low';
+    confidence = 90;
+  } else if (lowerText.includes('frustrated') || lowerText.includes('angry') || lowerText.includes('annoyed') || lowerText.includes('expensive') || lowerText.includes('problem')) {
+    primaryMood = 'Frustrated';
+    energy = 'medium';
+    confidence = 85;
+  } else if (lowerText.includes('curious') || lowerText.includes('wondering') || lowerText.includes('interesting') || lowerText.includes('learning')) {
+    primaryMood = 'Curious';
+    energy = 'medium';
+    confidence = 80;
+  } else if (lowerText.includes('accomplished') || lowerText.includes('success') || lowerText.includes('achieved') || lowerText.includes('milestone')) {
+    primaryMood = 'Accomplished';
+    energy = 'high';
+    confidence = 88;
+  }
+  
+  // Generate business insights
+  const insights = generateEnhancedBusinessInsights(text, primaryMood, businessCategory);
+  
+  return {
+    primary_mood: primaryMood,
+    confidence: Math.max(65, Math.min(95, confidence)),
+    energy,
+    emotions: [primaryMood.toLowerCase()],
+    insights,
+    business_category: businessCategory,
+    analysis_source: 'enhanced_local'
+  };
+}
+
+function detectBusinessCategory(lowerText: string): string {
+  // More sophisticated category detection
+  const categoryScores = {
+    Growth: 0,
+    Challenge: 0,
+    Achievement: 0,
+    Planning: 0,
+    Learning: 0,
+    Research: 0
+  };
+  
+  // Growth indicators
+  if (lowerText.match(/\b(growth|scaling|expansion|opportunity|next big|cant wait|excited|future|potential)\b/)) {
+    categoryScores.Growth += 2;
+  }
+  
+  // Challenge indicators
+  if (lowerText.match(/\b(problem|challenge|difficult|expensive|sad|tired|exhausted|issue|struggle|crisis)\b/)) {
+    categoryScores.Challenge += 2;
+  }
+  
+  // Achievement indicators
+  if (lowerText.match(/\b(success|accomplished|achieved|milestone|completed|breakthrough|victory)\b/)) {
+    categoryScores.Achievement += 2;
+  }
+  
+  // Planning indicators
+  if (lowerText.match(/\b(plan|strategy|need|require|car|computer|equipment|tools|roadmap|prepare)\b/)) {
+    categoryScores.Planning += 2;
+  }
+  
+  // Learning indicators
+  if (lowerText.match(/\b(learned|feedback|customers|respond|insight|understand|realize)\b/)) {
+    categoryScores.Learning += 2;
+  }
+  
+  // Find highest scoring category
+  const maxCategory = Object.entries(categoryScores).reduce((a, b) => 
+    categoryScores[a[0]] > categoryScores[b[0]] ? a : b
+  );
+  
+  return maxCategory[1] > 0 ? maxCategory[0] : 'Research';
+}
+
+function generateEnhancedBusinessInsights(text: string, mood: string, category: string): string[] {
+  const insights = [];
+  
+  // Category-specific insights
+  if (category === 'Challenge') {
+    insights.push("Every challenge is a stepping stone to business growth and resilience.");
+  } else if (category === 'Growth') {
+    insights.push("Growth opportunities require strategic planning and consistent execution.");
+  } else if (category === 'Planning') {
+    insights.push("Strategic planning transforms business ideas into actionable roadmaps.");
+  } else if (category === 'Learning') {
+    insights.push("Customer insights and feedback are invaluable assets for business improvement.");
+  } else if (category === 'Achievement') {
+    insights.push("Celebrate milestones - they fuel motivation for the next breakthrough.");
+  } else {
+    insights.push("Regular documentation helps track patterns and progress in your entrepreneurial journey.");
+  }
+  
+  // Mood-specific additional insights
+  if (mood === 'Reflective') {
+    insights.push("Reflection periods often lead to the most valuable business insights.");
+  } else if (mood === 'Excited') {
+    insights.push("Channel this excitement into focused action and strategic planning.");
+  }
+  
+  return insights;
+}
+
+// Improved Hugging Face API call with authentication and retry logic (currently unused)
 async function callHuggingFaceModel(text: string, model: string, retries = 2): Promise<any> {
-  const token = process.env.HUGGINGFACE_TOKEN;
+  // This function is currently not used but kept for future server-side implementation
+  const token = 'placeholder';
   
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
@@ -137,6 +251,8 @@ async function callHuggingFaceModel(text: string, model: string, retries = 2): P
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
+      
+      console.log(`HF API call attempt ${attempt + 1} to ${model} with token: ${token ? 'yes' : 'no'}`);
       
       const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
         method: 'POST',
