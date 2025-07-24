@@ -251,14 +251,9 @@ export function JournalPage() {
   }
 
   const handleViewEntry = (entry: JournalEntry) => {
-    // For short content, go directly to edit
-    if (entry.content.length <= 300) {
-      handleEditEntry(entry)
-    } else {
-      // For long content, show view modal first
-      setSelectedEntry(entry)
-      setShowViewModal(true)
-    }
+    // Always show view modal first for all entries
+    setSelectedEntry(entry)
+    setShowViewModal(true)
   }
 
   const handleEditEntry = (entry: JournalEntry) => {
