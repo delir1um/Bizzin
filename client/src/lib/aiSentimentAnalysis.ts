@@ -167,17 +167,15 @@ function analyzeLocalSentiment(content: string, title?: string): BusinessSentime
   });
   
   // Generate insights
-  const insights = generateBusinessInsights(primaryEmotion, category, topEmotions, text);
+  const insights = generateAdvancedBusinessInsights(primaryEmotion, category, text, finalConfidence * 100);
   
   return {
-    mood: {
-      primary: primaryEmotion,
-      confidence: finalConfidence,
-      energy,
-      emotions: topEmotions
-    },
+    primary_mood: primaryEmotion,
+    confidence: Math.round(finalConfidence * 100),
+    energy,
+    emotions: topEmotions,
     insights,
-    category
+    business_category: category
   };
 }
 
@@ -300,97 +298,153 @@ function processHuggingFaceResults(sentimentData: any, emotionData: any, content
   });
   
   // Generate AI-enhanced insights
-  const insights = generateBusinessInsights(primaryEmotion, category, emotions, text);
+  const insights = generateAdvancedBusinessInsights(primaryEmotion, category, text, confidence * 100);
   
   return {
-    mood: {
-      primary: primaryEmotion,
-      confidence: Math.min(confidence, 1.0),
-      energy,
-      emotions: emotions.slice(0, 3)
-    },
+    primary_mood: primaryEmotion,
+    confidence: Math.round(Math.min(confidence, 1.0) * 100),
+    energy,
+    emotions: emotions.slice(0, 3),
     insights,
-    category
+    business_category: category
   };
 }
 
-// Enhanced insight generation
-function generateBusinessInsights(primaryEmotion: string, category: string, emotions: string[], text?: string): string[] {
+// Advanced business insights with emotional intelligence
+function generateAdvancedBusinessInsights(emotion: string, category: string, text: string, confidence: number): string[] {
   const insights: string[] = [];
-  const hasMetrics = text && /\d+%|\$\d+|revenue|profit|growth|customer/i.test(text);
-  const hasTeam = text && /team|employee|hire|staff|people/i.test(text);
-  const hasStrategy = text && /strategy|plan|goal|vision|mission/i.test(text);
   
-  // Emotion-based insights
-  switch (primaryEmotion) {
+  // Advanced context detection
+  const hasTeam = /team|colleagues|staff|employees|hire|hiring|manage|leadership/i.test(text);
+  const hasRevenue = /revenue|sales|income|profit|customers|clients|money|pricing/i.test(text);
+  const hasStrategy = /strategy|plan|growth|expansion|market|competition|roadmap/i.test(text);
+  const hasMetrics = /data|analytics|metrics|numbers|performance|results|kpi/i.test(text);
+  const hasOpportunity = /opportunity|opportunities|potential|promising|new|innovation/i.test(text);
+  const hasChallenges = /problem|issue|difficulty|obstacle|setback|challenge|struggle/i.test(text);
+  
+  // High-confidence insights (above 70%)
+  const isHighConfidence = confidence > 70;
+  
+  // Emotion-based business intelligence
+  switch (emotion) {
     case 'confident':
-      insights.push(hasStrategy ? 
-        "Your strategic confidence indicates strong leadership - this mindset drives breakthrough decisions" :
-        "Your confidence is showing - this mindset often leads to breakthrough moments");
+      if (hasStrategy && isHighConfidence) {
+        insights.push("Your strategic confidence signals readiness for bold moves - successful entrepreneurs trust this instinct when making pivotal decisions");
+      } else if (hasTeam) {
+        insights.push("Confident leadership creates psychological safety - your team performs better when they sense your conviction");
+      } else {
+        insights.push("This confidence indicates strong business intuition - channel this clarity into your next key decision");
+      }
       break;
+      
     case 'excited':
-      if (text && /(new|opportunities|full of)/i.test(text)) {
-        insights.push("This excitement about new possibilities drives innovation - capture these ideas while your energy is high");
+      if (hasOpportunity && isHighConfidence) {
+        insights.push("Excitement about opportunities is entrepreneurial radar - your enthusiasm often identifies market gaps before competitors");
+      } else if (hasRevenue) {
+        insights.push("Revenue excitement drives sustainable growth - this energy fuels the persistence needed for scaling");
       } else {
-        insights.push(hasTeam ? 
-          "High energy and enthusiasm can be contagious - perfect time to rally your team around new initiatives" :
-          "High energy and enthusiasm can be contagious - great time to take bold action");
+        insights.push("High-energy states accelerate decision-making - capture your ideas while this momentum lasts");
       }
       break;
-    case 'focused':
-      insights.push(hasMetrics ? 
-        "This data-driven focus suggests you're building sustainable business systems" :
-        "This systematic approach suggests you're building sustainable business habits");
-      break;
-    case 'frustrated':
-      if (text && /(tired|exhausted|dont feel like|unmotivated)/i.test(text)) {
-        insights.push("Low energy days are normal for entrepreneurs - consider what your body and mind need to recharge");
-      } else {
-        insights.push("Obstacles often reveal opportunities - consider what this challenge is teaching you about your market");
-      }
-      break;
-    case 'uncertain':
-      insights.push("Uncertainty is where innovation happens - trust the process and seek data to guide decisions");
-      break;
-    case 'accomplished':
-      insights.push("Celebrating wins builds momentum - document what worked for future reference and team learning");
-      break;
+      
     case 'optimistic':
-      if (text && /(opportunity|opportunities|potential|promising)/i.test(text)) {
-        insights.push("Opportunity recognition is an entrepreneurial strength - your positive outlook spots possibilities others miss");
+      if (hasOpportunity) {
+        insights.push("Optimistic opportunity recognition is a founder's superpower - you see possibilities where others see problems");
+      } else if (hasStrategy) {
+        insights.push("Strategic optimism drives innovation - your positive outlook enables calculated risk-taking");
       } else {
-        insights.push("Optimism coupled with action creates results - channel this energy into your next key initiative");
+        insights.push("Optimism creates momentum in business - this mindset attracts resources, talent, and partnerships");
       }
       break;
+      
+    case 'frustrated':
+      if (hasChallenges && hasStrategy) {
+        insights.push("Strategic frustration often precedes breakthrough innovations - what's blocking you might be your next competitive advantage");
+      } else if (hasTeam) {
+        insights.push("Team frustration signals process opportunities - consider what systems could eliminate recurring friction");
+      } else {
+        insights.push("Frustration is market feedback - this tension often reveals unmet needs worth solving");
+      }
+      break;
+      
+    case 'stressed':
+      if (hasRevenue && hasMetrics) {
+        insights.push("Revenue stress with data awareness shows sophisticated thinking - use metrics to prioritize what truly drives growth");
+      } else if (hasTeam) {
+        insights.push("Stress with team responsibilities suggests scaling challenges - consider delegation and process automation");
+      } else {
+        insights.push("Stress often signals growth phases - break complex challenges into manageable experiments");
+      }
+      break;
+      
+    case 'focused':
+      if (hasMetrics && isHighConfidence) {
+        insights.push("Data-driven focus is your competitive edge - this analytical clarity typically leads to sustainable competitive advantages");
+      } else if (hasStrategy) {
+        insights.push("Strategic focus cuts through noise - you're prioritizing high-impact activities over busy work");
+      } else {
+        insights.push("Deep focus creates disproportionate returns - this concentration builds your expertise moat");
+      }
+      break;
+      
+    case 'accomplished':
+      if (hasRevenue) {
+        insights.push("Revenue accomplishments build investor confidence - document these wins for future fundraising or partnerships");
+      } else if (hasTeam) {
+        insights.push("Team accomplishments create culture momentum - celebrate these wins to reinforce high-performance patterns");
+      } else {
+        insights.push("Achievement energy should be reinvested immediately - success creates the best conditions for taking bigger risks");
+      }
+      break;
+      
+    case 'uncertain':
+      if (hasStrategy && hasMetrics) {
+        insights.push("Strategic uncertainty with data awareness shows maturity - use experiments to validate assumptions systematically");
+      } else if (hasRevenue) {
+        insights.push("Revenue uncertainty drives customer-centricity - get closer to your customers' real problems and priorities");
+      } else {
+        insights.push("Uncertainty identifies knowledge gaps - convert these questions into testable hypotheses");
+      }
+      break;
+      
     case 'determined':
-      insights.push("This determination is your competitive advantage - persistence separates successful entrepreneurs");
-      break;
-  }
-  
-  // Category-based insights
-  switch (category) {
-    case 'growth':
-      insights.push("Growth phases require both vision and systems - balance scaling with operational excellence");
-      break;
-    case 'challenge':
-      if (text && /(tired|exhausted|dont feel like|unmotivated|burnout)/i.test(text)) {
-        insights.push("Burnout signals need attention - successful entrepreneurs prioritize sustainable work-life balance");
+      if (hasChallenges && isHighConfidence) {
+        insights.push("Determined problem-solving is entrepreneurial DNA - this persistence through obstacles creates lasting competitive advantages");
       } else {
-        insights.push("Every challenge contains valuable market intelligence - document lessons for future decision-making");
+        insights.push("Determination separates entrepreneurs from dreamers - this mindset powers through the inevitable setbacks");
       }
       break;
-    case 'achievement':
-      insights.push("Success patterns are your roadmap - analyze what worked to replicate these results");
+      
+    case 'reflective':
+      if (hasMetrics) {
+        insights.push("Reflective data analysis drives smart pivots - what patterns in your business are telling you to adjust course?");
+      } else if (hasStrategy) {
+        insights.push("Strategic reflection builds sustainable advantages - step back thinking often reveals bigger opportunities");
+      } else {
+        insights.push("Self-aware founders make better decisions - these insights compound into superior business judgment");
+      }
       break;
-    case 'planning':
-      insights.push("Strategic planning today prevents costly pivots tomorrow - invest time in thorough preparation");
-      break;
-    case 'reflection':
-      insights.push("Self-awareness is a founder's superpower - these insights compound into better business decisions");
-      break;
+      
+    default:
+      insights.push("Every emotional state contains business intelligence - document these patterns to improve your decision-making");
   }
   
-  return insights.slice(0, 2); // Return top 2 insights
+  // Add category-specific insights for high confidence
+  if (isHighConfidence && category) {
+    switch (category) {
+      case 'growth':
+        insights.push("Growth mindset with high confidence suggests readiness for scaling - consider what systems need strengthening first");
+        break;
+      case 'challenge':
+        insights.push("Challenge awareness at high confidence shows mature leadership - you're seeing problems before they become crises");
+        break;
+      case 'achievement':
+        insights.push("Achievement recognition builds momentum - use this success to tackle bigger challenges while confidence is high");
+        break;
+    }
+  }
+  
+  return insights.slice(0, 2); // Limit to 2 insights for better UX
 }
 
 // Main export - formatted for UI compatibility
