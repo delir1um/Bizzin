@@ -1,34 +1,32 @@
 import { useState, useEffect } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query"
+import * as z from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { X, Calendar, Save, Trash2 } from "lucide-react"
-import type { JournalEntry, UpdateJournalEntry } from "@/types/journal"
-import { useQueryClient, useMutation } from "@tanstack/react-query"
-import { useToast } from "@/hooks/use-toast"
-import { format } from "date-fns"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { X, Plus, Save, Trash2, Calendar } from "lucide-react"
 import { JournalService } from "@/lib/services/journal"
+
+import { JOURNAL_MOODS, JOURNAL_CATEGORIES } from "@/types/journal"
+import type { JournalEntry, UpdateJournalEntry } from "@/types/journal"
+
+import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/AuthProvider"
+import { format } from "date-fns"
 
 const editEntrySchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
   content: z.string().min(10, "Content must be at least 10 characters").max(10000, "Content must be less than 10000 characters"),
   entry_date: z.string().optional(),
+  mood: z.string().optional(),
+  category: z.string().optional(),
+
 })
 
 type FormData = z.infer<typeof editEntrySchema>
@@ -41,16 +39,20 @@ interface EditEntryModalProps {
 }
 
 export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEntryModalProps) {
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const queryClient = useQueryClient()
   const { toast } = useToast()
   const { user } = useAuth()
+
+
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     setValue,
+    watch,
     reset,
   } = useForm<FormData>({
     resolver: zodResolver(editEntrySchema),
@@ -58,19 +60,79 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
       title: "",
       content: "",
       entry_date: "",
+      mood: "",
+      category: "",
+
     }
   })
 
-  // Initialize form with entry data when modal opens
+  // Helper function to map AI business categories to journal categories  
+  const mapBusinessCategoryToJournal = (businessCategory: string): string => {
+    const mapping: Record<string, string> = {
+      'growth': 'Strategy',
+      'challenge': 'Research', // Map to existing category
+      'achievement': 'Milestone',
+      'planning': 'Planning',
+      'reflection': 'Learning'
+    }
+    return mapping[businessCategory] || 'Strategy' // Default fallback to existing category
+  }
+
+  // Helper function to map AI moods to journal moods
+  const mapAIMoodToJournal = (aiMood: string): string => {
+    const mapping: Record<string, string> = {
+      'optimistic': 'Optimistic',
+      'excited': 'Excited',
+      'focused': 'Focused',
+      'frustrated': 'Frustrated',
+      'reflective': 'Reflective',
+      'confident': 'Confident',
+      'determined': 'Determined',
+      'accomplished': 'Motivated', // Map accomplished to motivated
+      'uncertain': 'Thoughtful', // Map uncertain to thoughtful
+      'stressed': 'Frustrated', // Map stressed to frustrated
+      'neutral': 'Neutral',
+      'inspired': 'Inspired'
+    }
+    
+    // First try exact mapping, then capitalize the mood if it doesn't exist
+    const mapped = mapping[aiMood.toLowerCase()]
+    if (mapped) return mapped
+    
+    // Fallback: capitalize the AI mood
+    return aiMood.charAt(0).toUpperCase() + aiMood.slice(1).toLowerCase()
+  }
+
+  // Reset form when entry changes
   useEffect(() => {
     if (entry && isOpen) {
-      reset({
-        title: entry.title || "",
-        content: entry.content || "",
-        entry_date: entry.entry_date ? format(new Date(entry.entry_date), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
-      })
+      setValue("title", entry.title)
+      setValue("content", entry.content)
+      setValue("entry_date", entry.entry_date ? format(new Date(entry.entry_date), 'yyyy-MM-dd') : "")
+      
+      // Use AI-generated values if available, otherwise use manual values
+      let displayMood = ""
+      let displayCategory = ""
+      
+      // Priority: AI-generated values first, then manual values
+      if (entry.sentiment_data?.primary_mood) {
+        displayMood = mapAIMoodToJournal(entry.sentiment_data.primary_mood)
+      } else if (entry.mood) {
+        displayMood = entry.mood
+      }
+      
+      if (entry.sentiment_data?.business_category) {
+        displayCategory = mapBusinessCategoryToJournal(entry.sentiment_data.business_category)
+      } else if (entry.category) {
+        displayCategory = entry.category
+      }
+      
+      setValue("mood", displayMood)
+      setValue("category", displayCategory)
+
+
     }
-  }, [entry, isOpen, reset])
+  }, [entry, isOpen, setValue])
 
   const editEntryMutation = useMutation({
     mutationFn: (data: UpdateJournalEntry & { id: string }) => 
@@ -83,6 +145,8 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
       })
       onClose()
       reset()
+      setTags([])
+      setNewTag("")
     },
     onError: (error: any) => {
       toast({
@@ -104,6 +168,8 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
       setDeleteDialogOpen(false)
       onClose()
       reset()
+      setTags([])
+      setNewTag("")
     },
     onError: (error: any) => {
       toast({
@@ -122,9 +188,22 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
       title: data.title,
       content: data.content,
       entry_date: data.entry_date || undefined,
+      // Note: mood and category are now handled by AI, not manual selection
+      tags: tags.length > 0 ? tags : undefined,
     }
 
     editEntryMutation.mutate(updateData)
+  }
+
+  const addTag = () => {
+    if (newTag.trim() && !tags.includes(newTag.trim())) {
+      setTags([...tags, newTag.trim()])
+      setNewTag("")
+    }
+  }
+
+  const removeTag = (tagToRemove: string) => {
+    setTags(tags.filter(tag => tag !== tagToRemove))
   }
 
   const handleDeleteEntry = () => {
@@ -227,6 +306,10 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
                 </div>
               </div>
             </div>
+
+
+
+
 
             {/* Action Buttons */}
             <div className="flex justify-between items-center pt-4">

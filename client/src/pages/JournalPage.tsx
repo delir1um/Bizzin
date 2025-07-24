@@ -60,40 +60,85 @@ export function JournalPage() {
     entry.content.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const getMoodColor = (mood: string | null | undefined) => {
-    if (!mood) return 'bg-gray-100 text-gray-600'
+  // Helper function to get mood emoji
+  const getMoodEmoji = (mood: string | null | undefined): string => {
+    if (!mood) return '📝'
     
-    const moodColors: Record<string, string> = {
-      'excited': 'bg-yellow-100 text-yellow-700',
-      'confident': 'bg-blue-100 text-blue-700',
-      'optimistic': 'bg-green-100 text-green-700',
-      'focused': 'bg-purple-100 text-purple-700',
-      'content': 'bg-emerald-100 text-emerald-700',
-      'neutral': 'bg-gray-100 text-gray-600',
-      'concerned': 'bg-orange-100 text-orange-700',
-      'frustrated': 'bg-red-100 text-red-700',
-      'stressed': 'bg-red-200 text-red-800',
-      'overwhelmed': 'bg-red-300 text-red-900'
+    const moodEmojis: Record<string, string> = {
+      'optimistic': '😊',
+      'frustrated': '😤', 
+      'focused': '🎯',
+      'reflective': '🤔',
+      'confident': '💪',
+      'excited': '⚡',
+      'determined': '🔥',
+      'accomplished': '🏆',
+      'uncertain': '😕',
+      'stressed': '😰',
+      'neutral': '😐',
+      'inspired': '✨',
+      'content': '😌',
+      'concerned': '😟',
+      'overwhelmed': '😵‍💫'
     }
     
-    return moodColors[mood.toLowerCase()] || 'bg-gray-100 text-gray-600'
+    return moodEmojis[mood.toLowerCase()] || '📝'
+  }
+
+  const getMoodColor = (mood: string | null | undefined) => {
+    if (!mood) return 'text-gray-600 bg-gray-50'
+    
+    const moodColors: Record<string, string> = {
+      'excited': 'text-yellow-700 bg-yellow-50',
+      'confident': 'text-blue-700 bg-blue-50',
+      'optimistic': 'text-green-700 bg-green-50',
+      'focused': 'text-purple-700 bg-purple-50',
+      'content': 'text-emerald-700 bg-emerald-50',
+      'neutral': 'text-gray-600 bg-gray-50',
+      'concerned': 'text-orange-700 bg-orange-50',
+      'frustrated': 'text-red-700 bg-red-50',
+      'stressed': 'text-red-800 bg-red-50',
+      'overwhelmed': 'text-red-900 bg-red-50',
+      'determined': 'text-red-700 bg-red-50',
+      'accomplished': 'text-green-700 bg-green-50',
+      'uncertain': 'text-gray-700 bg-gray-50',
+      'inspired': 'text-purple-700 bg-purple-50',
+      'reflective': 'text-indigo-700 bg-indigo-50'
+    }
+    
+    return moodColors[mood.toLowerCase()] || 'text-gray-600 bg-gray-50'
   }
 
   const getCategoryColor = (category: string | null | undefined) => {
-    if (!category) return 'bg-slate-100 text-slate-600'
+    if (!category) return 'text-slate-600 bg-slate-50'
     
     const categoryColors: Record<string, string> = {
-      'planning': 'bg-blue-100 text-blue-700',
-      'strategy': 'bg-purple-100 text-purple-700',
-      'operations': 'bg-green-100 text-green-700',
-      'finance': 'bg-emerald-100 text-emerald-700',
-      'marketing': 'bg-pink-100 text-pink-700',
-      'reflection': 'bg-indigo-100 text-indigo-700',
-      'challenges': 'bg-red-100 text-red-700',
-      'wins': 'bg-yellow-100 text-yellow-700'
+      'planning': 'text-blue-700 bg-blue-50',
+      'strategy': 'text-purple-700 bg-purple-50',
+      'operations': 'text-green-700 bg-green-50',
+      'finance': 'text-emerald-700 bg-emerald-50',
+      'marketing': 'text-pink-700 bg-pink-50',
+      'reflection': 'text-indigo-700 bg-indigo-50',
+      'challenges': 'text-red-700 bg-red-50',
+      'wins': 'text-yellow-700 bg-yellow-50',
+      'growth': 'text-emerald-700 bg-emerald-50',
+      'challenge': 'text-red-700 bg-red-50',
+      'achievement': 'text-yellow-700 bg-yellow-50'
     }
     
-    return categoryColors[category.toLowerCase()] || 'bg-slate-100 text-slate-600'
+    return categoryColors[category.toLowerCase()] || 'text-slate-600 bg-slate-50'
+  }
+
+  const getEnergyEmoji = (energy: string | null | undefined): string => {
+    if (!energy) return ''
+    
+    const energyEmojis: Record<string, string> = {
+      'high': '⚡',
+      'medium': '🔋',
+      'low': '🪫'
+    }
+    
+    return energyEmojis[energy.toLowerCase()] || ''
   }
 
   const formatDate = (dateString: string) => {
@@ -117,8 +162,14 @@ export function JournalPage() {
   }
 
   const handleViewEntry = (entry: JournalEntry) => {
-    setSelectedEntry(entry)
-    setShowViewModal(true)
+    // For short content, go directly to edit
+    if (entry.content.length <= 300) {
+      handleEditEntry(entry)
+    } else {
+      // For long content, show view modal first
+      setSelectedEntry(entry)
+      setShowViewModal(true)
+    }
   }
 
   const handleEditEntry = (entry: JournalEntry) => {
@@ -258,77 +309,97 @@ export function JournalPage() {
                   transition={{ delay: index * 0.05 }}
                 >
                   <Card 
-                    className="hover:shadow-md transition-shadow cursor-pointer group"
+                    className="hover:shadow-lg transition-all duration-200 cursor-pointer group border-l-4 border-orange-200 hover:border-orange-400"
                     onClick={() => handleViewEntry(entry)}
-                    onContextMenu={(e) => {
-                      e.preventDefault()
-                      handleEditEntry(entry)
-                    }}
                   >
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <CardTitle className="text-lg font-semibold text-slate-900 mb-2 group-hover:text-orange-600 transition-colors">
+                    <CardHeader className="pb-4">
+                      {/* Header with Emoji + Title + AI Confidence */}
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3 flex-1">
+                          <span className="text-2xl" title={entry.sentiment_data?.primary_mood || 'No mood detected'}>
+                            {getMoodEmoji(entry.sentiment_data?.primary_mood)}
+                          </span>
+                          <CardTitle className="text-lg font-semibold text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-1">
                             {entry.title}
                           </CardTitle>
-                          <p className="text-sm text-slate-500">
-                            {formatDate(entry.created_at || entry.entry_date || '')}
-                          </p>
                         </div>
-                        <div className="flex flex-wrap gap-2 ml-4">
-                          {entry.sentiment_data?.primary_mood && (
-                            <Badge className={`${getMoodColor(entry.sentiment_data.primary_mood)} flex items-center gap-1`}>
-                              <Brain className="w-3 h-3" />
-                              {entry.sentiment_data.primary_mood}
-                            </Badge>
-                          )}
-                          {entry.sentiment_data?.business_category && (
-                            <Badge className={`${getCategoryColor(entry.sentiment_data.business_category)} flex items-center gap-1`}>
-                              <span className="w-2 h-2 rounded-full bg-current opacity-70"></span>
-                              {entry.sentiment_data.business_category}
-                            </Badge>
-                          )}
-                          {entry.sentiment_data?.confidence && entry.sentiment_data.confidence > 50 && (
-                            <Badge variant="outline" className="text-xs flex items-center gap-1">
-                              <Brain className="w-3 h-3 text-orange-600" />
-                              AI: {Math.round(entry.sentiment_data.confidence)}%
-                            </Badge>
-                          )}
-                        </div>
+                        {entry.sentiment_data?.confidence && entry.sentiment_data.confidence > 40 && (
+                          <Badge variant="outline" className="text-xs flex items-center gap-1 bg-orange-50 text-orange-700 border-orange-200">
+                            <Brain className="w-3 h-3" />
+                            AI: {Math.round(entry.sentiment_data.confidence)}%
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Metadata Row */}
+                      <div className="flex items-center gap-4 text-sm text-slate-500">
+                        <span>{formatDate(entry.created_at || entry.entry_date || '')}</span>
+                        {entry.reading_time && (
+                          <span>• {entry.reading_time} min read</span>
+                        )}
+                        {entry.sentiment_data?.business_category && (
+                          <Badge className={`${getCategoryColor(entry.sentiment_data.business_category)} text-xs px-2 py-0.5`}>
+                            {entry.sentiment_data.business_category}
+                          </Badge>
+                        )}
+                        {entry.sentiment_data?.energy && (
+                          <span className="flex items-center gap-1 text-xs">
+                            {getEnergyEmoji(entry.sentiment_data.energy)}
+                            <span className="capitalize">{entry.sentiment_data.energy} Energy</span>
+                          </span>
+                        )}
                       </div>
                     </CardHeader>
                     <CardContent className="pt-0">
-                      <p className="text-slate-700 line-clamp-3">
-                        {entry.content}
-                      </p>
-                      {/* AI Analysis Summary */}
-                      {entry.sentiment_data && entry.sentiment_data.insights?.[0] && (
-                        <div className="mt-3 space-y-2">
-                          {entry.sentiment_data.insights?.[0] && (
-                            <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
-                              <div className="flex items-start gap-2">
-                                <Brain className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
-                                <div>
-                                  <p className="text-xs font-medium text-orange-900 mb-1">AI Business Insight</p>
-                                  <p className="text-sm text-orange-800">{entry.sentiment_data.insights[0]}</p>
-                                </div>
-                              </div>
+                      {/* Content Preview */}
+                      <div className="mb-3">
+                        <p className="text-slate-700 leading-relaxed line-clamp-2">
+                          {entry.content}
+                        </p>
+                        {entry.content.length > 200 && (
+                          <button 
+                            className="text-orange-600 hover:text-orange-700 text-sm font-medium mt-1"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setSelectedEntry(entry)
+                              setShowViewModal(true)
+                            }}
+                          >
+                            Read more...
+                          </button>
+                        )}
+                      </div>
+
+                      {/* AI Insight Bar */}
+                      {entry.sentiment_data?.insights?.[0] && (
+                        <div className="p-3 bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg border border-orange-100">
+                          <div className="flex items-start gap-2">
+                            <span className="text-lg">💡</span>
+                            <div className="flex-1">
+                              <p className="text-sm text-orange-800 font-medium line-clamp-1">
+                                {entry.sentiment_data.insights[0]}
+                              </p>
                             </div>
-                          )}
+                          </div>
                         </div>
                       )}
-                      <div className="mt-3 pt-3 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="flex items-center justify-end">
+
+                      {/* Edit Action - Visible on Hover */}
+                      <div className="mt-4 pt-3 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-xs text-slate-400">
+                            <span>Click to {entry.content.length > 300 ? 'read or edit' : 'edit'}</span>
+                          </div>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-6 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="h-7 text-xs text-orange-600 hover:text-orange-700 hover:bg-orange-50"
                             onClick={(e) => {
                               e.stopPropagation()
                               handleEditEntry(entry)
                             }}
                           >
-                            Edit
+                            Edit Entry
                           </Button>
                         </div>
                       </div>
