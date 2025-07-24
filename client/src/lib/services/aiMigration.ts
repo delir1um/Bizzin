@@ -4,7 +4,7 @@ import type { JournalEntry } from '@/types/journal'
 
 export class AIMigrationService {
   private static readonly MIGRATION_VERSION_KEY = 'ai_migration_version'
-  private static readonly CURRENT_VERSION = 4 // Fixed Research category detection for competitor analysis
+  private static readonly CURRENT_VERSION = 5 // Enhanced mood detection: separate Sad and Tired moods for better accuracy
 
   // Check if migration is needed
   static needsMigration(): boolean {

@@ -132,10 +132,14 @@ function performEnhancedLocalAnalysis(text: string): BusinessSentiment {
     primaryMood = 'Excited';
     energy = 'high';
     confidence = 85;
-  } else if (lowerText.includes('sad') || lowerText.includes('tired') || lowerText.includes('exhausted') || lowerText.includes('dont have energy') || lowerText.includes('unmotivated')) {
-    primaryMood = 'Reflective';
+  } else if (lowerText.includes('sad') || lowerText.includes('down') || lowerText.includes('depressed')) {
+    primaryMood = 'Sad';
     energy = 'low';
     confidence = 90;
+  } else if (lowerText.includes('tired') || lowerText.includes('exhausted') || lowerText.includes('dont have energy') || lowerText.includes('unmotivated')) {
+    primaryMood = 'Tired';
+    energy = 'low';
+    confidence = 88;
   } else if (lowerText.includes('frustrated') || lowerText.includes('angry') || lowerText.includes('annoyed') || lowerText.includes('expensive') || lowerText.includes('problem')) {
     primaryMood = 'Frustrated';
     energy = 'medium';

@@ -126,7 +126,9 @@ export function JournalPage() {
       'tired': 'text-slate-700 bg-slate-50',
       'Thoughtful': 'text-amber-700 bg-amber-50',
       'Curious': 'text-teal-700 bg-teal-50',
-      'Focused': 'text-purple-700 bg-purple-50'
+      'Focused': 'text-purple-700 bg-purple-50',
+      'Sad': 'text-blue-700 bg-blue-50',
+      'Tired': 'text-slate-700 bg-slate-50'
     }
     
     return moodColors[mood.toLowerCase()] || 'text-gray-600 bg-gray-50'
