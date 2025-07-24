@@ -19,9 +19,8 @@ export class BusinessTitleGenerator {
     // Extract key business elements from content
     const businessElements = this.extractBusinessElements(content);
     
-    // Auto-detect category if needed based on content
-    const detectedCategory = this.detectCategoryFromContent(content, businessElements);
-    const finalCategory = detectedCategory || category;
+    // Use AI-detected category first, fallback to detection only if no category provided
+    const finalCategory = category || this.detectCategoryFromContent(content, businessElements);
     
     const titleTemplates = this.getTitleTemplates(finalCategory, mood, energy);
     
@@ -177,10 +176,10 @@ export class BusinessTitleGenerator {
       '{strategic_learning}': elements.strategy || 'Strategic Insights',
       '{business_progress}': elements.financial || elements.product || 'Business Progress',
       
-      '{obstacle_faced}': elements.challenge || 'Business Challenges',
-      '{challenge_type}': elements.financial || elements.people || 'Operational Challenge',
-      '{difficult_situation}': elements.challenge || 'Complex Situation',
-      '{business_challenge}': elements.financial || elements.product || 'Business Crisis',
+      '{obstacle_faced}': this.getSpecificChallengeContext(elements, content),
+      '{challenge_type}': this.getSpecificChallengeType(elements, content),
+      '{difficult_situation}': this.getSpecificSituation(elements, content),
+      '{business_challenge}': this.getSpecificBusinessChallenge(elements, content),
       '{struggle_insight}': elements.challenge || 'Challenge Response',
       '{challenge_response}': 'Problem Solving',
       '{problem_solving}': elements.challenge || 'Solution Finding',
@@ -292,6 +291,71 @@ export class BusinessTitleGenerator {
     
     // Growth patterns (default)
     return 'Growth';
+  }
+
+  // Get specific challenge context based on content
+  private static getSpecificChallengeContext(elements: any, content: string): string {
+    const lowerContent = content.toLowerCase();
+    
+    if (lowerContent.includes('fired') || lowerContent.includes('employee')) {
+      return 'Personnel Management';
+    }
+    if (lowerContent.includes('cash flow') || lowerContent.includes('budget')) {
+      return 'Financial Pressures';
+    }
+    if (lowerContent.includes('customer') && lowerContent.includes('complaint')) {
+      return 'Customer Relations';
+    }
+    if (lowerContent.includes('competitor') || lowerContent.includes('market share')) {
+      return 'Competitive Pressures';
+    }
+    
+    return elements.challenge || 'Business Challenges';
+  }
+  
+  // Get specific challenge type
+  private static getSpecificChallengeType(elements: any, content: string): string {
+    const lowerContent = content.toLowerCase();
+    
+    if (lowerContent.includes('leadership') || lowerContent.includes('difficult') && lowerContent.includes('decision')) {
+      return 'Leadership Decisions';
+    }
+    if (lowerContent.includes('team') || lowerContent.includes('employee')) {
+      return 'Team Management';
+    }
+    if (lowerContent.includes('financial') || lowerContent.includes('money')) {
+      return 'Financial Challenge';
+    }
+    
+    return elements.financial || elements.people || 'Operational Challenge';
+  }
+  
+  // Get specific situation context
+  private static getSpecificSituation(elements: any, content: string): string {
+    const lowerContent = content.toLowerCase();
+    
+    if (lowerContent.includes('hardest') || lowerContent.includes('difficult')) {
+      return 'Difficult Leadership';
+    }
+    if (lowerContent.includes('lonely') || lowerContent.includes('guilt')) {
+      return 'Leadership Isolation';
+    }
+    
+    return elements.challenge || 'Complex Situation';
+  }
+  
+  // Get specific business challenge context
+  private static getSpecificBusinessChallenge(elements: any, content: string): string {
+    const lowerContent = content.toLowerCase();
+    
+    if (lowerContent.includes('performance') && lowerContent.includes('standards')) {
+      return 'Performance Management';
+    }
+    if (lowerContent.includes('founder') || lowerContent.includes('leadership')) {
+      return 'Founder Challenges';
+    }
+    
+    return elements.financial || elements.product || 'Business Crisis';
   }
 
   // Clean and format the final title
