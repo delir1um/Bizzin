@@ -3,11 +3,11 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { PlusCircle, Search, BookOpen, Calendar, Brain } from "lucide-react"
+import { PlusCircle, Search, BookOpen, Calendar, Brain, ChevronDown, ChevronRight } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useToast } from "@/hooks/use-toast"
-import { format } from "date-fns"
+import { format, isToday, isThisWeek, isThisMonth, isThisYear, startOfDay, subDays, subWeeks, subMonths } from "date-fns"
 import type { JournalEntry } from "@/types/journal"
 import { SimpleCreateEntryModal } from "@/components/journal/SimpleCreateEntryModal"
 import { ViewEntryModal } from "@/components/journal/ViewEntryModal"
@@ -24,6 +24,11 @@ export function JournalPage() {
   const [showMigrationDialog, setShowMigrationDialog] = useState(false)
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
+  const [expandedSections, setExpandedSections] = useState({
+    thisWeek: false,
+    thisMonth: false,
+    thisYear: false
+  })
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
@@ -70,6 +75,38 @@ export function JournalPage() {
     entry.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     entry.content.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  // Organize entries by time periods
+  const organizeEntriesByTime = (entries: JournalEntry[]) => {
+    const now = new Date()
+    const weekAgo = subWeeks(now, 1)
+    const monthAgo = subMonths(now, 1)
+
+    return {
+      today: entries.filter(entry => isToday(new Date(entry.created_at || entry.entry_date || ''))),
+      thisWeek: entries.filter(entry => {
+        const entryDate = new Date(entry.created_at || entry.entry_date || '')
+        return !isToday(entryDate) && isThisWeek(entryDate) && entryDate >= weekAgo
+      }),
+      thisMonth: entries.filter(entry => {
+        const entryDate = new Date(entry.created_at || entry.entry_date || '')
+        return !isThisWeek(entryDate) && isThisMonth(entryDate) && entryDate >= monthAgo
+      }),
+      thisYear: entries.filter(entry => {
+        const entryDate = new Date(entry.created_at || entry.entry_date || '')
+        return !isThisMonth(entryDate) && isThisYear(entryDate)
+      })
+    }
+  }
+
+  const organizedEntries = organizeEntriesByTime(filteredEntries)
+
+  const toggleSection = (section: 'thisWeek' | 'thisMonth' | 'thisYear') => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }))
+  }
 
   // Helper function to get mood emoji
   const getMoodEmoji = (mood: string | null | undefined): string => {
@@ -316,8 +353,8 @@ export function JournalPage() {
           </Card>
         </div>
 
-        {/* Entries */}
-        <div className="space-y-4">
+        {/* Chronological Entries */}
+        <div className="space-y-6">
           {filteredEntries.length === 0 ? (
             <Card className="p-8 text-center">
               <BookOpen className="w-16 h-16 text-slate-300 mx-auto mb-4" />
@@ -341,87 +378,269 @@ export function JournalPage() {
               )}
             </Card>
           ) : (
-            <AnimatePresence>
-              {filteredEntries.map((entry: JournalEntry, index: number) => (
-                <motion.div
-                  key={entry.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                >
-                  <Card 
-                    className="hover:shadow-lg transition-all duration-200 cursor-pointer group border-l-4 border-orange-200 hover:border-orange-400"
-                    onClick={() => handleViewEntry(entry)}
-                  >
-                    <CardHeader className="pb-4">
-                      {/* Header with Emoji + Title + AI Confidence */}
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3 flex-1">
-                          <span className="text-2xl" title={entry.mood || entry.sentiment_data?.primary_mood || 'No mood detected'}>
-                            {getMoodEmoji(entry.mood || entry.sentiment_data?.primary_mood)}
-                          </span>
-                          <CardTitle className="text-lg font-semibold text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-1">
-                            {entry.title}
-                          </CardTitle>
-                        </div>
-                      </div>
-
-                      {/* Metadata Row */}
-                      <div className="flex items-center gap-4 text-sm text-slate-500">
-                        <span>{formatDate(entry.created_at || entry.entry_date || '')}</span>
-                        {(entry.category || entry.sentiment_data?.business_category) && (
-                          <Badge className={`${getCategoryColor(entry.category || entry.sentiment_data?.business_category)} text-xs px-2 py-0.5`}>
-                            {entry.category || entry.sentiment_data.business_category}
-                          </Badge>
-                        )}
-                        {entry.sentiment_data?.energy && (
-                          <span className="flex items-center gap-1 text-xs">
-                            {getEnergyEmoji(entry.sentiment_data.energy)}
-                            <span className="capitalize">{entry.sentiment_data.energy} Energy</span>
-                          </span>
-                        )}
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pt-0 pb-4">
-                      {/* Content Preview */}
-                      <div className="mb-3">
-                        <p className="text-slate-700 leading-relaxed line-clamp-2">
-                          {entry.content}
-                        </p>
-                        {entry.content.length > 200 && (
-                          <button 
-                            className="text-orange-600 hover:text-orange-700 text-sm font-medium mt-1"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setSelectedEntry(entry)
-                              setShowViewModal(true)
-                            }}
-                          >
-                            Read more...
-                          </button>
-                        )}
-                      </div>
-
-                      {/* AI Insight Bar */}
-                      {entry.sentiment_data?.insights?.[0] && (
-                        <div className="p-3 bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg border border-orange-100">
-                          <div className="flex items-start gap-2">
-                            <span className="text-lg">💡</span>
-                            <div className="flex-1">
-                              <p className="text-sm text-orange-800 font-medium line-clamp-1">
-                                {entry.sentiment_data.insights[0]}
+            <>
+              {/* Today's Entries - Full Cards */}
+              {organizedEntries.today.length > 0 && (
+                <div className="space-y-4">
+                  <h2 className="text-xl font-bold text-slate-900 mb-4">Today</h2>
+                  <AnimatePresence>
+                    {organizedEntries.today.map((entry: JournalEntry, index: number) => (
+                      <motion.div
+                        key={entry.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                      >
+                        <Card 
+                          className="hover:shadow-lg transition-all duration-200 cursor-pointer group border-l-4 border-orange-200 hover:border-orange-400"
+                          onClick={() => handleViewEntry(entry)}
+                        >
+                          <CardHeader className="pb-4">
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex items-center gap-3 flex-1">
+                                <span className="text-2xl" title={entry.mood || entry.sentiment_data?.primary_mood || 'No mood detected'}>
+                                  {getMoodEmoji(entry.mood || entry.sentiment_data?.primary_mood)}
+                                </span>
+                                <CardTitle className="text-lg font-semibold text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-1">
+                                  {entry.title}
+                                </CardTitle>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4 text-sm text-slate-500">
+                              <span>{formatDate(entry.created_at || entry.entry_date || '')}</span>
+                              {(entry.category || entry.sentiment_data?.business_category) && (
+                                <Badge className={`${getCategoryColor(entry.category || entry.sentiment_data?.business_category)} text-xs px-2 py-0.5`}>
+                                  {entry.category || entry.sentiment_data.business_category}
+                                </Badge>
+                              )}
+                              {entry.sentiment_data?.energy && (
+                                <span className="flex items-center gap-1 text-xs">
+                                  {getEnergyEmoji(entry.sentiment_data.energy)}
+                                  <span className="capitalize">{entry.sentiment_data.energy} Energy</span>
+                                </span>
+                              )}
+                            </div>
+                          </CardHeader>
+                          <CardContent className="pt-0 pb-4">
+                            <div className="mb-3">
+                              <p className="text-slate-700 leading-relaxed line-clamp-2">
+                                {entry.content}
                               </p>
+                              {entry.content.length > 200 && (
+                                <button 
+                                  className="text-orange-600 hover:text-orange-700 text-sm font-medium mt-1"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setSelectedEntry(entry)
+                                    setShowViewModal(true)
+                                  }}
+                                >
+                                  Read more...
+                                </button>
+                              )}
+                            </div>
+                            {entry.sentiment_data?.insights?.[0] && (
+                              <div className="p-3 bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg border border-orange-100">
+                                <div className="flex items-start gap-2">
+                                  <span className="text-lg">💡</span>
+                                  <div className="flex-1">
+                                    <p className="text-sm text-orange-800 font-medium line-clamp-1">
+                                      {entry.sentiment_data.insights[0]}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              )}
+
+              {/* This Week - Medium Cards */}
+              {organizedEntries.thisWeek.length > 0 && (
+                <div className="space-y-2">
+                  <Button
+                    variant="ghost"
+                    className="flex items-center justify-between w-full p-3 hover:bg-slate-100 rounded-lg"
+                    onClick={() => toggleSection('thisWeek')}
+                  >
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-lg font-semibold text-slate-900">Earlier this week</h2>
+                      <Badge variant="secondary" className="text-xs">
+                        {organizedEntries.thisWeek.length} entries
+                      </Badge>
+                    </div>
+                    {expandedSections.thisWeek ? (
+                      <ChevronDown className="w-4 h-4 text-slate-500" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 text-slate-500" />
+                    )}
+                  </Button>
+                  
+                  {expandedSections.thisWeek && (
+                    <AnimatePresence>
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="space-y-3 ml-4"
+                      >
+                        {organizedEntries.thisWeek.map((entry: JournalEntry) => (
+                          <Card 
+                            key={entry.id}
+                            className="hover:shadow-md transition-all duration-200 cursor-pointer group border-l-2 border-orange-100 hover:border-orange-300"
+                            onClick={() => handleViewEntry(entry)}
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="text-lg" title={entry.mood || entry.sentiment_data?.primary_mood || 'No mood detected'}>
+                                  {getMoodEmoji(entry.mood || entry.sentiment_data?.primary_mood)}
+                                </span>
+                                <h3 className="font-medium text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-1">
+                                  {entry.title}
+                                </h3>
+                              </div>
+                              <div className="flex items-center gap-3 text-sm text-slate-500 mb-2">
+                                <span>{formatDate(entry.created_at || entry.entry_date || '')}</span>
+                                {(entry.category || entry.sentiment_data?.business_category) && (
+                                  <Badge className={`${getCategoryColor(entry.category || entry.sentiment_data?.business_category)} text-xs px-1.5 py-0.5`}>
+                                    {entry.category || entry.sentiment_data.business_category}
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-slate-600 text-sm line-clamp-1">
+                                {entry.content.length > 0 ? entry.content : 'No content available'}
+                              </p>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </motion.div>
+                    </AnimatePresence>
+                  )}
+                </div>
+              )}
+
+              {/* This Month - Condensed Cards */}
+              {organizedEntries.thisMonth.length > 0 && (
+                <div className="space-y-2">
+                  <Button
+                    variant="ghost"
+                    className="flex items-center justify-between w-full p-3 hover:bg-slate-100 rounded-lg"
+                    onClick={() => toggleSection('thisMonth')}
+                  >
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-lg font-semibold text-slate-900">Earlier this month</h2>
+                      <Badge variant="secondary" className="text-xs">
+                        {organizedEntries.thisMonth.length} entries
+                      </Badge>
+                    </div>
+                    {expandedSections.thisMonth ? (
+                      <ChevronDown className="w-4 h-4 text-slate-500" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 text-slate-500" />
+                    )}
+                  </Button>
+                  
+                  {expandedSections.thisMonth && (
+                    <AnimatePresence>
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="grid grid-cols-1 md:grid-cols-2 gap-3 ml-4"
+                      >
+                        {organizedEntries.thisMonth.map((entry: JournalEntry) => (
+                          <Card 
+                            key={entry.id}
+                            className="hover:shadow-sm transition-all duration-200 cursor-pointer group border-l border-orange-100 hover:border-orange-200"
+                            onClick={() => handleViewEntry(entry)}
+                          >
+                            <CardContent className="p-3">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-sm" title={entry.mood || entry.sentiment_data?.primary_mood || 'No mood detected'}>
+                                  {getMoodEmoji(entry.mood || entry.sentiment_data?.primary_mood)}
+                                </span>
+                                <h3 className="font-medium text-sm text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-1">
+                                  {entry.title}
+                                </h3>
+                              </div>
+                              <div className="flex items-center gap-2 text-xs text-slate-500">
+                                <span>{formatDate(entry.created_at || entry.entry_date || '')}</span>
+                                {(entry.category || entry.sentiment_data?.business_category) && (
+                                  <div className={`w-2 h-2 rounded-full ${getCategoryColor(entry.category || entry.sentiment_data?.business_category).includes('bg-') ? getCategoryColor(entry.category || entry.sentiment_data?.business_category).split(' ')[1] : 'bg-slate-300'}`} 
+                                       title={entry.category || entry.sentiment_data.business_category}></div>
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </motion.div>
+                    </AnimatePresence>
+                  )}
+                </div>
+              )}
+
+              {/* This Year - Dense List */}
+              {organizedEntries.thisYear.length > 0 && (
+                <div className="space-y-2">
+                  <Button
+                    variant="ghost"
+                    className="flex items-center justify-between w-full p-3 hover:bg-slate-100 rounded-lg"
+                    onClick={() => toggleSection('thisYear')}
+                  >
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-lg font-semibold text-slate-900">Earlier this year</h2>
+                      <Badge variant="secondary" className="text-xs">
+                        {organizedEntries.thisYear.length} entries
+                      </Badge>
+                    </div>
+                    {expandedSections.thisYear ? (
+                      <ChevronDown className="w-4 h-4 text-slate-500" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 text-slate-500" />
+                    )}
+                  </Button>
+                  
+                  {expandedSections.thisYear && (
+                    <AnimatePresence>
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="space-y-1 ml-4"
+                      >
+                        {organizedEntries.thisYear.map((entry: JournalEntry) => (
+                          <div 
+                            key={entry.id}
+                            className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded cursor-pointer group transition-colors"
+                            onClick={() => handleViewEntry(entry)}
+                          >
+                            <span className="text-sm" title={entry.mood || entry.sentiment_data?.primary_mood || 'No mood detected'}>
+                              {getMoodEmoji(entry.mood || entry.sentiment_data?.primary_mood)}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-medium text-sm text-slate-900 group-hover:text-orange-600 transition-colors truncate">
+                                {entry.title}
+                              </h3>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-slate-500">
+                              <span>{formatDate(entry.created_at || entry.entry_date || '')}</span>
+                              {(entry.category || entry.sentiment_data?.business_category) && (
+                                <div className={`w-1.5 h-1.5 rounded-full ${getCategoryColor(entry.category || entry.sentiment_data?.business_category).includes('bg-') ? getCategoryColor(entry.category || entry.sentiment_data?.business_category).split(' ')[1] : 'bg-slate-300'}`} 
+                                     title={entry.category || entry.sentiment_data.business_category}></div>
+                              )}
                             </div>
                           </div>
-                        </div>
-                      )}
-
-
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </AnimatePresence>
+                        ))}
+                      </motion.div>
+                    </AnimatePresence>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
