@@ -260,9 +260,9 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value={entry.sentiment_data.primary_mood}>✨ Use AI: {entry.sentiment_data.primary_mood}</SelectItem>
-                        {JOURNAL_MOODS.map((mood) => (
-                          <SelectItem key={mood} value={mood}>{mood}</SelectItem>
+                        <SelectItem key={`ai-${entry.sentiment_data.primary_mood}`} value={entry.sentiment_data.primary_mood}>✨ Use AI: {entry.sentiment_data.primary_mood}</SelectItem>
+                        {JOURNAL_MOODS.filter(mood => mood !== entry.sentiment_data.primary_mood).map((mood) => (
+                          <SelectItem key={`manual-${mood}`} value={mood}>{mood}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -281,9 +281,9 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value={mapBusinessCategoryToJournal(entry.sentiment_data.business_category)}>✨ Use AI: {mapBusinessCategoryToJournal(entry.sentiment_data.business_category)}</SelectItem>
-                        {JOURNAL_CATEGORIES.map((category) => (
-                          <SelectItem key={category} value={category}>{category}</SelectItem>
+                        <SelectItem key={`ai-${mapBusinessCategoryToJournal(entry.sentiment_data.business_category)}`} value={mapBusinessCategoryToJournal(entry.sentiment_data.business_category)}>✨ Use AI: {mapBusinessCategoryToJournal(entry.sentiment_data.business_category)}</SelectItem>
+                        {JOURNAL_CATEGORIES.filter(category => category !== mapBusinessCategoryToJournal(entry.sentiment_data.business_category)).map((category) => (
+                          <SelectItem key={`manual-${category}`} value={category}>{category}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
