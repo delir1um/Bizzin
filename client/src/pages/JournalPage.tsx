@@ -323,7 +323,12 @@ export function JournalPage() {
                             {entry.title}
                           </CardTitle>
                         </div>
-
+                        {entry.sentiment_data?.confidence && entry.sentiment_data.confidence > 40 && (
+                          <Badge variant="outline" className="text-xs flex items-center gap-1 bg-green-50 text-green-700 border-green-200">
+                            <Brain className="w-3 h-3" />
+                            {Math.round(entry.sentiment_data.confidence)}% Analyzed
+                          </Badge>
+                        )}
                       </div>
 
                       {/* Metadata Row */}
