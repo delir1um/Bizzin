@@ -404,7 +404,13 @@ export function JournalPage() {
               {/* Today's Entries - Full Cards */}
               {organizedEntries.today.length > 0 && (
                 <div className="space-y-4">
-                  <h2 className="text-xl font-bold text-slate-900 mb-4">Today</h2>
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-1 h-8 bg-gradient-to-b from-orange-500 to-orange-600 rounded-full"></div>
+                    <h2 className="text-2xl font-bold text-slate-900">Today</h2>
+                    <Badge className="bg-orange-100 text-orange-700 border-orange-200 font-medium">
+                      {organizedEntries.today.length} entries
+                    </Badge>
+                  </div>
                   <AnimatePresence>
                     {organizedEntries.today.map((entry: JournalEntry, index: number) => (
                       <motion.div
@@ -414,7 +420,7 @@ export function JournalPage() {
                         transition={{ delay: index * 0.05 }}
                       >
                         <Card 
-                          className="hover:shadow-lg transition-all duration-200 cursor-pointer group border-l-4 border-orange-200 hover:border-orange-400"
+                          className="hover:shadow-lg transition-all duration-300 cursor-pointer group border border-slate-200 hover:border-orange-300 bg-white hover:bg-orange-50/30"
                           onClick={() => handleViewEntry(entry)}
                         >
                           <CardHeader className="pb-4">
@@ -483,15 +489,16 @@ export function JournalPage() {
 
               {/* This Week - Medium Cards */}
               {organizedEntries.thisWeek.length > 0 && (
-                <div className="space-y-2">
+                <div className="space-y-3 mt-8">
                   <Button
                     variant="ghost"
-                    className="flex items-center justify-between w-full p-3 hover:bg-slate-100 rounded-lg"
+                    className="flex items-center justify-between w-full p-4 hover:bg-gradient-to-r hover:from-slate-50 hover:to-orange-50 rounded-xl border border-slate-200 hover:border-orange-200 transition-all duration-200"
                     onClick={() => toggleSection('thisWeek')}
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-3 h-3 bg-gradient-to-br from-blue-400 to-blue-500 rounded-full"></div>
                       <h2 className="text-lg font-semibold text-slate-900">Earlier this week</h2>
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs font-medium">
                         {organizedEntries.thisWeek.length} entries
                       </Badge>
                     </div>
@@ -513,7 +520,7 @@ export function JournalPage() {
                         {organizedEntries.thisWeek.map((entry: JournalEntry) => (
                           <Card 
                             key={entry.id}
-                            className="hover:shadow-md transition-all duration-200 cursor-pointer group border-l-2 border-orange-100 hover:border-orange-300"
+                            className="hover:shadow-md transition-all duration-200 cursor-pointer group border border-slate-200 hover:border-blue-300 bg-white hover:bg-blue-50/30"
                             onClick={() => handleViewEntry(entry)}
                           >
                             <CardContent className="p-4">
@@ -547,15 +554,16 @@ export function JournalPage() {
 
               {/* This Month - Condensed Cards */}
               {organizedEntries.thisMonth.length > 0 && (
-                <div className="space-y-2">
+                <div className="space-y-3 mt-8">
                   <Button
                     variant="ghost"
-                    className="flex items-center justify-between w-full p-3 hover:bg-slate-100 rounded-lg"
+                    className="flex items-center justify-between w-full p-4 hover:bg-gradient-to-r hover:from-slate-50 hover:to-green-50 rounded-xl border border-slate-200 hover:border-green-200 transition-all duration-200"
                     onClick={() => toggleSection('thisMonth')}
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-3 h-3 bg-gradient-to-br from-green-400 to-green-500 rounded-full"></div>
                       <h2 className="text-lg font-semibold text-slate-900">Earlier this month</h2>
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge className="bg-green-100 text-green-700 border-green-200 text-xs font-medium">
                         {organizedEntries.thisMonth.length} entries
                       </Badge>
                     </div>
@@ -577,7 +585,7 @@ export function JournalPage() {
                         {organizedEntries.thisMonth.map((entry: JournalEntry) => (
                           <Card 
                             key={entry.id}
-                            className="hover:shadow-sm transition-all duration-200 cursor-pointer group border-l border-orange-100 hover:border-orange-200"
+                            className="hover:shadow-sm transition-all duration-200 cursor-pointer group border border-slate-200 hover:border-green-300 bg-white hover:bg-green-50/30"
                             onClick={() => handleViewEntry(entry)}
                           >
                             <CardContent className="p-3">
@@ -607,15 +615,16 @@ export function JournalPage() {
 
               {/* This Year - Dense List */}
               {organizedEntries.thisYear.length > 0 && (
-                <div className="space-y-2">
+                <div className="space-y-3 mt-8">
                   <Button
                     variant="ghost"
-                    className="flex items-center justify-between w-full p-3 hover:bg-slate-100 rounded-lg"
+                    className="flex items-center justify-between w-full p-4 hover:bg-gradient-to-r hover:from-slate-50 hover:to-purple-50 rounded-xl border border-slate-200 hover:border-purple-200 transition-all duration-200"
                     onClick={() => toggleSection('thisYear')}
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-3 h-3 bg-gradient-to-br from-purple-400 to-purple-500 rounded-full"></div>
                       <h2 className="text-lg font-semibold text-slate-900">Earlier this year</h2>
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge className="bg-purple-100 text-purple-700 border-purple-200 text-xs font-medium">
                         {organizedEntries.thisYear.length} entries
                       </Badge>
                     </div>
@@ -637,7 +646,7 @@ export function JournalPage() {
                         {organizedEntries.thisYear.map((entry: JournalEntry) => (
                           <div 
                             key={entry.id}
-                            className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded cursor-pointer group transition-colors"
+                            className="flex items-center gap-3 p-3 hover:bg-purple-50/50 rounded-lg cursor-pointer group transition-all duration-200 border border-transparent hover:border-purple-200"
                             onClick={() => handleViewEntry(entry)}
                           >
                             <span className="text-sm" title={entry.mood || entry.sentiment_data?.primary_mood || 'No mood detected'}>
@@ -668,15 +677,16 @@ export function JournalPage() {
                 Object.keys(organizedEntries.previousYears)
                   .sort((a, b) => parseInt(b) - parseInt(a)) // Sort years in descending order
                   .map(year => (
-                    <div key={year} className="space-y-2">
+                    <div key={year} className="space-y-3 mt-8">
                       <Button
                         variant="ghost"
-                        className="flex items-center justify-between w-full p-3 hover:bg-slate-100 rounded-lg"
+                        className="flex items-center justify-between w-full p-4 hover:bg-gradient-to-r hover:from-slate-50 hover:to-slate-100 rounded-xl border border-slate-200 hover:border-slate-300 transition-all duration-200"
                         onClick={() => toggleSection(year as any)}
                       >
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
+                          <div className="w-3 h-3 bg-gradient-to-br from-slate-400 to-slate-500 rounded-full"></div>
                           <h2 className="text-lg font-semibold text-slate-900">{year}</h2>
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge className="bg-slate-100 text-slate-700 border-slate-200 text-xs font-medium">
                             {organizedEntries.previousYears[parseInt(year)].length} entries
                           </Badge>
                         </div>
@@ -698,7 +708,7 @@ export function JournalPage() {
                             {organizedEntries.previousYears[parseInt(year)].map((entry: JournalEntry) => (
                               <div 
                                 key={entry.id}
-                                className="flex items-center gap-2 p-1.5 hover:bg-slate-50 rounded cursor-pointer group transition-colors"
+                                className="flex items-center gap-2 p-2.5 hover:bg-slate-50/80 rounded-lg cursor-pointer group transition-all duration-200 border border-transparent hover:border-slate-200"
                                 onClick={() => handleViewEntry(entry)}
                               >
                                 <span className="text-xs" title={entry.mood || entry.sentiment_data?.primary_mood || 'No mood detected'}>
