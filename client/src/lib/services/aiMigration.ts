@@ -4,7 +4,7 @@ import type { JournalEntry } from '@/types/journal'
 
 export class AIMigrationService {
   private static readonly MIGRATION_VERSION_KEY = 'ai_migration_version'
-  private static readonly CURRENT_VERSION = 13 // Improved contextual title generation with category detection
+  private static readonly CURRENT_VERSION = 14 // Fixed AI title generation to work in all analysis paths
 
   // Check if migration is needed
   static needsMigration(): boolean {

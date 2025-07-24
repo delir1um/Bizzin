@@ -615,6 +615,16 @@ export async function analyzeBusinessSentimentAI(content: string, title?: string
         aiResult.confidence = Math.min(95, aiResult.confidence * validationScore + 10);
       }
       
+      // Generate title for AI result if missing
+      if (!aiResult.suggested_title) {
+        aiResult.suggested_title = generateBusinessTitle(
+          content,
+          aiResult.business_category.charAt(0).toUpperCase() + aiResult.business_category.slice(1),
+          aiResult.primary_mood,
+          aiResult.energy
+        );
+      }
+      
       // Apply user learning if available
       let finalResult = aiResult;
       if (userId) {
@@ -646,6 +656,16 @@ export async function analyzeBusinessSentimentAI(content: string, title?: string
       localResult.business_category = trainingMatch.expected_category.toLowerCase() as any;
       localResult.confidence = Math.max(localResult.confidence, trainingMatch.confidence_range[0]);
     }
+  }
+  
+  // Ensure suggested title exists for local result
+  if (!localResult.suggested_title) {
+    localResult.suggested_title = generateBusinessTitle(
+      content,
+      localResult.business_category.charAt(0).toUpperCase() + localResult.business_category.slice(1),
+      localResult.primary_mood,
+      localResult.energy
+    );
   }
   
   // Apply user learning if available
@@ -907,14 +927,15 @@ export async function analyzeBusinessSentiment(content: string, title?: string):
   
   // Format exactly as expected by UI components
   return {
-    primary_mood: result.mood.primary,
-    confidence: result.mood.confidence, // Keep as decimal for UI components
-    energy: result.mood.energy,
-    category: result.category,
-    business_category: result.category, // For compatibility
-    insights: result.insights, // Array format expected by SentimentInsights
+    primary_mood: result.primary_mood,
+    confidence: result.confidence,
+    energy: result.energy,
+    category: result.business_category,
+    business_category: result.business_category,
+    insights: result.insights,
     business_insights: result.insights.length > 0 ? result.insights[0] : "Analyzing business patterns and growth opportunities",
-    business_context: `${result.mood.primary} energy with ${result.category} focus`,
-    emotions: result.mood.emotions
+    business_context: `${result.primary_mood} energy with ${result.business_category} focus`,
+    emotions: result.emotions,
+    suggested_title: result.suggested_title
   };
 }
