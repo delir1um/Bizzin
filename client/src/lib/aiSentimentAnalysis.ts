@@ -127,7 +127,7 @@ function performEnhancedLocalAnalysis(text: string): BusinessSentiment {
   // Business category analysis
   const businessCategory = detectBusinessCategory(lowerText);
   
-  // Enhanced mood analysis with better patterns
+  // Enhanced mood analysis with better patterns and priority
   if (lowerText.includes('excited') || lowerText.includes('cant wait') || lowerText.includes('looking forward') || lowerText.includes('next big')) {
     primaryMood = 'Excited';
     energy = 'high';
@@ -140,9 +140,17 @@ function performEnhancedLocalAnalysis(text: string): BusinessSentiment {
     primaryMood = 'Frustrated';
     energy = 'medium';
     confidence = 85;
-  } else if (lowerText.includes('curious') || lowerText.includes('wondering') || lowerText.includes('interesting') || lowerText.includes('learning')) {
+  } else if (lowerText.includes('wonder') || lowerText.includes('wondering') || lowerText.includes('curious') || lowerText.includes('interesting') || lowerText.includes('where') || lowerText.includes('what if')) {
     primaryMood = 'Curious';
     energy = 'medium';
+    confidence = 82;
+  } else if (lowerText.includes('not sure') || lowerText.includes('uncertain') || lowerText.includes('dont know') || lowerText.includes('confused') || lowerText.includes('unsure')) {
+    primaryMood = 'Thoughtful';
+    energy = 'low';
+    confidence = 78;
+  } else if (lowerText.includes('need to') || lowerText.includes('have to') || lowerText.includes('must') || lowerText.includes('should') || lowerText.includes('find out') || lowerText.includes('competitors')) {
+    primaryMood = 'Focused';
+    energy = 'high';
     confidence = 80;
   } else if (lowerText.includes('accomplished') || lowerText.includes('success') || lowerText.includes('achieved') || lowerText.includes('milestone')) {
     primaryMood = 'Accomplished';
@@ -156,10 +164,10 @@ function performEnhancedLocalAnalysis(text: string): BusinessSentiment {
   return {
     primary_mood: primaryMood,
     confidence: Math.max(65, Math.min(95, confidence)),
-    energy,
+    energy: energy as 'high' | 'medium' | 'low',
     emotions: [primaryMood.toLowerCase()],
     insights,
-    business_category: businessCategory,
+    business_category: businessCategory as 'growth' | 'challenge' | 'achievement' | 'planning' | 'reflection',
     analysis_source: 'enhanced_local'
   };
 }
@@ -202,7 +210,7 @@ function detectBusinessCategory(lowerText: string): string {
   
   // Find highest scoring category
   const maxCategory = Object.entries(categoryScores).reduce((a, b) => 
-    categoryScores[a[0]] > categoryScores[b[0]] ? a : b
+    categoryScores[a[0] as keyof typeof categoryScores] > categoryScores[b[0] as keyof typeof categoryScores] ? a : b
   );
   
   return maxCategory[1] > 0 ? maxCategory[0] : 'Research';

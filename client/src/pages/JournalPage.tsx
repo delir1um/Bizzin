@@ -94,7 +94,10 @@ export function JournalPage() {
       'sad': '😢',
       'tired': '😴',
       'thinking': '🤔',
-      'planning': '📋'
+      'planning': '📋',
+      'Thoughtful': '🤷',
+      'Curious': '🧐',
+      'Focused': '🎯'
     }
     
     return moodEmojis[mood.toLowerCase()] || '📝'
@@ -120,7 +123,10 @@ export function JournalPage() {
       'inspired': 'text-purple-700 bg-purple-50',
       'reflective': 'text-indigo-700 bg-indigo-50',
       'sad': 'text-blue-700 bg-blue-50',
-      'tired': 'text-slate-700 bg-slate-50'
+      'tired': 'text-slate-700 bg-slate-50',
+      'Thoughtful': 'text-amber-700 bg-amber-50',
+      'Curious': 'text-teal-700 bg-teal-50',
+      'Focused': 'text-purple-700 bg-purple-50'
     }
     
     return moodColors[mood.toLowerCase()] || 'text-gray-600 bg-gray-50'
