@@ -12,7 +12,10 @@ export interface BusinessSentiment {
   energy: 'low' | 'medium' | 'high';
   emotions: string[];
   insights: string[];
-  business_category: 'growth' | 'challenge' | 'achievement' | 'planning' | 'reflection';
+  business_category: 'growth' | 'challenge' | 'achievement' | 'planning' | 'reflection' | 'learning' | 'research';
+  // Legacy compatibility properties
+  mood?: string;
+  category?: string;
 }
 
 // Hugging Face model endpoints (free inference API)
@@ -165,15 +168,20 @@ function performEnhancedLocalAnalysis(text: string): BusinessSentiment {
   // Generate business insights
   const insights = generateEnhancedBusinessInsights(text, primaryMood, businessCategory);
   
-  return {
+  const result = {
     primary_mood: primaryMood,
     confidence: Math.max(65, Math.min(95, confidence)),
     energy: energy as 'high' | 'medium' | 'low',
     emotions: [primaryMood.toLowerCase()],
     insights,
     business_category: businessCategory.toLowerCase() as 'growth' | 'challenge' | 'achievement' | 'planning' | 'learning' | 'research',
+    // Legacy compatibility properties
+    mood: primaryMood,
+    category: businessCategory,
     analysis_source: 'enhanced_local'
   };
+  
+  return result;
 }
 
 function detectBusinessCategory(lowerText: string): string {
@@ -192,9 +200,9 @@ function detectBusinessCategory(lowerText: string): string {
     categoryScores.Growth += 2;
   }
   
-  // Challenge indicators
-  if (lowerText.match(/\b(problem|challenge|difficult|expensive|sad|tired|exhausted|issue|struggle|crisis)\b/)) {
-    categoryScores.Challenge += 2;
+  // Challenge indicators - more comprehensive detection
+  if (lowerText.match(/\b(problem|challenge|challenging|difficult|expensive|sad|tired|exhausted|issue|struggle|crisis|hard|tough|obstacle|setback|frustrated|overwhelmed|stressed)\b/)) {
+    categoryScores.Challenge += 3;
   }
   
   // Achievement indicators
@@ -218,15 +226,21 @@ function detectBusinessCategory(lowerText: string): string {
     categoryScores.Learning += 2;
   }
   
-  // Reflection indicators (uncertainty, contemplation, feelings)
+  // Reflection indicators (uncertainty, contemplation, feelings) - but prioritize challenge if both exist
   if (lowerText.match(/\b(not sure|unsure|uncertain|wonder|wondering|feel|feeling|think|thinking|contemplate|reflect)\b/)) {
-    categoryScores.Learning += 3; // Higher priority for reflection
+    // Only add to Learning if no strong challenge indicators exist
+    if (categoryScores.Challenge === 0) {
+      categoryScores.Learning += 3;
+    }
   }
   
   // Research indicators - more specific patterns to avoid false matches
   if (lowerText.match(/\b(research|find out|discover|investigate|competitors|competition|market research|market analysis|analyze competitors|study market)\b/) ||
       (lowerText.includes('need to find') || lowerText.includes('who are my') || lowerText.includes('top competitors'))) {
-    categoryScores.Research += 3; // Higher priority than planning
+    // Only add to Research if no stronger indicators exist
+    if (categoryScores.Challenge === 0 && categoryScores.Achievement === 0 && categoryScores.Growth === 0) {
+      categoryScores.Research += 3;
+    }
   }
   
   // Find highest scoring category
@@ -234,20 +248,27 @@ function detectBusinessCategory(lowerText: string): string {
     categoryScores[a[0] as keyof typeof categoryScores] > categoryScores[b[0] as keyof typeof categoryScores] ? a : b
   );
   
-  return maxCategory[1] > 0 ? maxCategory[0] : 'Research';
+  return maxCategory[1] > 0 ? maxCategory[0] : 'Learning';
 }
 
 function generateEnhancedBusinessInsights(text: string, mood: string, category: string): string[] {
   const insights = [];
+  const lowerText = text.toLowerCase();
   
-  // Category-specific insights with more variety
+  // Category-specific insights with more contextual awareness
   if (category === 'Challenge') {
     const challengeInsights = [
       "Every challenge is a stepping stone to business growth and resilience.",
       "Difficult moments reveal the true strength of your entrepreneurial spirit.",
-      "Challenges often present hidden opportunities for innovation and growth."
+      "Challenges often present hidden opportunities for innovation and growth.",
+      "Overcoming obstacles builds the mental toughness needed for entrepreneurial success."
     ];
-    insights.push(challengeInsights[Math.floor(Math.random() * challengeInsights.length)]);
+    // If the text mentions "rewarding", add a more specific insight
+    if (lowerText.includes('rewarding') || lowerText.includes('worth it') || lowerText.includes('learned')) {
+      insights.push("Challenging experiences that feel rewarding are building your entrepreneurial resilience and wisdom.");
+    } else {
+      insights.push(challengeInsights[Math.floor(Math.random() * challengeInsights.length)]);
+    }
   } else if (category === 'Growth') {
     const growthInsights = [
       "Growth opportunities require strategic planning and consistent execution.",
