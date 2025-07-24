@@ -59,7 +59,7 @@ export function AIAnalysisIndicator({
       {getSourceIcon()}
       <span className="ml-1">{getSourceLabel()}</span>
       {confidence > 0 && (
-        <span className="ml-1">• {Math.round(confidence * 100)}%</span>
+        <span className="ml-1">• {Math.round(confidence)}%</span>
       )}
     </Badge>
   )

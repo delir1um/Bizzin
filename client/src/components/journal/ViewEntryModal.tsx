@@ -37,12 +37,12 @@ export function ViewEntryModal({ isOpen, onClose, entry, onEdit }: ViewEntryModa
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-800">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6 border-b border-slate-200 dark:border-slate-700">
           <div className="flex-1">
-            <CardTitle className="text-2xl text-slate-900 dark:text-white pr-4">
+            <CardTitle className="text-3xl font-bold text-slate-900 dark:text-white pr-4 mb-3">
               {entry.title}
             </CardTitle>
-            <div className="flex items-center gap-4 mt-2 text-slate-600 dark:text-slate-400">
+            <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
               <span>{format(new Date(entry.created_at), 'MMMM dd, yyyy • h:mm a')}</span>
               {entry.reading_time && (
                 <span className="flex items-center gap-1">
@@ -92,17 +92,17 @@ export function ViewEntryModal({ isOpen, onClose, entry, onEdit }: ViewEntryModa
                 const displayCategory = entry.sentiment_data?.business_category ? mapBusinessCategoryToJournal(entry.sentiment_data.business_category) : entry.category
                 
                 return (
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     {displayMood && (
-                      <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                      <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 font-medium">
                         {displayMood}
                       </Badge>
                     )}
                     {displayCategory && (
-                      <div className="flex items-center gap-1">
-                        <BookOpen className="w-4 h-4 text-orange-600" />
-                        <span className="text-orange-600 font-medium">{displayCategory}</span>
-                      </div>
+                      <Badge variant="outline" className="text-orange-600 border-orange-200 font-medium">
+                        <BookOpen className="w-3 h-3 mr-1" />
+                        {displayCategory}
+                      </Badge>
                     )}
                   </div>
                 )
@@ -133,7 +133,7 @@ export function ViewEntryModal({ isOpen, onClose, entry, onEdit }: ViewEntryModa
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-6">
+        <CardContent className="p-8 space-y-8">
           {/* Related Goal Section */}
           {entry.related_goal_id && (() => {
             const relatedGoal = findGoalById(entry.related_goal_id)
@@ -181,18 +181,11 @@ export function ViewEntryModal({ isOpen, onClose, entry, onEdit }: ViewEntryModa
             ) : null
           })()}
 
-          {/* Mood Badge */}
-          {entry.mood && (
-            <div>
-              <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                {entry.mood}
-              </Badge>
-            </div>
-          )}
 
-          {/* Content */}
-          <div className="prose prose-slate dark:prose-invert max-w-none">
-            <div className="text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+
+          {/* Journal Content - Prominent and Journal-like */}
+          <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-6 border-l-4 border-orange-500">
+            <div className="text-lg text-slate-800 dark:text-slate-200 leading-relaxed font-medium whitespace-pre-wrap">
               {entry.content}
             </div>
           </div>
