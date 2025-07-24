@@ -85,12 +85,16 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
   // Initialize form with entry data when modal opens
   useEffect(() => {
     if (entry && isOpen) {
+      // Use AI-detected values as defaults, but preserve manual overrides
+      const aiDetectedCategory = entry.sentiment_data?.business_category ? mapBusinessCategoryToJournal(entry.sentiment_data.business_category) : "";
+      const aiDetectedMood = entry.sentiment_data?.primary_mood || "";
+      
       reset({
         title: entry.title || "",
         content: entry.content || "",
         entry_date: entry.entry_date ? format(new Date(entry.entry_date), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
-        mood: entry.mood || (entry.sentiment_data?.primary_mood || ""),
-        category: entry.category || (entry.sentiment_data?.business_category ? mapBusinessCategoryToJournal(entry.sentiment_data.business_category) : ""),
+        mood: entry.mood || aiDetectedMood,
+        category: entry.category || aiDetectedCategory,
       })
     }
   }, [entry, isOpen, reset])
@@ -251,12 +255,12 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
                         AI: {entry.sentiment_data.primary_mood}
                       </Badge>
                     </div>
-                    <Select value={watch("mood") || "__keep_ai__"} onValueChange={(value) => setValue("mood", value === "__keep_ai__" ? "" : value)}>
+                    <Select value={watch("mood") || entry.sentiment_data.primary_mood} onValueChange={(value) => setValue("mood", value)}>
                       <SelectTrigger className="w-full">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="__keep_ai__">✨ Use AI: {entry.sentiment_data.primary_mood}</SelectItem>
+                        <SelectItem value={entry.sentiment_data.primary_mood}>✨ Use AI: {entry.sentiment_data.primary_mood}</SelectItem>
                         {JOURNAL_MOODS.map((mood) => (
                           <SelectItem key={mood} value={mood}>{mood}</SelectItem>
                         ))}
@@ -272,12 +276,12 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
                         AI: {mapBusinessCategoryToJournal(entry.sentiment_data.business_category)}
                       </Badge>
                     </div>
-                    <Select value={watch("category") || "__keep_ai__"} onValueChange={(value) => setValue("category", value === "__keep_ai__" ? "" : value)}>
+                    <Select value={watch("category") || mapBusinessCategoryToJournal(entry.sentiment_data.business_category)} onValueChange={(value) => setValue("category", value)}>
                       <SelectTrigger className="w-full">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="__keep_ai__">✨ Use AI: {mapBusinessCategoryToJournal(entry.sentiment_data.business_category)}</SelectItem>
+                        <SelectItem value={mapBusinessCategoryToJournal(entry.sentiment_data.business_category)}>✨ Use AI: {mapBusinessCategoryToJournal(entry.sentiment_data.business_category)}</SelectItem>
                         {JOURNAL_CATEGORIES.map((category) => (
                           <SelectItem key={category} value={category}>{category}</SelectItem>
                         ))}

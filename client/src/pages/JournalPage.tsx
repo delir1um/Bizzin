@@ -363,9 +363,6 @@ export function JournalPage() {
                       {/* Metadata Row */}
                       <div className="flex items-center gap-4 text-sm text-slate-500">
                         <span>{formatDate(entry.created_at || entry.entry_date || '')}</span>
-                        {entry.reading_time && (
-                          <span>• {entry.reading_time} min read</span>
-                        )}
                         {(entry.category || entry.sentiment_data?.business_category) && (
                           <Badge className={`${getCategoryColor(entry.category || entry.sentiment_data?.business_category)} text-xs px-2 py-0.5`}>
                             {entry.category || entry.sentiment_data.business_category}
