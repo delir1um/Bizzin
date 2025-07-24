@@ -171,7 +171,7 @@ function performEnhancedLocalAnalysis(text: string): BusinessSentiment {
     energy: energy as 'high' | 'medium' | 'low',
     emotions: [primaryMood.toLowerCase()],
     insights,
-    business_category: businessCategory as 'growth' | 'challenge' | 'achievement' | 'planning' | 'reflection',
+    business_category: businessCategory.toLowerCase() as 'growth' | 'challenge' | 'achievement' | 'planning' | 'learning' | 'research',
     analysis_source: 'enhanced_local'
   };
 }

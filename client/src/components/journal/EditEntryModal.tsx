@@ -73,13 +73,23 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
   // Helper function to map AI business categories to journal categories  
   const mapBusinessCategoryToJournal = (businessCategory: string): string => {
     const mapping: Record<string, string> = {
-      'growth': 'Strategy',
-      'challenge': 'Challenge',
-      'achievement': 'Milestone',
+      // Lowercase versions (from AI analysis)
+      'growth': 'Growth',
+      'challenge': 'Challenge', 
+      'achievement': 'Achievement',
       'planning': 'Planning',
-      'reflection': 'Learning'
+      'learning': 'Learning',
+      'research': 'Research',
+      'reflection': 'Learning',
+      // Capitalized versions (for consistency)
+      'Growth': 'Growth',
+      'Challenge': 'Challenge',
+      'Achievement': 'Achievement', 
+      'Planning': 'Planning',
+      'Learning': 'Learning',
+      'Research': 'Research'
     };
-    return mapping[businessCategory] || 'General';
+    return mapping[businessCategory] || businessCategory;
   };
 
   // Initialize form with entry data when modal opens
