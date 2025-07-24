@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { X, Clock, BookOpen, Edit } from "lucide-react"
+import { X, Clock, BookOpen, Edit, Zap } from "lucide-react"
 import type { JournalEntry } from "@/types/journal"
 
 import { format } from "date-fns"
@@ -17,82 +17,125 @@ interface ViewEntryModalProps {
 
 export function ViewEntryModal({ isOpen, onClose, entry, onEdit }: ViewEntryModalProps) {
 
+  // Helper function to get mood emoji
+  const getMoodEmoji = (mood: string | null | undefined): string => {
+    if (!mood) return '📝'
+    
+    const moodEmojis: Record<string, string> = {
+      // Lowercase versions
+      'optimistic': '😊',
+      'frustrated': '😤', 
+      'focused': '🎯',
+      'reflective': '🤔',
+      'confident': '💪',
+      'excited': '⚡',
+      'determined': '🔥',
+      'accomplished': '🏆',
+      'thoughtful': '🤔',
+      'curious': '🤔',
+      'sad': '😢',
+      'tired': '😴',
+      'conflicted': '😔',
+      // Capitalized versions (from AI)
+      'Optimistic': '😊',
+      'Frustrated': '😤', 
+      'Focused': '🎯',
+      'Reflective': '🤔',
+      'Confident': '💪',
+      'Excited': '⚡',
+      'Determined': '🔥',
+      'Accomplished': '🏆',
+      'Thoughtful': '🤔',
+      'Curious': '🤔',
+      'Sad': '😢',
+      'Tired': '😴',
+      'Conflicted': '😔'
+    }
+    
+    return moodEmojis[mood] || moodEmojis[mood.toLowerCase()] || '📝'
+  }
+
+  // Helper function to map AI moods to journal moods
+  const mapAIMoodToJournal = (aiMood: string): string => {
+    const mapping: Record<string, string> = {
+      'optimistic': 'Optimistic',
+      'excited': 'Excited',
+      'focused': 'Focused',
+      'frustrated': 'Frustrated',
+      'reflective': 'Reflective',
+      'confident': 'Confident',
+      'determined': 'Determined',
+      'accomplished': 'Motivated',
+      'uncertain': 'Thoughtful',
+      'stressed': 'Frustrated',
+      'neutral': 'Neutral',
+      'inspired': 'Inspired',
+      'conflicted': 'Conflicted'
+    }
+    
+    const mapped = mapping[aiMood.toLowerCase()]
+    if (mapped) return mapped
+    
+    return aiMood.charAt(0).toUpperCase() + aiMood.slice(1).toLowerCase()
+  }
+
+  // Helper function to map AI business categories to journal categories
+  const mapBusinessCategoryToJournal = (businessCategory: string): string => {
+    const mapping: Record<string, string> = {
+      'growth': 'Strategy',
+      'challenge': 'Challenge',
+      'achievement': 'Milestone',
+      'planning': 'Planning',
+      'reflection': 'Learning'
+    }
+    return mapping[businessCategory] || 'Strategy'
+  }
+
   if (!isOpen || !entry) return null
+
+  // Get display values
+  const displayMood = entry.sentiment_data?.primary_mood ? mapAIMoodToJournal(entry.sentiment_data.primary_mood) : entry.mood
+  const displayCategory = entry.sentiment_data?.business_category ? mapBusinessCategoryToJournal(entry.sentiment_data.business_category) : entry.category
+  const displayEnergy = entry.sentiment_data?.energy || 'medium'
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-800">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6 border-b border-slate-200 dark:border-slate-700">
           <div className="flex-1">
-            <CardTitle className="text-3xl font-bold text-slate-900 dark:text-white pr-4 mb-3">
+            {/* Title with mood emoji */}
+            <CardTitle className="text-3xl font-bold text-slate-900 dark:text-white pr-4 mb-3 flex items-center gap-2">
+              <span className="text-2xl">{getMoodEmoji(displayMood)}</span>
               {entry.title}
             </CardTitle>
-            <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
-              <span>{format(new Date(entry.created_at), 'MMMM dd, yyyy • h:mm a')}</span>
-              {entry.reading_time && (
-                <span className="flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  {entry.reading_time} min read
-                </span>
-              )}
-              {/* Show mood and category from AI analysis or manual entry */}
-              {(() => {
-                // Helper function to map AI moods to journal moods
-                const mapAIMoodToJournal = (aiMood: string): string => {
-                  const mapping: Record<string, string> = {
-                    'optimistic': 'Optimistic',
-                    'excited': 'Excited',
-                    'focused': 'Focused',
-                    'frustrated': 'Frustrated',
-                    'reflective': 'Reflective',
-                    'confident': 'Confident',
-                    'determined': 'Determined',
-                    'accomplished': 'Motivated',
-                    'uncertain': 'Thoughtful',
-                    'stressed': 'Frustrated',
-                    'neutral': 'Neutral',
-                    'inspired': 'Inspired'
-                  }
-                  
-                  const mapped = mapping[aiMood.toLowerCase()]
-                  if (mapped) return mapped
-                  
-                  return aiMood.charAt(0).toUpperCase() + aiMood.slice(1).toLowerCase()
-                }
-
-                // Helper function to map AI business categories to journal categories
-                const mapBusinessCategoryToJournal = (businessCategory: string): string => {
-                  const mapping: Record<string, string> = {
-                    'growth': 'Strategy',
-                    'challenge': 'Challenge',
-                    'achievement': 'Milestone',
-                    'planning': 'Planning',
-                    'reflection': 'Learning'
-                  }
-                  return mapping[businessCategory] || 'Strategy'
-                }
-                
-                // Determine display mood and category (prioritize AI values, map them properly)
-                const displayMood = entry.sentiment_data?.primary_mood ? mapAIMoodToJournal(entry.sentiment_data.primary_mood) : entry.mood
-                const displayCategory = entry.sentiment_data?.business_category ? mapBusinessCategoryToJournal(entry.sentiment_data.business_category) : entry.category
-                
-                return (
-                  <div className="flex items-center gap-2">
-                    {displayMood && (
-                      <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 font-medium">
-                        {displayMood}
-                      </Badge>
-                    )}
-                    {displayCategory && (
-                      <Badge variant="outline" className="text-orange-600 border-orange-200 font-medium">
-                        <BookOpen className="w-3 h-3 mr-1" />
-                        {displayCategory}
-                      </Badge>
-                    )}
-                  </div>
-                )
-              })()}
+            
+            {/* Date */}
+            <div className="mb-3 text-sm text-slate-500 dark:text-slate-400">
+              {format(new Date(entry.created_at), 'MMMM dd, yyyy • h:mm a')}
             </div>
+            
+            {/* Category and Energy badges */}
+            <div className="flex items-center gap-2 mb-2">
+              {displayCategory && (
+                <Badge variant="outline" className="text-orange-600 border-orange-200 font-medium">
+                  {displayCategory}
+                </Badge>
+              )}
+              {displayEnergy && (
+                <Badge variant="secondary" className="bg-slate-100 text-slate-700 border-slate-200 font-medium flex items-center gap-1">
+                  <Zap className="w-3 h-3" />
+                  {displayEnergy.charAt(0).toUpperCase() + displayEnergy.slice(1)} Energy
+                </Badge>
+              )}
+              {entry.reading_time && (
+                <Badge variant="secondary" className="bg-slate-100 text-slate-700 border-slate-200 font-medium flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  {entry.reading_time} min read
+                </Badge>
+              )}
+            </div>
+            
+
           </div>
           
           <div className="flex items-center gap-2">
