@@ -27,6 +27,7 @@ import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
 import { JournalService } from "@/lib/services/journal"
 import { useAuth } from "@/hooks/AuthProvider"
+import { getEntryDisplayData } from "@/lib/journalDisplayUtils"
 
 const editEntrySchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
@@ -70,44 +71,21 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
     }
   })
 
-  // Helper function to map AI business categories to journal categories  
-  const mapBusinessCategoryToJournal = (businessCategory: string): string => {
-    const mapping: Record<string, string> = {
-      // Lowercase versions (from AI analysis)
-      'growth': 'Growth',
-      'challenge': 'Challenge', 
-      'achievement': 'Achievement',
-      'planning': 'Planning',
-      'learning': 'Learning',
-      'research': 'Research',
-      'reflection': 'Learning',
-      // Capitalized versions (for consistency)
-      'Growth': 'Growth',
-      'Challenge': 'Challenge',
-      'Achievement': 'Achievement', 
-      'Planning': 'Planning',
-      'Learning': 'Learning',
-      'Research': 'Research'
-    };
-    return mapping[businessCategory] || businessCategory;
-  };
+  // Get display values using centralized utility
+  const displayData = entry ? getEntryDisplayData(entry) : null
 
   // Initialize form with entry data when modal opens
   useEffect(() => {
-    if (entry && isOpen) {
-      // Use AI-detected values as defaults, but preserve manual overrides
-      const aiDetectedCategory = entry.sentiment_data?.business_category ? mapBusinessCategoryToJournal(entry.sentiment_data.business_category) : "";
-      const aiDetectedMood = entry.sentiment_data?.primary_mood || "";
-      
+    if (entry && isOpen && displayData) {
       reset({
         title: entry.title || "",
         content: entry.content || "",
         entry_date: entry.entry_date ? format(new Date(entry.entry_date), 'yyyy-MM-dd') : (entry.created_at ? format(new Date(entry.created_at), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')),
-        mood: entry.mood || aiDetectedMood,
-        category: entry.category || aiDetectedCategory,
+        mood: entry.mood || displayData.mood,
+        category: entry.category || displayData.category,
       })
     }
-  }, [entry, isOpen, reset])
+  }, [entry, isOpen, reset, displayData])
 
   const editEntryMutation = useMutation({
     mutationFn: (data: UpdateJournalEntry & { id: string }) => 
@@ -262,16 +240,16 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
                     <div className="flex items-center justify-between">
                       <label className="text-sm font-medium text-slate-700">Mood</label>
                       <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
-                        AI: {entry.sentiment_data.primary_mood}
+                        AI: {displayData?.mood}
                       </Badge>
                     </div>
-                    <Select value={watch("mood") || entry.sentiment_data.primary_mood} onValueChange={(value) => setValue("mood", value)}>
+                    <Select value={watch("mood") || displayData?.mood} onValueChange={(value) => setValue("mood", value)}>
                       <SelectTrigger className="w-full">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem key={`ai-${entry.sentiment_data.primary_mood}`} value={entry.sentiment_data.primary_mood}>✨ Use AI: {entry.sentiment_data.primary_mood}</SelectItem>
-                        {JOURNAL_MOODS.filter(mood => mood !== entry.sentiment_data.primary_mood).map((mood) => (
+                        <SelectItem key={`ai-${displayData?.mood}`} value={displayData?.mood || ''}>✨ Use AI: {displayData?.mood}</SelectItem>
+                        {JOURNAL_MOODS.filter(mood => mood !== displayData?.mood).map((mood) => (
                           <SelectItem key={`manual-${mood}`} value={mood}>{mood}</SelectItem>
                         ))}
                       </SelectContent>
@@ -283,16 +261,16 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
                     <div className="flex items-center justify-between">
                       <label className="text-sm font-medium text-slate-700">Category</label>
                       <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
-                        AI: {mapBusinessCategoryToJournal(entry.sentiment_data.business_category)}
+                        AI: {displayData?.category}
                       </Badge>
                     </div>
-                    <Select value={watch("category") || mapBusinessCategoryToJournal(entry.sentiment_data.business_category)} onValueChange={(value) => setValue("category", value)}>
+                    <Select value={watch("category") || displayData?.category} onValueChange={(value) => setValue("category", value)}>
                       <SelectTrigger className="w-full">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem key={`ai-${mapBusinessCategoryToJournal(entry.sentiment_data.business_category)}`} value={mapBusinessCategoryToJournal(entry.sentiment_data.business_category)}>✨ Use AI: {mapBusinessCategoryToJournal(entry.sentiment_data.business_category)}</SelectItem>
-                        {JOURNAL_CATEGORIES.filter(category => category !== mapBusinessCategoryToJournal(entry.sentiment_data.business_category)).map((category) => (
+                        <SelectItem key={`ai-${displayData?.category}`} value={displayData?.category || ''}>✨ Use AI: {displayData?.category}</SelectItem>
+                        {JOURNAL_CATEGORIES.filter(category => category !== displayData?.category).map((category) => (
                           <SelectItem key={`manual-${category}`} value={category}>{category}</SelectItem>
                         ))}
                       </SelectContent>

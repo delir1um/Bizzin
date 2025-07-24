@@ -1,0 +1,111 @@
+import type { JournalEntry } from "@/types/journal"
+
+// Centralized utility functions for consistent journal entry display across all components
+
+export function getMoodEmoji(mood: string | null | undefined): string {
+  if (!mood) return '📝'
+  
+  const moodEmojis: Record<string, string> = {
+    // Lowercase versions
+    'optimistic': '😊',
+    'frustrated': '😤',
+    'focused': '🎯',
+    'reflective': '🤔',
+    'confident': '💪',
+    'excited': '⚡',
+    'determined': '🔥',
+    'accomplished': '🏆',
+    'thoughtful': '🤔',
+    'curious': '🤔',
+    'sad': '😢',
+    'tired': '😴',
+    'conflicted': '😔',
+    'stressed': '😰',
+    'uncertain': '🤔',
+    'neutral': '😐',
+    // Capitalized versions (from AI)
+    'Optimistic': '😊',
+    'Frustrated': '😤',
+    'Focused': '🎯',
+    'Reflective': '🤔',
+    'Confident': '💪',
+    'Excited': '⚡',
+    'Determined': '🔥',
+    'Accomplished': '🏆',
+    'Thoughtful': '🤔',
+    'Curious': '🤔',
+    'Sad': '😢',
+    'Tired': '😴',
+    'Conflicted': '😔',
+    'Stressed': '😰',
+    'Uncertain': '🤔'
+  }
+  
+  return moodEmojis[mood] || moodEmojis[mood.toLowerCase()] || '📝'
+}
+
+export function mapAIMoodToJournal(aiMood: string): string {
+  const mapping: Record<string, string> = {
+    'optimistic': 'Optimistic',
+    'excited': 'Excited',
+    'focused': 'Focused',
+    'frustrated': 'Frustrated',
+    'reflective': 'Reflective', 
+    'confident': 'Confident',
+    'determined': 'Determined',
+    'accomplished': 'Accomplished',
+    'uncertain': 'Thoughtful',
+    'stressed': 'Frustrated',
+    'neutral': 'Neutral',
+    'inspired': 'Inspired',
+    'conflicted': 'Conflicted'
+  }
+  
+  const mapped = mapping[aiMood.toLowerCase()]
+  if (mapped) return mapped
+  
+  return aiMood.charAt(0).toUpperCase() + aiMood.slice(1).toLowerCase()
+}
+
+export function mapBusinessCategoryToJournal(businessCategory: string): string {
+  const mapping: Record<string, string> = {
+    'growth': 'Strategy',
+    'challenge': 'Challenge',
+    'achievement': 'Milestone',
+    'planning': 'Planning',
+    'reflection': 'Learning',
+    'learning': 'Learning'
+  }
+  return mapping[businessCategory] || 'Strategy'
+}
+
+export function getDisplayMood(entry: JournalEntry): string {
+  return entry.sentiment_data?.primary_mood 
+    ? mapAIMoodToJournal(entry.sentiment_data.primary_mood) 
+    : entry.mood || ''
+}
+
+export function getDisplayCategory(entry: JournalEntry): string {
+  return entry.sentiment_data?.business_category 
+    ? mapBusinessCategoryToJournal(entry.sentiment_data.business_category) 
+    : entry.category || ''
+}
+
+export function getDisplayEnergy(entry: JournalEntry): string {
+  return entry.sentiment_data?.energy || 'medium'
+}
+
+export function getDisplayMoodEmoji(entry: JournalEntry): string {
+  const displayMood = getDisplayMood(entry)
+  return getMoodEmoji(displayMood)
+}
+
+// Single source of truth for all entry display data
+export function getEntryDisplayData(entry: JournalEntry) {
+  return {
+    mood: getDisplayMood(entry),
+    category: getDisplayCategory(entry),
+    energy: getDisplayEnergy(entry),
+    moodEmoji: getDisplayMoodEmoji(entry)
+  }
+}

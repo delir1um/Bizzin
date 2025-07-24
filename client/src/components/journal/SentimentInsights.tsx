@@ -1,9 +1,10 @@
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Brain, TrendingUp, Zap, Heart, Sparkles } from "lucide-react"
-import { getMoodColor, getMoodEmoji } from "@/lib/sentimentAnalysis"
+import { getMoodColor } from "@/lib/sentimentAnalysis"
 import { AIAnalysisIndicator } from "@/components/journal/AIAnalysisIndicator"
 import type { JournalEntry } from "@/types/journal"
+import { getEntryDisplayData } from "@/lib/journalDisplayUtils"
 
 interface SentimentInsightsProps {
   entry: JournalEntry
@@ -17,34 +18,9 @@ export function SentimentInsights({ entry, className = "" }: SentimentInsightsPr
     return null
   }
 
-  // Helper function to map AI moods to journal moods (same as other components)
-  const mapAIMoodToJournal = (aiMood: string): string => {
-    const mapping: Record<string, string> = {
-      'optimistic': 'Optimistic',
-      'excited': 'Excited',
-      'focused': 'Focused',
-      'frustrated': 'Frustrated',
-      'reflective': 'Reflective',
-      'confident': 'Confident',
-      'determined': 'Determined',
-      'accomplished': 'Motivated',
-      'uncertain': 'Thoughtful',
-      'stressed': 'Frustrated',
-      'neutral': 'Neutral',
-      'inspired': 'Inspired',
-      'conflicted': 'Conflicted'
-    }
-    
-    const mapped = mapping[aiMood.toLowerCase()]
-    if (mapped) return mapped
-    
-    return aiMood.charAt(0).toUpperCase() + aiMood.slice(1).toLowerCase()
-  }
-
-  // Get display mood (mapped properly)
-  const displayMood = sentiment.primary_mood ? mapAIMoodToJournal(sentiment.primary_mood) : ''
-  const moodColor = getMoodColor(displayMood)
-  const moodEmoji = getMoodEmoji(displayMood)
+  // Get display values using centralized utility
+  const displayData = getEntryDisplayData(entry)
+  const moodColor = getMoodColor(displayData.mood)
   
   // Energy level display
   const getEnergyIcon = (energy: string) => {
@@ -120,71 +96,32 @@ export function SentimentInsights({ entry, className = "" }: SentimentInsightsPr
 export function SentimentBadge({ entry, size = "sm" }: { entry: JournalEntry, size?: "sm" | "xs" }) {
   const sentiment = entry.sentiment_data
   
-  // Helper function to map AI moods to journal moods (same as EditEntryModal)
-  const mapAIMoodToJournal = (aiMood: string): string => {
-    const mapping: Record<string, string> = {
-      'optimistic': 'Optimistic',
-      'excited': 'Excited',
-      'focused': 'Focused',
-      'frustrated': 'Frustrated',
-      'reflective': 'Reflective',
-      'confident': 'Confident',
-      'determined': 'Determined',
-      'accomplished': 'Motivated',
-      'uncertain': 'Thoughtful',
-      'stressed': 'Frustrated',
-      'neutral': 'Neutral',
-      'inspired': 'Inspired',
-      'conflicted': 'Conflicted'  // Added missing mapping for 'conflicted' mood
-    }
-    
-    const mapped = mapping[aiMood.toLowerCase()]
-    if (mapped) return mapped
-    
-    return aiMood.charAt(0).toUpperCase() + aiMood.slice(1).toLowerCase()
-  }
-
-  // Helper function to map AI business categories to journal categories
-  const mapBusinessCategoryToJournal = (businessCategory: string): string => {
-    const mapping: Record<string, string> = {
-      'growth': 'Strategy',
-      'challenge': 'Challenge',
-      'achievement': 'Milestone',
-      'planning': 'Planning',
-      'reflection': 'Learning',
-      'learning': 'Learning'  // Added missing mapping for 'learning' category
-    }
-    return mapping[businessCategory] || 'Strategy'
-  }
+  // Get display values using centralized utility
+  const displayData = getEntryDisplayData(entry)
   
-  // Determine display mood and category (prioritize AI values, map them properly)
-  const displayMood = sentiment?.primary_mood ? mapAIMoodToJournal(sentiment.primary_mood) : entry.mood
-  const displayCategory = sentiment?.business_category ? mapBusinessCategoryToJournal(sentiment.business_category) : entry.category
-  
-  if (!displayMood && !displayCategory) {
+  if (!displayData.mood && !displayData.category) {
     return null
   }
 
-  const moodColor = getMoodColor(displayMood || '')
-  const moodEmoji = getMoodEmoji(displayMood || '')
+  const moodColor = getMoodColor(displayData.mood)
   
   return (
     <div className="flex items-center gap-1">
-      {displayMood && (
+      {displayData.mood && (
         <>
-          <span className={size === "xs" ? "text-sm" : "text-base"}>{moodEmoji}</span>
+          <span className={size === "xs" ? "text-sm" : "text-base"}>{displayData.moodEmoji}</span>
           <Badge 
             variant="secondary" 
             className={`${size === "xs" ? "text-xs" : "text-sm"} capitalize`}
             style={{ backgroundColor: `${moodColor}15`, color: moodColor }}
           >
-            {displayMood}
+            {displayData.mood}
           </Badge>
         </>
       )}
-      {displayCategory && sentiment?.confidence && sentiment.confidence > 0.7 && (
+      {displayData.category && sentiment?.confidence && sentiment.confidence > 0.7 && (
         <Badge variant="outline" className="text-xs">
-          {displayCategory}
+          {displayData.category}
         </Badge>
       )}
     </div>

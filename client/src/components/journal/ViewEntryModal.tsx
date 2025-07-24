@@ -7,6 +7,7 @@ import type { JournalEntry } from "@/types/journal"
 import { format } from "date-fns"
 import { SentimentInsights } from "@/components/journal/SentimentInsights"
 import { useAuth } from "@/hooks/AuthProvider"
+import { getEntryDisplayData } from "@/lib/journalDisplayUtils"
 
 interface ViewEntryModalProps {
   isOpen: boolean
@@ -17,87 +18,10 @@ interface ViewEntryModalProps {
 
 export function ViewEntryModal({ isOpen, onClose, entry, onEdit }: ViewEntryModalProps) {
 
-  // Helper function to get mood emoji
-  const getMoodEmoji = (mood: string | null | undefined): string => {
-    if (!mood) return '📝'
-    
-    const moodEmojis: Record<string, string> = {
-      // Lowercase versions
-      'optimistic': '😊',
-      'frustrated': '😤', 
-      'focused': '🎯',
-      'reflective': '🤔',
-      'confident': '💪',
-      'excited': '⚡',
-      'determined': '🔥',
-      'accomplished': '🏆',
-      'thoughtful': '🤔',
-      'curious': '🤔',
-      'sad': '😢',
-      'tired': '😴',
-      'conflicted': '😔',
-      // Capitalized versions (from AI)
-      'Optimistic': '😊',
-      'Frustrated': '😤', 
-      'Focused': '🎯',
-      'Reflective': '🤔',
-      'Confident': '💪',
-      'Excited': '⚡',
-      'Determined': '🔥',
-      'Accomplished': '🏆',
-      'Thoughtful': '🤔',
-      'Curious': '🤔',
-      'Sad': '😢',
-      'Tired': '😴',
-      'Conflicted': '😔'
-    }
-    
-    return moodEmojis[mood] || moodEmojis[mood.toLowerCase()] || '📝'
-  }
-
-  // Helper function to map AI moods to journal moods
-  const mapAIMoodToJournal = (aiMood: string): string => {
-    const mapping: Record<string, string> = {
-      'optimistic': 'Optimistic',
-      'excited': 'Excited',
-      'focused': 'Focused',
-      'frustrated': 'Frustrated',
-      'reflective': 'Reflective',
-      'confident': 'Confident',
-      'determined': 'Determined',
-      'accomplished': 'Motivated',
-      'uncertain': 'Thoughtful',
-      'stressed': 'Frustrated',
-      'neutral': 'Neutral',
-      'inspired': 'Inspired',
-      'conflicted': 'Conflicted'
-    }
-    
-    const mapped = mapping[aiMood.toLowerCase()]
-    if (mapped) return mapped
-    
-    return aiMood.charAt(0).toUpperCase() + aiMood.slice(1).toLowerCase()
-  }
-
-  // Helper function to map AI business categories to journal categories
-  const mapBusinessCategoryToJournal = (businessCategory: string): string => {
-    const mapping: Record<string, string> = {
-      'growth': 'Strategy',
-      'challenge': 'Challenge',
-      'achievement': 'Milestone',
-      'planning': 'Planning',
-      'reflection': 'Learning',
-      'learning': 'Learning'  // Added missing mapping for 'learning' category
-    }
-    return mapping[businessCategory] || 'Strategy'
-  }
-
   if (!isOpen || !entry) return null
 
-  // Get display values
-  const displayMood = entry.sentiment_data?.primary_mood ? mapAIMoodToJournal(entry.sentiment_data.primary_mood) : entry.mood
-  const displayCategory = entry.sentiment_data?.business_category ? mapBusinessCategoryToJournal(entry.sentiment_data.business_category) : entry.category
-  const displayEnergy = entry.sentiment_data?.energy || 'medium'
+  // Get display values using centralized utility
+  const displayData = getEntryDisplayData(entry)
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -106,7 +30,7 @@ export function ViewEntryModal({ isOpen, onClose, entry, onEdit }: ViewEntryModa
           <div className="flex-1">
             {/* Title with mood emoji */}
             <CardTitle className="text-3xl font-bold text-slate-900 dark:text-white pr-4 mb-3 flex items-center gap-2">
-              <span className="text-2xl">{getMoodEmoji(displayMood)}</span>
+              <span className="text-2xl">{displayData.moodEmoji}</span>
               {entry.title}
             </CardTitle>
             
@@ -117,15 +41,15 @@ export function ViewEntryModal({ isOpen, onClose, entry, onEdit }: ViewEntryModa
             
             {/* Category and Energy badges */}
             <div className="flex items-center gap-2 mb-2">
-              {displayCategory && (
+              {displayData.category && (
                 <Badge variant="outline" className="text-orange-600 border-orange-200 font-medium">
-                  {displayCategory}
+                  {displayData.category}
                 </Badge>
               )}
-              {displayEnergy && (
+              {displayData.energy && (
                 <Badge variant="secondary" className="bg-slate-100 text-slate-700 border-slate-200 font-medium flex items-center gap-1">
                   <Zap className="w-3 h-3" />
-                  {displayEnergy.charAt(0).toUpperCase() + displayEnergy.slice(1)} Energy
+                  {displayData.energy.charAt(0).toUpperCase() + displayData.energy.slice(1)} Energy
                 </Badge>
               )}
               {entry.reading_time && (
