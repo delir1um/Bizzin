@@ -93,12 +93,17 @@ const businessEmotions = {
     keywords: ['determined', 'committed', 'dedicated', 'persistent', 'resilient', 'persevere', 'push', 'drive', 'tenacious'],
     weight: 0.8,
     energy: 'high' as const
+  },
+  conflicted: {
+    keywords: ['conflicted', 'torn', 'mixed feelings', 'guilty but relieved', 'hardest things', 'difficult decision', 'feel guilty', 'hate that', 'lonely part', 'good person but', 'right fit'],
+    weight: 0.9,
+    energy: 'low' as const
   }
 };
 
 const businessContexts = {
   growth: ['scaling', 'expansion', 'growing', 'increase', 'revenue', 'customers', 'market', 'opportunity', 'profit', 'sales', 'opportunities', 'new', 'potential', 'promising', 'next big', 'big project', 'cant wait', 'looking forward', 'anticipating', 'future'],
-  challenge: ['problem', 'issue', 'difficulty', 'obstacle', 'setback', 'failure', 'mistake', 'error', 'crisis', 'struggle', 'tired', 'exhausted', 'dont feel like', 'unmotivated', 'burnout', 'stressed', 'sad', 'depressed', 'down', 'expensive', 'cost', 'price', 'costly', 'budget'],
+  challenge: ['problem', 'issue', 'difficulty', 'obstacle', 'setback', 'failure', 'mistake', 'error', 'crisis', 'struggle', 'tired', 'exhausted', 'dont feel like', 'unmotivated', 'burnout', 'stressed', 'sad', 'depressed', 'down', 'expensive', 'cost', 'price', 'costly', 'budget', 'fired', 'employee', 'performance standards', 'hardest things', 'difficult decision', 'leadership'],
   achievement: ['success', 'win', 'accomplished', 'milestone', 'breakthrough', 'completed', 'achieved', 'goal', 'victory', 'triumph', 'good day', 'great', 'excellent'],
   planning: ['strategy', 'plan', 'roadmap', 'timeline', 'schedule', 'prepare', 'organize', 'structure', 'blueprint', 'framework', 'next', 'project', 'upcoming', 'future', 'need', 'require', 'want', 'looking for', 'shopping for', 'car', 'equipment', 'tools', 'computer', 'laptop'],
   reflection: ['learned', 'realize', 'understand', 'insight', 'feedback', 'review', 'analyze', 'think', 'contemplate', 'evaluate']
@@ -133,8 +138,15 @@ function performEnhancedLocalAnalysis(text: string): BusinessSentiment {
   // Business category analysis
   const businessCategory = detectBusinessCategory(lowerText);
   
-  // Enhanced mood analysis with better patterns and priority
-  if (lowerText.includes('excited') || lowerText.includes('cant wait') || lowerText.includes('looking forward') || lowerText.includes('next big')) {
+  // Enhanced mood analysis with better patterns and priority - specific personnel management detection first
+  if ((lowerText.includes('fired') && lowerText.includes('employee')) || 
+      (lowerText.includes('hardest things') && lowerText.includes('founder')) ||
+      (lowerText.includes('feel guilty') && lowerText.includes('relieved')) ||
+      (lowerText.includes('performance standards') && lowerText.includes('decision'))) {
+    primaryMood = 'Conflicted';
+    energy = 'low';
+    confidence = 95;
+  } else if (lowerText.includes('excited') || lowerText.includes('cant wait') || lowerText.includes('looking forward') || lowerText.includes('next big')) {
     primaryMood = 'Excited';
     energy = 'high';
     confidence = 85;
@@ -896,6 +908,17 @@ function generateAdvancedBusinessInsights(emotion: string, category: string, tex
         insights.push("Strategic reflection builds sustainable advantages - step back thinking often reveals bigger opportunities");
       } else {
         insights.push("Self-aware founders make better decisions - these insights compound into superior business judgment");
+      }
+      break;
+      
+    case 'conflicted':
+      if (hasTeam && /fired|employee|performance/i.test(text)) {
+        insights.push("Difficult personnel decisions are part of entrepreneurial leadership - protecting company culture sometimes requires tough choices for long-term success");
+        insights.push("Leadership isolation during personnel decisions is normal - these moments test your resolve but strengthen your decision-making for future challenges");
+      } else if (hasChallenges) {
+        insights.push("Conflicted feelings often signal complex business decisions - this emotional complexity shows sophisticated thinking about trade-offs");
+      } else {
+        insights.push("Mixed emotions in business decisions show mature leadership - conflicted feelings often accompany the most important choices");
       }
       break;
       
