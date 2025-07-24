@@ -1,4 +1,5 @@
-// Robust AI-powered sentiment analysis using Hugging Face (free) with smart fallbacks
+// Robust AI-powered sentiment analysis with comprehensive training data and user learning
+import { AITrainingValidator, UserLearningSystem, BUSINESS_JOURNAL_TRAINING_DATA } from './aiTrainingData';
 export interface BusinessMood {
   primary: string;
   confidence: number;
@@ -578,7 +579,7 @@ function analyzeLocalSentiment(content: string, title?: string): BusinessSentime
 }
 
 // AI-powered sentiment analysis with smart fallbacks
-export async function analyzeBusinessSentimentAI(content: string, title?: string): Promise<BusinessSentiment> {
+export async function analyzeBusinessSentimentAI(content: string, title?: string, userId?: string): Promise<BusinessSentiment> {
   const text = `${title || ''} ${content}`;
   const cacheKey = `${text.substring(0, 100)}`;
   
@@ -593,22 +594,55 @@ export async function analyzeBusinessSentimentAI(content: string, title?: string
     const aiResult = await callEnhancedHuggingFaceAnalysis(text);
     
     if (aiResult) {
+      // Validate against training data
+      const trainingMatch = AITrainingValidator.getBestTrainingMatch(text);
+      if (trainingMatch) {
+        console.log('Training validation match found:', trainingMatch.expected_category);
+        
+        // Adjust confidence based on training data accuracy
+        const validationScore = AITrainingValidator.validateCategoryAccuracy(text, aiResult.business_category);
+        aiResult.confidence = Math.min(95, aiResult.confidence * validationScore + 10);
+      }
+      
+      // Apply user learning if available
+      let finalResult = aiResult;
+      if (userId) {
+        finalResult = UserLearningSystem.adjustPredictionBasedOnHistory(text, aiResult, userId);
+      }
+      
       // Cache successful result
       sentimentCache.set(cacheKey, {
-        data: aiResult,
+        data: finalResult,
         timestamp: Date.now()
       });
       
-      return aiResult;
+      return finalResult;
     }
   } catch (error) {
     console.warn('AI sentiment analysis failed, using local analysis:', error);
   }
   
-  // Fallback to enhanced local analysis
-  const localResult = analyzeLocalSentiment(content, title);
+  // Fallback to enhanced local analysis with training data validation
+  let localResult = analyzeLocalSentiment(content, title);
   
-  // Cache local result too
+  // Validate local result against training data
+  const trainingMatch = AITrainingValidator.getBestTrainingMatch(text);
+  if (trainingMatch) {
+    console.log('Local analysis training validation:', trainingMatch.expected_category);
+    
+    // Use training data to improve local result if available
+    if (trainingMatch.expected_category.toLowerCase() !== localResult.business_category) {
+      localResult.business_category = trainingMatch.expected_category.toLowerCase() as any;
+      localResult.confidence = Math.max(localResult.confidence, trainingMatch.confidence_range[0]);
+    }
+  }
+  
+  // Apply user learning if available
+  if (userId) {
+    localResult = UserLearningSystem.adjustPredictionBasedOnHistory(text, localResult, userId);
+  }
+  
+  // Cache local result
   sentimentCache.set(cacheKey, {
     data: localResult,
     timestamp: Date.now()
