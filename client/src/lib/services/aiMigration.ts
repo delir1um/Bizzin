@@ -4,7 +4,7 @@ import type { JournalEntry } from '@/types/journal'
 
 export class AIMigrationService {
   private static readonly MIGRATION_VERSION_KEY = 'ai_migration_version'
-  private static readonly CURRENT_VERSION = 6 // Fixed category detection and enhanced business insights variety
+  private static readonly CURRENT_VERSION = 7 // Fixed mood mapping to properly display AI-detected moods with correct emojis
 
   // Check if migration is needed
   static needsMigration(): boolean {
@@ -51,9 +51,9 @@ export class AIMigrationService {
                 .from('journal_entries')
                 .update({
                   sentiment_data: aiAnalysis,
-                  // Optionally update category/mood if they weren't manually overridden
-                  category: entry.category === 'Research' ? this.mapBusinessCategoryToJournal(aiAnalysis.business_category) : entry.category,
-                  mood: !entry.mood || entry.mood === 'Thoughtful' ? this.mapAIMoodToJournal(aiAnalysis.primary_mood) : entry.mood
+                  // Update category and mood with new AI analysis (allow AI to override for better accuracy)
+                  category: this.mapBusinessCategoryToJournal(aiAnalysis.business_category),
+                  mood: this.mapAIMoodToJournal(aiAnalysis.primary_mood)
                 })
                 .eq('id', entry.id)
               
@@ -102,6 +102,19 @@ export class AIMigrationService {
 
   private static mapAIMoodToJournal(aiMood: string): string {
     const mapping: Record<string, string> = {
+      'Optimistic': 'Optimistic',
+      'Excited': 'Excited',
+      'Focused': 'Focused',
+      'Frustrated': 'Frustrated',
+      'Reflective': 'Reflective',
+      'Confident': 'Confident',
+      'Determined': 'Determined',
+      'Accomplished': 'Accomplished',
+      'Thoughtful': 'Thoughtful',
+      'Curious': 'Curious',
+      'Sad': 'Sad',
+      'Tired': 'Tired',
+      // Lowercase versions for backwards compatibility
       'optimistic': 'Optimistic',
       'excited': 'Excited',
       'focused': 'Focused',
@@ -109,13 +122,13 @@ export class AIMigrationService {
       'reflective': 'Reflective',
       'confident': 'Confident',
       'determined': 'Determined',
-      'accomplished': 'Motivated',
-      'uncertain': 'Thoughtful',
-      'stressed': 'Frustrated',
-      'sad': 'Reflective',
-      'tired': 'Neutral'
+      'accomplished': 'Accomplished',
+      'thoughtful': 'Thoughtful',
+      'curious': 'Curious',
+      'sad': 'Sad',
+      'tired': 'Tired'
     }
-    return mapping[aiMood] || aiMood.charAt(0).toUpperCase() + aiMood.slice(1).toLowerCase()
+    return mapping[aiMood] || aiMood
   }
 
   // Check specific entry needs migration
