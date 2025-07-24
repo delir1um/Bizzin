@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { PlusCircle, Search, BookOpen, Calendar, Brain, ChevronDown, ChevronRight } from "lucide-react"
+import { PlusCircle, Search, BookOpen, Calendar, Brain, ChevronDown, ChevronRight, Flame, TrendingUp, Heart } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useToast } from "@/hooks/use-toast"
@@ -24,7 +24,7 @@ export function JournalPage() {
   const [showMigrationDialog, setShowMigrationDialog] = useState(false)
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
-  const [expandedSections, setExpandedSections] = useState({
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     thisWeek: true,  // Start expanded so users can see content
     thisMonth: true,
     thisYear: false
@@ -336,43 +336,123 @@ export function JournalPage() {
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center">
-                <BookOpen className="w-8 h-8 text-orange-600 mr-3" />
-                <div>
-                  <p className="text-2xl font-bold text-slate-900">{entries.length}</p>
-                  <p className="text-sm text-slate-600">Total Entries</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Enhanced Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          {(() => {
+            // Calculate writing streak
+            const sortedEntries = [...entries].sort((a, b) => 
+              new Date(b.entry_date || b.created_at || '').getTime() - 
+              new Date(a.entry_date || a.created_at || '').getTime()
+            )
+            
+            let streak = 0
+            const today = new Date()
+            let checkDate = new Date(today)
+            
+            for (let i = 0; i < 30; i++) { // Check last 30 days
+              const hasEntry = sortedEntries.some(entry => {
+                const entryDate = new Date(entry.entry_date || entry.created_at || '')
+                return entryDate.toDateString() === checkDate.toDateString()
+              })
+              
+              if (hasEntry) {
+                streak++
+              } else if (streak > 0) {
+                break // Streak broken
+              }
+              
+              checkDate.setDate(checkDate.getDate() - 1)
+            }
+            
+            // Calculate dominant mood
+            const moodCounts = entries.reduce((acc, entry) => {
+              const mood = entry.mood || entry.sentiment_data?.primary_mood
+              if (mood) {
+                acc[mood] = (acc[mood] || 0) + 1
+              }
+              return acc
+            }, {} as Record<string, number>)
+            
+            const dominantMood = Object.entries(moodCounts)
+              .sort((a, b) => b[1] - a[1])[0]?.[0] || 'Mixed'
+            
+            // Calculate business growth entries (Achievement, Growth categories)
+            const growthEntries = entries.filter(entry => {
+              const category = entry.category || entry.sentiment_data?.business_category
+              return category === 'Achievement' || category === 'Growth' || category === 'Success'
+            }).length
+            
+            // Calculate average confidence
+            const confidenceEntries = entries.filter(entry => 
+              entry.sentiment_data?.confidence && entry.sentiment_data.confidence > 0
+            )
+            const avgConfidence = confidenceEntries.length > 0 
+              ? Math.round(confidenceEntries.reduce((sum, entry) => 
+                  sum + (entry.sentiment_data?.confidence || 0), 0) / confidenceEntries.length)
+              : 0
 
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center">
-                <Calendar className="w-8 h-8 text-orange-600 mr-3" />
-                <div>
-                  <p className="text-2xl font-bold text-slate-900">{getThisWeekCount()}</p>
-                  <p className="text-sm text-slate-600">This Week</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            return (
+              <>
+                <Card className="bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200 hover:shadow-md transition-all duration-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg mr-3">
+                        <Flame className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-slate-900">{streak}</p>
+                        <p className="text-sm text-slate-600">Day Streak</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center">
-                <Brain className="w-8 h-8 text-orange-600 mr-3" />
-                <div>
-                  <p className="text-2xl font-bold text-slate-900">{getAIAnalyzedCount()}</p>
-                  <p className="text-sm text-slate-600">AI Analyzed</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 hover:shadow-md transition-all duration-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg mr-3">
+                        <TrendingUp className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-slate-900">{growthEntries}</p>
+                        <p className="text-sm text-slate-600">Growth Wins</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200 hover:shadow-md transition-all duration-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg mr-3">
+                        <Heart className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                          {getMoodEmoji(dominantMood)} {dominantMood}
+                        </p>
+                        <p className="text-sm text-slate-600">Dominant Mood</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 hover:shadow-md transition-all duration-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg mr-3">
+                        <Brain className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-slate-900">{avgConfidence}%</p>
+                        <p className="text-sm text-slate-600">AI Confidence</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )
+          })()}
         </div>
 
         {/* Chronological Entries */}
@@ -536,7 +616,7 @@ export function JournalPage() {
                                 <span>{formatDate(entry.created_at || entry.entry_date || '')}</span>
                                 {(entry.category || entry.sentiment_data?.business_category) && (
                                   <Badge className={`${getCategoryColor(entry.category || entry.sentiment_data?.business_category)} text-xs px-1.5 py-0.5`}>
-                                    {entry.category || entry.sentiment_data.business_category}
+                                    {entry.category || entry.sentiment_data?.business_category}
                                   </Badge>
                                 )}
                               </div>
@@ -601,7 +681,7 @@ export function JournalPage() {
                                 <span>{formatDate(entry.created_at || entry.entry_date || '')}</span>
                                 {(entry.category || entry.sentiment_data?.business_category) && (
                                   <div className={`w-2 h-2 rounded-full ${getCategoryColor(entry.category || entry.sentiment_data?.business_category).includes('bg-') ? getCategoryColor(entry.category || entry.sentiment_data?.business_category).split(' ')[1] : 'bg-slate-300'}`} 
-                                       title={entry.category || entry.sentiment_data.business_category}></div>
+                                       title={entry.category || entry.sentiment_data?.business_category}></div>
                                 )}
                               </div>
                             </CardContent>
@@ -661,7 +741,7 @@ export function JournalPage() {
                               <span>{formatDate(entry.created_at || entry.entry_date || '')}</span>
                               {(entry.category || entry.sentiment_data?.business_category) && (
                                 <div className={`w-1.5 h-1.5 rounded-full ${getCategoryColor(entry.category || entry.sentiment_data?.business_category).includes('bg-') ? getCategoryColor(entry.category || entry.sentiment_data?.business_category).split(' ')[1] : 'bg-slate-300'}`} 
-                                     title={entry.category || entry.sentiment_data.business_category}></div>
+                                     title={entry.category || entry.sentiment_data?.business_category}></div>
                               )}
                             </div>
                           </div>
@@ -723,7 +803,7 @@ export function JournalPage() {
                                   <span className="text-xs">{format(new Date(entry.entry_date || entry.created_at || ''), 'MMM d')}</span>
                                   {(entry.category || entry.sentiment_data?.business_category) && (
                                     <div className={`w-1 h-1 rounded-full ${getCategoryColor(entry.category || entry.sentiment_data?.business_category).includes('bg-') ? getCategoryColor(entry.category || entry.sentiment_data?.business_category).split(' ')[1] : 'bg-slate-300'}`} 
-                                         title={entry.category || entry.sentiment_data.business_category}></div>
+                                         title={entry.category || entry.sentiment_data?.business_category}></div>
                                   )}
                                 </div>
                               </div>
