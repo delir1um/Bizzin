@@ -3,75 +3,61 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Play, BookOpen, Clock, Star, Users, Award, Search } from "lucide-react"
+import { StandardPageLayout, createStatCard } from "@/components/layout/StandardPageLayout"
 
 export function TrainingPage() {
+  const statCards = [
+    createStatCard(
+      'available',
+      'Courses Available',
+      24,
+      'Courses Available',
+      <BookOpen className="w-6 h-6 text-white" />,
+      'blue'
+    ),
+    createStatCard(
+      'completed',
+      'Completed',
+      3,
+      'Completed',
+      <Award className="w-6 h-6 text-white" />,
+      'green'
+    ),
+    createStatCard(
+      'time',
+      'Learning Time',
+      '45h',
+      'Learning Time',
+      <Clock className="w-6 h-6 text-white" />,
+      'purple'
+    ),
+    createStatCard(
+      'progress',
+      'In Progress',
+      2,
+      'In Progress',
+      <Play className="w-6 h-6 text-white" />,
+      'orange'
+    )
+  ]
+
+  const secondaryActions = [{
+    label: 'Browse All Courses',
+    icon: <Search className="w-4 h-4 mr-2" />,
+    onClick: () => console.log('Browse courses'),
+    variant: 'outline' as const,
+    className: 'border-orange-200 text-orange-700 hover:bg-orange-50'
+  }]
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Page Header */}
-      <div className="mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Business Training</h1>
-            <p className="mt-2 text-lg text-slate-600 dark:text-slate-300">
-              Learn essential skills to grow your business
-            </p>
-          </div>
-          <div className="mt-4 sm:mt-0">
-            <Button 
-              variant="outline"
-              className="border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-950/20"
-            >
-              <Search className="w-4 h-4 mr-2" />
-              Browse All Courses
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Progress Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-900 border-blue-200 dark:border-blue-800">
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-500 rounded-lg shadow-sm">
-                <BookOpen className="w-5 h-5 text-white" />
-              </div>
-              <div className="ml-4">
-                <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">24</div>
-                <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Courses Available</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900 border-green-200 dark:border-green-800">
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-500 rounded-lg shadow-sm">
-                <Award className="w-5 h-5 text-white" />
-              </div>
-              <div className="ml-4">
-                <div className="text-2xl font-bold text-green-900 dark:text-green-100">3</div>
-                <p className="text-sm font-medium text-green-700 dark:text-green-300">Completed</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-purple-50 to-pink-100 dark:from-purple-950 dark:to-pink-900 border-purple-200 dark:border-purple-800">
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-500 rounded-lg shadow-sm">
-                <Clock className="w-5 h-5 text-white" />
-              </div>
-              <div className="ml-4">
-                <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">45h</div>
-                <p className="text-sm font-medium text-purple-700 dark:text-purple-300">Learning Time</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+    <StandardPageLayout
+      title="Business Training"
+      subtitle="Learn essential skills to grow your business"
+      secondaryActions={secondaryActions}
+      stats={statCards}
+      showSearch={false}
+      showFilters={false}
+    >
 
       {/* Current Learning */}
       <div className="mb-8">
@@ -258,6 +244,6 @@ export function TrainingPage() {
           </Card>
         </div>
       </div>
-    </div>
+    </StandardPageLayout>
   )
 }

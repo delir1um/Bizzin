@@ -17,6 +17,7 @@ import { GoalsService } from "@/lib/services/goals"
 import { useAuth } from "@/hooks/AuthProvider"
 import { Goal } from "@/types/goals"
 import { ConfettiCelebration, CelebrationToast } from "@/components/ConfettiCelebration"
+import { StandardPageLayout, createStatCard } from "@/components/layout/StandardPageLayout"
 
 type FilterStatus = 'all' | 'active' | 'completed' | 'at_risk'
 type FilterPriority = 'all' | 'high' | 'medium' | 'low'

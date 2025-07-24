@@ -15,6 +15,7 @@ import { EditEntryModal } from "@/components/journal/EditEntryModal"
 import { AIMigrationDialog } from "@/components/journal/AIMigrationDialog"
 import { AIMigrationService } from "@/lib/services/aiMigration"
 import { motion, AnimatePresence } from "framer-motion"
+import { StandardPageLayout, createStatCard } from "@/components/layout/StandardPageLayout"
 
 export function JournalPage() {
   const [user, setUser] = useState<any>(null)
@@ -271,6 +272,65 @@ export function JournalPage() {
     setSelectedEntry(null)
   }
 
+  // Calculate enhanced statistics
+  const calculateStats = () => {
+    // Calculate writing streak
+    const sortedEntries = [...entries].sort((a, b) => 
+      new Date(b.entry_date || b.created_at || '').getTime() - 
+      new Date(a.entry_date || a.created_at || '').getTime()
+    )
+    
+    let streak = 0
+    const today = new Date()
+    let checkDate = new Date(today)
+    
+    for (let i = 0; i < 30; i++) { // Check last 30 days
+      const hasEntry = sortedEntries.some(entry => {
+        const entryDate = new Date(entry.entry_date || entry.created_at || '')
+        return entryDate.toDateString() === checkDate.toDateString()
+      })
+      
+      if (hasEntry) {
+        streak++
+      } else if (streak > 0) {
+        break // Streak broken
+      }
+      
+      checkDate.setDate(checkDate.getDate() - 1)
+    }
+    
+    // Calculate dominant mood
+    const moodCounts = entries.reduce((acc, entry) => {
+      const mood = entry.mood || entry.sentiment_data?.primary_mood
+      if (mood) {
+        acc[mood] = (acc[mood] || 0) + 1
+      }
+      return acc
+    }, {} as Record<string, number>)
+    
+    const dominantMood = Object.entries(moodCounts)
+      .sort((a, b) => b[1] - a[1])[0]?.[0] || 'Mixed'
+    
+    // Calculate business growth entries (Achievement, Growth categories)
+    const growthEntries = entries.filter(entry => {
+      const category = entry.category || entry.sentiment_data?.business_category
+      return category === 'Achievement' || category === 'Growth' || category === 'Success'
+    }).length
+    
+    // Calculate average confidence
+    const confidenceEntries = entries.filter(entry => 
+      entry.sentiment_data?.confidence && entry.sentiment_data.confidence > 0
+    )
+    const avgConfidence = confidenceEntries.length > 0 
+      ? Math.round(confidenceEntries.reduce((sum, entry) => 
+          sum + (entry.sentiment_data?.confidence || 0), 0) / confidenceEntries.length)
+      : 0
+
+    return { streak, dominantMood, growthEntries, avgConfidence }
+  }
+
+  const stats = calculateStats()
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50">
@@ -291,169 +351,67 @@ export function JournalPage() {
     )
   }
 
+  const statCards = [
+    createStatCard(
+      'streak',
+      'Day Streak',
+      stats.streak,
+      'Day Streak',
+      <Flame className="w-6 h-6 text-white" />,
+      'orange'
+    ),
+    createStatCard(
+      'growth',
+      'Growth Wins',
+      stats.growthEntries,
+      'Growth Wins',
+      <TrendingUp className="w-6 h-6 text-white" />,
+      'green'
+    ),
+    createStatCard(
+      'mood',
+      'Dominant Mood',
+      `${getMoodEmoji(stats.dominantMood)} ${stats.dominantMood}`,
+      'Dominant Mood',
+      <Heart className="w-6 h-6 text-white" />,
+      'blue'
+    ),
+    createStatCard(
+      'confidence',
+      'AI Confidence',
+      `${stats.avgConfidence}%`,
+      'AI Confidence',
+      <Brain className="w-6 h-6 text-white" />,
+      'purple'
+    )
+  ]
+
+  const primaryAction = {
+    label: 'Write Entry',
+    icon: <PlusCircle className="w-4 h-4 mr-2" />,
+    onClick: () => setShowWriteModal(true)
+  }
+
+  const secondaryActions = AIMigrationService.needsMigration() && entries.length > 0 ? [{
+    label: 'Update AI Analysis',
+    icon: <Brain className="w-4 h-4 mr-2" />,
+    onClick: () => setShowMigrationDialog(true),
+    variant: 'outline' as const,
+    className: 'border-orange-200 text-orange-700 hover:bg-orange-50'
+  }] : []
+
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 mb-2">Business Journal</h1>
-              <p className="text-slate-600">
-                Track your thoughts, insights, and business learnings. AI automatically detects mood and category.
-              </p>
-            </div>
-            <div className="flex gap-3">
-              {AIMigrationService.needsMigration() && entries.length > 0 && (
-                <Button 
-                  onClick={() => setShowMigrationDialog(true)}
-                  variant="outline"
-                  className="border-orange-200 text-orange-700 hover:bg-orange-50"
-                >
-                  <Brain className="w-4 h-4 mr-2" />
-                  Update AI Analysis
-                </Button>
-              )}
-              <Button 
-                onClick={() => setShowWriteModal(true)}
-                className="bg-orange-600 hover:bg-orange-700 text-white"
-              >
-                <PlusCircle className="w-4 h-4 mr-2" />
-                Write Entry
-              </Button>
-            </div>
-          </div>
-
-          {/* Search */}
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-            <Input
-              placeholder="Search your entries..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </div>
-
-        {/* Enhanced Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {(() => {
-            // Calculate writing streak
-            const sortedEntries = [...entries].sort((a, b) => 
-              new Date(b.entry_date || b.created_at || '').getTime() - 
-              new Date(a.entry_date || a.created_at || '').getTime()
-            )
-            
-            let streak = 0
-            const today = new Date()
-            let checkDate = new Date(today)
-            
-            for (let i = 0; i < 30; i++) { // Check last 30 days
-              const hasEntry = sortedEntries.some(entry => {
-                const entryDate = new Date(entry.entry_date || entry.created_at || '')
-                return entryDate.toDateString() === checkDate.toDateString()
-              })
-              
-              if (hasEntry) {
-                streak++
-              } else if (streak > 0) {
-                break // Streak broken
-              }
-              
-              checkDate.setDate(checkDate.getDate() - 1)
-            }
-            
-            // Calculate dominant mood
-            const moodCounts = entries.reduce((acc, entry) => {
-              const mood = entry.mood || entry.sentiment_data?.primary_mood
-              if (mood) {
-                acc[mood] = (acc[mood] || 0) + 1
-              }
-              return acc
-            }, {} as Record<string, number>)
-            
-            const dominantMood = Object.entries(moodCounts)
-              .sort((a, b) => b[1] - a[1])[0]?.[0] || 'Mixed'
-            
-            // Calculate business growth entries (Achievement, Growth categories)
-            const growthEntries = entries.filter(entry => {
-              const category = entry.category || entry.sentiment_data?.business_category
-              return category === 'Achievement' || category === 'Growth' || category === 'Success'
-            }).length
-            
-            // Calculate average confidence
-            const confidenceEntries = entries.filter(entry => 
-              entry.sentiment_data?.confidence && entry.sentiment_data.confidence > 0
-            )
-            const avgConfidence = confidenceEntries.length > 0 
-              ? Math.round(confidenceEntries.reduce((sum, entry) => 
-                  sum + (entry.sentiment_data?.confidence || 0), 0) / confidenceEntries.length)
-              : 0
-
-            return (
-              <>
-                <Card className="bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200 hover:shadow-md transition-all duration-200">
-                  <CardContent className="p-4">
-                    <div className="flex items-center">
-                      <div className="p-2 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg mr-3">
-                        <Flame className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-2xl font-bold text-slate-900">{streak}</p>
-                        <p className="text-sm text-slate-600">Day Streak</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 hover:shadow-md transition-all duration-200">
-                  <CardContent className="p-4">
-                    <div className="flex items-center">
-                      <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg mr-3">
-                        <TrendingUp className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-2xl font-bold text-slate-900">{growthEntries}</p>
-                        <p className="text-sm text-slate-600">Growth Wins</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200 hover:shadow-md transition-all duration-200">
-                  <CardContent className="p-4">
-                    <div className="flex items-center">
-                      <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg mr-3">
-                        <Heart className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                          {getMoodEmoji(dominantMood)} {dominantMood}
-                        </p>
-                        <p className="text-sm text-slate-600">Dominant Mood</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 hover:shadow-md transition-all duration-200">
-                  <CardContent className="p-4">
-                    <div className="flex items-center">
-                      <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg mr-3">
-                        <Brain className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-2xl font-bold text-slate-900">{avgConfidence}%</p>
-                        <p className="text-sm text-slate-600">AI Confidence</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </>
-            )
-          })()}
-        </div>
+    <StandardPageLayout
+      title="Business Journal"
+      subtitle="Track your thoughts, insights, and business learnings. AI automatically detects mood and category."
+      primaryAction={primaryAction}
+      secondaryActions={secondaryActions}
+      stats={statCards}
+      searchPlaceholder="Search your entries..."
+      searchValue={searchQuery}
+      onSearchChange={setSearchQuery}
+      showFilters={false}
+    >
 
         {/* Chronological Entries */}
         <div className="space-y-6">
@@ -817,7 +775,6 @@ export function JournalPage() {
             </>
           )}
         </div>
-      </div>
 
       {/* Modals */}
       <SimpleCreateEntryModal
@@ -855,6 +812,6 @@ export function JournalPage() {
           })
         }}
       />
-    </div>
+    </StandardPageLayout>
   )
 }

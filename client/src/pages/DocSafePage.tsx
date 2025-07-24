@@ -16,6 +16,7 @@ import { PlanLimitBanner } from "@/components/plans/PlanLimitBanner"
 import { UpgradeModal } from "@/components/plans/UpgradeModal"
 import { usePlans } from "@/hooks/usePlans"
 import { format } from "date-fns"
+import { StandardPageLayout, createStatCard } from "@/components/layout/StandardPageLayout"
 
 export function DocSafePage() {
   const [user, setUser] = useState<any>(null)
