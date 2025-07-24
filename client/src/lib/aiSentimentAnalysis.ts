@@ -198,14 +198,25 @@ function detectBusinessCategory(lowerText: string): string {
     categoryScores.Achievement += 2;
   }
   
-  // Planning indicators
-  if (lowerText.match(/\b(plan|strategy|need|require|car|computer|equipment|tools|roadmap|prepare)\b/)) {
+  // Planning indicators (excluding research-oriented "need to find out")
+  if (lowerText.match(/\b(plan|strategy|roadmap|prepare|schedule|organize)\b/) || 
+      (lowerText.match(/\b(need|require)\b/) && !lowerText.match(/\b(find out|discover|research|investigate)\b/))) {
+    categoryScores.Planning += 2;
+  }
+  
+  // Equipment/tool planning (specific planning subcategory)
+  if (lowerText.match(/\b(car|computer|equipment|tools|laptop|software|hardware)\b/)) {
     categoryScores.Planning += 2;
   }
   
   // Learning indicators
   if (lowerText.match(/\b(learned|feedback|customers|respond|insight|understand|realize)\b/)) {
     categoryScores.Learning += 2;
+  }
+  
+  // Research indicators - should be checked BEFORE planning to avoid conflicts
+  if (lowerText.match(/\b(research|find out|discover|investigate|competitors|competition|market|analyze|study|explore|who|what|how|where|when|why)\b/)) {
+    categoryScores.Research += 3; // Higher priority than planning
   }
   
   // Find highest scoring category
