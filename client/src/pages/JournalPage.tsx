@@ -302,15 +302,8 @@ export function JournalPage() {
                         {entry.content}
                       </p>
                       {/* AI Analysis Summary */}
-                      {entry.sentiment_data && (entry.sentiment_data.insights?.[0] || entry.sentiment_data.business_context) && (
+                      {entry.sentiment_data && entry.sentiment_data.insights?.[0] && (
                         <div className="mt-3 space-y-2">
-                          {entry.sentiment_data.business_context && (
-                            <div className="p-2 bg-blue-50 rounded border border-blue-200">
-                              <p className="text-xs text-blue-700">
-                                <strong>Context:</strong> {entry.sentiment_data.business_context}
-                              </p>
-                            </div>
-                          )}
                           {entry.sentiment_data.insights?.[0] && (
                             <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
                               <div className="flex items-start gap-2">

@@ -31,7 +31,7 @@ const businessEmotions = {
     energy: 'high' as const
   },
   excited: {
-    keywords: ['excited', 'thrilled', 'energized', 'motivated', 'enthusiastic', 'passionate', 'pumped', 'inspired', 'eager'],
+    keywords: ['excited', 'thrilled', 'energized', 'motivated', 'enthusiastic', 'passionate', 'pumped', 'inspired', 'eager', 'full of', 'new', 'ready'],
     weight: 0.9,
     energy: 'high' as const
   },
@@ -41,8 +41,8 @@ const businessEmotions = {
     energy: 'medium' as const
   },
   optimistic: {
-    keywords: ['optimistic', 'hopeful', 'positive', 'bright', 'promising', 'potential', 'opportunity', 'growth', 'bullish'],
-    weight: 0.8,
+    keywords: ['optimistic', 'hopeful', 'positive', 'bright', 'promising', 'potential', 'opportunity', 'growth', 'bullish', 'good', 'great', 'excellent', 'amazing', 'wonderful', 'fantastic', 'awesome', 'opportunities'],
+    weight: 0.9,
     energy: 'high' as const
   },
   stressed: {
@@ -78,9 +78,9 @@ const businessEmotions = {
 };
 
 const businessContexts = {
-  growth: ['scaling', 'expansion', 'growing', 'increase', 'revenue', 'customers', 'market', 'opportunity', 'profit', 'sales'],
+  growth: ['scaling', 'expansion', 'growing', 'increase', 'revenue', 'customers', 'market', 'opportunity', 'profit', 'sales', 'opportunities', 'new', 'potential', 'promising'],
   challenge: ['problem', 'issue', 'difficulty', 'obstacle', 'setback', 'failure', 'mistake', 'error', 'crisis', 'struggle', 'tired', 'exhausted', 'dont feel like', 'unmotivated', 'burnout', 'stressed'],
-  achievement: ['success', 'win', 'accomplished', 'milestone', 'breakthrough', 'completed', 'achieved', 'goal', 'victory', 'triumph'],
+  achievement: ['success', 'win', 'accomplished', 'milestone', 'breakthrough', 'completed', 'achieved', 'goal', 'victory', 'triumph', 'good day', 'great', 'excellent'],
   planning: ['strategy', 'plan', 'roadmap', 'timeline', 'schedule', 'prepare', 'organize', 'structure', 'blueprint', 'framework'],
   reflection: ['learned', 'realize', 'understand', 'insight', 'feedback', 'review', 'analyze', 'think', 'contemplate', 'evaluate']
 };
@@ -329,9 +329,13 @@ function generateBusinessInsights(primaryEmotion: string, category: string, emot
         "Your confidence is showing - this mindset often leads to breakthrough moments");
       break;
     case 'excited':
-      insights.push(hasTeam ? 
-        "High energy and enthusiasm can be contagious - perfect time to rally your team around new initiatives" :
-        "High energy and enthusiasm can be contagious - great time to take bold action");
+      if (text && /(new|opportunities|full of)/i.test(text)) {
+        insights.push("This excitement about new possibilities drives innovation - capture these ideas while your energy is high");
+      } else {
+        insights.push(hasTeam ? 
+          "High energy and enthusiasm can be contagious - perfect time to rally your team around new initiatives" :
+          "High energy and enthusiasm can be contagious - great time to take bold action");
+      }
       break;
     case 'focused':
       insights.push(hasMetrics ? 
@@ -352,7 +356,11 @@ function generateBusinessInsights(primaryEmotion: string, category: string, emot
       insights.push("Celebrating wins builds momentum - document what worked for future reference and team learning");
       break;
     case 'optimistic':
-      insights.push("Optimism coupled with action creates results - channel this energy into your next key initiative");
+      if (text && /(opportunity|opportunities|potential|promising)/i.test(text)) {
+        insights.push("Opportunity recognition is an entrepreneurial strength - your positive outlook spots possibilities others miss");
+      } else {
+        insights.push("Optimism coupled with action creates results - channel this energy into your next key initiative");
+      }
       break;
     case 'determined':
       insights.push("This determination is your competitive advantage - persistence separates successful entrepreneurs");
