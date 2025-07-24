@@ -323,12 +323,7 @@ export function JournalPage() {
                             {entry.title}
                           </CardTitle>
                         </div>
-                        {entry.sentiment_data?.confidence && entry.sentiment_data.confidence > 40 && (
-                          <Badge variant="outline" className="text-xs flex items-center gap-1 bg-orange-50 text-orange-700 border-orange-200">
-                            <Brain className="w-3 h-3" />
-                            AI: {Math.round(entry.sentiment_data.confidence)}%
-                          </Badge>
-                        )}
+
                       </div>
 
                       {/* Metadata Row */}
@@ -350,7 +345,7 @@ export function JournalPage() {
                         )}
                       </div>
                     </CardHeader>
-                    <CardContent className="pt-0">
+                    <CardContent className="pt-0 pb-4">
                       {/* Content Preview */}
                       <div className="mb-3">
                         <p className="text-slate-700 leading-relaxed line-clamp-2">
@@ -384,25 +379,7 @@ export function JournalPage() {
                         </div>
                       )}
 
-                      {/* Edit Action - Visible on Hover */}
-                      <div className="mt-4 pt-3 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-xs text-slate-400">
-                            <span>Click to {entry.content.length > 300 ? 'read or edit' : 'edit'}</span>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 text-xs text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleEditEntry(entry)
-                            }}
-                          >
-                            Edit Entry
-                          </Button>
-                        </div>
-                      </div>
+
                     </CardContent>
                   </Card>
                 </motion.div>
