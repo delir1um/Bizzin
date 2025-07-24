@@ -1,5 +1,6 @@
 // Robust AI-powered sentiment analysis with comprehensive training data and user learning
 import { AITrainingValidator, UserLearningSystem, BUSINESS_JOURNAL_TRAINING_DATA } from './aiTrainingData';
+import { BusinessTitleGenerator, generateBusinessTitle } from './aiTitleGenerator';
 export interface BusinessMood {
   primary: string;
   confidence: number;
@@ -14,6 +15,7 @@ export interface BusinessSentiment {
   emotions: string[];
   insights: string[];
   business_category: 'growth' | 'challenge' | 'achievement' | 'planning' | 'reflection' | 'learning' | 'research';
+  suggested_title?: string;
   // Legacy compatibility properties
   mood?: string;
   category?: string;
@@ -568,13 +570,22 @@ function analyzeLocalSentiment(content: string, title?: string): BusinessSentime
   // Generate insights
   const insights = generateAdvancedBusinessInsights(primaryEmotion, category, text, finalConfidence);
   
+  // Generate enhanced business title
+  const suggestedTitle = generateBusinessTitle(
+    content, 
+    category.charAt(0).toUpperCase() + category.slice(1), 
+    primaryEmotion,
+    energy
+  );
+
   return {
     primary_mood: primaryEmotion,
     confidence: Math.round(finalConfidence * 100),
     energy,
     emotions: topEmotions,
     insights,
-    business_category: category
+    business_category: category,
+    suggested_title: suggestedTitle
   };
 }
 
@@ -727,13 +738,22 @@ function processHuggingFaceResults(sentimentData: any, emotionData: any, content
   // Generate AI-enhanced insights
   const insights = generateAdvancedBusinessInsights(primaryEmotion, category, text, confidence);
   
+  // Generate enhanced business title
+  const suggestedTitle = generateBusinessTitle(
+    content, 
+    category.charAt(0).toUpperCase() + category.slice(1), 
+    primaryEmotion,
+    energy
+  );
+  
   return {
     primary_mood: primaryEmotion,
     confidence: Math.round(Math.min(confidence, 1.0) * 100),
     energy,
     emotions: emotions.slice(0, 3),
     insights,
-    business_category: category
+    business_category: category,
+    suggested_title: suggestedTitle
   };
 }
 

@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
 import { analyzeBusinessSentimentAI } from "@/lib/aiSentimentAnalysis"
 import { motion, AnimatePresence } from "framer-motion"
+import { SuggestedTitleButton } from "./SuggestedTitleButton"
 
 interface SimpleCreateEntryModalProps {
   isOpen: boolean
@@ -20,6 +21,7 @@ interface SimpleCreateEntryModalProps {
 }
 
 export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: SimpleCreateEntryModalProps) {
+  const [title, setTitle] = useState("")
   const [content, setContent] = useState("")
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [aiPreview, setAiPreview] = useState<any>(null)
@@ -34,16 +36,24 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
       setIsAnalyzing(true)
       const sentimentData = await analyzeBusinessSentimentAI(content)
       
-      // Generate AI title from content
-      const aiTitle = generateTitleFromContent(content)
-      
       setIsAnalyzing(false)
-      setAiPreview({ ...sentimentData, generated_title: aiTitle })
+      setAiPreview(sentimentData)
+      
+      // Auto-suggest title if none provided
+      if (!title && sentimentData.suggested_title) {
+        setTimeout(() => {
+          toast({
+            title: "AI Title Suggestion",
+            description: `Suggested: "${sentimentData.suggested_title}"`,
+            className: "border-orange-200 bg-orange-50 text-orange-800"
+          })
+        }, 500)
+      }
 
       const { data, error } = await supabase
         .from('journal_entries')
         .insert({
-          title: aiPreview?.generated_title || generateTitleFromContent(content),
+          title: title || sentimentData.suggested_title || generateTitleFromContent(content),
           content: content.trim(),
           user_id: user.id,
           sentiment_data: sentimentData,
@@ -87,10 +97,15 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
   }
 
   const handleClose = () => {
+    setTitle("")
     setContent("")
     setAiPreview(null)
     setIsAnalyzing(false)
     onClose()
+  }
+
+  const handleUseSuggestedTitle = (suggestedTitle: string) => {
+    setTitle(suggestedTitle)
   }
 
   // Generate a smart title from content
@@ -175,8 +190,26 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
           {/* Entry Form */}
           <div className="space-y-4">
             <div>
+              <Input
+                placeholder="Entry title (optional - AI will suggest one)"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="mb-4"
+              />
+            </div>
+            
+            {/* AI Suggested Title */}
+            {aiPreview?.suggested_title && (
+              <SuggestedTitleButton
+                suggestedTitle={aiPreview.suggested_title}
+                onUseSuggestion={handleUseSuggestedTitle}
+                isVisible={true}
+              />
+            )}
+            
+            <div>
               <Textarea
-                placeholder="What's on your mind?"
+                placeholder="What's on your mind? Start typing and AI will suggest a title and analyze your business thoughts..."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 className="min-h-[120px] resize-none"
