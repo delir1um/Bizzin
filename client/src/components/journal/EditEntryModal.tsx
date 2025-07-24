@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -17,8 +19,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { X, Calendar, Save, Trash2 } from "lucide-react"
+import { X, Calendar, Save, Trash2, Settings } from "lucide-react"
 import type { JournalEntry, UpdateJournalEntry } from "@/types/journal"
+import { JOURNAL_MOODS, JOURNAL_CATEGORIES } from "@/types/journal"
 import { useQueryClient, useMutation } from "@tanstack/react-query"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
@@ -29,6 +32,8 @@ const editEntrySchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
   content: z.string().min(10, "Content must be at least 10 characters").max(10000, "Content must be less than 10000 characters"),
   entry_date: z.string().optional(),
+  mood: z.string().optional(),
+  category: z.string().optional(),
 })
 
 type FormData = z.infer<typeof editEntrySchema>
@@ -42,6 +47,7 @@ interface EditEntryModalProps {
 
 export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEntryModalProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [showAdvanced, setShowAdvanced] = useState(false)
   const queryClient = useQueryClient()
   const { toast } = useToast()
   const { user } = useAuth()
@@ -51,6 +57,7 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
     handleSubmit,
     formState: { errors, isSubmitting },
     setValue,
+    watch,
     reset,
   } = useForm<FormData>({
     resolver: zodResolver(editEntrySchema),
@@ -58,8 +65,22 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
       title: "",
       content: "",
       entry_date: "",
+      mood: "",
+      category: "",
     }
   })
+
+  // Helper function to map AI business categories to journal categories  
+  const mapBusinessCategoryToJournal = (businessCategory: string): string => {
+    const mapping: Record<string, string> = {
+      'growth': 'Strategy',
+      'challenge': 'Research',
+      'achievement': 'Milestone',
+      'planning': 'Planning',
+      'reflection': 'Learning'
+    };
+    return mapping[businessCategory] || 'General';
+  };
 
   // Initialize form with entry data when modal opens
   useEffect(() => {
@@ -68,6 +89,8 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
         title: entry.title || "",
         content: entry.content || "",
         entry_date: entry.entry_date ? format(new Date(entry.entry_date), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
+        mood: entry.mood || (entry.sentiment_data?.primary_mood || ""),
+        category: entry.category || (entry.sentiment_data?.business_category ? mapBusinessCategoryToJournal(entry.sentiment_data.business_category) : ""),
       })
     }
   }, [entry, isOpen, reset])
@@ -122,6 +145,8 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
       title: data.title,
       content: data.content,
       entry_date: data.entry_date || undefined,
+      mood: data.mood || undefined,
+      category: data.category || undefined,
     }
 
     editEntryMutation.mutate(updateData)
@@ -211,21 +236,77 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
               )}
             </div>
 
-            {/* AI Analysis Note */}
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-medium text-orange-800 mb-1">AI Analysis</h4>
-                  <p className="text-sm text-orange-700">
-                    Mood and category are automatically detected by AI based on your content. Edit the content above and the AI will update the analysis.
+            {/* AI Override Options */}
+            <div className="border-t border-slate-200 pt-4">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className="text-slate-600 hover:text-slate-800 mb-3"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                {showAdvanced ? 'Hide' : 'Show'} AI Overrides
+              </Button>
+
+              {showAdvanced && (
+                <div className="space-y-4 bg-slate-50 p-4 rounded-lg">
+                  <p className="text-sm text-slate-600 mb-3">
+                    The AI automatically detects mood and category. You can override these if needed:
                   </p>
+                  
+                  {/* Current AI Analysis Display */}
+                  {entry?.sentiment_data && (
+                    <div className="mb-4 p-3 bg-white rounded-md border">
+                      <h4 className="text-sm font-medium text-slate-700 mb-2">AI Detected:</h4>
+                      <div className="flex gap-2">
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                          Mood: {entry.sentiment_data.primary_mood}
+                        </Badge>
+                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                          Category: {mapBusinessCategoryToJournal(entry.sentiment_data.business_category)}
+                        </Badge>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Mood Override */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Override Mood
+                    </label>
+                    <Select value={watch("mood") || ""} onValueChange={(value) => setValue("mood", value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Keep AI detection or choose manually" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">Keep AI Detection</SelectItem>
+                        {JOURNAL_MOODS.map((mood) => (
+                          <SelectItem key={mood} value={mood}>{mood}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Category Override */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Override Category
+                    </label>
+                    <Select value={watch("category") || ""} onValueChange={(value) => setValue("category", value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Keep AI detection or choose manually" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">Keep AI Detection</SelectItem>
+                        {JOURNAL_CATEGORIES.map((category) => (
+                          <SelectItem key={category} value={category}>{category}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Action Buttons */}
