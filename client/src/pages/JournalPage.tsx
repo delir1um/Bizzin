@@ -81,7 +81,9 @@ export function JournalPage() {
       'concerned': '😟',
       'overwhelmed': '😵‍💫',
       'sad': '😢',
-      'tired': '😴'
+      'tired': '😴',
+      'thinking': '🤔',
+      'planning': '📋'
     }
     
     return moodEmojis[mood.toLowerCase()] || '📝'
