@@ -1,29 +1,26 @@
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Badge } from "@/components/ui/badge"
-import { useLocation } from "wouter"
-import { useAuth } from "@/hooks/AuthProvider"
-import { useQuery } from "@tanstack/react-query"
-import { CalendarDays, Calendar, Notebook, File, PlayCircle, Target, TrendingUp, Clock, AlertTriangle, Plus, ArrowRight, BarChart3, PieChart } from "lucide-react"
-import { GoalsService } from "@/lib/services/goals"
-import { Goal } from "@/types/goals"
-import { JournalService } from "@/lib/services/journal"
-import type { JournalEntry } from "@/types/journal"
-import { format, isAfter, differenceInDays, isToday, differenceInDays as daysDiff } from "date-fns"
-import { ConfettiCelebration, CelebrationToast } from "@/components/ConfettiCelebration"
-import { ProgressDonutChart } from "@/components/dashboard/ProgressDonutChart"
-import { CategoryChart } from "@/components/dashboard/CategoryChart"
-import { PriorityProgressBars } from "@/components/dashboard/PriorityProgressBars"
-import { DeadlineTimeline } from "@/components/dashboard/DeadlineTimeline"
-import { InspirationalQuotes } from "@/lib/inspirationalQuotes"
-import { AnimatedCard, AnimatedGrid, AnimatedItem } from "@/components/ui/animated-card"
+import React, { useState, useEffect } from 'react'
+import { useLocation } from 'wouter'
+import { useQuery } from '@tanstack/react-query'
+import { useAuth } from '@/hooks/AuthProvider'
+import { GoalsService } from '@/lib/services/goals'
+import { Goal } from '@/types/goals'
+import { JournalService } from '@/lib/services/journal'
+import { InspirationalQuotes } from '@/lib/inspirationalQuotes'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
+import { AnimatedGrid, AnimatedItem } from '@/components/ui/animated-card'
+import { ConfettiCelebration, CelebrationToast } from '@/components/ConfettiCelebration'
+import {
+  Target, TrendingUp, Clock, AlertTriangle, File, Flame, 
+  Brain, Plus, ArrowRight, PlayCircle, BarChart3, Notebook
+} from 'lucide-react'
+import { isToday, format, subDays, differenceInDays } from 'date-fns'
 
 export function DashboardPage() {
-  const { user } = useAuth()
   const [, setLocation] = useLocation()
+  const { user } = useAuth()
   const [celebrationTrigger, setCelebrationTrigger] = useState(false)
   const [celebrationToastVisible, setCelebrationToastVisible] = useState(false)
   const [completedGoal, setCompletedGoal] = useState<Goal | null>(null)
@@ -34,7 +31,6 @@ export function DashboardPage() {
   const {
     data: goals = [],
     isLoading: goalsLoading,
-    error: goalsError
   } = useQuery({
     queryKey: ['goals', user?.id],
     queryFn: () => user ? GoalsService.getUserGoals(user.id) : Promise.resolve([]),
@@ -51,36 +47,33 @@ export function DashboardPage() {
     enabled: !!user
   })
 
-  // Calculate goal statistics
+  // Calculate comprehensive business intelligence stats from all features
   const stats = GoalsService.calculateStats(goals)
-  
-  // Get recent goals and upcoming deadlines
-  const recentGoals = goals.slice(0, 3)
-  const upcomingDeadlines = goals
-    .filter(goal => goal.status !== 'completed' && goal.deadline)
-    .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
-    .slice(0, 3)
-  
-  // Get overdue goals
+
+  // Goals Intelligence
   const overdueGoals = goals.filter(goal => 
-    goal.status !== 'completed' && 
-    goal.deadline && 
-    isAfter(new Date(), new Date(goal.deadline))
+    goal.target_date && new Date() > new Date(goal.target_date) && goal.status !== 'completed'
   )
   
-  // Get daily inspirational quote
-  const dailyQuote = user ? InspirationalQuotes.getDailyInspiration(user) : null
+  const upcomingDeadlines = goals.filter(goal => 
+    goal.target_date && 
+    new Date() <= new Date(goal.target_date) && 
+    differenceInDays(new Date(goal.target_date), new Date()) <= 7 &&
+    goal.status !== 'completed'
+  ).sort((a, b) => new Date(a.target_date!).getTime() - new Date(b.target_date!).getTime())
 
-  // Calculate journal insights with goal integration
+  // Journal Intelligence
   const journalInsights = {
     totalEntries: journalEntries.length,
     todayEntries: journalEntries.filter(entry => isToday(new Date(entry.created_at))).length,
-    weeklyEntries: journalEntries.filter(entry => {
-      const daysDiff = Math.floor((Date.now() - new Date(entry.created_at).getTime()) / (1000 * 60 * 60 * 24))
-      return daysDiff <= 7
+    thisWeekEntries: journalEntries.filter(entry => {
+      const entryDate = new Date(entry.created_at);
+      const weekAgo = subDays(new Date(), 7);
+      return entryDate >= weekAgo;
     }).length,
     writingStreak: (() => {
-      if (journalEntries.length === 0) return 0
+      if (journalEntries.length === 0) return 0;
+      
       const uniqueDates = Array.from(new Set(journalEntries.map(entry => 
         format(new Date(entry.created_at), 'yyyy-MM-dd')
       ))).sort().reverse()
@@ -103,7 +96,13 @@ export function DashboardPage() {
       return streak
     })(),
     dominantMood: (() => {
-      const moodCounts = journalEntries.reduce((acc, entry) => {
+      const recentEntries = journalEntries.filter(entry => {
+        const entryDate = new Date(entry.created_at);
+        const weekAgo = subDays(new Date(), 7);
+        return entryDate >= weekAgo;
+      });
+      
+      const moodCounts = recentEntries.reduce((acc, entry) => {
         if (entry.sentiment_data?.primary_mood) {
           acc[entry.sentiment_data.primary_mood] = (acc[entry.sentiment_data.primary_mood] || 0) + 1
         }
@@ -112,652 +111,388 @@ export function DashboardPage() {
       
       return Object.entries(moodCounts).sort(([,a], [,b]) => b - a)[0]
     })(),
-    recentEntry: journalEntries
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0],
-    // Goal-journal integration insights
-    entriesWithGoals: journalEntries.filter(entry => entry.related_goal_id).length,
-    goalEngagementRate: journalEntries.length > 0 ? 
-      Math.round((journalEntries.filter(entry => entry.related_goal_id).length / journalEntries.length) * 100) : 0,
-    mostJournaledGoal: (() => {
-      const goalCounts = journalEntries.reduce((acc, entry) => {
-        if (entry.related_goal_id) {
-          acc[entry.related_goal_id] = (acc[entry.related_goal_id] || 0) + 1
-        }
-        return acc
-      }, {} as Record<string, number>)
+    avgConfidence: (() => {
+      const recentEntries = journalEntries.filter(entry => {
+        const entryDate = new Date(entry.created_at);
+        const weekAgo = subDays(new Date(), 7);
+        return entryDate >= weekAgo && entry.sentiment_data?.confidence_score;
+      });
       
-      const topGoalId = Object.entries(goalCounts).sort(([,a], [,b]) => b - a)[0]?.[0]
-      return topGoalId ? goals.find(g => g.id === topGoalId) : null
-    })()
+      if (recentEntries.length === 0) return 0;
+      
+      const totalConfidence = recentEntries.reduce((sum, entry) => 
+        sum + (entry.sentiment_data?.confidence_score || 0), 0);
+      return Math.round(totalConfidence / recentEntries.length);
+    })(),
+    goalLinkedEntries: journalEntries.filter(entry => entry.related_goal_id).length
   }
+
+  // Business Health Score (AI-derived from goals + journal)
+  const businessHealthScore = (() => {
+    let score = 50; // Base score
+    
+    // Goals contribution (40% of score)
+    if (stats.total > 0) {
+      score += (stats.completed / stats.total) * 20; // Up to +20 for completion rate
+      score += Math.min(stats.inProgress, 5) * 2; // Up to +10 for active goals
+      score -= Math.min(overdueGoals.length, 3) * 5; // -5 per overdue (max -15)
+    }
+    
+    // Journal contribution (30% of score)
+    if (journalInsights.writingStreak > 0) {
+      score += Math.min(journalInsights.writingStreak, 7) * 2; // Up to +14 for streak
+    }
+    if (journalInsights.avgConfidence > 0) {
+      score += ((journalInsights.avgConfidence - 50) / 50) * 10; // Confidence impact
+    }
+    
+    // Integration bonus (10% of score) 
+    if (journalInsights.goalLinkedEntries > 0) {
+      score += Math.min(journalInsights.goalLinkedEntries, 5) * 2; // Up to +10 for integration
+    }
+    
+    return Math.max(0, Math.min(100, Math.round(score)));
+  })()
+
+  // Get daily quote
+  const dailyQuote = InspirationalQuotes.getDailyInspiration(user)
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="space-y-6">
-      {/* Welcome Section with Inspirational Quote */}
-      <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-          Welcome back, <span className="text-orange-600">
-            {user?.user_metadata?.full_name || 
-             user?.user_metadata?.first_name || 
-             user?.email?.split('@')[0] || 
-             "Entrepreneur"}
-          </span>!
-        </h1>
-        <p className="text-slate-600 dark:text-slate-300 mt-2 text-lg">Plan. Track. Grow.</p>
-        
-        {/* Daily Inspirational Quote */}
-        {dailyQuote && (
-          <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-600">
-            <blockquote className="text-slate-700 dark:text-slate-300 italic text-base leading-relaxed">
-              "{dailyQuote.text}"
-            </blockquote>
-            <div className="flex items-center justify-between mt-3">
-              <cite className="text-sm text-orange-600 dark:text-orange-400 font-medium not-italic">
-                — {dailyQuote.author}
-              </cite>
-              <span className="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-full capitalize">
-                {dailyQuote.category}
-              </span>
+        {/* Welcome Section with Inspirational Quote */}
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+            Welcome back, <span className="text-orange-600">
+              {user?.user_metadata?.full_name || 
+               user?.user_metadata?.first_name || 
+               user?.email?.split('@')[0] || 
+               "Entrepreneur"}
+            </span>!
+          </h1>
+          <p className="text-slate-600 dark:text-slate-300 mt-2 text-lg">Plan. Track. Grow.</p>
+          
+          {/* Daily Inspirational Quote */}
+          {dailyQuote && (
+            <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-600">
+              <blockquote className="text-slate-700 dark:text-slate-300 italic text-base leading-relaxed">
+                "{dailyQuote.text}"
+              </blockquote>
+              <div className="flex items-center justify-between mt-3">
+                <cite className="text-sm text-orange-600 dark:text-orange-400 font-medium not-italic">
+                  — {dailyQuote.author}
+                </cite>
+                <span className="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-full capitalize">
+                  {dailyQuote.category}
+                </span>
+              </div>
             </div>
+          )}
+          
+          <div className="flex items-center justify-between mt-4">
+            <span className="text-sm text-slate-500 dark:text-slate-400">Your strategic business command center</span>
+            <span className="text-sm text-slate-500 dark:text-slate-400">
+              Today: {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </span>
           </div>
-        )}
-        
-        <div className="mt-4 flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
-          <span>Today: {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
         </div>
-      </div>
 
-      {/* Quick Stats */}
-      <AnimatedGrid className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-4" stagger={0.1}>
-        {/* Goals Stats - Enhanced */}
-        <AnimatedItem>
-          <Card 
-          className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800 relative overflow-hidden group" 
-          onClick={() => navigate("/goals")}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-            <CardTitle className="text-sm font-medium text-orange-900 dark:text-orange-100">Total Goals</CardTitle>
-            <div className="p-2 bg-orange-500 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-300">
-              <Target className="h-4 w-4 text-white" />
-            </div>
-          </CardHeader>
-          <CardContent className="relative z-10">
-            {goalsLoading ? (
-              <>
-                <Skeleton className="h-8 w-12 mb-1" />
-                <Skeleton className="h-4 w-20" />
-              </>
-            ) : (
-              <>
-                <div className="text-3xl font-bold text-orange-900 dark:text-orange-100 mb-1">{stats.total}</div>
-                <p className="text-xs text-orange-700 dark:text-orange-300 font-medium">
-                  {stats.inProgress} in progress
+        {/* Strategic Business Intelligence Overview */}
+        <AnimatedGrid className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-6" stagger={0.1}>
+          {/* Business Health Score - AI Derived */}
+          <AnimatedItem>
+            <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-emerald-50 to-green-100 dark:from-emerald-950 dark:to-green-900 border-emerald-200 dark:border-emerald-800 relative overflow-hidden group col-span-2">
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                <CardTitle className="text-sm font-medium text-emerald-900 dark:text-emerald-100">Business Health</CardTitle>
+                <div className="p-2 bg-emerald-500 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <TrendingUp className="h-4 w-4 text-white" />
+                </div>
+              </CardHeader>
+              <CardContent className="relative z-10">
+                <div className="text-3xl font-bold text-emerald-900 dark:text-emerald-100 mb-1">
+                  {businessHealthScore}/100
+                </div>
+                <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium">
+                  AI-powered business score
                 </p>
-                <div className="mt-2 w-full bg-orange-200 dark:bg-orange-800 rounded-full h-1">
+                <div className="mt-2 w-full bg-emerald-200 dark:bg-emerald-800 rounded-full h-2">
                   <div 
-                    className="bg-orange-500 h-1 rounded-full transition-all duration-500" 
-                    style={{ width: `${stats.total > 0 ? (stats.inProgress / stats.total) * 100 : 0}%` }}
+                    className="bg-emerald-500 h-2 rounded-full transition-all duration-700" 
+                    style={{ width: `${businessHealthScore}%` }}
                   />
                 </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-        </AnimatedItem>
+              </CardContent>
+            </Card>
+          </AnimatedItem>
 
-        {/* Goal Completion Rate Enhanced */}
-        <AnimatedItem>
-        <Card 
-          className={`cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] relative overflow-hidden group ${
-            stats.successRate >= 70 
-              ? 'bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900 border-green-200 dark:border-green-800'
-              : stats.successRate >= 40 
-                ? 'bg-gradient-to-br from-amber-50 to-yellow-100 dark:from-amber-950 dark:to-yellow-900 border-amber-200 dark:border-amber-800'
-                : 'bg-gradient-to-br from-red-50 to-pink-100 dark:from-red-950 dark:to-pink-900 border-red-200 dark:border-red-800'
-          }`}
-          onClick={() => navigate("/goals")}
-        >
-          <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
-            stats.successRate >= 70 ? 'bg-gradient-to-r from-green-500/10 to-transparent'
-            : stats.successRate >= 40 ? 'bg-gradient-to-r from-amber-500/10 to-transparent'
-            : 'bg-gradient-to-r from-red-500/10 to-transparent'
-          }`} />
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-            <CardTitle className={`text-sm font-medium ${
-              stats.successRate >= 70 ? 'text-green-900 dark:text-green-100' 
-              : stats.successRate >= 40 ? 'text-amber-900 dark:text-amber-100' 
-              : 'text-red-900 dark:text-red-100'
-            }`}>
-              Success Rate
-            </CardTitle>
-            <div className={`p-2 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-300 ${
-              stats.successRate >= 70 ? 'bg-green-500' 
-              : stats.successRate >= 40 ? 'bg-amber-500' 
-              : 'bg-red-500'
-            }`}>
-              <TrendingUp className="h-4 w-4 text-white" />
-            </div>
-          </CardHeader>
-          <CardContent className="relative z-10">
-            {goalsLoading ? (
-              <>
-                <Skeleton className="h-8 w-16 mb-1" />
-                <Skeleton className="h-4 w-24" />
-              </>
-            ) : (
-              <>
-                <div className={`text-3xl font-bold mb-1 ${
-                  stats.successRate >= 70 ? 'text-green-900 dark:text-green-100' 
-                  : stats.successRate >= 40 ? 'text-amber-900 dark:text-amber-100' 
-                  : 'text-red-900 dark:text-red-100'
-                }`}>
-                  {stats.successRate}%
+          {/* Active Goals */}
+          <AnimatedItem>
+            <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800 relative overflow-hidden group" onClick={() => navigate("/goals")}>
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                <CardTitle className="text-sm font-medium text-orange-900 dark:text-orange-100">Active Goals</CardTitle>
+                <div className="p-2 bg-orange-500 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <Target className="h-4 w-4 text-white" />
                 </div>
-                <p className={`text-xs font-medium ${
-                  stats.successRate >= 70 ? 'text-green-700 dark:text-green-300' 
-                  : stats.successRate >= 40 ? 'text-amber-700 dark:text-amber-300' 
-                  : 'text-red-700 dark:text-red-300'
-                }`}>
-                  {stats.completed} completed goals
-                </p>
-                <div className="mt-2 w-full bg-white/50 dark:bg-slate-800/50 rounded-full h-1">
-                  <div 
-                    className={`h-1 rounded-full transition-all duration-700 ${
-                      stats.successRate >= 70 ? 'bg-green-500' 
-                      : stats.successRate >= 40 ? 'bg-amber-500' 
-                      : 'bg-red-500'
-                    }`}
-                    style={{ width: `${stats.successRate}%` }}
-                  />
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-        </AnimatedItem>
+              </CardHeader>
+              <CardContent className="relative z-10">
+                {goalsLoading ? (
+                  <>
+                    <Skeleton className="h-8 w-12 mb-1" />
+                    <Skeleton className="h-4 w-20" />
+                  </>
+                ) : (
+                  <>
+                    <div className="text-3xl font-bold text-orange-900 dark:text-orange-100 mb-1">{stats.inProgress}</div>
+                    <p className="text-xs text-orange-700 dark:text-orange-300 font-medium">
+                      {stats.completed} completed
+                    </p>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </AnimatedItem>
 
-        {/* Journal Enhanced */}
-        <AnimatedItem>
-        <Card 
-          className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-950 dark:to-indigo-900 border-purple-200 dark:border-purple-800 relative overflow-hidden group" 
-          onClick={() => navigate("/journal")}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-            <CardTitle className="text-sm font-medium text-purple-900 dark:text-purple-100">Journal</CardTitle>
-            <div className="p-2 bg-purple-500 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-300">
-              <Notebook className="h-4 w-4 text-white" />
-            </div>
-          </CardHeader>
-          <CardContent className="relative z-10">
-            {journalLoading ? (
-              <>
-                <Skeleton className="h-8 w-12 mb-1" />
-                <Skeleton className="h-4 w-20" />
-              </>
-            ) : journalEntries.length > 0 ? (
-              <>
-                <div className="text-3xl font-bold text-purple-900 dark:text-purple-100 mb-1">
-                  {journalInsights.todayEntries > 0 ? journalInsights.todayEntries : journalInsights.totalEntries}
+          {/* Writing Streak */}
+          <AnimatedItem>
+            <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-950 dark:to-indigo-900 border-purple-200 dark:border-purple-800 relative overflow-hidden group" onClick={() => navigate("/journal")}>
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                <CardTitle className="text-sm font-medium text-purple-900 dark:text-purple-100">Writing Streak</CardTitle>
+                <div className="p-2 bg-purple-500 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <Flame className="h-4 w-4 text-white" />
                 </div>
-                <p className="text-xs text-purple-700 dark:text-purple-300 font-medium">
-                  {journalInsights.todayEntries > 0 
-                    ? `${journalInsights.todayEntries} entries today` 
-                    : `${journalInsights.totalEntries} total entries`}
-                </p>
-                <div className="mt-2 text-xs text-purple-600 dark:text-purple-400">
-                  {journalInsights.writingStreak > 0 
-                    ? `${journalInsights.writingStreak} day streak` 
-                    : 'Business reflections'
-                  }
-                  {journalInsights.goalEngagementRate > 0 && (
-                    <span className="block mt-1">
-                      {journalInsights.goalEngagementRate}% goal-linked
-                    </span>
-                  )}
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="text-3xl font-bold text-purple-900 dark:text-purple-100 mb-1">-</div>
-                <p className="text-xs text-purple-700 dark:text-purple-300 font-medium">Write your thoughts</p>
-                <div className="mt-2 text-xs text-purple-600 dark:text-purple-400">
-                  Start journaling today
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
+              </CardHeader>
+              <CardContent className="relative z-10">
+                {journalLoading ? (
+                  <>
+                    <Skeleton className="h-8 w-12 mb-1" />
+                    <Skeleton className="h-4 w-20" />
+                  </>
+                ) : (
+                  <>
+                    <div className="text-3xl font-bold text-purple-900 dark:text-purple-100 mb-1">{journalInsights.writingStreak}</div>
+                    <p className="text-xs text-purple-700 dark:text-purple-300 font-medium">
+                      {journalInsights.thisWeekEntries} this week
+                    </p>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </AnimatedItem>
 
-        {/* Upcoming Deadlines Enhanced */}
-        <Card 
-          className={`cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] relative overflow-hidden group ${
-            overdueGoals.length > 0 
-              ? 'bg-gradient-to-br from-red-50 to-pink-100 dark:from-red-950 dark:to-pink-900 border-red-200 dark:border-red-800'
-              : upcomingDeadlines.length > 0
-                ? 'bg-gradient-to-br from-amber-50 to-orange-100 dark:from-amber-950 dark:to-orange-900 border-amber-200 dark:border-amber-800'
-                : 'bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900 border-green-200 dark:border-green-800'
-          }`}
-          onClick={() => navigate("/goals")}
-        >
-          <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
-            overdueGoals.length > 0 ? 'bg-gradient-to-r from-red-500/10 to-transparent'
-            : upcomingDeadlines.length > 0 ? 'bg-gradient-to-r from-amber-500/10 to-transparent'
-            : 'bg-gradient-to-r from-green-500/10 to-transparent'
-          }`} />
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-            <CardTitle className={`text-sm font-medium ${
-              overdueGoals.length > 0 ? 'text-red-900 dark:text-red-100' 
-              : upcomingDeadlines.length > 0 ? 'text-amber-900 dark:text-amber-100'
-              : 'text-green-900 dark:text-green-100'
-            }`}>
-              Deadlines
-            </CardTitle>
-            <div className={`p-2 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-300 ${
-              overdueGoals.length > 0 ? 'bg-red-500' 
-              : upcomingDeadlines.length > 0 ? 'bg-amber-500'
-              : 'bg-green-500'
-            }`}>
-              <Clock className="h-4 w-4 text-white" />
-            </div>
-          </CardHeader>
-          <CardContent className="relative z-10">
-            {goalsLoading ? (
-              <>
-                <Skeleton className="h-8 w-12 mb-1" />
-                <Skeleton className="h-4 w-20" />
-              </>
-            ) : (
-              <>
-                <div className={`text-3xl font-bold mb-1 ${
+          {/* Urgent Actions */}
+          <AnimatedItem>
+            <Card className={`cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] relative overflow-hidden group ${
+              overdueGoals.length > 0 
+                ? 'bg-gradient-to-br from-red-50 to-pink-100 dark:from-red-950 dark:to-pink-900 border-red-200 dark:border-red-800'
+                : upcomingDeadlines.length > 0
+                  ? 'bg-gradient-to-br from-amber-50 to-orange-100 dark:from-amber-950 dark:to-orange-900 border-amber-200 dark:border-amber-800'
+                  : 'bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900 border-green-200 dark:border-green-800'
+            }`} onClick={() => navigate("/goals")}>
+              <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
+                overdueGoals.length > 0 ? 'bg-gradient-to-r from-red-500/10 to-transparent'
+                : upcomingDeadlines.length > 0 ? 'bg-gradient-to-r from-amber-500/10 to-transparent'
+                : 'bg-gradient-to-r from-green-500/10 to-transparent'
+              }`} />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                <CardTitle className={`text-sm font-medium ${
                   overdueGoals.length > 0 ? 'text-red-900 dark:text-red-100' 
                   : upcomingDeadlines.length > 0 ? 'text-amber-900 dark:text-amber-100'
                   : 'text-green-900 dark:text-green-100'
                 }`}>
-                  {overdueGoals.length > 0 ? overdueGoals.length : upcomingDeadlines.length}
-                </div>
-                <p className={`text-xs font-medium ${
-                  overdueGoals.length > 0 ? 'text-red-700 dark:text-red-300' 
-                  : upcomingDeadlines.length > 0 ? 'text-amber-700 dark:text-amber-300'
-                  : 'text-green-700 dark:text-green-300'
+                  Urgent Actions
+                </CardTitle>
+                <div className={`p-2 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-300 ${
+                  overdueGoals.length > 0 ? 'bg-red-500' 
+                  : upcomingDeadlines.length > 0 ? 'bg-amber-500'
+                  : 'bg-green-500'
                 }`}>
-                  {overdueGoals.length > 0 ? `${overdueGoals.length} overdue` 
-                   : upcomingDeadlines.length > 0 ? 'upcoming' 
-                   : 'All on track'}
-                </p>
-                <div className="mt-2 w-full bg-white/50 dark:bg-slate-800/50 rounded-full h-1">
-                  <div 
-                    className={`h-1 rounded-full transition-all duration-500 ${
-                      overdueGoals.length > 0 ? 'bg-red-500' 
-                      : upcomingDeadlines.length > 0 ? 'bg-amber-500'
-                      : 'bg-green-500'
-                    }`}
-                    style={{ 
-                      width: overdueGoals.length > 0 ? '100%' 
-                            : upcomingDeadlines.length > 0 ? '60%'
-                            : '100%'
-                    }}
-                  />
+                  <AlertTriangle className="h-4 w-4 text-white" />
                 </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-        </AnimatedItem>
-      </AnimatedGrid>
-
-      {/* Charts Section Enhanced */}
-      <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
-        {/* Progress Donut Chart Enhanced */}
-        <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border-blue-200 dark:border-blue-800">
-          <CardHeader className="border-b border-blue-100 dark:border-blue-800 pb-4">
-            <CardTitle className="text-lg flex items-center gap-2 text-blue-900 dark:text-blue-100">
-              <PieChart className="h-5 w-5 text-blue-600" />
-              Goal Progress
-            </CardTitle>
-            <p className="text-sm text-blue-700 dark:text-blue-300">Overall completion status</p>
-          </CardHeader>
-          <CardContent className="pt-6">
-            {goalsLoading ? (
-              <div className="flex items-center justify-center h-48">
-                <Skeleton className="w-32 h-32 rounded-full" />
-              </div>
-            ) : goals.length > 0 ? (
-              <ProgressDonutChart goals={goals} />
-            ) : (
-              <div className="flex items-center justify-center h-48 text-center">
-                <div>
-                  <PieChart className="w-12 h-12 text-blue-400 mx-auto mb-3" />
-                  <p className="text-sm text-blue-600 dark:text-blue-400 mb-2">No goals to display</p>
-                  <Button 
-                    size="sm" 
-                    onClick={() => navigate("/goals")}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    Create Goal
-                  </Button>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Category Distribution Enhanced */}
-        <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 border-purple-200 dark:border-purple-800">
-          <CardHeader className="border-b border-purple-100 dark:border-purple-800 pb-4">
-            <CardTitle className="text-lg flex items-center gap-2 text-purple-900 dark:text-purple-100">
-              <BarChart3 className="h-5 w-5 text-purple-600" />
-              Categories
-            </CardTitle>
-            <p className="text-sm text-purple-700 dark:text-purple-300">Goal distribution by type</p>
-          </CardHeader>
-          <CardContent className="pt-6">
-            {goalsLoading ? (
-              <div className="flex items-center justify-center h-48">
-                <Skeleton className="w-32 h-32 rounded-full" />
-              </div>
-            ) : goals.length > 0 ? (
-              <CategoryChart goals={goals} />
-            ) : (
-              <div className="flex items-center justify-center h-48 text-center">
-                <div>
-                  <BarChart3 className="w-12 h-12 text-purple-400 mx-auto mb-3" />
-                  <p className="text-sm text-purple-600 dark:text-purple-400 mb-2">No categories to show</p>
-                  <Button 
-                    size="sm" 
-                    onClick={() => navigate("/goals")}
-                    className="bg-purple-600 hover:bg-purple-700 text-white"
-                  >
-                    Add Goals
-                  </Button>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Priority Progress Enhanced */}
-        <Card className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 border-orange-200 dark:border-orange-800">
-          <CardHeader className="border-b border-orange-100 dark:border-orange-800 pb-4">
-            <CardTitle className="text-lg flex items-center gap-2 text-orange-900 dark:text-orange-100">
-              <Target className="h-5 w-5 text-orange-600" />
-              Priority Progress
-            </CardTitle>
-            <p className="text-sm text-orange-700 dark:text-orange-300">Progress by priority level</p>
-          </CardHeader>
-          <CardContent className="pt-6">
-            {goalsLoading ? (
-              <div className="space-y-3">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="space-y-2">
+              </CardHeader>
+              <CardContent className="relative z-10">
+                {goalsLoading ? (
+                  <>
+                    <Skeleton className="h-8 w-12 mb-1" />
                     <Skeleton className="h-4 w-20" />
-                    <Skeleton className="h-3 w-full" />
-                  </div>
-                ))}
-              </div>
-            ) : goals.length > 0 ? (
-              <PriorityProgressBars goals={goals} />
-            ) : (
-              <div className="flex items-center justify-center h-48 text-center">
-                <div>
-                  <Target className="w-12 h-12 text-orange-400 mx-auto mb-3" />
-                  <p className="text-sm text-orange-600 dark:text-orange-400 mb-2">No priority data</p>
-                  <Button 
-                    size="sm" 
-                    onClick={() => navigate("/goals")}
-                    className="bg-orange-600 hover:bg-orange-700 text-white"
-                  >
-                    Set Priorities
-                  </Button>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Goal-Journal Integration Insight */}
-      {journalInsights.mostJournaledGoal && journalInsights.entriesWithGoals > 0 && (
-        <Card className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border-orange-200 dark:border-orange-800">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-semibold text-orange-900 dark:text-orange-100 flex items-center gap-2">
-              <Target className="h-5 w-5 text-orange-600" />
-              Goal-Journal Connection
-            </CardTitle>
-            <p className="text-sm text-orange-700 dark:text-orange-300">
-              Your most documented goal with {journalInsights.entriesWithGoals} journal entries linked to goals ({journalInsights.goalEngagementRate}% of all entries)
-            </p>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-lg border border-orange-100 dark:border-orange-700">
-              <div className="flex-1">
-                <h4 className="font-medium text-slate-900 dark:text-white mb-1">
-                  {journalInsights.mostJournaledGoal.title}
-                </h4>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Most journaled about • {journalEntries.filter(e => e.related_goal_id === journalInsights.mostJournaledGoal?.id).length} entries
-                </p>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                  {journalInsights.mostJournaledGoal.progress}%
-                </div>
-                <p className="text-xs text-slate-500">Progress</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Recent Activity & Quick Actions */}
-      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-        {/* Recent Goals Enhanced */}
-        <Card className="bg-gradient-to-br from-slate-50 to-white dark:from-slate-800 dark:to-slate-900 border-slate-200 dark:border-slate-700">
-          <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-4">
-            <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-              <Target className="w-5 h-5 text-orange-600" />
-              Recent Goals
-            </CardTitle>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => navigate("/goals")}
-              className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-950 transition-colors"
-            >
-              View All <ArrowRight className="w-4 h-4 ml-1" />
-            </Button>
-          </CardHeader>
-          <CardContent className="pt-6">
-            {goalsLoading ? (
-              <div className="space-y-3">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="flex items-center space-x-3 p-3 rounded-lg border border-slate-100 dark:border-slate-700">
-                    <Skeleton className="h-8 w-8 rounded-full" />
-                    <div className="space-y-2 flex-1">
-                      <Skeleton className="h-4 w-3/4" />
-                      <div className="flex items-center space-x-2">
-                        <Skeleton className="h-3 w-12" />
-                        <Skeleton className="h-3 w-16" />
-                      </div>
+                  </>
+                ) : (
+                  <>
+                    <div className={`text-3xl font-bold mb-1 ${
+                      overdueGoals.length > 0 ? 'text-red-900 dark:text-red-100' 
+                      : upcomingDeadlines.length > 0 ? 'text-amber-900 dark:text-amber-100'
+                      : 'text-green-900 dark:text-green-100'
+                    }`}>
+                      {overdueGoals.length > 0 ? overdueGoals.length : upcomingDeadlines.length}
                     </div>
-                    <Skeleton className="h-2 w-20 rounded-full" />
-                  </div>
-                ))}
-              </div>
-            ) : recentGoals.length > 0 ? (
-              <div className="space-y-3">
-                {recentGoals.slice(0, 5).map((goal, index) => (
-                  <div 
-                    key={goal.id} 
-                    className="group flex items-center space-x-3 p-3 rounded-lg border border-slate-100 dark:border-slate-700 hover:border-orange-200 dark:hover:border-orange-700 hover:bg-orange-50/50 dark:hover:bg-orange-950/20 cursor-pointer transition-all duration-200"
-                    onClick={() => navigate("/goals")}
-                  >
-                    <div className="flex items-center justify-center w-8 h-8">
-                      <div className={`w-3 h-3 rounded-full group-hover:scale-110 transition-transform duration-200 ${
-                        goal.status === 'completed' ? 'bg-green-500' :
-                        goal.status === 'in_progress' ? 'bg-blue-500' :
-                        goal.status === 'at_risk' ? 'bg-red-500' : 'bg-gray-400'
-                      }`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-900 dark:text-white truncate group-hover:text-orange-700 dark:group-hover:text-orange-300 transition-colors">
-                        {goal.title}
-                      </p>
-                      <div className="flex items-center space-x-3 mt-1">
-                        <Badge 
-                          variant={goal.priority === 'high' ? 'destructive' : goal.priority === 'medium' ? 'default' : 'secondary'} 
-                          className="text-xs px-2 py-1"
-                        >
-                          {goal.priority}
-                        </Badge>
-                        <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                          {goal.progress}% complete
-                        </span>
-                      </div>
-                    </div>
-                    <div className="w-20">
-                      <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                        <div 
-                          className={`h-2 rounded-full transition-all duration-500 ${
-                            goal.status === 'completed' ? 'bg-green-500' :
-                            goal.status === 'in_progress' ? 'bg-blue-500' :
-                            goal.status === 'at_risk' ? 'bg-red-500' : 'bg-gray-400'
-                          }`}
-                          style={{ width: `${goal.progress}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {goals.length > 5 && (
-                  <div className="pt-2 border-t border-slate-100 dark:border-slate-700">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => navigate("/goals")}
-                      className="w-full text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-950"
-                    >
-                      View {goals.length - 5} more goals <ArrowRight className="w-4 h-4 ml-1" />
-                    </Button>
-                  </div>
+                    <p className={`text-xs font-medium ${
+                      overdueGoals.length > 0 ? 'text-red-700 dark:text-red-300' 
+                      : upcomingDeadlines.length > 0 ? 'text-amber-700 dark:text-amber-300'
+                      : 'text-green-700 dark:text-green-300'
+                    }`}>
+                      {overdueGoals.length > 0 ? 'overdue goals' 
+                       : upcomingDeadlines.length > 0 ? 'due this week' 
+                       : 'all on track'}
+                    </p>
+                  </>
                 )}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Target className="w-8 h-8 text-slate-400" />
-                </div>
-                <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-2">No goals yet</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 max-w-48 mx-auto">
-                  Start your journey by creating your first business goal
-                </p>
-                <Button 
-                  onClick={() => navigate("/goals")}
-                  className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create Your First Goal
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </AnimatedItem>
 
-        {/* Upcoming Deadlines Enhanced */}
-        <Card className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border-amber-200 dark:border-amber-800">
-          <CardHeader className="border-b border-amber-100 dark:border-amber-800 pb-4">
-            <CardTitle className="text-lg font-semibold text-amber-900 dark:text-amber-100 flex items-center gap-2">
-              <Clock className="h-5 w-5 text-amber-600" />
-              Upcoming Deadlines
-            </CardTitle>
-            <p className="text-sm text-amber-700 dark:text-amber-300">Important dates and milestones</p>
-          </CardHeader>
-          <CardContent className="pt-6">
-            {goalsLoading ? (
-              <div className="space-y-3">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="flex items-center gap-4 p-3 rounded-lg border border-amber-100 dark:border-amber-800">
-                    <Skeleton className="w-8 h-8 rounded-full" />
-                    <div className="space-y-2 flex-1">
-                      <Skeleton className="h-4 w-3/4" />
-                      <Skeleton className="h-3 w-1/2" />
+          {/* Storage Status */}
+          <AnimatedItem>
+            <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-blue-50 to-cyan-100 dark:from-blue-950 dark:to-cyan-900 border-blue-200 dark:border-blue-800 relative overflow-hidden group" onClick={() => navigate("/docsafe")}>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                <CardTitle className="text-sm font-medium text-blue-900 dark:text-blue-100">Storage</CardTitle>
+                <div className="p-2 bg-blue-500 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <File className="h-4 w-4 text-white" />
+                </div>
+              </CardHeader>
+              <CardContent className="relative z-10">
+                <div className="text-3xl font-bold text-blue-900 dark:text-blue-100 mb-1">47MB</div>
+                <p className="text-xs text-blue-700 dark:text-blue-300 font-medium">
+                  of 50MB used
+                </p>
+              </CardContent>
+            </Card>
+          </AnimatedItem>
+        </AnimatedGrid>
+
+        {/* Quick Actions & Critical Insights */}
+        <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+          {/* Next 3 Urgent Deadlines */}
+          {upcomingDeadlines.length > 0 && (
+            <Card className="bg-gradient-to-br from-amber-50 to-orange-100 dark:from-amber-950 dark:to-orange-900 border-amber-200 dark:border-amber-800">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-amber-900 dark:text-amber-100 flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-amber-600" />
+                  Upcoming Deadlines
+                </CardTitle>
+                <p className="text-sm text-amber-700 dark:text-amber-300">Goals requiring attention this week</p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {upcomingDeadlines.slice(0, 3).map((goal) => (
+                    <div key={goal.id} className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border border-amber-100 dark:border-amber-700">
+                      <div className="flex-1">
+                        <p className="font-medium text-slate-900 dark:text-white">{goal.title}</p>
+                        <p className="text-xs text-slate-600 dark:text-slate-400">
+                          Due: {goal.target_date ? format(new Date(goal.target_date), 'MMM dd') : 'No date'}
+                        </p>
+                      </div>
+                      <Badge variant="outline" className="text-xs">
+                        {goal.progress}%
+                      </Badge>
                     </div>
-                    <Skeleton className="h-6 w-16 rounded" />
-                  </div>
-                ))}
-              </div>
-            ) : upcomingDeadlines.length > 0 ? (
-              <DeadlineTimeline goals={upcomingDeadlines} />
-            ) : (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 bg-amber-100 dark:bg-amber-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Clock className="w-8 h-8 text-amber-500" />
+                  ))}
                 </div>
-                <h3 className="text-sm font-medium text-amber-900 dark:text-amber-100 mb-2">No upcoming deadlines</h3>
-                <p className="text-xs text-amber-700 dark:text-amber-300 mb-6 max-w-48 mx-auto">
-                  Set deadlines for your goals to stay on track
-                </p>
                 <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full mt-4 border-amber-200 text-amber-700 hover:bg-amber-50"
                   onClick={() => navigate("/goals")}
-                  className="bg-amber-600 hover:bg-amber-700 text-white"
                 >
-                  <CalendarDays className="w-4 h-4 mr-2" />
-                  Add Deadlines
+                  View All Goals <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Weekly Business Intelligence */}
+          {journalInsights.dominantMood && (
+            <Card className="bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-950 dark:to-indigo-900 border-purple-200 dark:border-purple-800">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-purple-900 dark:text-purple-100 flex items-center gap-2">
+                  <Brain className="h-5 w-5 text-purple-600" />
+                  Weekly Business Mood
+                </CardTitle>
+                <p className="text-sm text-purple-700 dark:text-purple-300">AI analysis of your business mindset</p>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-lg border border-purple-100 dark:border-purple-700">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge className="bg-purple-100 text-purple-800 border-purple-200 capitalize">
+                        {journalInsights.dominantMood[0]}
+                      </Badge>
+                      <span className="text-2xl font-bold text-purple-600">
+                        {journalInsights.avgConfidence}%
+                      </span>
+                    </div>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                      Confidence level • {journalInsights.thisWeekEntries} entries analyzed
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-semibold text-purple-600">
+                      {journalInsights.goalLinkedEntries}
+                    </div>
+                    <p className="text-xs text-slate-500">Goal-linked entries</p>
+                  </div>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full mt-4 border-purple-200 text-purple-700 hover:bg-purple-50"
+                  onClick={() => navigate("/journal")}
+                >
+                  Add Journal Entry <Plus className="w-4 h-4 ml-1" />
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* Feature Quick Access */}
+        <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
+          <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950 border-orange-200 dark:border-orange-800" onClick={() => navigate("/training")}>
+            <CardContent className="p-4 text-center">
+              <PlayCircle className="h-8 w-8 text-orange-600 mx-auto mb-2" />
+              <p className="font-medium text-slate-900 dark:text-white">Training</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400">2 courses active</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-green-200 dark:border-green-800" onClick={() => navigate("/bizbuilder")}>
+            <CardContent className="p-4 text-center">
+              <BarChart3 className="h-8 w-8 text-green-600 mx-auto mb-2" />
+              <p className="font-medium text-slate-900 dark:text-white">BizBuilder</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400">3 tools available</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950 border-blue-200 dark:border-blue-800" onClick={() => navigate("/docsafe")}>
+            <CardContent className="p-4 text-center">
+              <File className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+              <p className="font-medium text-slate-900 dark:text-white">DocSafe</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400">94% storage used</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950 dark:to-indigo-950 border-purple-200 dark:border-purple-800" onClick={() => navigate("/journal")}>
+            <CardContent className="p-4 text-center">
+              <Notebook className="h-8 w-8 text-purple-600 mx-auto mb-2" />
+              <p className="font-medium text-slate-900 dark:text-white">Journal</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400">{journalInsights.writingStreak} day streak</p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-
-      {/* Motivation Section for New Users */}
-      {!goalsLoading && goals.length === 0 && (
-        <Card className="bg-gradient-to-r from-blue-50 to-sky-50 dark:from-slate-800 dark:to-slate-700 border border-blue-200 dark:border-slate-600">
-          <CardContent className="py-8 flex flex-col items-center justify-center text-center space-y-4">
-            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-              <Target className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
-                Welcome to Bizzin!
-              </h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm max-w-md">
-                Start your entrepreneurial journey by setting your first business goal. Transform your ideas into actionable plans and track your progress.
-              </p>
-            </div>
-            <div className="flex space-x-3">
-              <Button 
-                onClick={() => navigate("/goals")}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Set Your First Goal
-              </Button>
-              <Button 
-                variant="outline"
-                className="border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300"
-              >
-                <PlayCircle className="w-4 h-4 mr-2" />
-                Watch Demo
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Celebration Components for dashboard goal interactions */}
-      <ConfettiCelebration trigger={celebrationTrigger} />
+      
+      <ConfettiCelebration 
+        trigger={celebrationTrigger} 
+        onComplete={() => setCelebrationTrigger(false)} 
+      />
+      
       <CelebrationToast 
         show={celebrationToastVisible}
         goalTitle={completedGoal?.title || ""}
-        onComplete={() => {
-          setCelebrationToastVisible(false)
-          setCompletedGoal(null)
-        }}
+        onComplete={() => setCelebrationToastVisible(false)}
       />
-      </div>
     </div>
   )
 }
