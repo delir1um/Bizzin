@@ -311,7 +311,7 @@ export function JournalPage() {
     }, {} as Record<string, number>)
     
     const dominantMood = Object.entries(moodCounts)
-      .sort((a, b) => b[1] - a[1])[0]?.[0] || 'Mixed'
+      .sort((a, b) => (b[1] as number) - (a[1] as number))[0]?.[0] || 'Mixed'
     
     // Calculate business growth entries (Achievement, Growth categories)
     const growthEntries = entries.filter(entry => {
@@ -409,62 +409,78 @@ export function JournalPage() {
         </div>
       </div>
 
-      {/* Usage Warning Banner */}
-      {isApproachingLimit() && (
-        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-yellow-100 rounded-full">
-              <Sparkles className="w-4 h-4 text-yellow-600" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-medium text-yellow-800">
-                You're approaching your monthly limit
-              </h3>
-              <p className="text-sm text-yellow-700">
-                {usageStatus && 
-                  `${usageStatus.current_usage.journal_entries_created} of ${usageStatus.plan_limits.monthly_journal_entries} entries used this month. `
-                }
-                Upgrade to Premium for unlimited entries.
-              </p>
-            </div>
-            <Button
-              onClick={() => setShowUpgradeModal(true)}
-              size="sm"
-              className="bg-yellow-600 hover:bg-yellow-700 text-white"
-            >
-              Upgrade Now
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Usage Stats for Free Users */}
+      {/* Unified Usage Status Banner for Free Users */}
       {isFree && usageStatus && (
-        <div className="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-lg">
+        <div className={`mb-6 p-4 rounded-lg border ${
+          isApproachingLimit() 
+            ? 'bg-yellow-50 border-yellow-200' 
+            : 'bg-orange-50 border-orange-200'
+        }`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-slate-100 rounded-full">
-                <BookOpen className="w-4 h-4 text-slate-600" />
+              <div className={`p-2 rounded-full ${
+                isApproachingLimit() 
+                  ? 'bg-yellow-100' 
+                  : 'bg-orange-100'
+              }`}>
+                {isApproachingLimit() ? (
+                  <Sparkles className="w-4 h-4 text-yellow-600" />
+                ) : (
+                  <BookOpen className="w-4 h-4 text-orange-600" />
+                )}
               </div>
               <div>
-                <h3 className="font-medium text-slate-800">Monthly Journal Entries</h3>
-                <p className="text-sm text-slate-600">
-                  {usageStatus.current_usage.journal_entries_created} of {usageStatus.plan_limits.monthly_journal_entries} entries used
+                <h3 className={`font-medium ${
+                  isApproachingLimit() 
+                    ? 'text-yellow-800' 
+                    : 'text-orange-800'
+                }`}>
+                  {isApproachingLimit() 
+                    ? "You're approaching your monthly limit"
+                    : "Monthly Journal Entries"
+                  }
+                </h3>
+                <p className={`text-sm ${
+                  isApproachingLimit() 
+                    ? 'text-yellow-700' 
+                    : 'text-orange-700'
+                }`}>
+                  {usageStatus.current_usage.journal_entries_created} of {usageStatus.plan_limits.monthly_journal_entries} entries used this month. 
+                  {isApproachingLimit() && " Upgrade to Premium for unlimited entries."}
                 </p>
               </div>
             </div>
-            <div className="text-right">
-              <div className="text-sm font-medium text-slate-700">
-                {usageStatus.plan_limits.monthly_journal_entries - usageStatus.current_usage.journal_entries_created} remaining
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <div className={`text-sm font-medium ${
+                  isApproachingLimit() 
+                    ? 'text-yellow-700' 
+                    : 'text-orange-700'
+                }`}>
+                  -{usageStatus.plan_limits.monthly_journal_entries - usageStatus.current_usage.journal_entries_created} remaining
+                </div>
+                <div className="w-32 bg-white/50 rounded-full h-2 mt-1">
+                  <div 
+                    className={`h-2 rounded-full transition-all duration-300 ${
+                      isApproachingLimit() 
+                        ? 'bg-yellow-500' 
+                        : 'bg-orange-500'
+                    }`}
+                    style={{ 
+                      width: `${Math.min(100, (usageStatus.current_usage.journal_entries_created / usageStatus.plan_limits.monthly_journal_entries) * 100)}%` 
+                    }}
+                  />
+                </div>
               </div>
-              <div className="w-32 bg-slate-200 rounded-full h-2 mt-1">
-                <div 
-                  className="bg-orange-500 h-2 rounded-full transition-all duration-300"
-                  style={{ 
-                    width: `${Math.min(100, (usageStatus.current_usage.journal_entries_created / usageStatus.plan_limits.monthly_journal_entries) * 100)}%` 
-                  }}
-                />
-              </div>
+              {isApproachingLimit() && (
+                <Button
+                  onClick={() => setShowUpgradeModal(true)}
+                  size="sm"
+                  className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                >
+                  Upgrade Now
+                </Button>
+              )}
             </div>
           </div>
         </div>
