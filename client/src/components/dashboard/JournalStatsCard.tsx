@@ -99,7 +99,7 @@ export function JournalStatsCard({ journalEntries, onNavigate }: JournalStatsCar
   const streakInfo = getStreakStatus(stats.streak)
   
   return (
-    <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/20 dark:to-orange-900/20 border-orange-200 dark:border-orange-800">
+    <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/20 dark:to-orange-900/20 border-orange-200 dark:border-orange-800 h-full flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 min-h-[50px]">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-orange-500/10 text-orange-600 dark:text-orange-400">

@@ -248,7 +248,7 @@ export function DashboardPage() {
         {/* Platform Features Section */}
         <div className="space-y-6">
           {/* Feature Statistics Cards */}
-          <div className="grid grid-cols-1 xl:grid-cols-4 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 xl:grid-cols-4 lg:grid-cols-2 gap-4 items-stretch">
             <JournalStatsCard 
               journalEntries={journalEntries} 
               onNavigate={navigate} 

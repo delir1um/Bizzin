@@ -52,7 +52,7 @@ export function DocSafeStatsCard({ storageStats, onNavigate }: DocSafeStatsCardP
   const recentUploads = stats.total_documents // Show all documents for now
   
   return (
-    <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/20 dark:to-emerald-900/20 border-emerald-200 dark:border-emerald-800">
+    <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/20 dark:to-emerald-900/20 border-emerald-200 dark:border-emerald-800 h-full flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 min-h-[50px]">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
