@@ -126,10 +126,20 @@ export function JournalPage() {
   const organizedEntries = organizeEntriesByTime(filteredEntries)
 
   const toggleSection = (section: 'thisWeek' | 'thisMonth' | 'thisYear' | string) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }))
+    setExpandedSections(prev => {
+      // If clicking on currently expanded section, collapse it
+      if (prev[section]) {
+        return { ...prev, [section]: false }
+      }
+      
+      // Otherwise, collapse all and expand only the clicked section
+      const newSections: Record<string, boolean> = {}
+      Object.keys(prev).forEach(key => {
+        newSections[key] = false
+      })
+      newSections[section] = true
+      return newSections
+    })
   }
 
 
@@ -464,16 +474,18 @@ export function JournalPage() {
             </Card>
           ) : (
             <>
-              {/* Today's Entries - Full Cards */}
-              {organizedEntries.today.length > 0 && (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-1 h-8 bg-gradient-to-b from-orange-500 to-orange-600 rounded-full"></div>
-                    <h2 className="text-2xl font-bold text-slate-900">Today</h2>
-                    <Badge className="bg-orange-100 text-orange-700 border-orange-200 font-medium">
-                      {organizedEntries.today.length} entries
-                    </Badge>
-                  </div>
+              {/* Today's Section - Always show */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-1 h-8 bg-gradient-to-b from-orange-500 to-orange-600 rounded-full"></div>
+                  <h2 className="text-2xl font-bold text-slate-900">Today</h2>
+                  <Badge className="bg-orange-100 text-orange-700 border-orange-200 font-medium">
+                    {organizedEntries.today.length} entries
+                  </Badge>
+                </div>
+                
+                {/* Today's entries or placeholder prompt */}
+                {organizedEntries.today.length > 0 ? (
                   <AnimatePresence>
                     {organizedEntries.today.map((entry: JournalEntry, index: number) => (
                       <motion.div
@@ -547,8 +559,37 @@ export function JournalPage() {
                       </motion.div>
                     ))}
                   </AnimatePresence>
-                </div>
-              )}
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <Card className="p-8 text-center border-2 border-dashed border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100 transition-all duration-300">
+                      <div className="flex flex-col items-center space-y-4">
+                        <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
+                          <BookOpen className="w-8 h-8 text-orange-600" />
+                        </div>
+                        <div className="space-y-2">
+                          <h3 className="text-lg font-semibold text-slate-900">
+                            Ready to capture today's business insights?
+                          </h3>
+                          <p className="text-slate-600 max-w-md mx-auto">
+                            Start your day with reflection. What challenges will you tackle? What opportunities do you see? Document your entrepreneurial journey.
+                          </p>
+                        </div>
+                        <Button 
+                          onClick={() => setShowWriteModal(true)}
+                          className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 text-base font-medium"
+                        >
+                          <PlusCircle className="w-5 h-5 mr-2" />
+                          Write Today's Entry
+                        </Button>
+                      </div>
+                    </Card>
+                  </motion.div>
+                )}
+              </div>
 
               {/* This Week - Medium Cards */}
               {organizedEntries.thisWeek.length > 0 && (
