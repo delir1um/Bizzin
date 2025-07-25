@@ -248,8 +248,8 @@ export function DashboardPage() {
 
           {/* All Business Health Metrics in Single Row */}
           <div className="grid grid-cols-1 xl:grid-cols-4 lg:grid-cols-2 gap-4">
-            <BusinessHealthRadar journalEntries={journalEntries} />
             <BurnoutRiskCard journalEntries={journalEntries} />
+            <BusinessHealthRadar journalEntries={journalEntries} />
             <GrowthMomentumCard journalEntries={journalEntries} />
             <RecoveryResilienceCard journalEntries={journalEntries} />
           </div>
