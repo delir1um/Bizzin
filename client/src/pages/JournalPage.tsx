@@ -225,7 +225,15 @@ export function JournalPage() {
     if (!usageStatus || isPremium) return false
     const used = usageStatus.current_usage.journal_entries_created
     const limit = usageStatus.plan_limits.monthly_journal_entries
-    return (used / limit) >= 0.8
+    return (used / limit) >= 0.8 && (used / limit) < 1.0 // Approaching but not at limit
+  }
+
+  // Check if user has reached the limit
+  const isAtLimit = () => {
+    if (!usageStatus || isPremium) return false
+    const used = usageStatus.current_usage.journal_entries_created
+    const limit = usageStatus.plan_limits.monthly_journal_entries
+    return used >= limit
   }
 
   const handleDeleteEntry = async (entry: JournalEntry) => {
@@ -412,18 +420,24 @@ export function JournalPage() {
       {/* Unified Usage Status Banner for Free Users */}
       {isFree && usageStatus && (
         <div className={`mb-6 p-4 rounded-lg border ${
-          isApproachingLimit() 
+          isAtLimit() 
+            ? 'bg-red-50 border-red-200' 
+            : isApproachingLimit() 
             ? 'bg-yellow-50 border-yellow-200' 
             : 'bg-orange-50 border-orange-200'
         }`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={`p-2 rounded-full ${
-                isApproachingLimit() 
+                isAtLimit() 
+                  ? 'bg-red-100' 
+                  : isApproachingLimit() 
                   ? 'bg-yellow-100' 
                   : 'bg-orange-100'
               }`}>
-                {isApproachingLimit() ? (
+                {isAtLimit() ? (
+                  <X className="w-4 h-4 text-red-600" />
+                ) : isApproachingLimit() ? (
                   <Sparkles className="w-4 h-4 text-yellow-600" />
                 ) : (
                   <BookOpen className="w-4 h-4 text-orange-600" />
@@ -431,29 +445,37 @@ export function JournalPage() {
               </div>
               <div>
                 <h3 className={`font-medium ${
-                  isApproachingLimit() 
+                  isAtLimit() 
+                    ? 'text-red-800' 
+                    : isApproachingLimit() 
                     ? 'text-yellow-800' 
                     : 'text-orange-800'
                 }`}>
-                  {isApproachingLimit() 
+                  {isAtLimit() 
+                    ? "Monthly limit reached"
+                    : isApproachingLimit() 
                     ? "You're approaching your monthly limit"
                     : "Monthly Journal Entries"
                   }
                 </h3>
                 <p className={`text-sm ${
-                  isApproachingLimit() 
+                  isAtLimit() 
+                    ? 'text-red-700' 
+                    : isApproachingLimit() 
                     ? 'text-yellow-700' 
                     : 'text-orange-700'
                 }`}>
                   {usageStatus.current_usage.journal_entries_created} of {usageStatus.plan_limits.monthly_journal_entries} entries used this month. 
-                  {isApproachingLimit() && " Upgrade to Premium for unlimited entries."}
+                  {(isApproachingLimit() || isAtLimit()) && " Upgrade to Premium for unlimited entries."}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">
                 <div className={`text-sm font-medium ${
-                  isApproachingLimit() 
+                  isAtLimit() 
+                    ? 'text-red-700' 
+                    : isApproachingLimit() 
                     ? 'text-yellow-700' 
                     : 'text-orange-700'
                 }`}>
@@ -462,7 +484,9 @@ export function JournalPage() {
                 <div className="w-32 bg-white/50 rounded-full h-2 mt-1">
                   <div 
                     className={`h-2 rounded-full transition-all duration-300 ${
-                      isApproachingLimit() 
+                      isAtLimit() 
+                        ? 'bg-red-500' 
+                        : isApproachingLimit() 
                         ? 'bg-yellow-500' 
                         : 'bg-orange-500'
                     }`}
@@ -472,11 +496,15 @@ export function JournalPage() {
                   />
                 </div>
               </div>
-              {isApproachingLimit() && (
+              {(isApproachingLimit() || isAtLimit()) && (
                 <Button
                   onClick={() => setShowUpgradeModal(true)}
                   size="sm"
-                  className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                  className={`${
+                    isAtLimit() 
+                      ? 'bg-red-600 hover:bg-red-700' 
+                      : 'bg-yellow-600 hover:bg-yellow-700'
+                  } text-white`}
                 >
                   Upgrade Now
                 </Button>
