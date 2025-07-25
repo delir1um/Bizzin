@@ -232,7 +232,7 @@ export function DocSafePage() {
                     <div 
                       className="bg-orange-600 h-1.5 rounded-full" 
                       style={{ 
-                        width: `${Math.min(((stats?.storage_used || allDocuments.reduce((total, doc) => total + doc.file_size, 0)) / (1024*1024*1024)) * 100, 100)}%` 
+                        width: `${Math.min(((stats?.storage_used || allDocuments.reduce((total, doc) => total + doc.file_size, 0)) / (50*1024*1024)) * 100, 100)}%` 
                       }}
                     ></div>
                   </div>
