@@ -377,7 +377,7 @@ export function JournalPage() {
 
   return (
     <div 
-      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+      className="min-h-screen"
       onClick={(e) => {
         // Collapse all sections when clicking outside entries
         const target = e.target as HTMLElement
@@ -392,6 +392,7 @@ export function JournalPage() {
         }
       }}
     >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Page Header */}
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -889,6 +890,7 @@ export function JournalPage() {
             </>
           )}
         </div>
+      </div>
 
       {/* Modals */}
       <SimpleCreateEntryModal
