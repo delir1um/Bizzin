@@ -90,6 +90,8 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
     category: '',
     type: 'variable'
   })
+  const [incomeValidationErrors, setIncomeValidationErrors] = useState<{[key: string]: boolean}>({})
+  const [expenseValidationErrors, setExpenseValidationErrors] = useState<{[key: string]: boolean}>({})
 
   // Load saved data from localStorage
   useEffect(() => {
@@ -130,8 +132,15 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
   const profitMargin = totalIncome > 0 ? (netProfit / totalIncome) * 100 : 0
 
   const addIncomeItem = () => {
-    if (!newIncomeItem.name || !newIncomeItem.amount || newIncomeItem.amount <= 0 || !newIncomeItem.category) {
-      console.log('Validation failed:', { name: newIncomeItem.name, amount: newIncomeItem.amount, category: newIncomeItem.category })
+    const errors: {[key: string]: boolean} = {}
+    
+    if (!newIncomeItem.name?.trim()) errors.name = true
+    if (!newIncomeItem.amount || newIncomeItem.amount <= 0) errors.amount = true
+    if (!newIncomeItem.category) errors.category = true
+    
+    setIncomeValidationErrors(errors)
+    
+    if (Object.keys(errors).length > 0) {
       return
     }
     
@@ -145,11 +154,19 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
     
     setBudgetData(prev => ({ ...prev, income: [...prev.income, item] }))
     setNewIncomeItem({ name: '', amount: 0, frequency: 'monthly', category: '' })
+    setIncomeValidationErrors({})
   }
 
   const addExpenseItem = () => {
-    if (!newExpenseItem.name || !newExpenseItem.amount || newExpenseItem.amount <= 0 || !newExpenseItem.category) {
-      console.log('Expense validation failed:', { name: newExpenseItem.name, amount: newExpenseItem.amount, category: newExpenseItem.category })
+    const errors: {[key: string]: boolean} = {}
+    
+    if (!newExpenseItem.name?.trim()) errors.name = true
+    if (!newExpenseItem.amount || newExpenseItem.amount <= 0) errors.amount = true
+    if (!newExpenseItem.category) errors.category = true
+    
+    setExpenseValidationErrors(errors)
+    
+    if (Object.keys(errors).length > 0) {
       return
     }
     
@@ -164,6 +181,7 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
     
     setBudgetData(prev => ({ ...prev, expenses: [...prev.expenses, item] }))
     setNewExpenseItem({ name: '', amount: 0, frequency: 'monthly', category: '', type: 'variable' })
+    setExpenseValidationErrors({})
   }
 
   const removeIncomeItem = (id: string) => {
@@ -337,26 +355,45 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label>Income Name</Label>
+                        <Label className={incomeValidationErrors.name ? 'text-red-600' : ''}>Income Name *</Label>
                         <Input
                           value={newIncomeItem.name}
-                          onChange={(e) => setNewIncomeItem(prev => ({ ...prev, name: e.target.value }))}
+                          onChange={(e) => {
+                            setNewIncomeItem(prev => ({ ...prev, name: e.target.value }))
+                            if (incomeValidationErrors.name) {
+                              setIncomeValidationErrors(prev => ({ ...prev, name: false }))
+                            }
+                          }}
                           placeholder="e.g., Product Sales"
+                          className={incomeValidationErrors.name ? 'border-red-500 focus:border-red-500' : ''}
                         />
+                        {incomeValidationErrors.name && <p className="text-sm text-red-600 mt-1">Income name is required</p>}
                       </div>
                       <div>
-                        <Label>Amount</Label>
+                        <Label className={incomeValidationErrors.amount ? 'text-red-600' : ''}>Amount *</Label>
                         <Input
                           type="number"
                           value={newIncomeItem.amount}
-                          onChange={(e) => setNewIncomeItem(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
+                          onChange={(e) => {
+                            setNewIncomeItem(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))
+                            if (incomeValidationErrors.amount) {
+                              setIncomeValidationErrors(prev => ({ ...prev, amount: false }))
+                            }
+                          }}
                           placeholder="0.00"
+                          className={incomeValidationErrors.amount ? 'border-red-500 focus:border-red-500' : ''}
                         />
+                        {incomeValidationErrors.amount && <p className="text-sm text-red-600 mt-1">Amount must be greater than 0</p>}
                       </div>
                       <div>
-                        <Label>Category</Label>
-                        <Select value={newIncomeItem.category} onValueChange={(value) => setNewIncomeItem(prev => ({ ...prev, category: value }))}>
-                          <SelectTrigger>
+                        <Label className={incomeValidationErrors.category ? 'text-red-600' : ''}>Category *</Label>
+                        <Select value={newIncomeItem.category} onValueChange={(value) => {
+                          setNewIncomeItem(prev => ({ ...prev, category: value }))
+                          if (incomeValidationErrors.category) {
+                            setIncomeValidationErrors(prev => ({ ...prev, category: false }))
+                          }
+                        }}>
+                          <SelectTrigger className={incomeValidationErrors.category ? 'border-red-500 focus:border-red-500' : ''}>
                             <SelectValue placeholder="Select category" />
                           </SelectTrigger>
                           <SelectContent>
@@ -365,6 +402,7 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
                             ))}
                           </SelectContent>
                         </Select>
+                        {incomeValidationErrors.category && <p className="text-sm text-red-600 mt-1">Please select a category</p>}
                       </div>
                       <div>
                         <Label>Frequency</Label>
@@ -381,10 +419,7 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
                         </Select>
                       </div>
                     </div>
-                    <Button onClick={() => {
-                      console.log('Button clicked, newIncomeItem:', newIncomeItem)
-                      addIncomeItem()
-                    }} className="w-full bg-orange-600 hover:bg-orange-700">
+                    <Button onClick={addIncomeItem} className="w-full bg-orange-600 hover:bg-orange-700">
                       <Plus className="w-4 h-4 mr-2" />
                       Add Income Source
                     </Button>
@@ -427,26 +462,45 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label>Expense Name</Label>
+                        <Label className={expenseValidationErrors.name ? 'text-red-600' : ''}>Expense Name *</Label>
                         <Input
                           value={newExpenseItem.name}
-                          onChange={(e) => setNewExpenseItem(prev => ({ ...prev, name: e.target.value }))}
+                          onChange={(e) => {
+                            setNewExpenseItem(prev => ({ ...prev, name: e.target.value }))
+                            if (expenseValidationErrors.name) {
+                              setExpenseValidationErrors(prev => ({ ...prev, name: false }))
+                            }
+                          }}
                           placeholder="e.g., Office Rent"
+                          className={expenseValidationErrors.name ? 'border-red-500 focus:border-red-500' : ''}
                         />
+                        {expenseValidationErrors.name && <p className="text-sm text-red-600 mt-1">Expense name is required</p>}
                       </div>
                       <div>
-                        <Label>Amount</Label>
+                        <Label className={expenseValidationErrors.amount ? 'text-red-600' : ''}>Amount *</Label>
                         <Input
                           type="number"
                           value={newExpenseItem.amount}
-                          onChange={(e) => setNewExpenseItem(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
+                          onChange={(e) => {
+                            setNewExpenseItem(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))
+                            if (expenseValidationErrors.amount) {
+                              setExpenseValidationErrors(prev => ({ ...prev, amount: false }))
+                            }
+                          }}
                           placeholder="0.00"
+                          className={expenseValidationErrors.amount ? 'border-red-500 focus:border-red-500' : ''}
                         />
+                        {expenseValidationErrors.amount && <p className="text-sm text-red-600 mt-1">Amount must be greater than 0</p>}
                       </div>
                       <div>
-                        <Label>Category</Label>
-                        <Select value={newExpenseItem.category} onValueChange={(value) => setNewExpenseItem(prev => ({ ...prev, category: value }))}>
-                          <SelectTrigger>
+                        <Label className={expenseValidationErrors.category ? 'text-red-600' : ''}>Category *</Label>
+                        <Select value={newExpenseItem.category} onValueChange={(value) => {
+                          setNewExpenseItem(prev => ({ ...prev, category: value }))
+                          if (expenseValidationErrors.category) {
+                            setExpenseValidationErrors(prev => ({ ...prev, category: false }))
+                          }
+                        }}>
+                          <SelectTrigger className={expenseValidationErrors.category ? 'border-red-500 focus:border-red-500' : ''}>
                             <SelectValue placeholder="Select category" />
                           </SelectTrigger>
                           <SelectContent>
@@ -455,6 +509,7 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
                             ))}
                           </SelectContent>
                         </Select>
+                        {expenseValidationErrors.category && <p className="text-sm text-red-600 mt-1">Please select a category</p>}
                       </div>
                       <div>
                         <Label>Type</Label>
