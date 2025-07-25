@@ -225,13 +225,49 @@ export function FileViewer({ document, isOpen, onClose, onEdit, onDelete }: File
     // Image files
     if (document.file_type.startsWith('image/') && fileUrl) {
       return (
-        <div className="flex items-center justify-center h-96 w-full rounded-md border overflow-auto">
-          <img
-            src={fileUrl}
-            alt={document.name}
-            className="max-w-full max-h-full object-contain"
-            style={{ transform: `scale(${zoom / 100})` }}
-          />
+        <div className="space-y-4">
+          {/* Image zoom controls */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setZoom(Math.max(25, zoom - 25))}
+                disabled={zoom <= 25}
+              >
+                -
+              </Button>
+              <span className="text-sm font-medium min-w-[60px] text-center">
+                {zoom}%
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setZoom(Math.min(200, zoom + 25))}
+                disabled={zoom >= 200}
+              >
+                +
+              </Button>
+            </div>
+            <Button 
+              onClick={handleDownload} 
+              variant="outline"
+              size="sm"
+              className="border-orange-200 text-orange-700 hover:bg-orange-50"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Download
+            </Button>
+          </div>
+          
+          <div className="flex items-center justify-center h-96 w-full rounded-md border overflow-auto">
+            <img
+              src={fileUrl}
+              alt={document.name}
+              className="max-w-full max-h-full object-contain"
+              style={{ transform: `scale(${zoom / 100})` }}
+            />
+          </div>
         </div>
       )
     }
