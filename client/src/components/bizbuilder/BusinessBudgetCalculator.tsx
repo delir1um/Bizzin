@@ -189,23 +189,69 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
     { name: 'Net Profit', amount: netProfit, color: netProfit >= 0 ? '#10B981' : '#EF4444' }
   ]
 
-  const exportToPDF = () => {
-    // Simple export functionality - in a real app, you'd use a PDF library
-    const data = {
-      ...budgetData,
-      calculations: {
-        totalIncome,
-        totalExpenses,
-        netProfit,
-        profitMargin
-      }
+  const exportToCSV = () => {
+    const csvData = []
+    
+    // Header
+    csvData.push(['Business Budget Report'])
+    csvData.push(['Business Name:', budgetData.businessName || 'N/A'])
+    csvData.push(['Period:', budgetData.period])
+    csvData.push(['Generated:', new Date().toLocaleDateString()])
+    csvData.push([]) // Empty row
+    
+    // Summary
+    csvData.push(['FINANCIAL SUMMARY'])
+    csvData.push(['Total Income:', `R${totalIncome.toLocaleString()}`])
+    csvData.push(['Total Expenses:', `R${totalExpenses.toLocaleString()}`])
+    csvData.push(['Net Profit:', `R${netProfit.toLocaleString()}`])
+    csvData.push(['Profit Margin:', `${profitMargin.toFixed(1)}%`])
+    csvData.push([]) // Empty row
+    
+    // Income Details
+    csvData.push(['INCOME BREAKDOWN'])
+    csvData.push(['Name', 'Category', 'Amount', 'Frequency', `${budgetData.period} Amount`])
+    budgetData.income.forEach(item => {
+      csvData.push([
+        item.name,
+        item.category,
+        `R${item.amount.toLocaleString()}`,
+        item.frequency,
+        `R${calculatePeriodAmount(item.amount, item.frequency, budgetData.period).toLocaleString()}`
+      ])
+    })
+    csvData.push([]) // Empty row
+    
+    // Expense Details
+    csvData.push(['EXPENSE BREAKDOWN'])
+    csvData.push(['Name', 'Category', 'Type', 'Amount', 'Frequency', `${budgetData.period} Amount`])
+    budgetData.expenses.forEach(item => {
+      csvData.push([
+        item.name,
+        item.category,
+        item.type,
+        `R${item.amount.toLocaleString()}`,
+        item.frequency,
+        `R${calculatePeriodAmount(item.amount, item.frequency, budgetData.period).toLocaleString()}`
+      ])
+    })
+    
+    // Add notes if present
+    if (budgetData.notes.trim()) {
+      csvData.push([]) // Empty row
+      csvData.push(['NOTES'])
+      csvData.push([budgetData.notes])
     }
     
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    // Convert to CSV string
+    const csvContent = csvData.map(row => 
+      row.map(cell => `"${cell}"`).join(',')
+    ).join('\n')
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `budget-${budgetData.businessName || 'business'}-${new Date().toISOString().split('T')[0]}.json`
+    a.download = `budget-${budgetData.businessName?.replace(/[^a-zA-Z0-9]/g, '-') || 'business'}-${new Date().toISOString().split('T')[0]}.csv`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -613,9 +659,9 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
 
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-3 mt-6">
-              <Button onClick={exportToPDF} className="bg-orange-600 hover:bg-orange-700">
+              <Button onClick={exportToCSV} className="bg-orange-600 hover:bg-orange-700">
                 <Download className="w-4 h-4 mr-2" />
-                Export Data
+                Export to CSV
               </Button>
               
               <AlertDialog>
