@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { X, Plus, Download, Save, Calculator, TrendingUp, TrendingDown, DollarSign, PieChart } from "lucide-react"
 import { PieChart as RechartsPieChart, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Pie } from "recharts"
 
@@ -616,9 +617,31 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
                 <Download className="w-4 h-4 mr-2" />
                 Export Data
               </Button>
-              <Button variant="outline" onClick={resetCalculator}>
-                Reset Calculator
-              </Button>
+              
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline">
+                    Reset Calculator
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure you want to reset?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action will permanently delete all your budget data including income sources, expenses, and notes. This cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={resetCalculator}
+                      className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                    >
+                      Yes, Reset All Data
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
         </div>
