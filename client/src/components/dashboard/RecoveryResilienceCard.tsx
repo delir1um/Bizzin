@@ -33,11 +33,19 @@ export function RecoveryResilienceCard({ journalEntries }: RecoveryResilienceCar
       new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
     )
 
-    // Identify challenge/setback entries and subsequent recovery
-    const challengeMoods = ['stressed', 'frustrated', 'overwhelmed', 'sad', 'conflicted', 'uncertain', 'tired']
-    const challengeCategories = ['challenge']
-    const recoveryMoods = ['confident', 'optimistic', 'accomplished', 'excited', 'motivated', 'inspired', 'determined']
-    const recoveryCategories = ['achievement', 'growth']
+    // Enhanced challenge detection with severity levels - consistent with other cards
+    const severeChallengeMoods = ['overwhelmed', 'burned out', 'exhausted', 'desperate', 'devastated']
+    const moderateChallengeMoods = ['stressed', 'frustrated', 'anxious', 'pressured', 'worried', 'disappointed']
+    const mildChallengeMoods = ['tired', 'sad', 'conflicted', 'uncertain', 'discouraged']
+    
+    const challengeCategories = ['challenge'] // Consistent case matching
+    
+    // Enhanced recovery detection with strength levels
+    const strongRecoveryMoods = ['accomplished', 'excited', 'confident', 'inspired', 'triumphant', 'energized']
+    const moderateRecoveryMoods = ['optimistic', 'motivated', 'determined', 'focused', 'satisfied', 'relieved']
+    const mildRecoveryMoods = ['calm', 'peaceful', 'content', 'stable', 'hopeful']
+    
+    const recoveryCategories = ['achievement', 'growth'] // Consistent case matching
 
     const recoveryPeriods: RecoveryPeriod[] = []
 
@@ -47,15 +55,25 @@ export function RecoveryResilienceCard({ journalEntries }: RecoveryResilienceCar
       const category = (entry.sentiment_data?.business_category || entry.category || '').toLowerCase()
       const content = entry.content.toLowerCase()
 
-      // Check if this is a challenge/setback entry
-      const isChallengeEntry = 
-        challengeMoods.includes(mood) ||
-        challengeCategories.includes(category) ||
-        content.includes('problem') ||
-        content.includes('setback') ||
-        content.includes('difficult') ||
-        content.includes('struggle') ||
-        content.includes('failed')
+      // Enhanced challenge detection with severity assessment
+      const isSevereChallenge = severeChallengeMoods.includes(mood)
+      const isModerateChallenge = moderateChallengeMoods.includes(mood)
+      const isMildChallenge = mildChallengeMoods.includes(mood)
+      const isChallengeCategory = challengeCategories.includes(category)
+      
+      // Enhanced content analysis for business challenges
+      const severeContentSignals = ['crisis', 'disaster', 'catastrophic', 'devastating', 'bankruptcy']
+      const moderateContentSignals = ['problem', 'setback', 'failed', 'struggle', 'difficult', 'major issue']
+      const mildContentSignals = ['challenge', 'obstacle', 'concern', 'delay', 'minor issue']
+      
+      const hasSevereContent = severeContentSignals.some(signal => content.includes(signal))
+      const hasModerateContent = moderateContentSignals.some(signal => content.includes(signal))
+      const hasMildContent = mildContentSignals.some(signal => content.includes(signal))
+      
+      const isChallengeEntry = isSevereChallenge || isModerateChallenge || isMildChallenge || 
+                              isChallengeCategory || hasSevereContent || hasModerateContent || hasMildContent
+      const challengeSeverity = isSevereChallenge || hasSevereContent ? 'severe' :
+                               isModerateChallenge || hasModerateContent ? 'moderate' : 'mild'
 
       if (isChallengeEntry) {
         // Look for recovery in subsequent entries (within 7 days)
@@ -75,16 +93,33 @@ export function RecoveryResilienceCard({ journalEntries }: RecoveryResilienceCar
           // Stop looking after 7 days
           if (daysDiff > 7) break
 
-          // Check if this is a recovery entry
-          const isRecoveryEntry =
-            recoveryMoods.includes(laterMood) ||
-            recoveryCategories.includes(laterCategory) ||
-            laterContent.includes('solution') ||
-            laterContent.includes('breakthrough') ||
-            laterContent.includes('resolved') ||
-            laterContent.includes('success') ||
-            laterContent.includes('progress') ||
-            laterContent.includes('better')
+          // Enhanced recovery detection with strength assessment
+          const isStrongRecovery = strongRecoveryMoods.includes(laterMood)
+          const isModerateRecovery = moderateRecoveryMoods.includes(laterMood)
+          const isMildRecovery = mildRecoveryMoods.includes(laterMood)
+          const isRecoveryCategory = recoveryCategories.includes(laterCategory)
+          
+          // Enhanced content analysis for recovery signals
+          const strongRecoverySignals = ['breakthrough', 'triumph', 'victory', 'mastered', 'conquered']
+          const moderateRecoverySignals = ['solution', 'resolved', 'success', 'progress', 'improvement', 'better']
+          const mildRecoverySignals = ['stable', 'okay', 'manageable', 'coping', 'adjusting']
+          
+          const hasStrongRecoveryContent = strongRecoverySignals.some(signal => laterContent.includes(signal))
+          const hasModerateRecoveryContent = moderateRecoverySignals.some(signal => laterContent.includes(signal))
+          const hasMildRecoveryContent = mildRecoverySignals.some(signal => laterContent.includes(signal))
+          
+          // AI confidence integration for recovery validation
+          const confidence = laterEntry.sentiment_data?.confidence || 0
+          const hasHighConfidence = confidence >= 75
+          const hasMediumConfidence = confidence >= 60
+          
+          const isRecoveryEntry = isStrongRecovery || isModerateRecovery || isMildRecovery || 
+                                 isRecoveryCategory || hasStrongRecoveryContent || 
+                                 hasModerateRecoveryContent || hasMildRecoveryContent ||
+                                 hasHighConfidence
+          
+          const recoveryStrength = isStrongRecovery || hasStrongRecoveryContent || hasHighConfidence ? 'strong' :
+                                  isModerateRecovery || hasModerateRecoveryContent || hasMediumConfidence ? 'moderate' : 'mild'
 
           if (isRecoveryEntry) {
             recoveryEntry = laterEntry
@@ -107,47 +142,108 @@ export function RecoveryResilienceCard({ journalEntries }: RecoveryResilienceCar
       ? successfulRecoveries.reduce((sum, p) => sum + (p.recoveryTimeHours || 0), 0) / successfulRecoveries.length
       : 0
 
-    // Calculate trend (comparing recent recoveries to earlier ones)
-    const recentRecoveries = successfulRecoveries.slice(-3)
-    const earlierRecoveries = successfulRecoveries.slice(-6, -3)
+    // Enhanced trend calculation with balanced comparison periods
+    let trend: 'up' | 'down' | 'neutral' = 'neutral'
+    let trendValue = 0
     
-    const recentAvg = recentRecoveries.length > 0
-      ? recentRecoveries.reduce((sum, p) => sum + (p.recoveryTimeHours || 0), 0) / recentRecoveries.length
-      : averageRecoveryTime
-
-    const earlierAvg = earlierRecoveries.length > 0
-      ? earlierRecoveries.reduce((sum, p) => sum + (p.recoveryTimeHours || 0), 0) / earlierRecoveries.length
-      : averageRecoveryTime
-
-    const trendValue = earlierAvg > 0 ? Math.round(((earlierAvg - recentAvg) / earlierAvg) * 100) : 0
-    const trend = trendValue > 15 ? 'up' : trendValue < -15 ? 'down' : 'neutral'
-
-    // Calculate resilience score (0-100)
-    let resilienceScore = 50 // baseline
-
-    // Factor 1: Recovery success rate (40% weight)
-    const recoveryRate = recoveryPeriods.length > 0 
-      ? (successfulRecoveries.length / recoveryPeriods.length) * 100 
-      : 50
-    resilienceScore += (recoveryRate - 50) * 0.4
-
-    // Factor 2: Speed of recovery (30% weight) - faster is better
-    if (averageRecoveryTime > 0) {
-      const speedScore = Math.max(0, 100 - (averageRecoveryTime / 24)) // 24 hours = 0 points, 0 hours = 100 points
-      resilienceScore += (speedScore - 50) * 0.3
+    if (successfulRecoveries.length >= 4) {
+      const recentRecoveries = successfulRecoveries.slice(-2) // Last 2 recoveries
+      const earlierRecoveries = successfulRecoveries.slice(-4, -2) // Previous 2 recoveries
+      
+      const recentAvg = recentRecoveries.reduce((sum, p) => sum + (p.recoveryTimeHours || 0), 0) / recentRecoveries.length
+      const earlierAvg = earlierRecoveries.reduce((sum, p) => sum + (p.recoveryTimeHours || 0), 0) / earlierRecoveries.length
+      
+      if (earlierAvg > 0) {
+        trendValue = Math.round(((earlierAvg - recentAvg) / earlierAvg) * 100)
+        trend = trendValue > 20 ? 'up' : trendValue < -20 ? 'down' : 'neutral'
+      }
     }
 
-    // Factor 3: Trend improvement (30% weight)
-    resilienceScore += (trendValue * 0.3)
+    // Enhanced resilience scoring algorithm
+    let resilienceScore = 40 // Lower baseline for more realistic scoring
 
+    // Factor 1: Recovery Success Rate (30% weight) - Enhanced
+    const recoveryRate = recoveryPeriods.length > 0 
+      ? (successfulRecoveries.length / recoveryPeriods.length) * 100 
+      : 40
+    resilienceScore += (recoveryRate - 50) * 0.3
+
+    // Factor 2: Challenge Severity Handling (25% weight) - New factor
+    const challengeSeverityScore = recoveryPeriods.length > 0 ? 
+      recoveryPeriods.reduce((acc, period) => {
+        const challengeMood = (period.challengeEntry.sentiment_data?.primary_mood || period.challengeEntry.mood || '').toLowerCase()
+        const challengeContent = period.challengeEntry.content.toLowerCase()
+        
+        // Assess challenge difficulty
+        let difficultyScore = 50
+        if (severeChallengeMoods.includes(challengeMood) || challengeContent.includes('crisis')) {
+          difficultyScore = 20 // Severe challenges
+        } else if (moderateChallengeMoods.includes(challengeMood) || challengeContent.includes('major')) {
+          difficultyScore = 35 // Moderate challenges  
+        } else {
+          difficultyScore = 50 // Mild challenges
+        }
+        
+        // Higher score for recovering from severe challenges
+        return acc + (100 - difficultyScore)
+      }, 0) / recoveryPeriods.length : 50
+    
+    resilienceScore += (challengeSeverityScore - 50) * 0.25
+
+    // Factor 3: Recovery Quality & Speed (25% weight) - Enhanced
+    if (successfulRecoveries.length > 0) {
+      const qualitySpeedScore = successfulRecoveries.reduce((acc, recovery) => {
+        const hours = recovery.recoveryTimeHours || 0
+        const recoveryMood = (recovery.recoveryEntry?.sentiment_data?.primary_mood || recovery.recoveryEntry?.mood || '').toLowerCase()
+        
+        // Speed component (0-72 hours range)
+        const speedScore = Math.max(20, 100 - (hours / 0.72)) // 72 hours = 20 points, 0 hours = 100 points
+        
+        // Quality component based on recovery strength
+        let qualityBonus = 0
+        if (strongRecoveryMoods.includes(recoveryMood)) qualityBonus = 20
+        else if (moderateRecoveryMoods.includes(recoveryMood)) qualityBonus = 10
+        else qualityBonus = 5
+        
+        return acc + Math.min(100, speedScore + qualityBonus)
+      }, 0) / successfulRecoveries.length
+      
+      resilienceScore += (qualitySpeedScore - 50) * 0.25
+    }
+
+    // Factor 4: Trend & Consistency (20% weight) - Enhanced
+    let trendScore = 50
+    if (Math.abs(trendValue) > 5) {
+      trendScore = 50 + (trendValue * 0.5) // Positive trend increases score
+    }
+    
+    // Consistency bonus for regular recovery patterns
+    if (successfulRecoveries.length >= 3) {
+      const recoveryTimes = successfulRecoveries.map(r => r.recoveryTimeHours || 0)
+      const avgTime = recoveryTimes.reduce((a, b) => a + b, 0) / recoveryTimes.length
+      const variance = recoveryTimes.reduce((acc, time) => acc + Math.pow(time - avgTime, 2), 0) / recoveryTimes.length
+      const consistency = Math.max(0, 100 - (variance / 100)) // Lower variance = higher consistency
+      trendScore += consistency * 0.2
+    }
+    
+    resilienceScore += (trendScore - 50) * 0.2
+
+    // Ensure score stays within realistic bounds
     resilienceScore = Math.max(0, Math.min(100, Math.round(resilienceScore)))
 
-    // Determine level
+    // Enhanced level determination with refined thresholds
     let level: 'High' | 'Good' | 'Moderate' | 'Low' | 'Unknown'
-    if (resilienceScore >= 80) level = 'High'
-    else if (resilienceScore >= 60) level = 'Good' 
-    else if (resilienceScore >= 40) level = 'Moderate'
-    else level = 'Low'
+    if (recoveryPeriods.length === 0) {
+      level = 'Unknown' // No challenge data available
+    } else if (resilienceScore >= 75) {
+      level = 'High' // Robust resilience
+    } else if (resilienceScore >= 55) {
+      level = 'Good' // Strong resilience
+    } else if (resilienceScore >= 35) {
+      level = 'Moderate' // Stable resilience  
+    } else {
+      level = 'Low' // Fragile resilience
+    }
 
     return {
       averageRecoveryTime,
