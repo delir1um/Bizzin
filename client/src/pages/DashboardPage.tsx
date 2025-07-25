@@ -7,6 +7,9 @@ import { Goal } from '@/types/goals'
 import { JournalService } from '@/lib/services/journal'
 import { BusinessQuoteService } from '@/data/businessQuotes'
 import { BusinessHealthRadar } from '@/components/dashboard/BusinessHealthRadar'
+import { BurnoutRiskCard } from '@/components/dashboard/BurnoutRiskCard'
+import { GrowthMomentumCard } from '@/components/dashboard/GrowthMomentumCard'
+import { RecoveryResilienceCard } from '@/components/dashboard/RecoveryResilienceCard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -54,12 +57,12 @@ export function DashboardPage() {
     queryFn: async () => {
       if (!user) return null
       try {
-        const { data: documents } = await supabase
+        const { data: documents } = await (await import('@/lib/supabase')).supabase
           .from('documents')
           .select('file_size')
           .eq('user_id', user.id)
         
-        const totalSize = documents?.reduce((sum, doc) => sum + doc.file_size, 0) || 0
+        const totalSize = documents?.reduce((sum: number, doc: any) => sum + doc.file_size, 0) || 0
         const totalDocuments = documents?.length || 0
         const storageLimit = 50 * 1024 * 1024 // 50MB in bytes
         
@@ -82,15 +85,15 @@ export function DashboardPage() {
 
   // Goals Intelligence
   const overdueGoals = goals.filter(goal => 
-    goal.target_date && new Date() > new Date(goal.target_date) && goal.status !== 'completed'
+    goal.deadline && new Date() > new Date(goal.deadline) && goal.status !== 'completed'
   )
   
   const upcomingDeadlines = goals.filter(goal => 
-    goal.target_date && 
-    new Date() <= new Date(goal.target_date) && 
-    differenceInDays(new Date(goal.target_date), new Date()) <= 7 &&
+    goal.deadline && 
+    new Date() <= new Date(goal.deadline) && 
+    differenceInDays(new Date(goal.deadline), new Date()) <= 7 &&
     goal.status !== 'completed'
-  ).sort((a, b) => new Date(a.target_date!).getTime() - new Date(b.target_date!).getTime())
+  ).sort((a, b) => new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime())
 
   // Journal Intelligence
   const journalInsights = {
@@ -145,13 +148,13 @@ export function DashboardPage() {
       const recentEntries = journalEntries.filter(entry => {
         const entryDate = new Date(entry.created_at);
         const weekAgo = subDays(new Date(), 7);
-        return entryDate >= weekAgo && entry.sentiment_data?.confidence_score;
+        return entryDate >= weekAgo && entry.sentiment_data?.confidence;
       });
       
       if (recentEntries.length === 0) return 0;
       
       const totalConfidence = recentEntries.reduce((sum, entry) => 
-        sum + (entry.sentiment_data?.confidence_score || 0), 0);
+        sum + (entry.sentiment_data?.confidence || 0), 0);
       return Math.round(totalConfidence / recentEntries.length);
     })(),
     goalLinkedEntries: journalEntries.filter(entry => entry.related_goal_id).length
@@ -243,24 +246,27 @@ export function DashboardPage() {
             </p>
           </div>
 
-          {/* Business Health Radar */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Business Health Radar - Overview */}
+          <div className="grid grid-cols-1 gap-6 mb-8">
             <BusinessHealthRadar journalEntries={journalEntries} />
+          </div>
+
+          {/* Individual Business Health Metrics */}
+          <div className="space-y-4">
+            <div className="text-center">
+              <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
+                Detailed Health Metrics
+              </h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">
+                Individual breakdowns of your business health indicators
+              </p>
+            </div>
             
-            {/* Additional insights can go here */}
-            <Card className="bg-gradient-to-br from-slate-50 to-gray-100 dark:from-slate-950 dark:to-gray-900 border-slate-200 dark:border-slate-800">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5 text-slate-600" />
-                  More Insights Coming Soon
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-                  Additional business intelligence visualizations will be added here based on your journal data patterns and business growth metrics.
-                </p>
-              </CardContent>
-            </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <BurnoutRiskCard journalEntries={journalEntries} />
+              <GrowthMomentumCard journalEntries={journalEntries} />
+              <RecoveryResilienceCard journalEntries={journalEntries} />
+            </div>
           </div>
         </div>
       </div>
