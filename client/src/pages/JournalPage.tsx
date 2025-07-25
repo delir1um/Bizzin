@@ -17,7 +17,6 @@ import { AIMigrationService } from "@/lib/services/aiMigration"
 import { motion, AnimatePresence } from "framer-motion"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getDisplayMoodEmoji, getEntryDisplayData } from "@/lib/journalDisplayUtils"
-import { AIAnalysisIndicator } from "@/components/journal/AIAnalysisIndicator"
 
 export function JournalPage() {
   const [user, setUser] = useState<any>(null)
@@ -574,16 +573,9 @@ export function JournalPage() {
                             </div>
                             {entry.sentiment_data?.insights?.[0] && (
                               <div className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 rounded-lg border p-3">
-                                <div className="flex items-center justify-between mb-2">
-                                  <div className="flex items-center gap-2 text-orange-700">
-                                    <Sparkles className="w-4 h-4" />
-                                    <span className="font-semibold text-xs">AI Business Insights</span>
-                                  </div>
-                                  <AIAnalysisIndicator 
-                                    confidence={entry.sentiment_data.confidence}
-                                    source="ai"
-                                    className="text-xs"
-                                  />
+                                <div className="flex items-center gap-2 text-orange-700 mb-2">
+                                  <Sparkles className="w-4 h-4" />
+                                  <span className="font-semibold text-xs">AI Business Insights</span>
                                 </div>
                                 <div className="text-xs text-gray-600 bg-white/60 rounded-lg p-2 border border-orange-200/50">
                                   <div className="flex items-start gap-2">
