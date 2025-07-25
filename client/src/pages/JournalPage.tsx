@@ -17,6 +17,8 @@ import { AIMigrationService } from "@/lib/services/aiMigration"
 import { motion, AnimatePresence } from "framer-motion"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getDisplayMoodEmoji, getEntryDisplayData } from "@/lib/journalDisplayUtils"
+import { usePlans } from "@/hooks/usePlans"
+import { UpgradeModal } from "@/components/plans/UpgradeModal"
 
 export function JournalPage() {
   const [user, setUser] = useState<any>(null)
@@ -24,6 +26,7 @@ export function JournalPage() {
   const [showViewModal, setShowViewModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showMigrationDialog, setShowMigrationDialog] = useState(false)
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -33,6 +36,9 @@ export function JournalPage() {
   })
   const queryClient = useQueryClient()
   const { toast } = useToast()
+  
+  // Get plan information
+  const { currentPlan, planLimits, currentUsage } = usePlans()
 
   // Get current user
   useEffect(() => {
@@ -196,6 +202,28 @@ export function JournalPage() {
   const handleEditEntry = (entry: JournalEntry) => {
     setSelectedEntry(entry)
     setShowEditModal(true)
+  }
+
+  // Check if user can create new entries
+  const canCreateEntry = () => {
+    if (!planLimits || !currentUsage) return true
+    if (currentPlan?.plan_type === 'premium') return true
+    return currentUsage.journal_entries_created < planLimits.monthly_journal_entries
+  }
+
+  // Handle create entry with limits check
+  const handleCreateEntry = () => {
+    if (canCreateEntry()) {
+      setShowWriteModal(true)
+    } else {
+      setShowUpgradeModal(true)
+    }
+  }
+
+  // Check if user is approaching limits (80% usage)
+  const isApproachingLimit = () => {
+    if (!planLimits || !currentUsage || currentPlan?.plan_type === 'premium') return false
+    return (currentUsage.journal_entries_created / planLimits.monthly_journal_entries) >= 0.8
   }
 
   const handleDeleteEntry = async (entry: JournalEntry) => {
@@ -365,15 +393,80 @@ export function JournalPage() {
               </Button>
             )}
             <Button 
-              onClick={() => setShowWriteModal(true)}
-              className="bg-orange-600 hover:bg-orange-700 text-white"
+              onClick={handleCreateEntry}
+              className={`${canCreateEntry() 
+                ? 'bg-orange-600 hover:bg-orange-700 text-white' 
+                : 'bg-slate-400 hover:bg-slate-500 text-white'} 
+                ${isApproachingLimit() ? 'ring-2 ring-yellow-400' : ''}`}
+              disabled={!canCreateEntry() && currentPlan?.plan_type !== 'premium'}
             >
               <PlusCircle className="w-4 h-4 mr-2" />
-              Write Entry
+              {canCreateEntry() ? 'Write Entry' : 'Upgrade to Write More'}
             </Button>
           </div>
         </div>
       </div>
+
+      {/* Usage Warning Banner */}
+      {isApproachingLimit() && (
+        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-yellow-100 rounded-full">
+              <Sparkles className="w-4 h-4 text-yellow-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-medium text-yellow-800">
+                You're approaching your monthly limit
+              </h3>
+              <p className="text-sm text-yellow-700">
+                {currentUsage && planLimits && 
+                  `${currentUsage.journal_entries_created} of ${planLimits.monthly_journal_entries} entries used this month. `
+                }
+                Upgrade to Premium for unlimited entries.
+              </p>
+            </div>
+            <Button
+              onClick={() => setShowUpgradeModal(true)}
+              size="sm"
+              className="bg-yellow-600 hover:bg-yellow-700 text-white"
+            >
+              Upgrade Now
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Usage Stats for Free Users */}
+      {currentPlan?.plan_type === 'free' && planLimits && currentUsage && (
+        <div className="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-slate-100 rounded-full">
+                <BookOpen className="w-4 h-4 text-slate-600" />
+              </div>
+              <div>
+                <h3 className="font-medium text-slate-800">Monthly Journal Entries</h3>
+                <p className="text-sm text-slate-600">
+                  {currentUsage.journal_entries_created} of {planLimits.monthly_journal_entries} entries used
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-sm font-medium text-slate-700">
+                {planLimits.monthly_journal_entries - currentUsage.journal_entries_created} remaining
+              </div>
+              <div className="w-32 bg-slate-200 rounded-full h-2 mt-1">
+                <div 
+                  className="bg-orange-500 h-2 rounded-full transition-all duration-300"
+                  style={{ 
+                    width: `${Math.min(100, (currentUsage.journal_entries_created / planLimits.monthly_journal_entries) * 100)}%` 
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Statistics Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -582,11 +675,15 @@ export function JournalPage() {
                           </p>
                         </div>
                         <Button 
-                          onClick={() => setShowWriteModal(true)}
-                          className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 text-base font-medium"
+                          onClick={handleCreateEntry}
+                          className={`${canCreateEntry() 
+                            ? 'bg-orange-600 hover:bg-orange-700 text-white' 
+                            : 'bg-slate-400 hover:bg-slate-500 text-white'} 
+                            px-6 py-3 text-base font-medium`}
+                          disabled={!canCreateEntry() && currentPlan?.plan_type !== 'premium'}
                         >
                           <PlusCircle className="w-5 h-5 mr-2" />
-                          Write Today's Entry
+                          {canCreateEntry() ? "Write Today's Entry" : 'Upgrade for More Entries'}
                         </Button>
                       </div>
                     </Card>
@@ -888,6 +985,12 @@ export function JournalPage() {
             description: "Your journal entries have been enhanced with improved AI analysis.",
           })
         }}
+      />
+
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
       />
     </div>
   )
