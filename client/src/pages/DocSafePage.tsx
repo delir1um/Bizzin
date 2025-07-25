@@ -700,7 +700,6 @@ export function DocSafePage() {
         <UpgradeModal
           isOpen={showUpgradeModal}
           onClose={() => setShowUpgradeModal(false)}
-          userId={user.id}
         />
       )}
     </div>
