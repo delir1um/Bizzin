@@ -211,22 +211,9 @@ export function BusinessHealthRadar({ journalEntries }: BusinessHealthRadarProps
             <Heart className="h-5 w-5 text-purple-500" />
             Business Health
           </span>
-          <div className="flex items-center gap-2">
-            <div className="group relative">
-              <Info className="h-4 w-4 text-slate-400 hover:text-slate-600 cursor-help" />
-              <div className="absolute right-0 top-6 w-64 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                <div className="text-xs text-slate-600 dark:text-slate-300 space-y-2">
-                  <div><strong>Overall Score:</strong> Average of all three metrics</div>
-                  <div><strong>Stress Mgmt:</strong> Based on mood patterns, energy levels, and work-life balance indicators from journal entries</div>
-                  <div><strong>Growth:</strong> Calculated from positive moods, achievement categories, and progress-related content</div>
-                  <div><strong>Recovery:</strong> Measures time taken to bounce back from challenges and setbacks</div>
-                </div>
-              </div>
-            </div>
-            <Badge variant="outline" className={overallBadge.color}>
-              {overallBadge.text}
-            </Badge>
-          </div>
+          <Badge variant="outline" className={overallBadge.color}>
+            {overallBadge.text}
+          </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -319,6 +306,21 @@ export function BusinessHealthRadar({ journalEntries }: BusinessHealthRadarProps
               ? "Fair health status. Focus on stress management and growth."
               : "Health needs attention. Prioritize self-care and recovery."
             }
+          </div>
+        </div>
+
+        {/* Info Icon */}
+        <div className="flex justify-start mt-4">
+          <div className="group relative">
+            <Info className="h-4 w-4 text-slate-400 hover:text-slate-600 cursor-help" />
+            <div className="absolute left-0 bottom-6 w-64 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              <div className="text-xs text-slate-600 dark:text-slate-300 space-y-2">
+                <div><strong>Overall Score:</strong> Average of all three metrics</div>
+                <div><strong>Stress Mgmt:</strong> Based on mood patterns, energy levels, and work-life balance indicators from journal entries</div>
+                <div><strong>Growth:</strong> Calculated from positive moods, achievement categories, and progress-related content</div>
+                <div><strong>Recovery:</strong> Measures time taken to bounce back from challenges and setbacks</div>
+              </div>
+            </div>
           </div>
         </div>
       </CardContent>
