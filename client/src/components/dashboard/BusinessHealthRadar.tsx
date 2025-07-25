@@ -204,28 +204,31 @@ export function BusinessHealthRadar({ journalEntries }: BusinessHealthRadarProps
   const overallBadge = getHealthBadge(metrics.overallHealth)
 
   return (
-    <Card className="bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-950 dark:to-indigo-900 border-purple-200 dark:border-purple-800">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold text-purple-900 dark:text-purple-100 flex items-center gap-2">
-            <Heart className="h-5 w-5 text-purple-600" />
-            Business Health Radar
-          </CardTitle>
-          <Badge className={`${overallBadge.color} font-medium`}>
+    <Card className="hover:shadow-lg transition-shadow">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center justify-between text-lg">
+          <span className="flex items-center gap-2">
+            <Heart className="h-5 w-5 text-purple-500" />
+            Business Health
+          </span>
+          <Badge variant="outline" className={overallBadge.color}>
             {overallBadge.text}
           </Badge>
-        </div>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Overall Score */}
         <div className="text-center">
           <div className={`text-3xl font-bold ${getHealthColor(metrics.overallHealth)} mb-1`}>
-            {metrics.overallHealth}/100
+            {metrics.overallHealth}
           </div>
-          <p className="text-sm text-purple-700 dark:text-purple-300">Overall Business Wellness</p>
+          <div className="text-sm text-slate-600">Overall Score</div>
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="h-64 w-full">
+
+        {/* Compact Radar Chart */}
+        <div className="h-32">
           <ResponsiveContainer width="100%" height="100%">
-            <RadarChart data={data} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
+            <RadarChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
               <PolarGrid 
                 stroke="#8B5CF6" 
                 strokeOpacity={0.3}
@@ -233,7 +236,7 @@ export function BusinessHealthRadar({ journalEntries }: BusinessHealthRadarProps
               <PolarAngleAxis 
                 dataKey="metric" 
                 tick={{ 
-                  fontSize: 12, 
+                  fontSize: 9, 
                   fill: '#7C3AED',
                   fontWeight: 500
                 }}
@@ -242,8 +245,8 @@ export function BusinessHealthRadar({ journalEntries }: BusinessHealthRadarProps
               <PolarRadiusAxis 
                 angle={90} 
                 domain={[0, 100]} 
-                tick={{ fontSize: 10, fill: '#8B5CF6' }}
-                tickCount={5}
+                tick={{ fontSize: 8, fill: '#8B5CF6' }}
+                tickCount={3}
               />
               <Radar
                 name="Business Health"
@@ -251,56 +254,59 @@ export function BusinessHealthRadar({ journalEntries }: BusinessHealthRadarProps
                 stroke="#8B5CF6"
                 fill="#8B5CF6"
                 fillOpacity={0.3}
-                strokeWidth={3}
-                dot={{ fill: '#7C3AED', strokeWidth: 2, r: 5 }}
+                strokeWidth={2}
+                dot={{ fill: '#7C3AED', strokeWidth: 1, r: 3 }}
               />
             </RadarChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Metric Breakdown */}
-        <div className="grid grid-cols-1 gap-3 mt-4">
-          <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border border-purple-100 dark:border-purple-700">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-green-500"></div>
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Stress Management</span>
-            </div>
-            <div className={`text-sm font-bold ${getHealthColor(metrics.burnoutRisk)}`}>
+        {/* Compact Metric Summary */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-slate-600 flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full bg-green-500"></div>
+              Stress Mgmt
+            </span>
+            <span className={`font-bold ${getHealthColor(metrics.burnoutRisk)}`}>
               {metrics.burnoutRisk}%
-            </div>
+            </span>
           </div>
           
-          <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border border-purple-100 dark:border-purple-700">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Growth Momentum</span>
-            </div>
-            <div className={`text-sm font-bold ${getHealthColor(metrics.growthMomentum)}`}>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-slate-600 flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+              Growth
+            </span>
+            <span className={`font-bold ${getHealthColor(metrics.growthMomentum)}`}>
               {metrics.growthMomentum}%
-            </div>
+            </span>
           </div>
           
-          <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border border-purple-100 dark:border-purple-700">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-purple-500"></div>
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Recovery Resilience</span>
-            </div>
-            <div className={`text-sm font-bold ${getHealthColor(metrics.recoveryResilience)}`}>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-slate-600 flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+              Recovery
+            </span>
+            <span className={`font-bold ${getHealthColor(metrics.recoveryResilience)}`}>
               {metrics.recoveryResilience}%
-            </div>
+            </span>
           </div>
         </div>
 
-        {/* Insights */}
-        <div className="mt-4 p-3 bg-purple-50 dark:bg-purple-900/30 rounded-lg border border-purple-200 dark:border-purple-700">
-          <p className="text-xs text-purple-700 dark:text-purple-300 leading-relaxed">
-            {metrics.overallHealth >= 70 
-              ? "🎯 Excellent business wellness! You're managing stress well, maintaining growth momentum, and showing strong resilience."
+        {/* Overall Health Insight */}
+        <div className="p-3 bg-slate-50 rounded-lg">
+          <h4 className="text-sm font-medium text-slate-700 mb-1">Health Insights:</h4>
+          <div className="text-sm text-slate-600">
+            {metrics.overallHealth >= 80 
+              ? "Excellent business wellness across all metrics!"
+              : metrics.overallHealth >= 65
+              ? "Good overall health with room for targeted improvements."
               : metrics.overallHealth >= 50
-                ? "⚡ Good foundation with room for improvement. Focus on the lowest scoring area for maximum impact."
-                : "🔄 Consider prioritizing self-care and strategic planning. Your journal shows opportunities for better stress management and recovery patterns."
+              ? "Fair health status. Focus on stress management and growth."
+              : "Health needs attention. Prioritize self-care and recovery."
             }
-          </p>
+          </div>
         </div>
       </CardContent>
     </Card>

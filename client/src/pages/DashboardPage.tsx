@@ -246,27 +246,12 @@ export function DashboardPage() {
             </p>
           </div>
 
-          {/* Business Health Radar - Overview */}
-          <div className="grid grid-cols-1 gap-6 mb-8">
+          {/* All Business Health Metrics in Single Row */}
+          <div className="grid grid-cols-1 xl:grid-cols-4 lg:grid-cols-2 gap-4">
             <BusinessHealthRadar journalEntries={journalEntries} />
-          </div>
-
-          {/* Individual Business Health Metrics */}
-          <div className="space-y-4">
-            <div className="text-center">
-              <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
-                Detailed Health Metrics
-              </h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">
-                Individual breakdowns of your business health indicators
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <BurnoutRiskCard journalEntries={journalEntries} />
-              <GrowthMomentumCard journalEntries={journalEntries} />
-              <RecoveryResilienceCard journalEntries={journalEntries} />
-            </div>
+            <BurnoutRiskCard journalEntries={journalEntries} />
+            <GrowthMomentumCard journalEntries={journalEntries} />
+            <RecoveryResilienceCard journalEntries={journalEntries} />
           </div>
         </div>
       </div>
