@@ -130,7 +130,7 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
   const profitMargin = totalIncome > 0 ? (netProfit / totalIncome) * 100 : 0
 
   const addIncomeItem = () => {
-    if (!newIncomeItem.name || !newIncomeItem.amount || !newIncomeItem.category) return
+    if (!newIncomeItem.name || newIncomeItem.amount <= 0 || !newIncomeItem.category) return
     
     const item: IncomeItem = {
       id: Date.now().toString(),
@@ -145,7 +145,7 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
   }
 
   const addExpenseItem = () => {
-    if (!newExpenseItem.name || !newExpenseItem.amount || !newExpenseItem.category) return
+    if (!newExpenseItem.name || newExpenseItem.amount <= 0 || !newExpenseItem.category) return
     
     const item: ExpenseItem = {
       id: Date.now().toString(),
