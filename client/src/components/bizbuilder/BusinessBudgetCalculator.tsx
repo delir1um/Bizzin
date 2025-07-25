@@ -130,7 +130,10 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
   const profitMargin = totalIncome > 0 ? (netProfit / totalIncome) * 100 : 0
 
   const addIncomeItem = () => {
-    if (!newIncomeItem.name || newIncomeItem.amount <= 0 || !newIncomeItem.category) return
+    if (!newIncomeItem.name || !newIncomeItem.amount || newIncomeItem.amount <= 0 || !newIncomeItem.category) {
+      console.log('Validation failed:', { name: newIncomeItem.name, amount: newIncomeItem.amount, category: newIncomeItem.category })
+      return
+    }
     
     const item: IncomeItem = {
       id: Date.now().toString(),
@@ -145,7 +148,10 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
   }
 
   const addExpenseItem = () => {
-    if (!newExpenseItem.name || newExpenseItem.amount <= 0 || !newExpenseItem.category) return
+    if (!newExpenseItem.name || !newExpenseItem.amount || newExpenseItem.amount <= 0 || !newExpenseItem.category) {
+      console.log('Expense validation failed:', { name: newExpenseItem.name, amount: newExpenseItem.amount, category: newExpenseItem.category })
+      return
+    }
     
     const item: ExpenseItem = {
       id: Date.now().toString(),
@@ -375,7 +381,10 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
                         </Select>
                       </div>
                     </div>
-                    <Button onClick={addIncomeItem} className="w-full bg-orange-600 hover:bg-orange-700">
+                    <Button onClick={() => {
+                      console.log('Button clicked, newIncomeItem:', newIncomeItem)
+                      addIncomeItem()
+                    }} className="w-full bg-orange-600 hover:bg-orange-700">
                       <Plus className="w-4 h-4 mr-2" />
                       Add Income Source
                     </Button>
