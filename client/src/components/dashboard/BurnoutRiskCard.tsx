@@ -2,7 +2,7 @@ import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { AlertTriangle, Shield, CheckCircle } from 'lucide-react'
+import { AlertTriangle, Shield, CheckCircle, Info } from 'lucide-react'
 import { JournalEntry } from '@/types/journal'
 import { subDays, isAfter } from 'date-fns'
 
@@ -123,12 +123,26 @@ export function BurnoutRiskCard({ journalEntries }: BurnoutRiskCardProps) {
             {getRiskIcon(level)}
             Burnout Risk
           </span>
-          <Badge 
-            variant={level === 'high' ? 'destructive' : level === 'medium' ? 'secondary' : 'default'}
-            className={`${level === 'low' ? 'bg-green-50 text-green-700 border-green-200' : ''}`}
-          >
-            {level.toUpperCase()}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <div className="group relative">
+              <Info className="h-4 w-4 text-slate-400 hover:text-slate-600 cursor-help" />
+              <div className="absolute right-0 top-6 w-64 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div className="text-xs text-slate-600 dark:text-slate-300 space-y-2">
+                  <div><strong>Calculation:</strong> Based on last 14 days of journal entries</div>
+                  <div><strong>Stress Analysis (40%):</strong> Frequency of stressed, overwhelmed, frustrated moods</div>
+                  <div><strong>Energy Analysis (30%):</strong> Occurrence of low energy and tired states</div>
+                  <div><strong>Work-Life Balance (30%):</strong> Challenge entries and work-related overwhelm indicators</div>
+                  <div><strong>Zones:</strong> 0-40% Safe, 40-70% Caution, 70%+ High Risk</div>
+                </div>
+              </div>
+            </div>
+            <Badge 
+              variant={level === 'high' ? 'destructive' : level === 'medium' ? 'secondary' : 'default'}
+              className={`${level === 'low' ? 'bg-green-50 text-green-700 border-green-200' : ''}`}
+            >
+              {level.toUpperCase()}
+            </Badge>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">

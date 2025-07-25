@@ -2,7 +2,7 @@ import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts'
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, Info } from 'lucide-react'
 import { JournalEntry } from '@/types/journal'
 import { subDays, isAfter, format, startOfDay, differenceInDays } from 'date-fns'
 
@@ -185,9 +185,24 @@ export function GrowthMomentumCard({ journalEntries }: GrowthMomentumCardProps) 
             <TrendingUp className="h-5 w-5 text-blue-500" />
             Growth Momentum
           </span>
-          <Badge variant="outline" className={momentumLevel.color}>
-            {momentumLevel.level}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <div className="group relative">
+              <Info className="h-4 w-4 text-slate-400 hover:text-slate-600 cursor-help" />
+              <div className="absolute right-0 top-6 w-64 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div className="text-xs text-slate-600 dark:text-slate-300 space-y-2">
+                  <div><strong>Daily Scoring:</strong> Each day gets 0-100 score based on journal entries</div>
+                  <div><strong>Mood Impact (40%):</strong> Excited, accomplished, confident = higher scores</div>
+                  <div><strong>Category Impact (30%):</strong> Achievement, growth = bonus points</div>
+                  <div><strong>Content Analysis (30%):</strong> Success keywords boost, problem keywords reduce score</div>
+                  <div><strong>Trend:</strong> Compares last 3 days vs previous 4 days average</div>
+                  <div><strong>High Performance:</strong> 2+ consecutive days with 75+ scores</div>
+                </div>
+              </div>
+            </div>
+            <Badge variant="outline" className={momentumLevel.color}>
+              {momentumLevel.level}
+            </Badge>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">

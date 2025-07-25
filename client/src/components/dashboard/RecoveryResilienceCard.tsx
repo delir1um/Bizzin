@@ -1,7 +1,7 @@
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ArrowUp, ArrowDown, Minus, Shield } from 'lucide-react'
+import { ArrowUp, ArrowDown, Minus, Shield, Info } from 'lucide-react'
 import { JournalEntry } from '@/types/journal'
 import { differenceInDays, differenceInHours, isAfter, isBefore, parseISO } from 'date-fns'
 
@@ -208,9 +208,24 @@ export function RecoveryResilienceCard({ journalEntries }: RecoveryResilienceCar
             <Shield className="h-5 w-5 text-purple-500" />
             Recovery Resilience
           </span>
-          <Badge variant="outline" className={getLevelColor(level)}>
-            {level.toUpperCase()}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <div className="group relative">
+              <Info className="h-4 w-4 text-slate-400 hover:text-slate-600 cursor-help" />
+              <div className="absolute right-0 top-6 w-64 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div className="text-xs text-slate-600 dark:text-slate-300 space-y-2">
+                  <div><strong>Challenge Detection:</strong> Identifies stressed, frustrated moods and problem-related content</div>
+                  <div><strong>Recovery Detection:</strong> Looks for confident, accomplished moods and solution keywords within 7 days</div>
+                  <div><strong>Recovery Success Rate (40%):</strong> Percentage of challenges that led to documented recovery</div>
+                  <div><strong>Recovery Speed (30%):</strong> Average time from challenge to recovery (faster = better)</div>
+                  <div><strong>Trend Analysis (30%):</strong> Compares recent vs earlier recovery times</div>
+                  <div><strong>Resilience Score:</strong> 0-100 composite score of all factors</div>
+                </div>
+              </div>
+            </div>
+            <Badge variant="outline" className={getLevelColor(level)}>
+              {level.toUpperCase()}
+            </Badge>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
