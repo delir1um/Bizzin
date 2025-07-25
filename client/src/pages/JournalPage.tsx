@@ -155,68 +155,7 @@ export function JournalPage() {
 
 
 
-  const getMoodColor = (mood: string | null | undefined) => {
-    if (!mood) return 'text-gray-600 bg-gray-50'
-    
-    const moodColors: Record<string, string> = {
-      'excited': 'text-yellow-700 bg-yellow-50',
-      'confident': 'text-blue-700 bg-blue-50',
-      'optimistic': 'text-green-700 bg-green-50',
-      'focused': 'text-purple-700 bg-purple-50',
-      'content': 'text-emerald-700 bg-emerald-50',
-      'neutral': 'text-gray-600 bg-gray-50',
-      'concerned': 'text-orange-700 bg-orange-50',
-      'frustrated': 'text-red-700 bg-red-50',
-      'stressed': 'text-red-800 bg-red-50',
-      'overwhelmed': 'text-red-900 bg-red-50',
-      'determined': 'text-red-700 bg-red-50',
-      'accomplished': 'text-green-700 bg-green-50',
-      'uncertain': 'text-gray-700 bg-gray-50',
-      'inspired': 'text-purple-700 bg-purple-50',
-      'reflective': 'text-indigo-700 bg-indigo-50',
-      'sad': 'text-blue-700 bg-blue-50',
-      'tired': 'text-slate-700 bg-slate-50',
-      'Thoughtful': 'text-amber-700 bg-amber-50',
-      'Curious': 'text-teal-700 bg-teal-50',
-      'Focused': 'text-purple-700 bg-purple-50',
-      'Sad': 'text-blue-700 bg-blue-50',
-      'Tired': 'text-slate-700 bg-slate-50'
-    }
-    
-    return moodColors[mood.toLowerCase()] || 'text-gray-600 bg-gray-50'
-  }
-
-  const getCategoryColor = (category: string | null | undefined) => {
-    if (!category) return 'text-slate-600 bg-slate-50'
-    
-    const categoryColors: Record<string, string> = {
-      'planning': 'text-blue-700 bg-blue-50',
-      'strategy': 'text-purple-700 bg-purple-50',
-      'operations': 'text-green-700 bg-green-50',
-      'finance': 'text-emerald-700 bg-emerald-50',
-      'marketing': 'text-pink-700 bg-pink-50',
-      'reflection': 'text-indigo-700 bg-indigo-50',
-      'challenges': 'text-red-700 bg-red-50',
-      'wins': 'text-yellow-700 bg-yellow-50',
-      'growth': 'text-emerald-700 bg-emerald-50',
-      'challenge': 'text-red-700 bg-red-50',
-      'achievement': 'text-yellow-700 bg-yellow-50'
-    }
-    
-    return categoryColors[category.toLowerCase()] || 'text-slate-600 bg-slate-50'
-  }
-
-  const getEnergyEmoji = (energy: string | null | undefined): string => {
-    if (!energy) return ''
-    
-    const energyEmojis: Record<string, string> = {
-      'high': '⚡',
-      'medium': '🔋',
-      'low': '🪫'
-    }
-    
-    return energyEmojis[energy.toLowerCase()] || ''
-  }
+  // All mood, category, and energy display logic is now handled by centralized getEntryDisplayData function
 
   // Energy label function to match view modal design
   const getEnergyLabel = (energy: string) => {
@@ -704,9 +643,9 @@ export function JournalPage() {
                               </div>
                               <div className="flex items-center gap-3 text-sm text-slate-500 mb-2">
                                 <span>{formatDate(entry.created_at || entry.entry_date || '')}</span>
-                                {(entry.category || entry.sentiment_data?.business_category) && (
-                                  <Badge className={`${getCategoryColor(entry.category || entry.sentiment_data?.business_category)} text-xs px-1.5 py-0.5`}>
-                                    {entry.category || entry.sentiment_data?.business_category}
+                                {getEntryDisplayData(entry).category && (
+                                  <Badge className="bg-orange-50 text-orange-700 border-orange-200 text-xs px-1.5 py-0.5">
+                                    {getEntryDisplayData(entry).category}
                                   </Badge>
                                 )}
                               </div>
@@ -771,9 +710,9 @@ export function JournalPage() {
                               </div>
                               <div className="flex items-center gap-2 text-xs text-slate-500">
                                 <span>{formatDate(entry.created_at || entry.entry_date || '')}</span>
-                                {(entry.category || entry.sentiment_data?.business_category) && (
-                                  <div className={`w-2 h-2 rounded-full ${getCategoryColor(entry.category || entry.sentiment_data?.business_category).includes('bg-') ? getCategoryColor(entry.category || entry.sentiment_data?.business_category).split(' ')[1] : 'bg-slate-300'}`} 
-                                       title={entry.category || entry.sentiment_data?.business_category}></div>
+                                {getEntryDisplayData(entry).category && (
+                                  <div className="w-2 h-2 rounded-full bg-orange-200" 
+                                       title={getEntryDisplayData(entry).category}></div>
                                 )}
                               </div>
                             </CardContent>
@@ -833,9 +772,9 @@ export function JournalPage() {
                             </div>
                             <div className="flex items-center gap-2 text-xs text-slate-500">
                               <span>{formatDate(entry.created_at || entry.entry_date || '')}</span>
-                              {(entry.category || entry.sentiment_data?.business_category) && (
-                                <div className={`w-1.5 h-1.5 rounded-full ${getCategoryColor(entry.category || entry.sentiment_data?.business_category).includes('bg-') ? getCategoryColor(entry.category || entry.sentiment_data?.business_category).split(' ')[1] : 'bg-slate-300'}`} 
-                                     title={entry.category || entry.sentiment_data?.business_category}></div>
+                              {getEntryDisplayData(entry).category && (
+                                <div className="w-1.5 h-1.5 rounded-full bg-orange-200" 
+                                     title={getEntryDisplayData(entry).category}></div>
                               )}
                             </div>
                           </div>
@@ -895,9 +834,9 @@ export function JournalPage() {
                                 </div>
                                 <div className="flex items-center gap-1 text-xs text-slate-500">
                                   <span className="text-xs">{format(new Date(entry.entry_date || entry.created_at || ''), 'MMM d')}</span>
-                                  {(entry.category || (entry.sentiment_data && entry.sentiment_data.business_category)) && (
-                                    <div className={`w-1 h-1 rounded-full ${getCategoryColor(entry.category || (entry.sentiment_data && entry.sentiment_data.business_category)).includes('bg-') ? getCategoryColor(entry.category || (entry.sentiment_data && entry.sentiment_data.business_category)).split(' ')[1] : 'bg-slate-300'}`} 
-                                         title={entry.category || (entry.sentiment_data && entry.sentiment_data.business_category)}></div>
+                                  {getEntryDisplayData(entry).category && (
+                                    <div className="w-1 h-1 rounded-full bg-orange-200" 
+                                         title={getEntryDisplayData(entry).category}></div>
                                   )}
                                 </div>
                               </div>
