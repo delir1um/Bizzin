@@ -159,17 +159,51 @@ export function FileViewer({ document, isOpen, onClose }: FileViewerProps) {
       )
     }
 
-    // PDF files - direct embed with multiple fallbacks
+    // PDF files - optimized download experience due to browser limitations
     if (document.file_type === 'application/pdf' && fileUrl) {
       return (
-        <div className="w-full h-96 border rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800">
-          <embed
-            src={fileUrl}
-            type="application/pdf"
-            className="w-full h-full"
-            style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top left' }}
-            title={document.name}
-          />
+        <div className="flex items-center justify-center h-96 w-full rounded-md border bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900">
+          <div className="text-center max-w-lg px-8">
+            <div className="bg-white dark:bg-slate-800 rounded-full p-4 w-20 h-20 mx-auto mb-6 shadow-lg">
+              <FileText className="h-12 w-12 text-orange-600 mx-auto" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">
+              {document.name}
+            </h3>
+            <div className="bg-white dark:bg-slate-800 rounded-lg p-4 mb-6 shadow-sm">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-slate-500 dark:text-slate-400">Size:</span>
+                  <span className="ml-2 font-medium">{formatFileSize(document.file_size)}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 dark:text-slate-400">Type:</span>
+                  <span className="ml-2 font-medium">PDF Document</span>
+                </div>
+              </div>
+            </div>
+            <p className="text-slate-600 dark:text-slate-300 mb-6 text-sm leading-relaxed">
+              For security, browsers don't allow PDF preview from cloud storage. 
+              Click below to open the document in a new tab or download it to your device.
+            </p>
+            <div className="space-y-3">
+              <Button 
+                onClick={() => window.open(fileUrl, '_blank')}
+                className="bg-orange-600 hover:bg-orange-700 w-full py-3"
+              >
+                <FileText className="h-5 w-5 mr-2" />
+                Open in New Tab
+              </Button>
+              <Button 
+                onClick={handleDownload} 
+                variant="outline"
+                className="border-orange-200 text-orange-700 hover:bg-orange-50 w-full"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download to Device
+              </Button>
+            </div>
+          </div>
         </div>
       )
     }
