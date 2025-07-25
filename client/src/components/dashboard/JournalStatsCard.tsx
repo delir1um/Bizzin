@@ -112,7 +112,7 @@ export function JournalStatsCard({ journalEntries, onNavigate }: JournalStatsCar
         </Badge>
       </CardHeader>
       
-      <CardContent className="space-y-4">
+      <CardContent className="flex flex-col h-full space-y-4">
         {/* Primary Metrics */}
         <div className="text-center space-y-1">
           <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
@@ -151,6 +151,9 @@ export function JournalStatsCard({ journalEntries, onNavigate }: JournalStatsCar
             <div className="text-gray-600 dark:text-gray-400">Weekly Mood</div>
           </div>
         </div>
+        
+        {/* Spacer to push button to bottom */}
+        <div className="flex-1"></div>
         
         {/* Action Button */}
         <Button 
