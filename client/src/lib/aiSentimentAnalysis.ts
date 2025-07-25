@@ -30,7 +30,7 @@ const HF_MODELS = {
 
 // Cache for reducing API calls
 const sentimentCache = new Map<string, any>();
-const CACHE_DURATION = 1000; // 1 second for testing enhanced detection
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
 // Clear cache function for testing
 export function clearSentimentCache() {
@@ -357,9 +357,25 @@ function generateEnhancedBusinessInsights(text: string, mood: string, category: 
     const learningInsights = [
       "Self-reflection and uncertainty are natural parts of the entrepreneurial journey.",
       "Taking time to understand your feelings helps make better business decisions.",
-      "Emotional awareness is a crucial skill for successful entrepreneurs."
+      "Emotional awareness is a crucial skill for successful entrepreneurs.",
+      "Product failures often provide more valuable insights than early successes.",
+      "Customer feedback, even when painful, is the foundation of product improvement.",
+      "Building what customers actually need requires deep understanding, not assumptions.",
+      "Post-mortem analysis transforms setbacks into strategic advantages."
     ];
-    insights.push(learningInsights[Math.floor(Math.random() * learningInsights.length)]);
+    
+    // Context-specific insights for learning scenarios
+    if (lowerText.includes('launch') && (lowerText.includes('wrong') || lowerText.includes("didn't go"))) {
+      insights.push("Product failures often provide more valuable insights than early successes.");
+    } else if (lowerText.includes('customer feedback') || lowerText.includes('user interviews')) {
+      insights.push("Customer feedback, even when painful, is the foundation of product improvement.");
+    } else if (lowerText.includes('building') && lowerText.includes('need')) {
+      insights.push("Building what customers actually need requires deep understanding, not assumptions.");
+    } else if (lowerText.includes('reflecting') && (lowerText.includes('learn') || lowerText.includes('wrong'))) {
+      insights.push("Post-mortem analysis transforms setbacks into strategic advantages.");
+    } else {
+      insights.push(learningInsights[Math.floor(Math.random() * learningInsights.length)]);
+    }
   } else if (category === 'Research') {
     const researchInsights = [
       "Knowledge of your competition is essential for strategic positioning.",
@@ -685,8 +701,8 @@ export async function analyzeBusinessSentimentAI(content: string, title?: string
         // Use training data confidence range
         aiResult.confidence = Math.max(aiResult.confidence, trainingMatch.confidence_range[0]);
         
-        // Regenerate insights based on corrected category
-        aiResult.insights = generateEnhancedBusinessInsights(content, aiResult.primary_mood, trainingMatch.expected_category);
+        // Regenerate insights based on corrected category and mood
+        aiResult.insights = generateEnhancedBusinessInsights(content, trainingMatch.expected_mood || aiResult.primary_mood, trainingMatch.expected_category);
       }
       
       // Generate title for AI result if missing
