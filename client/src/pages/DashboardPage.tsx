@@ -68,7 +68,13 @@ export function DashboardPage() {
         
         const totalSize = documents?.reduce((sum: number, doc: any) => sum + doc.file_size, 0) || 0
         const totalDocuments = documents?.length || 0
-        const storageLimit = 50 * 1024 * 1024 // 50MB in bytes
+        const storageLimit = 1024 * 1024 * 1024 // 1GB in bytes (premium limit)
+        
+        console.log('Calculated stats:', {
+          total_documents: totalDocuments,
+          storage_used: totalSize,
+          storage_limit: storageLimit
+        })
         
         return {
           storage_used: totalSize,

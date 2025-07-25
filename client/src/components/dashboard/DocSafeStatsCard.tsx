@@ -18,7 +18,7 @@ export function DocSafeStatsCard({ storageStats, onNavigate }: DocSafeStatsCardP
   // Default values if storage stats not available
   const stats = storageStats || {
     storage_used: 0,
-    storage_limit: 50 * 1024 * 1024, // 50MB
+    storage_limit: 1024 * 1024 * 1024, // 1GB default
     total_documents: 0,
     storage_percentage: 0
   }
@@ -48,8 +48,8 @@ export function DocSafeStatsCard({ storageStats, onNavigate }: DocSafeStatsCardP
   
   const storageInfo = getStorageStatus(stats.storage_percentage, stats.total_documents)
   
-  // Calculate recent activity (would be enhanced with real date data)
-  const recentUploads = Math.min(3, stats.total_documents) // Simulated recent uploads
+  // Calculate recent activity - show actual recent documents
+  const recentUploads = stats.total_documents // Show all documents for now
   
   return (
     <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/20 dark:to-emerald-900/20 border-emerald-200 dark:border-emerald-800">
@@ -119,15 +119,15 @@ export function DocSafeStatsCard({ storageStats, onNavigate }: DocSafeStatsCardP
         
         {/* Storage Insight */}
         <div className="text-xs text-gray-600 dark:text-gray-400 text-center">
-          {stats.storage_percentage >= 80 ? (
+          {stats.storage_percentage >= 90 ? (
             <>
               <Database className="h-3 w-3 inline mr-1" />
-              Consider upgrading for more space
+              Storage nearly full - consider cleanup
             </>
           ) : stats.total_documents > 0 ? (
             <>
               <Upload className="h-3 w-3 inline mr-1" />
-              {formatStorageSize(stats.storage_limit - stats.storage_used)} remaining
+              {formatStorageSize(stats.storage_limit - stats.storage_used)} space remaining
             </>
           ) : (
             <>
@@ -148,7 +148,7 @@ export function DocSafeStatsCard({ storageStats, onNavigate }: DocSafeStatsCardP
         </Button>
         
         {/* Info Tooltip */}
-        <div className="absolute bottom-3 left-3" title="Storage usage shows documents uploaded to your secure DocSafe. Free plan includes 50MB storage.">
+        <div className="absolute bottom-3 left-3" title="Storage usage shows documents uploaded to your secure DocSafe. Current plan includes 1GB storage space.">
           <Info className="h-4 w-4 text-gray-400 hover:text-emerald-600 cursor-help transition-colors" />
         </div>
       </CardContent>
