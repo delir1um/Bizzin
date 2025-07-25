@@ -4,16 +4,12 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Download, ZoomIn, ZoomOut, FileText, Image as ImageIcon, FileSpreadsheet, Presentation, File, ChevronLeft, ChevronRight } from "lucide-react"
-import { Document as PDFDocument, Page, pdfjs } from 'react-pdf'
+import { Download, ZoomIn, ZoomOut, FileText, Image as ImageIcon, FileSpreadsheet, Presentation, File } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { DocumentService } from "@/lib/services/document"
 import type { Document } from "@/types/document"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
-
-// Configure PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`
 
 interface FileViewerProps {
   document: Document | null
@@ -27,8 +23,6 @@ export function FileViewer({ document, isOpen, onClose }: FileViewerProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [zoom, setZoom] = useState(100)
-  const [numPages, setNumPages] = useState<number | null>(null)
-  const [pageNumber, setPageNumber] = useState(1)
   const { toast } = useToast()
 
   // Reset state when document changes
@@ -38,8 +32,6 @@ export function FileViewer({ document, isOpen, onClose }: FileViewerProps) {
       setFileContent(null)
       setError(null)
       setZoom(100)
-      setNumPages(null)
-      setPageNumber(1)
       return
     }
 
@@ -125,26 +117,7 @@ export function FileViewer({ document, isOpen, onClose }: FileViewerProps) {
     return File
   }
 
-  // PDF-specific functions
-  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
-    setNumPages(numPages)
-    setPageNumber(1)
-  }
 
-  const onDocumentLoadError = (error: Error) => {
-    console.error('PDF loading error:', error)
-    setError('Failed to load PDF document')
-  }
-
-  const changePage = (offset: number) => {
-    setPageNumber(prevPageNumber => {
-      const newPageNumber = prevPageNumber + offset
-      return Math.max(1, Math.min(newPageNumber, numPages || 1))
-    })
-  }
-
-  const previousPage = () => changePage(-1)
-  const nextPage = () => changePage(1)
 
   const renderFileContent = () => {
     if (isLoading) {
@@ -186,62 +159,30 @@ export function FileViewer({ document, isOpen, onClose }: FileViewerProps) {
       )
     }
 
-    // PDF files using react-pdf
+    // PDF files - professional download interface
     if (document.file_type === 'application/pdf' && fileUrl) {
       return (
-        <div className="w-full">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={previousPage}
-                disabled={pageNumber <= 1}
-                variant="outline"
-                size="sm"
+        <div className="flex items-center justify-center h-96 w-full rounded-md border">
+          <div className="text-center max-w-md px-6">
+            <FileText className="h-16 w-16 text-orange-500 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+              PDF Document
+            </h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
+              Click below to download and view the PDF document in your preferred PDF reader for the best experience.
+            </p>
+            <div className="space-y-3">
+              <Button 
+                onClick={handleDownload} 
+                className="bg-orange-600 hover:bg-orange-700 w-full py-3"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <Download className="h-5 w-5 mr-2" />
+                Download & View PDF
               </Button>
-              <span className="text-sm text-slate-600 dark:text-slate-400">
-                Page {pageNumber} of {numPages || '?'}
-              </span>
-              <Button
-                onClick={nextPage}
-                disabled={pageNumber >= (numPages || 1)}
-                variant="outline"
-                size="sm"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                File size: {formatFileSize(document.file_size)}
+              </p>
             </div>
-            <Button onClick={handleDownload} variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Download
-            </Button>
-          </div>
-          
-          <div 
-            className="flex justify-center border rounded-md overflow-auto max-h-96"
-            style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}
-          >
-            <PDFDocument
-              file={fileUrl}
-              onLoadSuccess={onDocumentLoadSuccess}
-              onLoadError={onDocumentLoadError}
-              loading={
-                <div className="flex items-center justify-center h-96">
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-2"></div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Loading PDF...</p>
-                  </div>
-                </div>
-              }
-            >
-              <Page 
-                pageNumber={pageNumber}
-                renderTextLayer={false}
-                renderAnnotationLayer={false}
-                width={600}
-              />
-            </PDFDocument>
           </div>
         </div>
       )
@@ -347,9 +288,8 @@ export function FileViewer({ document, isOpen, onClose }: FileViewerProps) {
 
         <Separator className="my-4" />
 
-        {/* Viewer controls */}
-        {(document.file_type === 'application/pdf' || 
-          document.file_type.startsWith('image/') || 
+        {/* Viewer controls - only show for images and text files */}
+        {(document.file_type.startsWith('image/') || 
           document.file_type.startsWith('text/')) && (
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
