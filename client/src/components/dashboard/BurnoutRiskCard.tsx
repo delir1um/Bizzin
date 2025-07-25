@@ -216,7 +216,7 @@ export function BurnoutRiskCard({ journalEntries }: BurnoutRiskCardProps) {
             variant={level === 'high' ? 'destructive' : level === 'medium' ? 'secondary' : 'default'}
             className={`${level === 'low' ? 'bg-green-50 text-green-700 border-green-200' : ''}`}
           >
-            {level.toUpperCase()}
+            {level.charAt(0).toUpperCase() + level.slice(1)}
           </Badge>
         </div>
         

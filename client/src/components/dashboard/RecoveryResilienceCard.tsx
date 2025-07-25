@@ -308,7 +308,7 @@ export function RecoveryResilienceCard({ journalEntries }: RecoveryResilienceCar
         {/* Status Badge */}
         <div className="flex justify-center mb-3">
           <Badge variant="outline" className={getLevelColor(level)}>
-            {level.toUpperCase()}
+            {level}
           </Badge>
         </div>
         
