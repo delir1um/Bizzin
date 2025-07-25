@@ -225,6 +225,19 @@ export function BusinessHealthRadar({ journalEntries }: BusinessHealthRadarProps
           <div className="text-sm text-slate-600">Overall Score</div>
         </div>
 
+        {/* Progress Bar */}
+        <div className="mb-4">
+          <div className="w-full bg-slate-200 rounded-full h-3">
+            <div 
+              className={`h-3 rounded-full transition-all duration-500 ${
+                metrics.overallHealth >= 75 ? 'bg-green-500' :
+                metrics.overallHealth >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+              }`}
+              style={{ width: `${Math.min(metrics.overallHealth, 100)}%` }}
+            />
+          </div>
+        </div>
+
         {/* Compact Radar Chart */}
         <div className="h-32">
           <ResponsiveContainer width="100%" height="100%">

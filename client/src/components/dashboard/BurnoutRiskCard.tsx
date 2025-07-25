@@ -141,8 +141,8 @@ export function BurnoutRiskCard({ journalEntries }: BurnoutRiskCardProps) {
         </div>
 
         {/* Progress Bar with Zones */}
-        <div className="space-y-2">
-          <div className="relative w-full bg-slate-200 rounded-full h-4">
+        <div className="space-y-2 mb-4">
+          <div className="relative w-full bg-slate-200 rounded-full h-3">
             {/* Zone backgrounds */}
             <div className="absolute left-0 w-2/5 h-full bg-green-100 rounded-l-full"></div>
             <div className="absolute left-2/5 w-1/3 h-full bg-yellow-100"></div>

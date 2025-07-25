@@ -217,16 +217,28 @@ export function RecoveryResilienceCard({ journalEntries }: RecoveryResilienceCar
         {/* Primary Metric Display */}
         <div className="text-center mb-4">
           <div className="text-3xl font-bold text-slate-900">
-            {averageRecoveryTime > 0 ? formatRecoveryTime(averageRecoveryTime) : 'N/A'}
+            {resilienceScore}
           </div>
-          <div className="text-sm text-slate-600">Avg Recovery Time</div>
+          <div className="text-sm text-slate-600">Resilience Score</div>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mb-4">
+          <div className="w-full bg-slate-200 rounded-full h-3">
+            <div 
+              className="h-3 rounded-full transition-all duration-500 bg-gradient-to-r from-purple-300 to-purple-600"
+              style={{ width: `${Math.min(resilienceScore, 100)}%` }}
+            />
+          </div>
         </div>
 
         {/* Secondary Metrics Row */}
         <div className="flex items-center justify-between mb-4 p-3 bg-slate-50 rounded-lg">
           <div className="text-center">
-            <div className="text-xl font-bold text-slate-900">{resilienceScore}</div>
-            <div className="text-xs text-slate-600">Resilience Score</div>
+            <div className="text-xl font-bold text-slate-900">
+              {averageRecoveryTime > 0 ? formatRecoveryTime(averageRecoveryTime) : 'N/A'}
+            </div>
+            <div className="text-xs text-slate-600">Avg Recovery Time</div>
           </div>
           <div className="text-center">
             <div className={`flex items-center gap-1 ${getTrendColor()}`}>

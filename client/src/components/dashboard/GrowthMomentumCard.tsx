@@ -197,6 +197,16 @@ export function GrowthMomentumCard({ journalEntries }: GrowthMomentumCardProps) 
           <div className="text-sm text-slate-600">Current Score</div>
         </div>
 
+        {/* Progress Bar */}
+        <div className="mb-4">
+          <div className="w-full bg-slate-200 rounded-full h-3">
+            <div 
+              className="h-3 rounded-full transition-all duration-500 bg-gradient-to-r from-blue-300 to-blue-600"
+              style={{ width: `${Math.min(currentScore, 100)}%` }}
+            />
+          </div>
+        </div>
+
         {/* Trend Indicator */}
         <div className={`flex items-center justify-center gap-2 mb-4 p-2 rounded-lg bg-slate-50`}>
           {getTrendIcon()}
