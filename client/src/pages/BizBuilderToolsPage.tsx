@@ -138,65 +138,7 @@ export function BizBuilderToolsPage() {
         })}
       </AnimatedGrid>
 
-      {/* Usage & Access Info */}
-      <div className="mt-12">
-        <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-6">
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">Calculator Access</h2>
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-            <div>
-              <h3 className="font-medium text-slate-900 dark:text-white mb-2">Free Tier</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-300">
-                Limited calculations per month with basic export functionality
-              </p>
-            </div>
-            <div>
-              <h3 className="font-medium text-slate-900 dark:text-white mb-2">Paid Subscription</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-300">
-                Unlimited calculations with advanced export and saving features
-              </p>
-            </div>
-          </div>
-        </div>
 
-        {/* Phase 2 Features */}
-        <div className="mt-8">
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">Phase 2 Features</h2>
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            <Card className="border-dashed border-2 border-slate-300 dark:border-slate-600 opacity-60">
-              <CardHeader>
-                <CardTitle className="text-lg text-slate-600 dark:text-slate-400">
-                  SARS API Integration
-                </CardTitle>
-                <CardDescription>
-                  Automatic tax updates and compliance features
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            
-            <Card className="border-dashed border-2 border-slate-300 dark:border-slate-600 opacity-60">
-              <CardHeader>
-                <CardTitle className="text-lg text-slate-600 dark:text-slate-400">
-                  Advanced Reporting
-                </CardTitle>
-                <CardDescription>
-                  Detailed analytics and business insights
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            
-            <Card className="border-dashed border-2 border-slate-300 dark:border-slate-600 opacity-60">
-              <CardHeader>
-                <CardTitle className="text-lg text-slate-600 dark:text-slate-400">
-                  Additional Calculators
-                </CardTitle>
-                <CardDescription>
-                  Tax estimators, loan calculators, and more
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </div>
-        </div>
-      </div>
 
       {/* Business Budget Calculator */}
       {selectedTool === 'business-budget' && (
