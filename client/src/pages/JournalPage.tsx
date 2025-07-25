@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { PlusCircle, Search, BookOpen, Calendar, Brain, ChevronDown, ChevronRight, Flame, TrendingUp, Heart } from "lucide-react"
+import { PlusCircle, Search, BookOpen, Calendar, Brain, ChevronDown, ChevronRight, Flame, TrendingUp, Heart, Sparkles } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useToast } from "@/hooks/use-toast"
@@ -16,7 +16,8 @@ import { AIMigrationDialog } from "@/components/journal/AIMigrationDialog"
 import { AIMigrationService } from "@/lib/services/aiMigration"
 import { motion, AnimatePresence } from "framer-motion"
 import { Skeleton } from "@/components/ui/skeleton"
-import { getDisplayMoodEmoji } from "@/lib/journalDisplayUtils"
+import { getDisplayMoodEmoji, getEntryDisplayData } from "@/lib/journalDisplayUtils"
+import { AIAnalysisIndicator } from "@/components/journal/AIAnalysisIndicator"
 
 export function JournalPage() {
   const [user, setUser] = useState<any>(null)
@@ -205,6 +206,16 @@ export function JournalPage() {
     }
     
     return energyEmojis[energy.toLowerCase()] || ''
+  }
+
+  // Energy label function to match view modal design
+  const getEnergyLabel = (energy: string) => {
+    switch (energy) {
+      case 'high': return 'High Energy'
+      case 'medium': return 'Medium Energy'
+      case 'low': return 'Low Energy'
+      default: return 'Medium Energy'
+    }
   }
 
   const formatDate = (dateString: string) => {
@@ -509,18 +520,21 @@ export function JournalPage() {
                                 </CardTitle>
                               </div>
                             </div>
-                            <div className="flex items-center gap-4 text-sm text-slate-500">
-                              <span>{formatDate(entry.created_at || entry.entry_date || '')}</span>
+                            <div className="flex items-center gap-3">
+                              <span className="text-sm text-slate-500">{formatDate(entry.created_at || entry.entry_date || '')}</span>
                               {(entry.category || entry.sentiment_data?.business_category) && (
-                                <Badge className={`${getCategoryColor(entry.category || (entry.sentiment_data && entry.sentiment_data.business_category))} text-xs px-2 py-0.5`}>
-                                  {entry.category || (entry.sentiment_data && entry.sentiment_data.business_category)}
+                                <Badge 
+                                  variant="outline" 
+                                  className="bg-orange-50 text-orange-700 border-orange-200 text-xs px-2 py-1"
+                                >
+                                  {getEntryDisplayData(entry).category}
                                 </Badge>
                               )}
                               {entry.sentiment_data?.energy && (
-                                <span className="flex items-center gap-1 text-xs">
-                                  {getEnergyEmoji(entry.sentiment_data.energy)}
-                                  <span className="capitalize">{entry.sentiment_data.energy} Energy</span>
-                                </span>
+                                <div className="flex items-center gap-1 text-slate-600">
+                                  <TrendingUp className="w-3 h-3" />
+                                  <span className="text-xs font-medium">{getEnergyLabel(entry.sentiment_data.energy)}</span>
+                                </div>
                               )}
                             </div>
                           </CardHeader>
@@ -543,13 +557,22 @@ export function JournalPage() {
                               )}
                             </div>
                             {entry.sentiment_data?.insights?.[0] && (
-                              <div className="p-3 bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg border border-orange-100">
-                                <div className="flex items-start gap-2">
-                                  <span className="text-lg">💡</span>
-                                  <div className="flex-1">
-                                    <p className="text-sm text-orange-800 font-medium line-clamp-1">
-                                      {entry.sentiment_data.insights[0]}
-                                    </p>
+                              <div className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 rounded-lg border p-3">
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="flex items-center gap-2 text-orange-700">
+                                    <Sparkles className="w-4 h-4" />
+                                    <span className="font-semibold text-xs">AI Business Insights</span>
+                                  </div>
+                                  <AIAnalysisIndicator 
+                                    confidence={entry.sentiment_data.confidence}
+                                    source="ai"
+                                    className="text-xs"
+                                  />
+                                </div>
+                                <div className="text-xs text-gray-600 bg-white/60 rounded-lg p-2 border border-orange-200/50">
+                                  <div className="flex items-start gap-2">
+                                    <div className="w-1 h-1 rounded-full bg-orange-500 mt-1.5 flex-shrink-0" />
+                                    <span className="leading-relaxed line-clamp-1">{entry.sentiment_data.insights[0]}</span>
                                   </div>
                                 </div>
                               </div>
