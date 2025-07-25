@@ -7,6 +7,7 @@ import { motion } from "framer-motion"
 import { AnimatedCard, AnimatedGrid, AnimatedItem } from "@/components/ui/animated-card"
 import { BusinessBudgetCalculator } from "@/components/bizbuilder/BusinessBudgetCalculator"
 import { CashFlowProjectionTool } from "@/components/bizbuilder/CashFlowProjectionTool"
+import BreakEvenCalculator from "@/components/bizbuilder/BreakEvenCalculator"
 
 const tools = [
   {
@@ -250,8 +251,13 @@ export function BizBuilderToolsPage() {
         <CashFlowProjectionTool onClose={() => setSelectedTool(null)} />
       )}
 
+      {/* Break-Even Calculator */}
+      {selectedTool === 'break-even' && (
+        <BreakEvenCalculator onClose={() => setSelectedTool(null)} />
+      )}
+
       {/* Other Tools - Future Implementation */}
-      {selectedTool && selectedTool !== 'business-budget' && selectedTool !== 'cash-flow' && (
+      {selectedTool && !['business-budget', 'cash-flow', 'break-even'].includes(selectedTool) && (
         <div className="mt-8 p-6 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
           <div className="text-center">
             <Calculator className="w-12 h-12 text-orange-600 mx-auto mb-4" />
