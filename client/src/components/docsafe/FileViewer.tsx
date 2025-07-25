@@ -159,48 +159,34 @@ export function FileViewer({ document, isOpen, onClose }: FileViewerProps) {
       )
     }
 
-    // PDF files - iframe preview with fallback
+    // PDF files - try multiple approaches for maximum compatibility
     if (document.file_type === 'application/pdf' && fileUrl) {
+      const googleDocsUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true`
+      
       return (
         <div className="w-full">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-600 dark:text-slate-400">
-                PDF Preview
-              </span>
-            </div>
-            <Button onClick={handleDownload} variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Download
-            </Button>
-          </div>
-          
-          <div className="w-full h-96 border rounded-md overflow-hidden bg-slate-50 dark:bg-slate-900">
+          <div className="w-full h-96 border rounded-md overflow-hidden bg-white">
+            {/* Try Google Docs viewer first */}
             <iframe
-              src={`${fileUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+              src={googleDocsUrl}
               className="w-full h-full"
               style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top left' }}
               title={document.name}
-              onError={(e) => {
-                console.error('PDF iframe error:', e)
-                // Show fallback content
-                const iframe = e.target as HTMLIFrameElement
-                if (iframe.parentElement) {
-                  iframe.parentElement.innerHTML = `
-                    <div class="flex items-center justify-center h-full">
-                      <div class="text-center max-w-md px-6">
-                        <svg class="h-16 w-16 text-orange-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-2">PDF Preview Unavailable</h3>
-                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">Browser security settings prevent PDF preview. Click download to view.</p>
-                        <button onclick="window.location.reload()" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md">Download PDF</button>
-                      </div>
-                    </div>
-                  `
-                }
-              }}
+              onLoad={() => console.log('PDF loaded successfully')}
+              onError={() => console.log('Google Docs viewer failed')}
             />
+          </div>
+          
+          {/* Always show download option */}
+          <div className="mt-4 text-center">
+            <Button 
+              onClick={handleDownload} 
+              variant="outline"
+              size="sm"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Download Original
+            </Button>
           </div>
         </div>
       )
