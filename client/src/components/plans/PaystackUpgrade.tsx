@@ -132,11 +132,11 @@ export function PaystackUpgrade() {
       </div>
 
       {/* Billing Toggle */}
-      <div className="flex justify-center">
+      <div className="flex flex-col items-center space-y-3">
         <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
           <button
             onClick={() => setSelectedPlan('monthly')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${
               selectedPlan === 'monthly'
                 ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -146,18 +146,20 @@ export function PaystackUpgrade() {
           </button>
           <button
             onClick={() => setSelectedPlan('annual')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors relative ${
+            className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${
               selectedPlan === 'annual'
                 ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             Annual
-            <Badge className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs px-1">
-              Save {PaystackService.formatAmount(monthlySavings)}
-            </Badge>
           </button>
         </div>
+        {selectedPlan === 'annual' && (
+          <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-sm px-3 py-1">
+            Save {PaystackService.formatAmount(monthlySavings)} per year!
+          </Badge>
+        )}
       </div>
 
       {/* Selected Plan Card */}
