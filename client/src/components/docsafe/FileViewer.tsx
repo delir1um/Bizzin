@@ -159,35 +159,17 @@ export function FileViewer({ document, isOpen, onClose }: FileViewerProps) {
       )
     }
 
-    // PDF files - try multiple approaches for maximum compatibility
+    // PDF files - direct embed with multiple fallbacks
     if (document.file_type === 'application/pdf' && fileUrl) {
-      const googleDocsUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true`
-      
       return (
-        <div className="w-full">
-          <div className="w-full h-96 border rounded-md overflow-hidden bg-white">
-            {/* Try Google Docs viewer first */}
-            <iframe
-              src={googleDocsUrl}
-              className="w-full h-full"
-              style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top left' }}
-              title={document.name}
-              onLoad={() => console.log('PDF loaded successfully')}
-              onError={() => console.log('Google Docs viewer failed')}
-            />
-          </div>
-          
-          {/* Always show download option */}
-          <div className="mt-4 text-center">
-            <Button 
-              onClick={handleDownload} 
-              variant="outline"
-              size="sm"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Download Original
-            </Button>
-          </div>
+        <div className="w-full h-96 border rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800">
+          <embed
+            src={fileUrl}
+            type="application/pdf"
+            className="w-full h-full"
+            style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top left' }}
+            title={document.name}
+          />
         </div>
       )
     }
