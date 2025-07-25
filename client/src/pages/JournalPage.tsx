@@ -212,30 +212,14 @@ export function JournalPage() {
     return canCreateJournalEntry
   }
 
-  // Handle create entry with limits check
+  // Handle create entry
   const handleCreateEntry = () => {
-    if (canCreateEntry()) {
-      setShowWriteModal(true)
-    } else {
-      setShowUpgradeModal(true)
-    }
+    setShowWriteModal(true)
   }
 
-  // Check if user is approaching limits (80% usage)
-  const isApproachingLimit = () => {
-    if (!usageStatus || isPremium) return false
-    const used = usageStatus.current_usage.journal_entries_created
-    const limit = usageStatus.plan_limits.monthly_journal_entries
-    return (used / limit) >= 0.8 && (used / limit) < 1.0 // Approaching but not at limit
-  }
 
-  // Check if user has reached the limit
-  const isAtLimit = () => {
-    if (!usageStatus || isPremium) return false
-    const used = usageStatus.current_usage.journal_entries_created
-    const limit = usageStatus.plan_limits.monthly_journal_entries
-    return used >= limit
-  }
+
+
 
   const handleDeleteEntry = async (entry: JournalEntry) => {
     if (!user?.id) return
@@ -403,17 +387,15 @@ export function JournalPage() {
                 Update AI Analysis
               </Button>
             )}
-            <Button 
-              onClick={handleCreateEntry}
-              className={`${canCreateEntry() 
-                ? 'bg-orange-600 hover:bg-orange-700 text-white' 
-                : 'bg-slate-400 hover:bg-slate-500 text-white'} 
-                ${isApproachingLimit() ? 'ring-2 ring-yellow-400' : ''}`}
-              disabled={!canCreateEntry() && !isPremium}
-            >
-              <PlusCircle className="w-4 h-4 mr-2" />
-              {canCreateEntry() ? 'Write Entry' : 'Upgrade to Write More'}
-            </Button>
+            {canCreateEntry() && (
+              <Button 
+                onClick={handleCreateEntry}
+                className="bg-orange-600 hover:bg-orange-700 text-white"
+              >
+                <PlusCircle className="w-4 h-4 mr-2" />
+                Write Entry
+              </Button>
+            )}
           </div>
         </div>
       </div>
