@@ -201,7 +201,7 @@ export function RecoveryResilienceCard({ journalEntries }: RecoveryResilienceCar
   }
 
   return (
-    <Card className="hover:shadow-lg transition-shadow">
+    <Card className="hover:shadow-lg transition-shadow relative">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center justify-between text-lg">
           <span className="flex items-center gap-2">
@@ -298,7 +298,7 @@ export function RecoveryResilienceCard({ journalEntries }: RecoveryResilienceCar
         )}
 
         {/* Info Icon */}
-        <div className="flex justify-start mt-4">
+        <div className="absolute bottom-3 left-3">
           <div className="group relative">
             <Info className="h-4 w-4 text-slate-400 hover:text-slate-600 cursor-help" />
             <div className="absolute left-0 bottom-6 w-64 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
