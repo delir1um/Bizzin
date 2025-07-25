@@ -27,8 +27,8 @@ export function JournalPage() {
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    thisWeek: true,  // Start expanded so users can see content
-    thisMonth: true,
+    thisWeek: false,  // Start collapsed by default
+    thisMonth: false,
     thisYear: false
   })
   const queryClient = useQueryClient()
