@@ -38,7 +38,7 @@ export function JournalPage() {
   const { toast } = useToast()
   
   // Get plan information
-  const { currentPlan, planLimits, currentUsage } = usePlans()
+  const { usageStatus, canCreateJournalEntry, getRemainingQuota, isPremium, isFree } = usePlans()
 
   // Get current user
   useEffect(() => {
@@ -142,6 +142,41 @@ export function JournalPage() {
 
   const organizedEntries = organizeEntriesByTime(filteredEntries)
 
+  // Simple monthly entry counter for immediate implementation
+  const getCurrentMonthEntryCount = () => {
+    const now = new Date()
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+    
+    return entries.filter(entry => {
+      const entryDate = new Date(entry.created_at || entry.entry_date || '')
+      return entryDate >= startOfMonth && entryDate <= endOfMonth
+    }).length
+  }
+  
+  const monthlyEntryCount = getCurrentMonthEntryCount()
+  const FREE_PLAN_LIMIT = 10
+  
+  // Override plan functions with simple logic until database is set up
+  const canCreateEntrySimple = () => {
+    // If we have plan data, use it; otherwise use simple count
+    if (usageStatus) return canCreateJournalEntry
+    // Simple fallback: assume free plan if no plan data
+    return monthlyEntryCount < FREE_PLAN_LIMIT
+  }
+  
+  const isApproachingLimitSimple = () => {
+    if (usageStatus) return isApproachingLimit()
+    // Simple fallback: 80% of 10 = 8 entries
+    return monthlyEntryCount >= 8
+  }
+  
+  const isFreeSimple = () => {
+    if (usageStatus) return isFree
+    // Assume free plan if no plan data
+    return true
+  }
+
   const toggleSection = (section: 'thisWeek' | 'thisMonth' | 'thisYear' | string) => {
     setExpandedSections(prev => {
       // If clicking on currently expanded section, collapse it
@@ -206,9 +241,7 @@ export function JournalPage() {
 
   // Check if user can create new entries
   const canCreateEntry = () => {
-    if (!planLimits || !currentUsage) return true
-    if (currentPlan?.plan_type === 'premium') return true
-    return currentUsage.journal_entries_created < planLimits.monthly_journal_entries
+    return canCreateEntrySimple()
   }
 
   // Handle create entry with limits check
@@ -222,8 +255,7 @@ export function JournalPage() {
 
   // Check if user is approaching limits (80% usage)
   const isApproachingLimit = () => {
-    if (!planLimits || !currentUsage || currentPlan?.plan_type === 'premium') return false
-    return (currentUsage.journal_entries_created / planLimits.monthly_journal_entries) >= 0.8
+    return isApproachingLimitSimple()
   }
 
   const handleDeleteEntry = async (entry: JournalEntry) => {
@@ -398,7 +430,7 @@ export function JournalPage() {
                 ? 'bg-orange-600 hover:bg-orange-700 text-white' 
                 : 'bg-slate-400 hover:bg-slate-500 text-white'} 
                 ${isApproachingLimit() ? 'ring-2 ring-yellow-400' : ''}`}
-              disabled={!canCreateEntry() && currentPlan?.plan_type !== 'premium'}
+              disabled={!canCreateEntry() && !isPremium}
             >
               <PlusCircle className="w-4 h-4 mr-2" />
               {canCreateEntry() ? 'Write Entry' : 'Upgrade to Write More'}
@@ -408,7 +440,7 @@ export function JournalPage() {
       </div>
 
       {/* Usage Warning Banner */}
-      {isApproachingLimit() && (
+      {isApproachingLimitSimple() && (
         <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-yellow-100 rounded-full">
@@ -419,9 +451,7 @@ export function JournalPage() {
                 You're approaching your monthly limit
               </h3>
               <p className="text-sm text-yellow-700">
-                {currentUsage && planLimits && 
-                  `${currentUsage.journal_entries_created} of ${planLimits.monthly_journal_entries} entries used this month. `
-                }
+                {monthlyEntryCount} of {FREE_PLAN_LIMIT} entries used this month. 
                 Upgrade to Premium for unlimited entries.
               </p>
             </div>
@@ -437,7 +467,7 @@ export function JournalPage() {
       )}
 
       {/* Usage Stats for Free Users */}
-      {currentPlan?.plan_type === 'free' && planLimits && currentUsage && (
+      {isFreeSimple() && (
         <div className="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -447,19 +477,19 @@ export function JournalPage() {
               <div>
                 <h3 className="font-medium text-slate-800">Monthly Journal Entries</h3>
                 <p className="text-sm text-slate-600">
-                  {currentUsage.journal_entries_created} of {planLimits.monthly_journal_entries} entries used
+                  {monthlyEntryCount} of {FREE_PLAN_LIMIT} entries used
                 </p>
               </div>
             </div>
             <div className="text-right">
               <div className="text-sm font-medium text-slate-700">
-                {planLimits.monthly_journal_entries - currentUsage.journal_entries_created} remaining
+                {FREE_PLAN_LIMIT - monthlyEntryCount} remaining
               </div>
               <div className="w-32 bg-slate-200 rounded-full h-2 mt-1">
                 <div 
                   className="bg-orange-500 h-2 rounded-full transition-all duration-300"
                   style={{ 
-                    width: `${Math.min(100, (currentUsage.journal_entries_created / planLimits.monthly_journal_entries) * 100)}%` 
+                    width: `${Math.min(100, (monthlyEntryCount / FREE_PLAN_LIMIT) * 100)}%` 
                   }}
                 />
               </div>
@@ -680,7 +710,7 @@ export function JournalPage() {
                             ? 'bg-orange-600 hover:bg-orange-700 text-white' 
                             : 'bg-slate-400 hover:bg-slate-500 text-white'} 
                             px-6 py-3 text-base font-medium`}
-                          disabled={!canCreateEntry() && currentPlan?.plan_type !== 'premium'}
+                          disabled={!canCreateEntry() && !isPremium}
                         >
                           <PlusCircle className="w-5 h-5 mr-2" />
                           {canCreateEntry() ? "Write Today's Entry" : 'Upgrade for More Entries'}
