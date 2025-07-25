@@ -216,19 +216,37 @@ export function RecoveryResilienceCard({ journalEntries }: RecoveryResilienceCar
       <CardContent className="space-y-4">
         {/* Primary Metric Display */}
         <div className="text-center mb-4">
-          <div className="text-3xl font-bold text-slate-900">
+          <div className={`text-3xl font-bold mb-1 ${
+            resilienceScore >= 75 ? 'text-green-600' :
+            resilienceScore >= 50 ? 'text-yellow-600' : 'text-red-600'
+          }`}>
             {resilienceScore}
           </div>
           <div className="text-sm text-slate-600">Resilience Score</div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="mb-4">
-          <div className="w-full bg-slate-200 rounded-full h-3">
+        {/* Progress Bar with Zones */}
+        <div className="space-y-2 mb-4">
+          <div className="relative w-full bg-slate-200 rounded-full h-3">
+            {/* Zone backgrounds */}
+            <div className="absolute left-0 w-1/2 h-full bg-red-100 rounded-l-full"></div>
+            <div className="absolute left-1/2 w-1/4 h-full bg-yellow-100"></div>
+            <div className="absolute right-0 w-1/4 h-full bg-green-100 rounded-r-full"></div>
+            {/* Progress indicator */}
             <div 
-              className="h-3 rounded-full transition-all duration-500 bg-gradient-to-r from-purple-300 to-purple-600"
+              className={`absolute top-0 h-full rounded-full transition-all duration-500 ${
+                resilienceScore >= 75 ? 'bg-green-500' :
+                resilienceScore >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+              }`}
               style={{ width: `${Math.min(resilienceScore, 100)}%` }}
             />
+          </div>
+          {/* Zone labels */}
+          <div className="flex justify-between text-xs text-slate-500">
+            <span>Fragile</span>
+            <span>Stable</span>
+            <span>Strong</span>
+            <span>Robust</span>
           </div>
         </div>
 

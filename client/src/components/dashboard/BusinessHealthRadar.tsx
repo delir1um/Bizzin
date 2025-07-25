@@ -219,22 +219,37 @@ export function BusinessHealthRadar({ journalEntries }: BusinessHealthRadarProps
       <CardContent className="space-y-4">
         {/* Overall Score */}
         <div className="text-center mb-4">
-          <div className={`text-3xl font-bold ${getHealthColor(metrics.overallHealth)} mb-1`}>
+          <div className={`text-3xl font-bold mb-1 ${
+            metrics.overallHealth >= 75 ? 'text-green-600' :
+            metrics.overallHealth >= 50 ? 'text-yellow-600' : 'text-red-600'
+          }`}>
             {metrics.overallHealth}
           </div>
           <div className="text-sm text-slate-600">Overall Score</div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="mb-4">
-          <div className="w-full bg-slate-200 rounded-full h-3">
+        {/* Progress Bar with Zones */}
+        <div className="space-y-2 mb-4">
+          <div className="relative w-full bg-slate-200 rounded-full h-3">
+            {/* Zone backgrounds */}
+            <div className="absolute left-0 w-1/2 h-full bg-red-100 rounded-l-full"></div>
+            <div className="absolute left-1/2 w-1/4 h-full bg-yellow-100"></div>
+            <div className="absolute right-0 w-1/4 h-full bg-green-100 rounded-r-full"></div>
+            {/* Progress indicator */}
             <div 
-              className={`h-3 rounded-full transition-all duration-500 ${
+              className={`absolute top-0 h-full rounded-full transition-all duration-500 ${
                 metrics.overallHealth >= 75 ? 'bg-green-500' :
                 metrics.overallHealth >= 50 ? 'bg-yellow-500' : 'bg-red-500'
               }`}
               style={{ width: `${Math.min(metrics.overallHealth, 100)}%` }}
             />
+          </div>
+          {/* Zone labels */}
+          <div className="flex justify-between text-xs text-slate-500">
+            <span>Poor</span>
+            <span>Fair</span>
+            <span>Good</span>
+            <span>Excellent</span>
           </div>
         </div>
 
