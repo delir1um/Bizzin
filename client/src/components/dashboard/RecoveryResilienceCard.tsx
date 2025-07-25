@@ -202,20 +202,22 @@ export function RecoveryResilienceCard({ journalEntries }: RecoveryResilienceCar
 
   return (
     <Card className="hover:shadow-lg transition-shadow relative">
-      <CardHeader className="pb-3 min-h-[72px] flex items-center">
-        <CardTitle className="flex items-center justify-between text-lg w-full">
-          <span className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-purple-500" />
-            Recovery Resilience
-          </span>
-          <Badge variant="outline" className={getLevelColor(level)}>
-            {level.toUpperCase()}
-          </Badge>
+      <CardHeader className="pb-3 min-h-[50px] flex items-center">
+        <CardTitle className="flex items-center gap-2 text-lg w-full">
+          <Shield className="h-5 w-5 text-purple-500" />
+          Recovery Resilience
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Status Badge */}
+        <div className="flex justify-center mb-3">
+          <Badge variant="outline" className={getLevelColor(level)}>
+            {level.toUpperCase()}
+          </Badge>
+        </div>
+        
         {/* Primary Metric Display */}
-        <div className="text-center h-[80px] flex flex-col justify-center">
+        <div className="text-center h-[60px] flex flex-col justify-center">
           <div className={`text-3xl font-bold mb-1 ${
             resilienceScore >= 75 ? 'text-green-600' :
             resilienceScore >= 50 ? 'text-yellow-600' : 'text-red-600'

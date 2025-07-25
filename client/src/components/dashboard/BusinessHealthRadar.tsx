@@ -205,20 +205,22 @@ export function BusinessHealthRadar({ journalEntries }: BusinessHealthRadarProps
 
   return (
     <Card className="hover:shadow-lg transition-shadow relative">
-      <CardHeader className="pb-3 min-h-[72px] flex items-center">
-        <CardTitle className="flex items-center justify-between text-lg w-full">
-          <span className="flex items-center gap-2">
-            <Heart className="h-5 w-5 text-purple-500" />
-            Business Health
-          </span>
-          <Badge variant="outline" className={overallBadge.color}>
-            {overallBadge.text}
-          </Badge>
+      <CardHeader className="pb-3 min-h-[50px] flex items-center">
+        <CardTitle className="flex items-center gap-2 text-lg w-full">
+          <Heart className="h-5 w-5 text-purple-500" />
+          Business Health
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Status Badge */}
+        <div className="flex justify-center mb-3">
+          <Badge variant="outline" className={overallBadge.color}>
+            {overallBadge.text}
+          </Badge>
+        </div>
+        
         {/* Overall Score */}
-        <div className="text-center h-[80px] flex flex-col justify-center">
+        <div className="text-center h-[60px] flex flex-col justify-center">
           <div className={`text-3xl font-bold mb-1 ${
             metrics.overallHealth >= 75 ? 'text-green-600' :
             metrics.overallHealth >= 50 ? 'text-yellow-600' : 'text-red-600'

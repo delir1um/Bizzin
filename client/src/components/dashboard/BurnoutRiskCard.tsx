@@ -117,23 +117,25 @@ export function BurnoutRiskCard({ journalEntries }: BurnoutRiskCardProps) {
 
   return (
     <Card className="hover:shadow-lg transition-shadow relative">
-      <CardHeader className="pb-3 min-h-[72px] flex items-center">
-        <CardTitle className="flex items-center justify-between text-lg w-full">
-          <span className="flex items-center gap-2">
-            {getRiskIcon(level)}
-            Burnout Risk
-          </span>
+      <CardHeader className="pb-3 min-h-[50px] flex items-center">
+        <CardTitle className="flex items-center gap-2 text-lg w-full">
+          {getRiskIcon(level)}
+          Burnout Risk
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Status Badge */}
+        <div className="flex justify-center mb-3">
           <Badge 
             variant={level === 'high' ? 'destructive' : level === 'medium' ? 'secondary' : 'default'}
             className={`${level === 'low' ? 'bg-green-50 text-green-700 border-green-200' : ''}`}
           >
             {level.toUpperCase()}
           </Badge>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </div>
+        
         {/* Current Risk Level Display */}
-        <div className="text-center h-[80px] flex flex-col justify-center">
+        <div className="text-center h-[60px] flex flex-col justify-center">
           <div className={`text-3xl font-bold mb-1 ${
             risk <= 40 ? 'text-green-600' :
             risk <= 70 ? 'text-yellow-600' : 'text-red-600'
