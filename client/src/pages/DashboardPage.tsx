@@ -197,28 +197,28 @@ export function DashboardPage() {
           </div>
         </div>
 
-        {/* Strategic Business Intelligence Overview */}
-        <AnimatedGrid className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-6" stagger={0.1}>
-          {/* Business Health Score - AI Derived */}
+        {/* Primary Business Metrics - Most Important */}
+        <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
+          {/* Business Health Score - Hero Metric */}
           <AnimatedItem>
-            <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-emerald-50 to-green-100 dark:from-emerald-950 dark:to-green-900 border-emerald-200 dark:border-emerald-800 relative overflow-hidden group col-span-2">
+            <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-emerald-50 to-green-100 dark:from-emerald-950 dark:to-green-900 border-emerald-200 dark:border-emerald-800 relative overflow-hidden group">
               <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-                <CardTitle className="text-sm font-medium text-emerald-900 dark:text-emerald-100">Business Health</CardTitle>
-                <div className="p-2 bg-emerald-500 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-300">
-                  <TrendingUp className="h-4 w-4 text-white" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
+                <CardTitle className="text-base font-semibold text-emerald-900 dark:text-emerald-100">Business Health</CardTitle>
+                <div className="p-3 bg-emerald-500 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <TrendingUp className="h-5 w-5 text-white" />
                 </div>
               </CardHeader>
               <CardContent className="relative z-10">
-                <div className="text-3xl font-bold text-emerald-900 dark:text-emerald-100 mb-1">
+                <div className="text-4xl font-bold text-emerald-900 dark:text-emerald-100 mb-2">
                   {businessHealthScore}/100
                 </div>
-                <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium">
+                <p className="text-sm text-emerald-700 dark:text-emerald-300 font-medium mb-3">
                   AI-powered business score
                 </p>
-                <div className="mt-2 w-full bg-emerald-200 dark:bg-emerald-800 rounded-full h-2">
+                <div className="w-full bg-emerald-200 dark:bg-emerald-800 rounded-full h-3">
                   <div 
-                    className="bg-emerald-500 h-2 rounded-full transition-all duration-700" 
+                    className="bg-emerald-500 h-3 rounded-full transition-all duration-700" 
                     style={{ width: `${businessHealthScore}%` }}
                   />
                 </div>
@@ -230,22 +230,22 @@ export function DashboardPage() {
           <AnimatedItem>
             <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800 relative overflow-hidden group" onClick={() => navigate("/goals")}>
               <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-                <CardTitle className="text-sm font-medium text-orange-900 dark:text-orange-100">Active Goals</CardTitle>
-                <div className="p-2 bg-orange-500 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-300">
-                  <Target className="h-4 w-4 text-white" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
+                <CardTitle className="text-base font-semibold text-orange-900 dark:text-orange-100">Active Goals</CardTitle>
+                <div className="p-3 bg-orange-500 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <Target className="h-5 w-5 text-white" />
                 </div>
               </CardHeader>
               <CardContent className="relative z-10">
                 {goalsLoading ? (
                   <>
-                    <Skeleton className="h-8 w-12 mb-1" />
-                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-10 w-16 mb-2" />
+                    <Skeleton className="h-5 w-24" />
                   </>
                 ) : (
                   <>
-                    <div className="text-3xl font-bold text-orange-900 dark:text-orange-100 mb-1">{stats.inProgress}</div>
-                    <p className="text-xs text-orange-700 dark:text-orange-300 font-medium">
+                    <div className="text-4xl font-bold text-orange-900 dark:text-orange-100 mb-2">{stats.inProgress}</div>
+                    <p className="text-sm text-orange-700 dark:text-orange-300 font-medium">
                       {stats.completed} completed
                     </p>
                   </>
@@ -258,22 +258,22 @@ export function DashboardPage() {
           <AnimatedItem>
             <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-950 dark:to-indigo-900 border-purple-200 dark:border-purple-800 relative overflow-hidden group" onClick={() => navigate("/journal")}>
               <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-                <CardTitle className="text-sm font-medium text-purple-900 dark:text-purple-100">Writing Streak</CardTitle>
-                <div className="p-2 bg-purple-500 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-300">
-                  <Flame className="h-4 w-4 text-white" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
+                <CardTitle className="text-base font-semibold text-purple-900 dark:text-purple-100">Writing Streak</CardTitle>
+                <div className="p-3 bg-purple-500 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <Flame className="h-5 w-5 text-white" />
                 </div>
               </CardHeader>
               <CardContent className="relative z-10">
                 {journalLoading ? (
                   <>
-                    <Skeleton className="h-8 w-12 mb-1" />
-                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-10 w-16 mb-2" />
+                    <Skeleton className="h-5 w-24" />
                   </>
                 ) : (
                   <>
-                    <div className="text-3xl font-bold text-purple-900 dark:text-purple-100 mb-1">{journalInsights.writingStreak}</div>
-                    <p className="text-xs text-purple-700 dark:text-purple-300 font-medium">
+                    <div className="text-4xl font-bold text-purple-900 dark:text-purple-100 mb-2">{journalInsights.writingStreak}</div>
+                    <p className="text-sm text-purple-700 dark:text-purple-300 font-medium">
                       {journalInsights.thisWeekEntries} this week
                     </p>
                   </>
@@ -281,8 +281,11 @@ export function DashboardPage() {
               </CardContent>
             </Card>
           </AnimatedItem>
+        </div>
 
-          {/* Urgent Actions */}
+        {/* Secondary Metrics & Alerts */}
+        <AnimatedGrid className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4" stagger={0.1}>
+          {/* Urgent Actions - Critical Alert */}
           <AnimatedItem>
             <Card className={`cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] relative overflow-hidden group ${
               overdueGoals.length > 0 
@@ -357,6 +360,69 @@ export function DashboardPage() {
                 <p className="text-xs text-blue-700 dark:text-blue-300 font-medium">
                   of 50MB used
                 </p>
+              </CardContent>
+            </Card>
+          </AnimatedItem>
+
+          {/* Weekly Business Mood */}
+          <AnimatedItem>
+            <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-indigo-950 dark:to-blue-900 border-indigo-200 dark:border-indigo-800 relative overflow-hidden group" onClick={() => navigate("/journal")}>
+              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                <CardTitle className="text-sm font-medium text-indigo-900 dark:text-indigo-100">Dominant Mood</CardTitle>
+                <div className="p-2 bg-indigo-500 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <Brain className="h-4 w-4 text-white" />
+                </div>
+              </CardHeader>
+              <CardContent className="relative z-10">
+                {journalLoading ? (
+                  <>
+                    <Skeleton className="h-8 w-20 mb-1" />
+                    <Skeleton className="h-4 w-16" />
+                  </>
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold text-indigo-900 dark:text-indigo-100 mb-1 capitalize">
+                      {journalInsights.dominantMood?.[0] || 'Confident'}
+                    </div>
+                    <p className="text-xs text-indigo-700 dark:text-indigo-300 font-medium">
+                      {journalInsights.goalLinkedEntries} goal-linked entries
+                    </p>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </AnimatedItem>
+
+          {/* Growth Wins */}
+          <AnimatedItem>
+            <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900 border-green-200 dark:border-green-800 relative overflow-hidden group" onClick={() => navigate("/journal")}>
+              <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                <CardTitle className="text-sm font-medium text-green-900 dark:text-green-100">Growth Wins</CardTitle>
+                <div className="p-2 bg-green-500 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <TrendingUp className="h-4 w-4 text-white" />
+                </div>
+              </CardHeader>
+              <CardContent className="relative z-10">
+                {journalLoading ? (
+                  <>
+                    <Skeleton className="h-8 w-12 mb-1" />
+                    <Skeleton className="h-4 w-16" />
+                  </>
+                ) : (
+                  <>
+                    <div className="text-3xl font-bold text-green-900 dark:text-green-100 mb-1">
+                      {journalEntries.filter(entry => 
+                        entry.sentiment_data?.business_category === 'Growth' || 
+                        entry.category === 'Growth'
+                      ).length}
+                    </div>
+                    <p className="text-xs text-green-700 dark:text-green-300 font-medium">
+                      growth entries
+                    </p>
+                  </>
+                )}
               </CardContent>
             </Card>
           </AnimatedItem>
@@ -447,39 +513,44 @@ export function DashboardPage() {
           )}
         </div>
 
-        {/* Feature Quick Access */}
-        <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-          <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950 border-orange-200 dark:border-orange-800" onClick={() => navigate("/training")}>
-            <CardContent className="p-4 text-center">
-              <PlayCircle className="h-8 w-8 text-orange-600 mx-auto mb-2" />
-              <p className="font-medium text-slate-900 dark:text-white">Training</p>
-              <p className="text-xs text-slate-600 dark:text-slate-400">2 courses active</p>
-            </CardContent>
-          </Card>
-          
-          <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-green-200 dark:border-green-800" onClick={() => navigate("/bizbuilder")}>
-            <CardContent className="p-4 text-center">
-              <BarChart3 className="h-8 w-8 text-green-600 mx-auto mb-2" />
-              <p className="font-medium text-slate-900 dark:text-white">BizBuilder</p>
-              <p className="text-xs text-slate-600 dark:text-slate-400">3 tools available</p>
-            </CardContent>
-          </Card>
-          
-          <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950 border-blue-200 dark:border-blue-800" onClick={() => navigate("/docsafe")}>
-            <CardContent className="p-4 text-center">
-              <File className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-              <p className="font-medium text-slate-900 dark:text-white">DocSafe</p>
-              <p className="text-xs text-slate-600 dark:text-slate-400">94% storage used</p>
-            </CardContent>
-          </Card>
-          
-          <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950 dark:to-indigo-950 border-purple-200 dark:border-purple-800" onClick={() => navigate("/journal")}>
-            <CardContent className="p-4 text-center">
-              <Notebook className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-              <p className="font-medium text-slate-900 dark:text-white">Journal</p>
-              <p className="text-xs text-slate-600 dark:text-slate-400">{journalInsights.writingStreak} day streak</p>
-            </CardContent>
-          </Card>
+        {/* Platform Features - Organized by Function */}
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Platform Features</h3>
+            <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
+              <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950 border-orange-200 dark:border-orange-800" onClick={() => navigate("/training")}>
+                <CardContent className="p-6 text-center">
+                  <PlayCircle className="h-10 w-10 text-orange-600 mx-auto mb-3" />
+                  <p className="font-semibold text-slate-900 dark:text-white mb-1">Training</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">2 courses active</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-green-200 dark:border-green-800" onClick={() => navigate("/bizbuilder")}>
+                <CardContent className="p-6 text-center">
+                  <BarChart3 className="h-10 w-10 text-green-600 mx-auto mb-3" />
+                  <p className="font-semibold text-slate-900 dark:text-white mb-1">BizBuilder</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">3 tools available</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950 border-blue-200 dark:border-blue-800" onClick={() => navigate("/docsafe")}>
+                <CardContent className="p-6 text-center">
+                  <File className="h-10 w-10 text-blue-600 mx-auto mb-3" />
+                  <p className="font-semibold text-slate-900 dark:text-white mb-1">DocSafe</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">3 documents stored</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950 dark:to-indigo-950 border-purple-200 dark:border-purple-800" onClick={() => navigate("/journal")}>
+                <CardContent className="p-6 text-center">
+                  <Notebook className="h-10 w-10 text-purple-600 mx-auto mb-3" />
+                  <p className="font-semibold text-slate-900 dark:text-white mb-1">Journal</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">{journalInsights.writingStreak} day streak</p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
       </div>
       
