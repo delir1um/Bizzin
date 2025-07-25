@@ -40,15 +40,39 @@ CREATE TABLE IF NOT EXISTS usage_limits (
 ALTER TABLE user_plans ENABLE ROW LEVEL SECURITY;
 ALTER TABLE usage_limits ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies for user_plans
-CREATE POLICY "Users can view own plan" ON user_plans FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can update own plan" ON user_plans FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY "Users can insert own plan" ON user_plans FOR INSERT WITH CHECK (auth.uid() = user_id);
+-- RLS Policies for user_plans (using IF NOT EXISTS to avoid conflicts)
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'user_plans' AND policyname = 'Users can view own plan') THEN
+        CREATE POLICY "Users can view own plan" ON user_plans FOR SELECT USING (auth.uid() = user_id);
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'user_plans' AND policyname = 'Users can update own plan') THEN
+        CREATE POLICY "Users can update own plan" ON user_plans FOR UPDATE USING (auth.uid() = user_id);
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'user_plans' AND policyname = 'Users can insert own plan') THEN
+        CREATE POLICY "Users can insert own plan" ON user_plans FOR INSERT WITH CHECK (auth.uid() = user_id);
+    END IF;
+END
+$$;
 
--- RLS Policies for usage_limits
-CREATE POLICY "Users can view own usage" ON usage_limits FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can update own usage" ON usage_limits FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY "Users can insert own usage" ON usage_limits FOR INSERT WITH CHECK (auth.uid() = user_id);
+-- RLS Policies for usage_limits (using IF NOT EXISTS to avoid conflicts)
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'usage_limits' AND policyname = 'Users can view own usage') THEN
+        CREATE POLICY "Users can view own usage" ON usage_limits FOR SELECT USING (auth.uid() = user_id);
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'usage_limits' AND policyname = 'Users can update own usage') THEN
+        CREATE POLICY "Users can update own usage" ON usage_limits FOR UPDATE USING (auth.uid() = user_id);
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'usage_limits' AND policyname = 'Users can insert own usage') THEN
+        CREATE POLICY "Users can insert own usage" ON usage_limits FOR INSERT WITH CHECK (auth.uid() = user_id);
+    END IF;
+END
+$$;
 
 -- Function to automatically create free plan for new users
 CREATE OR REPLACE FUNCTION handle_new_user_plan()
