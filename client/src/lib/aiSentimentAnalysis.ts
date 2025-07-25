@@ -236,13 +236,13 @@ function detectBusinessCategory(lowerText: string): string {
   };
   
   // Growth indicators - enhanced with revenue, clients, and scaling keywords
-  if (lowerText.match(/\b(growth|scaling|expansion|opportunity|next big|cant wait|excited|future|potential|revenue|clients|client|customers|customer|signed|deals|deal|contracts|contract|income|sales|profit|business.*growth|incredible.*week|amazing.*week|enterprise|monthly.*recurring|quarterly|increase|%.*increase|growth.*mode|survival.*mode|scale.*operations|hiring|hire|developers|team.*growth|vision.*becoming|reality)\b/)) {
+  if (lowerText.match(/\b(growth|scaling|expansion|opportunity|next big|cant wait|excited|future|potential|revenue|clients|client|customers|customer|signed|deals|deal|contracts|contract|income|sales|profit|business.*growth|incredible.*week|amazing.*week|enterprise|monthly.*recurring|quarterly|increase|%.*increase|growth.*mode|survival.*mode|scale.*operations|hiring|hire|developers|team.*growth|vision.*becoming|reality|market.*expansion|international|localization|adoption|metrics|impressive|generating.*revenue|european.*markets|office|further.*expansion)\b/)) {
     categoryScores.Growth += 3;
   }
   
-  // Strong growth indicators - revenue, percentages, client acquisition
-  if (lowerText.match(/\b(\$\d+k|\$\d+,\d+|\d+%.*increase|\d+.*clients|\d+.*customers|revenue.*\$|monthly.*recurring.*revenue|mrr|enterprise.*clients|signed.*clients|major.*clients|biggest.*deal|scale.*operations|growth.*mode)\b/)) {
-    categoryScores.Growth += 5; // High priority for clear growth metrics
+  // Strong growth indicators - revenue, percentages, client acquisition, international expansion
+  if (lowerText.match(/\b(\$\d+k|\$\d+,\d+|\d+%.*increase|\d+.*clients|\d+.*customers|revenue.*\$|monthly.*recurring.*revenue|mrr|enterprise.*clients|signed.*clients|major.*clients|biggest.*deal|scale.*operations|growth.*mode|\d+%.*month.*over.*month|\d+%.*of.*revenue|european.*markets|international.*expansion|localization.*efforts|strong.*adoption)\b/)) {
+    categoryScores.Growth += 6; // Very high priority for clear growth metrics and international expansion
   }
   
   // Challenge indicators - more comprehensive detection
@@ -666,6 +666,7 @@ export async function analyzeBusinessSentimentAI(content: string, title?: string
         if (trainingMatch.expected_category.toLowerCase() !== aiResult.business_category.toLowerCase()) {
           console.log(`Correcting category from ${aiResult.business_category} to ${trainingMatch.expected_category} based on training data`);
           aiResult.business_category = trainingMatch.expected_category.toLowerCase() as any;
+          aiResult.category = trainingMatch.expected_category; // Legacy compatibility
         }
         
         // Correct mood if training data suggests different mood
@@ -683,6 +684,9 @@ export async function analyzeBusinessSentimentAI(content: string, title?: string
         
         // Use training data confidence range
         aiResult.confidence = Math.max(aiResult.confidence, trainingMatch.confidence_range[0]);
+        
+        // Regenerate insights based on corrected category
+        aiResult.insights = generateEnhancedBusinessInsights(content, aiResult.primary_mood, trainingMatch.expected_category);
       }
       
       // Generate title for AI result if missing

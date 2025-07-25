@@ -55,7 +55,7 @@ export function mapAIMoodToJournal(aiMood: string): string {
     'determined': 'Determined',
     'accomplished': 'Accomplished',
     'uncertain': 'Thoughtful',
-    'stressed': 'Frustrated',
+    'stressed': 'Stressed',
     'neutral': 'Neutral',
     'inspired': 'Inspired',
     'conflicted': 'Conflicted',
@@ -73,14 +73,15 @@ export function mapAIMoodToJournal(aiMood: string): string {
 
 export function mapBusinessCategoryToJournal(businessCategory: string): string {
   const mapping: Record<string, string> = {
-    'growth': 'Strategy',
-    'challenge': 'Challenge',
-    'achievement': 'Milestone',
+    'growth': 'Growth',
+    'challenge': 'Challenge', 
+    'achievement': 'Achievement',
     'planning': 'Planning',
     'reflection': 'Learning',
-    'learning': 'Learning'
+    'learning': 'Learning',
+    'research': 'Research'
   }
-  return mapping[businessCategory] || 'Strategy'
+  return mapping[businessCategory.toLowerCase()] || 'Learning'
 }
 
 export function getDisplayMood(entry: JournalEntry): string {
