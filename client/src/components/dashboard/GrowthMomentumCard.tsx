@@ -41,49 +41,94 @@ export function GrowthMomentumCard({ journalEntries }: GrowthMomentumCardProps) 
       const dateKey = format(startOfDay(new Date(entry.created_at)), 'yyyy-MM-dd')
       if (!dailyScores[dateKey]) dailyScores[dateKey] = []
       
-      // Calculate entry momentum score based on mood, category, and content
-      let entryScore = 50 // baseline
+      // Enhanced entry momentum score calculation
+      let entryScore = 40 // Lower baseline for more realistic scoring
       
-      // Mood contribution (40% weight)
+      // 1. Enhanced Mood Analysis (35% weight) - Consistent with other cards
       const mood = entry.sentiment_data?.primary_mood?.toLowerCase() || entry.mood?.toLowerCase() || ''
       const moodScores: Record<string, number> = {
-        'excited': 90, 'accomplished': 95, 'confident': 85, 'motivated': 88,
-        'inspired': 92, 'optimistic': 80, 'focused': 75, 'determined': 85,
-        'curious': 70, 'analytical': 65, 'thoughtful': 60, 'reflective': 60,
-        'neutral': 50, 'uncertain': 40, 'conflicted': 35, 'frustrated': 25,
-        'stressed': 20, 'overwhelmed': 15, 'tired': 30, 'sad': 25
+        // High momentum moods
+        'excited': 95, 'accomplished': 100, 'confident': 90, 'motivated': 92,
+        'inspired': 94, 'optimistic': 85, 'energized': 88, 'proud': 93,
+        'successful': 96, 'determined': 87, 'focused': 82,
+        // Medium momentum moods  
+        'curious': 75, 'analytical': 70, 'thoughtful': 68, 'reflective': 65,
+        'calm': 60, 'satisfied': 72, 'content': 58,
+        // Low momentum moods
+        'neutral': 50, 'uncertain': 35, 'conflicted': 30, 'disappointed': 25,
+        'frustrated': 20, 'stressed': 15, 'overwhelmed': 10, 'tired': 25, 
+        'sad': 20, 'anxious': 18, 'worried': 22
       }
-      entryScore += (moodScores[mood] - 50) * 0.4
+      const moodScore = moodScores[mood] || 50
+      entryScore += (moodScore - 50) * 0.35
 
-      // Category contribution (30% weight) 
+      // 2. Enhanced Category Analysis (25% weight) - Fixed category matching
       const category = entry.sentiment_data?.business_category?.toLowerCase() || entry.category?.toLowerCase() || ''
       const categoryScores: Record<string, number> = {
-        'achievement': 90, 'growth': 85, 'planning': 70, 'learning': 65,
-        'research': 60, 'challenge': 40
+        'achievement': 95, 'growth': 90, 'planning': 75, 'learning': 70,
+        'research': 65, 'challenge': 35 // Challenges can lead to growth but are initially low momentum
       }
       if (categoryScores[category]) {
-        entryScore += (categoryScores[category] - 50) * 0.3
+        entryScore += (categoryScores[category] - 50) * 0.25
       }
 
-      // Content signals (30% weight)
+      // 3. AI Confidence Integration (15% weight) - New enhancement
+      const confidence = entry.sentiment_data?.confidence || 0
+      if (confidence > 0) {
+        // Normalize confidence (65+ = positive momentum, 85+ = high momentum)
+        const confidenceScore = Math.max(0, Math.min(100, (confidence - 45) * 1.5))
+        entryScore += (confidenceScore - 50) * 0.15
+      }
+
+      // 4. Enhanced Content Analysis (25% weight) - Sophisticated business growth detection
       const content = entry.content.toLowerCase()
-      const positiveSignals = [
-        'success', 'win', 'breakthrough', 'growth', 'progress', 'achievement',
-        'excited', 'accomplished', 'milestone', 'launched', 'completed', 'solved'
+      
+      // Business growth signals with weighted importance
+      const highGrowthSignals = [
+        { term: 'breakthrough', weight: 15 }, { term: 'milestone', weight: 15 },
+        { term: 'launched', weight: 12 }, { term: 'success', weight: 12 },
+        { term: 'achievement', weight: 10 }, { term: 'completed', weight: 10 }
       ]
-      const negativeSignals = [
-        'failed', 'struggle', 'problem', 'issue', 'stuck', 'difficult',
-        'frustrat', 'stress', 'overwhelm', 'behind', 'delay'
+      const mediumGrowthSignals = [
+        { term: 'progress', weight: 8 }, { term: 'growth', weight: 8 },
+        { term: 'win', weight: 8 }, { term: 'solved', weight: 7 },
+        { term: 'improvement', weight: 7 }, { term: 'opportunity', weight: 6 }
+      ]
+      const momentumKillers = [
+        { term: 'failed', weight: -12 }, { term: 'setback', weight: -10 },
+        { term: 'struggle', weight: -8 }, { term: 'stuck', weight: -8 },
+        { term: 'behind schedule', weight: -10 }, { term: 'delayed', weight: -7 },
+        { term: 'problem', weight: -6 }, { term: 'issue', weight: -5 }
       ]
       
-      let contentBonus = 0
-      positiveSignals.forEach(signal => {
-        if (content.includes(signal)) contentBonus += 10
+      let contentScore = 0
+      
+      // Check high-impact growth signals
+      highGrowthSignals.forEach(signal => {
+        if (content.includes(signal.term)) contentScore += signal.weight
       })
-      negativeSignals.forEach(signal => {
-        if (content.includes(signal)) contentBonus -= 10
+      
+      // Check medium-impact growth signals
+      mediumGrowthSignals.forEach(signal => {
+        if (content.includes(signal.term)) contentScore += signal.weight
       })
-      entryScore += Math.max(-30, Math.min(30, contentBonus)) * 0.3
+      
+      // Check momentum killers
+      momentumKillers.forEach(signal => {
+        if (content.includes(signal.term)) contentScore += signal.weight // Already negative
+      })
+      
+      // Business-specific momentum indicators
+      const businessMomentumKeywords = [
+        'revenue', 'customers', 'users', 'growth', 'expansion', 'scale',
+        'partnership', 'investment', 'funding', 'product launch', 'market share'
+      ]
+      businessMomentumKeywords.forEach(keyword => {
+        if (content.includes(keyword)) contentScore += 5
+      })
+      
+      // Apply content score with proper weighting
+      entryScore += Math.max(-40, Math.min(40, contentScore)) * 0.25
 
       dailyScores[dateKey].push(Math.max(0, Math.min(100, entryScore)))
     })
@@ -109,30 +154,62 @@ export function GrowthMomentumCard({ journalEntries }: GrowthMomentumCardProps) 
       scores.push(avgScore)
     }
 
-    // Calculate current momentum and trend
-    const currentScore = scores.length > 0 ? Math.round(scores[scores.length - 1]) : 50
+    // Enhanced current momentum calculation
+    const currentScore = scores.length > 0 ? Math.round(scores[scores.length - 1]) : 40
     
-    // Calculate trend (comparing last 3 days vs previous 4 days)
+    // Enhanced trend calculation (balanced comparison periods)
+    if (scores.length < 6) {
+      // Not enough data for reliable trend
+      const trendValue = 0
+      const trend = 'neutral'
+      return { currentScore, trend, trendValue, chartData, highPerformancePeriods: [] }
+    }
+    
+    // Compare recent 3 days vs earlier 3 days (balanced periods)
     const recentScores = scores.slice(-3)
-    const earlierScores = scores.slice(-7, -3)
-    const recentAvg = recentScores.length > 0 ? recentScores.reduce((a, b) => a + b, 0) / recentScores.length : 50
-    const earlierAvg = earlierScores.length > 0 ? earlierScores.reduce((a, b) => a + b, 0) / earlierScores.length : 50
+    const earlierScores = scores.slice(-6, -3)
+    const recentAvg = recentScores.reduce((a, b) => a + b, 0) / recentScores.length
+    const earlierAvg = earlierScores.reduce((a, b) => a + b, 0) / earlierScores.length
     
     const trendValue = Math.round(recentAvg - earlierAvg)
-    const trend = trendValue > 5 ? 'up' : trendValue < -5 ? 'down' : 'neutral'
+    
+    // More sophisticated trend determination with momentum persistence
+    let trend: 'up' | 'down' | 'neutral'
+    if (Math.abs(trendValue) < 3) {
+      trend = 'neutral' // Reduced sensitivity threshold
+    } else {
+      // Check for momentum persistence (last 5 days pattern)
+      const last5Scores = scores.slice(-5)
+      const isConsistentlyRising = last5Scores.every((score, i) => 
+        i === 0 || score >= last5Scores[i - 1] - 2 // Allow small fluctuations
+      )
+      const isConsistentlyFalling = last5Scores.every((score, i) => 
+        i === 0 || score <= last5Scores[i - 1] + 2 // Allow small fluctuations
+      )
+      
+      if (trendValue > 0) {
+        trend = isConsistentlyRising ? 'up' : (trendValue > 8 ? 'up' : 'neutral')
+      } else {
+        trend = isConsistentlyFalling ? 'down' : (trendValue < -8 ? 'down' : 'neutral')
+      }
+    }
 
-    // Identify high-performance periods (consecutive days with score > 75)
+    // Enhanced high-performance period detection
     const highPerformancePeriods: string[] = []
     let currentStreak = 0
+    
     chartData.forEach((day, index) => {
-      if (day.score >= 75) {
+      if (day.score >= 70) { // Lowered threshold for more realistic detection
         currentStreak++
       } else {
         if (currentStreak >= 2) {
           const startIdx = index - currentStreak
           const endIdx = index - 1
+          const avgScore = chartData.slice(startIdx, index)
+            .reduce((sum, d) => sum + d.score, 0) / currentStreak
+          
           highPerformancePeriods.push(
-            `${chartData[startIdx]?.day} - ${chartData[endIdx]?.day} (${currentStreak} days)`
+            `${chartData[startIdx]?.day} - ${chartData[endIdx]?.day} (${Math.round(avgScore)} avg)`
           )
         }
         currentStreak = 0
@@ -142,8 +219,11 @@ export function GrowthMomentumCard({ journalEntries }: GrowthMomentumCardProps) 
     // Check if current streak continues to end
     if (currentStreak >= 2) {
       const startIdx = chartData.length - currentStreak
+      const avgScore = chartData.slice(startIdx)
+        .reduce((sum, d) => sum + d.score, 0) / currentStreak
+      
       highPerformancePeriods.push(
-        `${chartData[startIdx]?.day} - ${chartData[chartData.length - 1]?.day} (${currentStreak} days)`
+        `${chartData[startIdx]?.day} - ${chartData[chartData.length - 1]?.day} (${Math.round(avgScore)} avg)`
       )
     }
 
