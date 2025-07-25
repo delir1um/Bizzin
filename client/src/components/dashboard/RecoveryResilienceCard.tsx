@@ -215,7 +215,7 @@ export function RecoveryResilienceCard({ journalEntries }: RecoveryResilienceCar
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Primary Metric Display */}
-        <div className="text-center mb-4">
+        <div className="text-center h-[80px] flex flex-col justify-center">
           <div className={`text-3xl font-bold mb-1 ${
             resilienceScore >= 75 ? 'text-green-600' :
             resilienceScore >= 50 ? 'text-yellow-600' : 'text-red-600'

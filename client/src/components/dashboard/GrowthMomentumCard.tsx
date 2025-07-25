@@ -192,7 +192,7 @@ export function GrowthMomentumCard({ journalEntries }: GrowthMomentumCardProps) 
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Current Score Display */}
-        <div className="text-center mb-4">
+        <div className="text-center h-[80px] flex flex-col justify-center">
           <div className={`text-3xl font-bold mb-1 ${
             currentScore >= 75 ? 'text-green-600' :
             currentScore >= 50 ? 'text-yellow-600' : 'text-red-600'
