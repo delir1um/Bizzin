@@ -73,10 +73,21 @@ export function JournalPage() {
   }, [entries])
 
   // Filter entries based on search
-  const filteredEntries = entries.filter((entry: JournalEntry) =>
-    entry.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    entry.content.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredEntries = entries.filter((entry: JournalEntry) => {
+    const query = searchQuery.toLowerCase()
+    const titleMatch = entry.title.toLowerCase().includes(query)
+    const contentMatch = entry.content.toLowerCase().includes(query)
+    
+    // Check category from multiple sources
+    const category = entry.category || entry.sentiment_data?.business_category || ''
+    const categoryMatch = category.toLowerCase().includes(query)
+    
+    // Check mood for additional searchability
+    const mood = entry.mood || entry.sentiment_data?.primary_mood || ''
+    const moodMatch = mood.toLowerCase().includes(query)
+    
+    return titleMatch || contentMatch || categoryMatch || moodMatch
+  })
 
   // Organize entries by time periods
   const organizeEntriesByTime = (entries: JournalEntry[]) => {
