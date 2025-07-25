@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { X, Download, Calculator, TrendingUp, DollarSign, Target, AlertTriangle } from "lucide-react"
@@ -331,11 +333,11 @@ export default function BreakEvenCalculator({ onClose }: { onClose: () => void }
                     <CardTitle className="text-lg">Notes & Assumptions</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <textarea
-                      className="w-full min-h-[100px] p-3 border border-slate-200 dark:border-slate-700 rounded-md resize-none"
+                    <Textarea
                       value={breakEvenData.notes}
                       onChange={(e) => setBreakEvenData(prev => ({ ...prev, notes: e.target.value }))}
                       placeholder="Add notes about your assumptions, seasonal factors, or other important details..."
+                      rows={4}
                     />
                   </CardContent>
                 </Card>
@@ -383,21 +385,21 @@ export default function BreakEvenCalculator({ onClose }: { onClose: () => void }
                       </div>
                       <div>
                         <Label className={validationErrors.category ? 'text-red-600' : ''}>Category *</Label>
-                        <select 
-                          value={newFixedCost.category}
-                          onChange={(e) => {
-                            setNewFixedCost(prev => ({ ...prev, category: e.target.value }))
-                            if (validationErrors.category) {
-                              setValidationErrors(prev => ({ ...prev, category: false }))
-                            }
-                          }}
-                          className={`w-full p-2 border rounded-md ${validationErrors.category ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'} bg-white dark:bg-slate-800`}
-                        >
-                          <option value="">Select category</option>
-                          {fixedCostCategories.map(category => (
-                            <option key={category} value={category}>{category}</option>
-                          ))}
-                        </select>
+                        <Select value={newFixedCost.category} onValueChange={(value) => {
+                          setNewFixedCost(prev => ({ ...prev, category: value }))
+                          if (validationErrors.category) {
+                            setValidationErrors(prev => ({ ...prev, category: false }))
+                          }
+                        }}>
+                          <SelectTrigger className={validationErrors.category ? 'border-red-500 focus:border-red-500' : ''}>
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {fixedCostCategories.map(category => (
+                              <SelectItem key={category} value={category}>{category}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         {validationErrors.category && <p className="text-sm text-red-600 mt-1">Please select a category</p>}
                       </div>
                     </div>
