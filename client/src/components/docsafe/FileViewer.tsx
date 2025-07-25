@@ -176,12 +176,12 @@ export function FileViewer({ document, isOpen, onClose, onEdit, onDelete }: File
     // PDF files - optimized download experience due to browser limitations
     if (document.file_type === 'application/pdf' && fileUrl) {
       return (
-        <div className="flex items-center justify-center h-96 w-full rounded-md border bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900">
-          <div className="text-center max-w-lg px-8">
+        <div className="w-full rounded-md border bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 py-12 px-8">
+          <div className="text-center max-w-lg mx-auto">
             <div className="bg-white dark:bg-slate-800 rounded-full p-4 w-20 h-20 mx-auto mb-6 shadow-lg">
               <FileText className="h-12 w-12 text-orange-600 mx-auto" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
               {document.name}
             </h3>
             <div className="bg-white dark:bg-slate-800 rounded-lg p-4 mb-6 shadow-sm">
@@ -196,7 +196,7 @@ export function FileViewer({ document, isOpen, onClose, onEdit, onDelete }: File
                 </div>
               </div>
             </div>
-            <p className="text-slate-600 dark:text-slate-300 mb-6 text-sm leading-relaxed">
+            <p className="text-slate-600 dark:text-slate-300 mb-8 text-sm leading-relaxed">
               For security, browsers don't allow PDF preview from cloud storage. 
               Click below to open the document in a new tab or download it to your device.
             </p>
