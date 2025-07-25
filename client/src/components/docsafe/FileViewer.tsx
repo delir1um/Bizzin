@@ -159,30 +159,48 @@ export function FileViewer({ document, isOpen, onClose }: FileViewerProps) {
       )
     }
 
-    // PDF files - professional download interface
+    // PDF files - iframe preview with fallback
     if (document.file_type === 'application/pdf' && fileUrl) {
       return (
-        <div className="flex items-center justify-center h-96 w-full rounded-md border">
-          <div className="text-center max-w-md px-6">
-            <FileText className="h-16 w-16 text-orange-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-              PDF Document
-            </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
-              Click below to download and view the PDF document in your preferred PDF reader for the best experience.
-            </p>
-            <div className="space-y-3">
-              <Button 
-                onClick={handleDownload} 
-                className="bg-orange-600 hover:bg-orange-700 w-full py-3"
-              >
-                <Download className="h-5 w-5 mr-2" />
-                Download & View PDF
-              </Button>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                File size: {formatFileSize(document.file_size)}
-              </p>
+        <div className="w-full">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-slate-600 dark:text-slate-400">
+                PDF Preview
+              </span>
             </div>
+            <Button onClick={handleDownload} variant="outline" size="sm">
+              <Download className="h-4 w-4 mr-2" />
+              Download
+            </Button>
+          </div>
+          
+          <div className="w-full h-96 border rounded-md overflow-hidden bg-slate-50 dark:bg-slate-900">
+            <iframe
+              src={`${fileUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+              className="w-full h-full"
+              style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top left' }}
+              title={document.name}
+              onError={(e) => {
+                console.error('PDF iframe error:', e)
+                // Show fallback content
+                const iframe = e.target as HTMLIFrameElement
+                if (iframe.parentElement) {
+                  iframe.parentElement.innerHTML = `
+                    <div class="flex items-center justify-center h-full">
+                      <div class="text-center max-w-md px-6">
+                        <svg class="h-16 w-16 text-orange-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-2">PDF Preview Unavailable</h3>
+                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">Browser security settings prevent PDF preview. Click download to view.</p>
+                        <button onclick="window.location.reload()" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md">Download PDF</button>
+                      </div>
+                    </div>
+                  `
+                }
+              }}
+            />
           </div>
         </div>
       )
@@ -288,8 +306,9 @@ export function FileViewer({ document, isOpen, onClose }: FileViewerProps) {
 
         <Separator className="my-4" />
 
-        {/* Viewer controls - only show for images and text files */}
-        {(document.file_type.startsWith('image/') || 
+        {/* Viewer controls */}
+        {(document.file_type === 'application/pdf' || 
+          document.file_type.startsWith('image/') || 
           document.file_type.startsWith('text/')) && (
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
