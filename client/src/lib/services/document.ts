@@ -2,6 +2,77 @@ import { supabase } from '@/lib/supabase'
 import type { Document, Folder, CreateDocumentRequest, CreateFolderRequest, StorageStats } from '@/types/document'
 
 export class DocumentService {
+  // Upload a new document with progress tracking
+  static async uploadDocumentWithProgress(
+    request: CreateDocumentRequest, 
+    onProgress?: (progress: number) => void
+  ): Promise<Document> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        throw new Error('User not authenticated')
+      }
+
+      onProgress?.(10) // Starting upload
+
+      // Generate unique file path
+      const fileExt = request.file.name.split('.').pop()
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+      const filePath = `${user.id}/documents/${fileName}`
+
+      console.log('Uploading file to:', filePath)
+      onProgress?.(25) // File path generated
+
+      // Upload file to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(filePath, request.file)
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError)
+        throw new Error(`Failed to upload file: ${uploadError.message}`)
+      }
+
+      onProgress?.(70) // File uploaded
+
+      // Create document record in database
+      const documentData = {
+        user_id: user.id,
+        name: request.name,
+        original_name: request.file.name,
+        file_path: filePath,
+        file_type: request.file.type,
+        file_size: request.file.size,
+        category: request.category,
+        tags: request.tags || [],
+        is_shared: false,
+        description: request.description || null,
+      }
+
+      onProgress?.(85) // Preparing database entry
+
+      const { data, error } = await supabase
+        .from('documents')
+        .insert([documentData])
+        .select()
+        .single()
+
+      if (error) {
+        // If database insert fails, clean up uploaded file
+        await supabase.storage.from('documents').remove([filePath])
+        throw new Error(`Failed to save document: ${error.message}`)
+      }
+
+      onProgress?.(100) // Complete
+      console.log('Document created successfully:', data)
+      return data
+
+    } catch (err: any) {
+      console.error('Error in uploadDocumentWithProgress:', err)
+      throw err
+    }
+  }
+
   // Upload a new document
   static async uploadDocument(request: CreateDocumentRequest): Promise<Document> {
     try {

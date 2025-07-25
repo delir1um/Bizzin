@@ -33,6 +33,8 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
   const [dragActive, setDragActive] = useState(false)
   const [tags, setTags] = useState<string[]>([])
   const [newTag, setNewTag] = useState("")
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
   const { toast } = useToast()
@@ -54,17 +56,30 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
   })
 
   const uploadMutation = useMutation({
-    mutationFn: (request: CreateDocumentRequest) => DocumentService.uploadDocument(request),
+    mutationFn: async (request: CreateDocumentRequest) => {
+      setIsUploading(true)
+      setUploadProgress(0)
+      
+      return DocumentService.uploadDocumentWithProgress(request, (progress: number) => {
+        setUploadProgress(progress)
+      })
+    },
     onSuccess: () => {
+      setIsUploading(false)
+      setUploadProgress(100)
       queryClient.invalidateQueries({ queryKey: ['documents'] })
       queryClient.invalidateQueries({ queryKey: ['storage-stats'] })
       toast({
         title: "Document uploaded",
         description: "Your document has been successfully uploaded.",
       })
-      handleClose()
+      setTimeout(() => {
+        handleClose()
+      }, 500) // Small delay to show 100% progress
     },
     onError: (error: any) => {
+      setIsUploading(false)
+      setUploadProgress(0)
       // Check if it's an RLS policy error
       if (error.message?.includes('row-level security policy') || error.message?.includes('violates row-level security')) {
         toast({
@@ -86,6 +101,8 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
     setSelectedFile(null)
     setTags([])
     setNewTag("")
+    setUploadProgress(0)
+    setIsUploading(false)
     reset()
     onClose()
   }
@@ -378,25 +395,53 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
               </p>
             </div>
 
+            {/* Upload Progress Bar */}
+            {(isUploading || uploadProgress > 0) && (
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Upload Progress
+                  </span>
+                  <span className="text-sm text-slate-500">
+                    {Math.round(uploadProgress)}%
+                  </span>
+                </div>
+                <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+                  <div 
+                    className="bg-orange-600 h-2 rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+                {isUploading && (
+                  <p className="text-xs text-slate-500 text-center">
+                    {uploadProgress < 25 ? 'Preparing upload...' :
+                     uploadProgress < 70 ? 'Uploading file...' :
+                     uploadProgress < 100 ? 'Saving document...' :
+                     'Upload complete!'}
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Action Buttons */}
             <div className="flex justify-end gap-3 pt-4 border-t">
               <Button
                 type="button"
                 variant="outline"
                 onClick={handleClose}
-                disabled={isSubmitting}
+                disabled={isUploading}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting || !selectedFile}
+                disabled={isUploading || !selectedFile}
                 className="bg-orange-600 hover:bg-orange-700 text-white"
               >
-                {isSubmitting ? (
+                {isUploading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
-                    Uploading...
+                    Uploading... {Math.round(uploadProgress)}%
                   </>
                 ) : (
                   <>
