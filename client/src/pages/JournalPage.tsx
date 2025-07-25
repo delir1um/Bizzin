@@ -249,6 +249,38 @@ export function JournalPage() {
     setShowEditModal(true)
   }
 
+  const handleDeleteEntry = async (entry: JournalEntry) => {
+    if (!user?.id) return
+    
+    try {
+      console.log('Deleting journal entry:', entry.id, 'for user:', user.id)
+      
+      const { error } = await supabase
+        .from('journal_entries')
+        .delete()
+        .eq('id', entry.id)
+        .eq('user_id', user.id)
+      
+      if (error) throw error
+      
+      // Close modals and refresh data
+      handleCloseModals()
+      queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
+      
+      toast({
+        title: "Entry deleted",
+        description: "Your journal entry has been successfully removed.",
+      })
+    } catch (error) {
+      console.error('Error deleting entry:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete the entry. Please try again.",
+        variant: "destructive"
+      })
+    }
+  }
+
   const handleCloseModals = () => {
     setShowViewModal(false)
     setShowEditModal(false)
@@ -371,7 +403,7 @@ export function JournalPage() {
       </div>
 
       {/* Statistics Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800">
           <CardContent className="p-6">
             <div className="flex items-center">
@@ -426,23 +458,7 @@ export function JournalPage() {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-purple-50 to-pink-100 dark:from-purple-950 dark:to-pink-900 border-purple-200 dark:border-purple-800">
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-500 rounded-lg shadow-sm">
-                <Brain className="w-5 h-5 text-white" />
-              </div>
-              <div className="ml-4">
-                {isLoading ? (
-                  <Skeleton className="h-8 w-12 mb-1" />
-                ) : (
-                  <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">{stats.avgConfidence}%</div>
-                )}
-                <p className="text-sm font-medium text-purple-700 dark:text-purple-300">AI Confidence</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+
       </div>
 
       {/* Search */}
@@ -882,6 +898,7 @@ export function JournalPage() {
           setShowViewModal(false)
           setShowEditModal(true)
         }}
+        onDelete={handleDeleteEntry}
       />
 
       <EditEntryModal

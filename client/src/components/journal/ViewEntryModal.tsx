@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { X, Clock, BookOpen, Edit, Zap } from "lucide-react"
+import { X, Clock, BookOpen, Edit, Zap, Trash2 } from "lucide-react"
 import type { JournalEntry } from "@/types/journal"
 
 import { format } from "date-fns"
@@ -14,9 +14,10 @@ interface ViewEntryModalProps {
   onClose: () => void
   entry: JournalEntry | null
   onEdit?: (entry: JournalEntry) => void
+  onDelete?: (entry: JournalEntry) => void
 }
 
-export function ViewEntryModal({ isOpen, onClose, entry, onEdit }: ViewEntryModalProps) {
+export function ViewEntryModal({ isOpen, onClose, entry, onEdit, onDelete }: ViewEntryModalProps) {
 
   if (!isOpen || !entry) return null
 
@@ -73,6 +74,17 @@ export function ViewEntryModal({ isOpen, onClose, entry, onEdit }: ViewEntryModa
               >
                 <Edit className="w-4 h-4 mr-2" />
                 Edit
+              </Button>
+            )}
+            {onDelete && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onDelete(entry)}
+                className="text-red-600 hover:text-red-800 hover:bg-red-50 border-red-200 dark:text-red-400 dark:hover:text-red-300"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete
               </Button>
             )}
             <Button
