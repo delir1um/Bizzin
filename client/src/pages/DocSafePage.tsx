@@ -12,6 +12,7 @@ import type { Document } from "@/types/document"
 import { useToast } from "@/hooks/use-toast"
 import { UploadModal } from "@/components/docsafe/UploadModal"
 import { EditDocumentModal } from "@/components/docsafe/EditDocumentModal"
+import { FileViewer } from "@/components/docsafe/FileViewer"
 import { PlanLimitBanner } from "@/components/plans/PlanLimitBanner"
 import { UpgradeModal } from "@/components/plans/UpgradeModal"
 import { usePlans } from "@/hooks/usePlans"
@@ -29,6 +30,8 @@ export function DocSafePage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("")
   const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null)
   const [documentToEdit, setDocumentToEdit] = useState<Document | null>(null)
+  const [documentToView, setDocumentToView] = useState<Document | null>(null)
+  const [showViewModal, setShowViewModal] = useState(false)
   const queryClient = useQueryClient()
   const { toast } = useToast()
   const { usageStatus, canUploadDocument, hasStorageSpace } = usePlans()
@@ -119,6 +122,16 @@ export function DocSafePage() {
   const closeEditModal = () => {
     setShowEditModal(false)
     setDocumentToEdit(null)
+  }
+
+  const handleViewDocument = (doc: Document) => {
+    setDocumentToView(doc)
+    setShowViewModal(true)
+  }
+
+  const closeViewModal = () => {
+    setShowViewModal(false)
+    setDocumentToView(null)
   }
 
   const confirmDelete = () => {
@@ -405,16 +418,27 @@ export function DocSafePage() {
                       <Button 
                         variant="ghost" 
                         size="sm"
+                        onClick={() => handleViewDocument(doc)}
+                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                        title="View document"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
                         onClick={() => handleEditDocument(doc)}
                         className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                        title="Edit document"
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
                       <Button 
                         variant="ghost" 
                         size="sm"
-                        onClick={() => handleDownload(doc)}
+                        onClick={() => downloadMutation.mutate(doc)}
                         disabled={downloadMutation.isPending}
+                        title="Download document"
                       >
                         <Download className="w-4 h-4" />
                       </Button>
@@ -424,6 +448,7 @@ export function DocSafePage() {
                         onClick={() => handleDeleteDocument(doc)}
                         disabled={deleteDocMutation.isPending}
                         className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        title="Delete document"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -470,6 +495,13 @@ export function DocSafePage() {
         isOpen={showEditModal}
         onClose={closeEditModal}
         document={documentToEdit}
+      />
+
+      {/* File Viewer Modal */}
+      <FileViewer
+        document={documentToView}
+        isOpen={showViewModal}
+        onClose={closeViewModal}
       />
 
       {/* Upgrade Modal */}
