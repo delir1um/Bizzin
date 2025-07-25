@@ -13,7 +13,7 @@ interface BurnoutRiskCardProps {
 export function BurnoutRiskCard({ journalEntries }: BurnoutRiskCardProps) {
   const calculateBurnoutRisk = (): { risk: number, level: 'low' | 'medium' | 'high', factors: string[] } => {
     if (journalEntries.length === 0) {
-      return { risk: 0, level: 'low', factors: [] }
+      return { risk: 0, level: 'low', factors: ['No journal data available'] }
     }
 
     // Get recent entries (last 14 days for burnout assessment)
@@ -22,68 +22,154 @@ export function BurnoutRiskCard({ journalEntries }: BurnoutRiskCardProps) {
       isAfter(new Date(entry.created_at), twoWeeksAgo)
     )
 
+    // Enhanced data sufficiency check
     if (recentEntries.length === 0) {
-      return { risk: 0, level: 'low', factors: ['Insufficient recent data'] }
+      return { risk: 0, level: 'low', factors: ['No recent journal entries'] }
+    }
+    if (recentEntries.length < 3) {
+      return { risk: 0, level: 'low', factors: ['Need more entries for accurate assessment'] }
     }
 
     let riskScore = 0
     const factors: string[] = []
 
-    // 1. Stress/Negative Mood Analysis (40% weight)
-    const stressedEntries = recentEntries.filter(entry => 
-      ['stressed', 'overwhelmed', 'frustrated', 'anxious', 'tired', 'sad', 'conflicted'].includes(
-        entry.sentiment_data?.primary_mood?.toLowerCase() || entry.mood?.toLowerCase() || ''
-      )
+    // Enhanced stress mood categorization with severity weighting
+    const highStressMoods = ['overwhelmed', 'burned out', 'exhausted', 'desperate']
+    const mediumStressMoods = ['stressed', 'frustrated', 'anxious', 'pressured', 'worried']
+    const lowStressMoods = ['tired', 'sad', 'conflicted', 'uncertain', 'disappointed']
+
+    // 1. Enhanced Stress/Negative Mood Analysis (40% weight)
+    let stressScore = 0
+    const highStressEntries = recentEntries.filter(entry => 
+      highStressMoods.includes(entry.sentiment_data?.primary_mood?.toLowerCase() || entry.mood?.toLowerCase() || '')
     )
-    const stressRatio = stressedEntries.length / recentEntries.length
-    const stressScore = stressRatio * 40
+    const mediumStressEntries = recentEntries.filter(entry => 
+      mediumStressMoods.includes(entry.sentiment_data?.primary_mood?.toLowerCase() || entry.mood?.toLowerCase() || '')
+    )
+    const lowStressEntries = recentEntries.filter(entry => 
+      lowStressMoods.includes(entry.sentiment_data?.primary_mood?.toLowerCase() || entry.mood?.toLowerCase() || '')
+    )
+
+    // Weighted stress calculation
+    const highStressRatio = highStressEntries.length / recentEntries.length
+    const mediumStressRatio = mediumStressEntries.length / recentEntries.length
+    const lowStressRatio = lowStressEntries.length / recentEntries.length
+
+    stressScore = (highStressRatio * 40) + (mediumStressRatio * 25) + (lowStressRatio * 15)
     riskScore += stressScore
 
-    if (stressRatio > 0.6) factors.push('High stress patterns')
-    else if (stressRatio > 0.3) factors.push('Moderate stress levels')
+    if (highStressRatio > 0.3) factors.push('Severe stress indicators')
+    else if (mediumStressRatio > 0.5 || highStressRatio > 0.1) factors.push('High stress patterns')
+    else if (mediumStressRatio > 0.25) factors.push('Moderate stress levels')
 
-    // 2. Low Energy Analysis (30% weight)
+    // Check for consecutive stressful days pattern
+    const sortedEntries = recentEntries.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    let consecutiveStressDays = 0
+    let maxConsecutive = 0
+    for (const entry of sortedEntries.slice(0, 7)) { // Check last 7 days
+      const isStressed = [...highStressMoods, ...mediumStressMoods].includes(
+        entry.sentiment_data?.primary_mood?.toLowerCase() || entry.mood?.toLowerCase() || ''
+      )
+      if (isStressed) {
+        consecutiveStressDays++
+        maxConsecutive = Math.max(maxConsecutive, consecutiveStressDays)
+      } else {
+        consecutiveStressDays = 0
+      }
+    }
+    if (maxConsecutive >= 3) {
+      riskScore += 15
+      factors.push('Sustained stress over multiple days')
+    }
+
+    // 2. Enhanced Energy Analysis (30% weight)
     const lowEnergyEntries = recentEntries.filter(entry => 
       entry.sentiment_data?.energy === 'low' || 
-      ['tired', 'exhausted', 'drained'].includes(entry.sentiment_data?.primary_mood?.toLowerCase() || '')
+      ['tired', 'exhausted', 'drained', 'depleted', 'burned out'].includes(entry.sentiment_data?.primary_mood?.toLowerCase() || '')
     )
     const energyRatio = lowEnergyEntries.length / recentEntries.length
-    const energyScore = energyRatio * 30
+    
+    // Time-weighted energy analysis (recent entries weighted more heavily)
+    let energyScore = 0
+    const last3Days = subDays(new Date(), 3)
+    const recentLowEnergy = lowEnergyEntries.filter(entry => isAfter(new Date(entry.created_at), last3Days))
+    const recentEnergyRatio = recentLowEnergy.length / Math.max(1, recentEntries.filter(e => isAfter(new Date(e.created_at), last3Days)).length)
+    
+    energyScore = (energyRatio * 20) + (recentEnergyRatio * 10) // 30% total weight
     riskScore += energyScore
 
-    if (energyRatio > 0.5) factors.push('Consistently low energy')
+    if (recentEnergyRatio > 0.7) factors.push('Critical energy depletion')
+    else if (energyRatio > 0.5) factors.push('Consistently low energy')
     else if (energyRatio > 0.25) factors.push('Some energy concerns')
 
-    // 3. Work-Life Balance Indicators (30% weight)
-    const challengeEntries = recentEntries.filter(entry =>
-      (entry.sentiment_data?.business_category === 'challenge' || entry.category?.toLowerCase() === 'challenge') ||
-      entry.content.toLowerCase().includes('overwhelm') ||
-      entry.content.toLowerCase().includes('work late') ||
-      entry.content.toLowerCase().includes('no time')
-    )
+    // 3. Enhanced Work-Life Balance Analysis (30% weight)
+    const workStressKeywords = [
+      'working late', 'deadline pressure', 'too much work', 'no breaks', 'overwhelm',
+      'constant meetings', 'unrealistic expectations', 'work weekends', 'no time',
+      'pulling all-nighters', 'back-to-back meetings', 'impossible timeline'
+    ]
+    
+    const challengeEntries = recentEntries.filter(entry => {
+      const isChallenge = entry.sentiment_data?.business_category === 'challenge' || entry.category?.toLowerCase() === 'challenge'
+      const hasWorkStress = workStressKeywords.some(keyword => 
+        entry.content.toLowerCase().includes(keyword)
+      )
+      return isChallenge || hasWorkStress
+    })
+    
     const balanceRatio = challengeEntries.length / recentEntries.length
     const balanceScore = balanceRatio * 30
     riskScore += balanceScore
 
-    if (balanceRatio > 0.4) factors.push('Work-life balance concerns')
+    if (balanceRatio > 0.6) factors.push('Severe work-life imbalance')
+    else if (balanceRatio > 0.4) factors.push('Work-life balance concerns')
     else if (balanceRatio > 0.2) factors.push('Some balance challenges')
 
-    // Determine risk level
+    // Recovery indicators check
+    const recoveryKeywords = ['took a break', 'went for walk', 'relaxed', 'vacation', 'rest day', 'self-care']
+    const recoveryEntries = recentEntries.filter(entry =>
+      recoveryKeywords.some(keyword => entry.content.toLowerCase().includes(keyword)) ||
+      ['relaxed', 'refreshed', 'recharged', 'peaceful', 'calm'].includes(
+        entry.sentiment_data?.primary_mood?.toLowerCase() || entry.mood?.toLowerCase() || ''
+      )
+    )
+    
+    if (recoveryEntries.length > 0) {
+      riskScore -= Math.min(10, recoveryEntries.length * 2) // Reduce risk for recovery activities
+    }
+
+    // Ensure score stays within bounds
+    riskScore = Math.max(0, Math.min(100, riskScore))
+
+    // Determine risk level with refined thresholds
     let level: 'low' | 'medium' | 'high'
-    if (riskScore >= 70) level = 'high'
-    else if (riskScore >= 40) level = 'medium'
+    if (riskScore >= 65) level = 'high'
+    else if (riskScore >= 35) level = 'medium'
     else level = 'low'
 
-    // Add positive factors for low risk
+    // Enhanced positive factors for low risk
     if (level === 'low') {
       const positiveEntries = recentEntries.filter(entry =>
-        ['excited', 'confident', 'motivated', 'accomplished', 'inspired'].includes(
+        ['excited', 'confident', 'motivated', 'accomplished', 'inspired', 'energized', 'optimistic'].includes(
           entry.sentiment_data?.primary_mood?.toLowerCase() || entry.mood?.toLowerCase() || ''
         )
       )
-      if (positiveEntries.length > recentEntries.length * 0.5) {
+      if (positiveEntries.length > recentEntries.length * 0.6) {
         factors.push('Strong positive mindset')
+      } else if (positiveEntries.length > recentEntries.length * 0.3) {
+        factors.push('Some balance challenges')
       }
+      
+      if (recoveryEntries.length > 0) {
+        factors.push('Active stress management')
+      }
+    }
+
+    // Ensure we always have at least one factor
+    if (factors.length === 0) {
+      if (level === 'low') factors.push('Healthy stress levels')
+      else if (level === 'medium') factors.push('Moderate stress detected')
+      else factors.push('High stress indicators')
     }
 
     return { risk: Math.round(riskScore), level, factors }
