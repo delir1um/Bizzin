@@ -162,10 +162,7 @@ export function JournalStatsCard({ journalEntries, onNavigate }: JournalStatsCar
           Add Entry
         </Button>
         
-        {/* Info Tooltip */}
-        <div className="absolute bottom-3 left-3" title="Writing streak tracks consecutive days with journal entries. AI analysis shows automatic mood and category detection rate.">
-          <Info className="h-4 w-4 text-gray-400 hover:text-orange-600 cursor-help transition-colors" />
-        </div>
+
       </CardContent>
     </Card>
   )

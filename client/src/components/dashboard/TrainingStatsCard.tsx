@@ -99,10 +99,7 @@ export function TrainingStatsCard({ onNavigate }: TrainingStatsCardProps) {
           Continue Learning
         </Button>
         
-        {/* Info Tooltip */}
-        <div className="absolute bottom-3 left-3" title="Training completion rate based on modules finished. Learning streak tracks consecutive days with training activity.">
-          <Info className="h-4 w-4 text-gray-400 hover:text-purple-600 cursor-help transition-colors" />
-        </div>
+
       </CardContent>
     </Card>
   )

@@ -147,10 +147,7 @@ export function DocSafeStatsCard({ storageStats, onNavigate }: DocSafeStatsCardP
           {stats.total_documents > 0 ? 'Manage Docs' : 'Upload Docs'}
         </Button>
         
-        {/* Info Tooltip */}
-        <div className="absolute bottom-3 left-3" title="Storage usage shows documents uploaded to your secure DocSafe. Free plan includes 50MB storage space.">
-          <Info className="h-4 w-4 text-gray-400 hover:text-emerald-600 cursor-help transition-colors" />
-        </div>
+
       </CardContent>
     </Card>
   )

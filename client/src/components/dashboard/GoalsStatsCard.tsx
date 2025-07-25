@@ -149,10 +149,7 @@ export function GoalsStatsCard({ goals, onNavigate }: GoalsStatsCardProps) {
           Review Goals
         </Button>
         
-        {/* Info Tooltip */}
-        <div className="absolute bottom-3 left-3" title="Average progress across all active goals. Urgent items have deadlines within 7 days.">
-          <Info className="h-4 w-4 text-gray-400 hover:text-blue-600 cursor-help transition-colors" />
-        </div>
+
       </CardContent>
     </Card>
   )
