@@ -81,8 +81,8 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
         title: entry.title || "",
         content: entry.content || "",
         entry_date: entry.entry_date ? format(new Date(entry.entry_date), 'yyyy-MM-dd') : (entry.created_at ? format(new Date(entry.created_at), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')),
-        mood: entry.mood || displayData.mood,
-        category: entry.category || displayData.category,
+        mood: entry.mood || "",
+        category: entry.category || "",
       })
     }
   }, [entry?.id, isOpen, reset]) // Only depend on entry.id and isOpen, not displayData
@@ -244,7 +244,7 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
                       </Badge>
                     </div>
                     <Select 
-                      value={watch("mood") || displayData?.mood || ''} 
+                      value={watch("mood") || ''} 
                       onValueChange={(value) => {
                         setValue("mood", value, { shouldValidate: true, shouldDirty: true })
                       }}
@@ -276,7 +276,7 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
                       </Badge>
                     </div>
                     <Select 
-                      value={watch("category") || displayData?.category || ''} 
+                      value={watch("category") || ''} 
                       onValueChange={(value) => {
                         setValue("category", value, { shouldValidate: true, shouldDirty: true })
                       }}
