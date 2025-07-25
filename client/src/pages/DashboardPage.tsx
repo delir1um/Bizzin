@@ -10,6 +10,10 @@ import { BusinessHealthRadar } from '@/components/dashboard/BusinessHealthRadar'
 import { BurnoutRiskCard } from '@/components/dashboard/BurnoutRiskCard'
 import { GrowthMomentumCard } from '@/components/dashboard/GrowthMomentumCard'
 import { RecoveryResilienceCard } from '@/components/dashboard/RecoveryResilienceCard'
+import { JournalStatsCard } from '@/components/dashboard/JournalStatsCard'
+import { GoalsStatsCard } from '@/components/dashboard/GoalsStatsCard'
+import { TrainingStatsCard } from '@/components/dashboard/TrainingStatsCard'
+import { DocSafeStatsCard } from '@/components/dashboard/DocSafeStatsCard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -252,6 +256,37 @@ export function DashboardPage() {
             <BusinessHealthRadar journalEntries={journalEntries} />
             <GrowthMomentumCard journalEntries={journalEntries} />
             <RecoveryResilienceCard journalEntries={journalEntries} />
+          </div>
+        </div>
+
+        {/* Platform Features Section */}
+        <div className="space-y-6">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+              Platform Features Overview
+            </h2>
+            <p className="text-slate-600 dark:text-slate-300">
+              Quick access to your business tools and progress tracking
+            </p>
+          </div>
+
+          {/* Feature Statistics Cards */}
+          <div className="grid grid-cols-1 xl:grid-cols-4 lg:grid-cols-2 gap-4">
+            <JournalStatsCard 
+              journalEntries={journalEntries} 
+              onNavigate={navigate} 
+            />
+            <GoalsStatsCard 
+              goals={goals} 
+              onNavigate={navigate} 
+            />
+            <TrainingStatsCard 
+              onNavigate={navigate} 
+            />
+            <DocSafeStatsCard 
+              storageStats={storageStats} 
+              onNavigate={navigate} 
+            />
           </div>
         </div>
       </div>
