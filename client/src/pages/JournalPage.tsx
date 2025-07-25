@@ -286,6 +286,14 @@ export function JournalPage() {
     setSelectedEntry(null)
   }
 
+  const handleCollapseAll = () => {
+    setExpandedSections({
+      thisWeek: false,
+      thisMonth: false,
+      thisYear: false
+    })
+  }
+
   // Calculate enhanced statistics
   const calculateStats = () => {
     // Calculate writing streak
@@ -368,7 +376,22 @@ export function JournalPage() {
   // Statistics are now directly rendered in JSX
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div 
+      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+      onClick={(e) => {
+        // Collapse all sections when clicking outside entries
+        const target = e.target as HTMLElement
+        const isEntryCard = target.closest('[data-entry-card]')
+        const isSectionHeader = target.closest('[data-section-header]')
+        const isButton = target.closest('button')
+        const isInput = target.closest('input')
+        const isModal = target.closest('[role="dialog"]')
+        
+        if (!isEntryCard && !isSectionHeader && !isButton && !isInput && !isModal) {
+          handleCollapseAll()
+        }
+      }}
+    >
       {/* Page Header */}
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -523,6 +546,7 @@ export function JournalPage() {
                         <Card 
                           className="hover:shadow-lg transition-all duration-300 cursor-pointer group border border-slate-200 hover:border-orange-300 bg-white hover:bg-orange-50/30"
                           onClick={() => handleViewEntry(entry)}
+                          data-entry-card
                         >
                           <CardHeader className="pb-4">
                             <div className="flex items-start justify-between mb-3">
@@ -616,6 +640,7 @@ export function JournalPage() {
                     variant="ghost"
                     className="flex items-center justify-between w-full p-4 hover:bg-gradient-to-r hover:from-slate-50 hover:to-orange-50 rounded-xl border border-slate-200 hover:border-orange-200 transition-all duration-200"
                     onClick={() => toggleSection('thisWeek')}
+                    data-section-header
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-3 h-3 bg-gradient-to-br from-blue-400 to-blue-500 rounded-full"></div>
@@ -644,6 +669,7 @@ export function JournalPage() {
                             key={entry.id}
                             className="hover:shadow-md transition-all duration-200 cursor-pointer group border border-slate-200 hover:border-blue-300 bg-white hover:bg-blue-50/30"
                             onClick={() => handleViewEntry(entry)}
+                            data-entry-card
                           >
                             <CardContent className="p-4">
                               <div className="flex items-center gap-2 mb-2">
@@ -681,6 +707,7 @@ export function JournalPage() {
                     variant="ghost"
                     className="flex items-center justify-between w-full p-4 hover:bg-gradient-to-r hover:from-slate-50 hover:to-green-50 rounded-xl border border-slate-200 hover:border-green-200 transition-all duration-200"
                     onClick={() => toggleSection('thisMonth')}
+                    data-section-header
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-3 h-3 bg-gradient-to-br from-green-400 to-green-500 rounded-full"></div>
@@ -709,6 +736,7 @@ export function JournalPage() {
                             key={entry.id}
                             className="hover:shadow-sm transition-all duration-200 cursor-pointer group border border-slate-200 hover:border-green-300 bg-white hover:bg-green-50/30"
                             onClick={() => handleViewEntry(entry)}
+                            data-entry-card
                           >
                             <CardContent className="p-3">
                               <div className="flex items-center gap-2 mb-1">
@@ -742,6 +770,7 @@ export function JournalPage() {
                     variant="ghost"
                     className="flex items-center justify-between w-full p-4 hover:bg-gradient-to-r hover:from-slate-50 hover:to-purple-50 rounded-xl border border-slate-200 hover:border-purple-200 transition-all duration-200"
                     onClick={() => toggleSection('thisYear')}
+                    data-section-header
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-3 h-3 bg-gradient-to-br from-purple-400 to-purple-500 rounded-full"></div>
@@ -770,6 +799,7 @@ export function JournalPage() {
                             key={entry.id}
                             className="flex items-center gap-3 p-3 hover:bg-purple-50/50 rounded-lg cursor-pointer group transition-all duration-200 border border-transparent hover:border-purple-200"
                             onClick={() => handleViewEntry(entry)}
+                            data-entry-card
                           >
                             <span className="text-sm" title={entry.mood || entry.sentiment_data?.primary_mood || 'No mood detected'}>
                               {getDisplayMoodEmoji(entry)}
