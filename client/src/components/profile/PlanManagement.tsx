@@ -3,9 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { PaystackUpgrade } from "@/components/plans/PaystackUpgrade"
+import { UpgradeModal } from "@/components/plans/UpgradeModal"
 import { PaystackService } from "@/lib/services/paystack"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { usePlans } from "@/hooks/usePlans"
 import { useAuth } from "@/hooks/AuthProvider"
 import { 
@@ -278,25 +277,10 @@ export function PlanManagement() {
       </Card>
 
       {/* Upgrade Modal */}
-      <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-center">
-              Upgrade Your Business Journey
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="py-4">
-            <PaystackUpgrade />
-          </div>
-          
-          <div className="text-center pt-4 border-t">
-            <Button variant="ghost" onClick={() => setShowUpgradeModal(false)} className="text-slate-600 hover:text-slate-900">
-              I'll upgrade later
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+      />
     </div>
   )
 }

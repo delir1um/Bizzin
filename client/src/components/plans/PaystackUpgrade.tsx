@@ -121,15 +121,7 @@ export function PaystackUpgrade() {
 
   return (
     <div className="space-y-6">
-      {/* Plan Selection */}
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-          Upgrade to Premium
-        </h2>
-        <p className="text-slate-600 dark:text-slate-300">
-          Choose your billing cycle and unlock unlimited access
-        </p>
-      </div>
+
 
       {/* Billing Toggle */}
       <div className="flex flex-col items-center space-y-3">

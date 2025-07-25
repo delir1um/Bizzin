@@ -14,10 +14,10 @@ export function UpgradeModal({ isOpen, onClose, currentPlan = 'free' }: UpgradeM
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-center">
-            Upgrade Your Business Journey
+            Upgrade to Premium
           </DialogTitle>
           <DialogDescription className="text-center">
-            Choose the perfect plan to unlock your business potential
+            Choose your billing cycle and unlock unlimited access
           </DialogDescription>
         </DialogHeader>
 
