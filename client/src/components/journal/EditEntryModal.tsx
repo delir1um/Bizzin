@@ -27,7 +27,7 @@ import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
 import { JournalService } from "@/lib/services/journal"
 import { useAuth } from "@/hooks/AuthProvider"
-import { getEntryDisplayData } from "@/lib/journalDisplayUtils"
+import { getEntryDisplayData, getMoodEmoji } from "@/lib/journalDisplayUtils"
 
 const editEntrySchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
@@ -254,10 +254,14 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
                       </SelectTrigger>
                       <SelectContent className="z-[9999]">
                         {displayData?.mood && (
-                          <SelectItem key={`ai-${displayData?.mood}`} value={displayData?.mood}>✨ Use AI: {displayData?.mood}</SelectItem>
+                          <SelectItem key={`ai-${displayData?.mood}`} value={displayData?.mood}>
+                            ✨ Use AI: {getMoodEmoji(displayData.mood)} {displayData.mood}
+                          </SelectItem>
                         )}
                         {JOURNAL_MOODS.filter(mood => mood !== displayData?.mood).map((mood) => (
-                          <SelectItem key={`manual-${mood}`} value={mood}>{mood}</SelectItem>
+                          <SelectItem key={`manual-${mood}`} value={mood}>
+                            {getMoodEmoji(mood)} {mood}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
