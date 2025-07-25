@@ -502,6 +502,8 @@ export function DocSafePage() {
         document={documentToView}
         isOpen={showViewModal}
         onClose={closeViewModal}
+        onEdit={handleEditDocument}
+        onDelete={handleDeleteDocument}
       />
 
       {/* Upgrade Modal */}

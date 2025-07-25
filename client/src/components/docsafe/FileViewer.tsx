@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Download, ZoomIn, ZoomOut, FileText, Image as ImageIcon, FileSpreadsheet, Presentation, File } from "lucide-react"
+import { Download, FileText, Image as ImageIcon, FileSpreadsheet, Presentation, File, Edit, Trash2, ChevronDown, ChevronUp } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { DocumentService } from "@/lib/services/document"
 import type { Document } from "@/types/document"
@@ -15,14 +15,17 @@ interface FileViewerProps {
   document: Document | null
   isOpen: boolean
   onClose: () => void
+  onEdit?: (document: Document) => void
+  onDelete?: (document: Document) => void
 }
 
-export function FileViewer({ document, isOpen, onClose }: FileViewerProps) {
+export function FileViewer({ document, isOpen, onClose, onEdit, onDelete }: FileViewerProps) {
   const [fileUrl, setFileUrl] = useState<string | null>(null)
   const [fileContent, setFileContent] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [zoom, setZoom] = useState(100)
+  const [showFullDescription, setShowFullDescription] = useState(false)
   const { toast } = useToast()
 
   // Reset state when document changes
@@ -98,8 +101,19 @@ export function FileViewer({ document, isOpen, onClose }: FileViewerProps) {
     }
   }
 
-  const handleZoomIn = () => setZoom(prev => Math.min(prev + 25, 200))
-  const handleZoomOut = () => setZoom(prev => Math.max(prev - 25, 50))
+  const handleEdit = () => {
+    if (document && onEdit) {
+      onEdit(document)
+      onClose()
+    }
+  }
+
+  const handleDelete = () => {
+    if (document && onDelete) {
+      onDelete(document)
+      onClose()
+    }
+  }
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes'
@@ -186,10 +200,10 @@ export function FileViewer({ document, isOpen, onClose }: FileViewerProps) {
               For security, browsers don't allow PDF preview from cloud storage. 
               Click below to open the document in a new tab or download it to your device.
             </p>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <Button 
                 onClick={() => window.open(fileUrl, '_blank')}
-                className="bg-orange-600 hover:bg-orange-700 w-full py-3"
+                className="bg-orange-600 hover:bg-orange-700 w-full py-3 text-base"
               >
                 <FileText className="h-5 w-5 mr-2" />
                 Open in New Tab
@@ -197,7 +211,7 @@ export function FileViewer({ document, isOpen, onClose }: FileViewerProps) {
               <Button 
                 onClick={handleDownload} 
                 variant="outline"
-                className="border-orange-200 text-orange-700 hover:bg-orange-50 w-full"
+                className="border-orange-200 text-orange-700 hover:bg-orange-50 w-full py-3 text-base"
               >
                 <Download className="h-4 w-4 mr-2" />
                 Download to Device
@@ -287,10 +301,71 @@ export function FileViewer({ document, isOpen, onClose }: FileViewerProps) {
                 </div>
               </div>
             </div>
+            
+            {/* Action buttons */}
+            <div className="flex items-center gap-2">
+              {onEdit && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleEdit}
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+              )}
+              {onDelete && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDelete}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              )}
+            </div>
           </div>
           
+          {/* Description with expandable text */}
+          {document.description && (
+            <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+              <div className="text-sm text-slate-600 dark:text-slate-400">
+                {document.description.length > 150 ? (
+                  <div>
+                    <p className="leading-relaxed">
+                      {showFullDescription 
+                        ? document.description 
+                        : `${document.description.substring(0, 150)}...`
+                      }
+                    </p>
+                    <button
+                      onClick={() => setShowFullDescription(!showFullDescription)}
+                      className="text-orange-600 hover:text-orange-700 text-xs font-medium mt-2 flex items-center gap-1"
+                    >
+                      {showFullDescription ? (
+                        <>
+                          <ChevronUp className="h-3 w-3" />
+                          Show less
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="h-3 w-3" />
+                          Read more
+                        </>
+                      )}
+                    </button>
+                  </div>
+                ) : (
+                  <p className="leading-relaxed">{document.description}</p>
+                )}
+              </div>
+            </div>
+          )}
+          
           {/* Document metadata */}
-          <div className="flex items-center gap-2 mt-3">
+          <div className="flex items-center gap-2 mt-4">
             <Badge variant="secondary">{document.category}</Badge>
             {document.tags.map((tag) => (
               <Badge key={tag} variant="outline" className="text-xs">
@@ -298,53 +373,11 @@ export function FileViewer({ document, isOpen, onClose }: FileViewerProps) {
               </Badge>
             ))}
           </div>
-          
-          {document.description && (
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
-              {document.description}
-            </p>
-          )}
         </DialogHeader>
 
         <Separator className="my-4" />
 
-        {/* Viewer controls */}
-        {(document.file_type === 'application/pdf' || 
-          document.file_type.startsWith('image/') || 
-          document.file_type.startsWith('text/')) && (
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleZoomOut}
-                disabled={zoom <= 50}
-              >
-                <ZoomOut className="h-4 w-4" />
-              </Button>
-              <span className="text-sm font-medium px-2">
-                {zoom}%
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleZoomIn}
-                disabled={zoom >= 200}
-              >
-                <ZoomIn className="h-4 w-4" />
-              </Button>
-            </div>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDownload}
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Download
-            </Button>
-          </div>
-        )}
+
 
         {/* File content */}
         <div className="flex-1 min-h-0">
