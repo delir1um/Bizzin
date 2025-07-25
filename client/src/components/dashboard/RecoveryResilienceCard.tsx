@@ -208,7 +208,7 @@ export function RecoveryResilienceCard({ journalEntries }: RecoveryResilienceCar
           Recovery Resilience
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 pb-12">
         {/* Status Badge */}
         <div className="flex justify-center mb-3">
           <Badge variant="outline" className={getLevelColor(level)}>

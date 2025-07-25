@@ -211,7 +211,7 @@ export function BusinessHealthRadar({ journalEntries }: BusinessHealthRadarProps
           Business Health
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 pb-12">
         {/* Status Badge */}
         <div className="flex justify-center mb-3">
           <Badge variant="outline" className={overallBadge.color}>
