@@ -78,6 +78,8 @@ export function CashFlowProjectionTool({ onClose }: CashFlowProjectionToolProps)
     frequency: 'monthly',
     growth: 0
   })
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: boolean}>({})
+  const [showResetDialog, setShowResetDialog] = useState(false)
 
   // Load saved data from localStorage
   useEffect(() => {
@@ -163,7 +165,17 @@ export function CashFlowProjectionTool({ onClose }: CashFlowProjectionToolProps)
   const lowestBalance = Math.min(...projection.map(p => p.runningBalance))
 
   const addItem = () => {
-    if (!newItem.name || !newItem.amount || !newItem.category) return
+    const errors: {[key: string]: boolean} = {}
+    
+    if (!newItem.name?.trim()) errors.name = true
+    if (!newItem.amount || newItem.amount <= 0) errors.amount = true
+    if (!newItem.category) errors.category = true
+    
+    setValidationErrors(errors)
+    
+    if (Object.keys(errors).length > 0) {
+      return
+    }
     
     const item: CashFlowItem = {
       id: Date.now().toString(),
@@ -178,6 +190,7 @@ export function CashFlowProjectionTool({ onClose }: CashFlowProjectionToolProps)
     
     setCashFlowData(prev => ({ ...prev, items: [...prev.items, item] }))
     setNewItem({ name: '', amount: 0, type: 'inflow', category: '', startMonth: 1, frequency: 'monthly', growth: 0 })
+    setValidationErrors({})
   }
 
   const removeItem = (id: string) => {
@@ -365,21 +378,35 @@ export function CashFlowProjectionTool({ onClose }: CashFlowProjectionToolProps)
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label>Item Name</Label>
+                        <Label className={validationErrors.name ? 'text-red-600' : ''}>Item Name *</Label>
                         <Input
                           value={newItem.name}
-                          onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
+                          onChange={(e) => {
+                            setNewItem(prev => ({ ...prev, name: e.target.value }))
+                            if (validationErrors.name) {
+                              setValidationErrors(prev => ({ ...prev, name: false }))
+                            }
+                          }}
                           placeholder="e.g., Monthly Sales"
+                          className={validationErrors.name ? 'border-red-500 focus:border-red-500' : ''}
                         />
+                        {validationErrors.name && <p className="text-sm text-red-600 mt-1">Item name is required</p>}
                       </div>
                       <div>
-                        <Label>Amount</Label>
+                        <Label className={validationErrors.amount ? 'text-red-600' : ''}>Amount *</Label>
                         <Input
                           type="number"
                           value={newItem.amount}
-                          onChange={(e) => setNewItem(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
+                          onChange={(e) => {
+                            setNewItem(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))
+                            if (validationErrors.amount) {
+                              setValidationErrors(prev => ({ ...prev, amount: false }))
+                            }
+                          }}
                           placeholder="0.00"
+                          className={validationErrors.amount ? 'border-red-500 focus:border-red-500' : ''}
                         />
+                        {validationErrors.amount && <p className="text-sm text-red-600 mt-1">Amount must be greater than 0</p>}
                       </div>
                       <div>
                         <Label>Type</Label>
@@ -394,9 +421,14 @@ export function CashFlowProjectionTool({ onClose }: CashFlowProjectionToolProps)
                         </Select>
                       </div>
                       <div>
-                        <Label>Category</Label>
-                        <Select value={newItem.category} onValueChange={(value) => setNewItem(prev => ({ ...prev, category: value }))}>
-                          <SelectTrigger>
+                        <Label className={validationErrors.category ? 'text-red-600' : ''}>Category *</Label>
+                        <Select value={newItem.category} onValueChange={(value) => {
+                          setNewItem(prev => ({ ...prev, category: value }))
+                          if (validationErrors.category) {
+                            setValidationErrors(prev => ({ ...prev, category: false }))
+                          }
+                        }}>
+                          <SelectTrigger className={validationErrors.category ? 'border-red-500 focus:border-red-500' : ''}>
                             <SelectValue placeholder="Select category" />
                           </SelectTrigger>
                           <SelectContent>
@@ -405,6 +437,7 @@ export function CashFlowProjectionTool({ onClose }: CashFlowProjectionToolProps)
                             ))}
                           </SelectContent>
                         </Select>
+                        {validationErrors.category && <p className="text-sm text-red-600 mt-1">Please select a category</p>}
                       </div>
                       <div>
                         <Label>Start Month</Label>
