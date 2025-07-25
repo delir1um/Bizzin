@@ -240,7 +240,7 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
                     <div className="flex items-center justify-between">
                       <label className="text-sm font-medium text-slate-700">Mood</label>
                       <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
-                        AI: {displayData?.mood}
+                        AI: {entry?.sentiment_data?.primary_mood || 'None'}
                       </Badge>
                     </div>
                     <Select 
@@ -253,12 +253,12 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
                         <SelectValue placeholder="Select mood..." />
                       </SelectTrigger>
                       <SelectContent className="z-[9999]">
-                        {displayData?.mood && (
-                          <SelectItem key={`ai-${displayData?.mood}`} value={displayData?.mood}>
-                            ✨ Use AI: {getMoodEmoji(displayData.mood)} {displayData.mood}
+                        {entry?.sentiment_data?.primary_mood && (
+                          <SelectItem key={`ai-${entry.sentiment_data.primary_mood}`} value={entry.sentiment_data.primary_mood}>
+                            ✨ Use AI: {getMoodEmoji(entry.sentiment_data.primary_mood)} {entry.sentiment_data.primary_mood}
                           </SelectItem>
                         )}
-                        {JOURNAL_MOODS.filter(mood => mood !== displayData?.mood).map((mood) => (
+                        {JOURNAL_MOODS.filter(mood => mood !== entry?.sentiment_data?.primary_mood).map((mood) => (
                           <SelectItem key={`manual-${mood}`} value={mood}>
                             {getMoodEmoji(mood)} {mood}
                           </SelectItem>
@@ -272,7 +272,7 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
                     <div className="flex items-center justify-between">
                       <label className="text-sm font-medium text-slate-700">Category</label>
                       <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
-                        AI: {displayData?.category}
+                        AI: {entry?.sentiment_data?.business_category || 'None'}
                       </Badge>
                     </div>
                     <Select 
@@ -285,10 +285,12 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
                         <SelectValue placeholder="Select category..." />
                       </SelectTrigger>
                       <SelectContent className="z-[9999]">
-                        {displayData?.category && (
-                          <SelectItem key={`ai-${displayData?.category}`} value={displayData?.category}>✨ Use AI: {displayData?.category}</SelectItem>
+                        {entry?.sentiment_data?.business_category && (
+                          <SelectItem key={`ai-${entry.sentiment_data.business_category}`} value={entry.sentiment_data.business_category}>
+                            ✨ Use AI: {entry.sentiment_data.business_category}
+                          </SelectItem>
                         )}
-                        {JOURNAL_CATEGORIES.filter(category => category !== displayData?.category).map((category) => (
+                        {JOURNAL_CATEGORIES.filter(category => category !== entry?.sentiment_data?.business_category).map((category) => (
                           <SelectItem key={`manual-${category}`} value={category}>{category}</SelectItem>
                         ))}
                       </SelectContent>
