@@ -63,6 +63,16 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
         .single()
 
       if (error) throw error
+      
+      // Update usage tracking after successful journal entry creation
+      try {
+        const { PlansService } = await import('@/lib/services/plans')
+        await PlansService.incrementUsage(user.id, 'journal')
+      } catch (usageError) {
+        console.warn('Failed to update usage tracking:', usageError)
+        // Don't fail the entry creation if usage tracking fails
+      }
+      
       return data
     },
     onSuccess: () => {

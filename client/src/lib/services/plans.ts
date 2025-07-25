@@ -219,7 +219,11 @@ export class PlansService {
         can_use_calculator: (calculatorId: string) => {
           const dailyUses = currentUsage.calculator_uses?.[calculatorId] || 0
           return dailyUses < planLimits.daily_calculator_uses
-        }
+        },
+        // Add percentage calculations
+        storage_percentage: Math.min(100, (currentUsage.storage_used / planLimits.storage_limit) * 100),
+        documents_percentage: Math.min(100, (currentUsage.documents_uploaded / planLimits.monthly_documents) * 100),
+        journal_percentage: Math.min(100, (currentUsage.journal_entries_created / planLimits.monthly_journal_entries) * 100)
       }
 
       return usageStatus

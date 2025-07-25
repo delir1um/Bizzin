@@ -142,40 +142,7 @@ export function JournalPage() {
 
   const organizedEntries = organizeEntriesByTime(filteredEntries)
 
-  // Simple monthly entry counter for immediate implementation
-  const getCurrentMonthEntryCount = () => {
-    const now = new Date()
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-    
-    return entries.filter(entry => {
-      const entryDate = new Date(entry.created_at || entry.entry_date || '')
-      return entryDate >= startOfMonth && entryDate <= endOfMonth
-    }).length
-  }
-  
-  const monthlyEntryCount = getCurrentMonthEntryCount()
-  const FREE_PLAN_LIMIT = 10
-  
-  // Override plan functions with simple logic until database is set up
-  const canCreateEntrySimple = () => {
-    // If we have plan data, use it; otherwise use simple count
-    if (usageStatus) return canCreateJournalEntry
-    // Simple fallback: assume free plan if no plan data
-    return monthlyEntryCount < FREE_PLAN_LIMIT
-  }
-  
-  const isApproachingLimitSimple = () => {
-    if (usageStatus) return isApproachingLimit()
-    // Simple fallback: 80% of 10 = 8 entries
-    return monthlyEntryCount >= 8
-  }
-  
-  const isFreeSimple = () => {
-    if (usageStatus) return isFree
-    // Assume free plan if no plan data
-    return true
-  }
+  // Use proper plan system data
 
   const toggleSection = (section: 'thisWeek' | 'thisMonth' | 'thisYear' | string) => {
     setExpandedSections(prev => {
@@ -241,7 +208,7 @@ export function JournalPage() {
 
   // Check if user can create new entries
   const canCreateEntry = () => {
-    return canCreateEntrySimple()
+    return canCreateJournalEntry
   }
 
   // Handle create entry with limits check
@@ -255,7 +222,10 @@ export function JournalPage() {
 
   // Check if user is approaching limits (80% usage)
   const isApproachingLimit = () => {
-    return isApproachingLimitSimple()
+    if (!usageStatus || isPremium) return false
+    const used = usageStatus.current_usage.journal_entries_created
+    const limit = usageStatus.plan_limits.monthly_journal_entries
+    return (used / limit) >= 0.8
   }
 
   const handleDeleteEntry = async (entry: JournalEntry) => {
@@ -440,7 +410,7 @@ export function JournalPage() {
       </div>
 
       {/* Usage Warning Banner */}
-      {isApproachingLimitSimple() && (
+      {isApproachingLimit() && (
         <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-yellow-100 rounded-full">
@@ -451,7 +421,9 @@ export function JournalPage() {
                 You're approaching your monthly limit
               </h3>
               <p className="text-sm text-yellow-700">
-                {monthlyEntryCount} of {FREE_PLAN_LIMIT} entries used this month. 
+                {usageStatus && 
+                  `${usageStatus.current_usage.journal_entries_created} of ${usageStatus.plan_limits.monthly_journal_entries} entries used this month. `
+                }
                 Upgrade to Premium for unlimited entries.
               </p>
             </div>
@@ -467,7 +439,7 @@ export function JournalPage() {
       )}
 
       {/* Usage Stats for Free Users */}
-      {isFreeSimple() && (
+      {isFree && usageStatus && (
         <div className="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -477,19 +449,19 @@ export function JournalPage() {
               <div>
                 <h3 className="font-medium text-slate-800">Monthly Journal Entries</h3>
                 <p className="text-sm text-slate-600">
-                  {monthlyEntryCount} of {FREE_PLAN_LIMIT} entries used
+                  {usageStatus.current_usage.journal_entries_created} of {usageStatus.plan_limits.monthly_journal_entries} entries used
                 </p>
               </div>
             </div>
             <div className="text-right">
               <div className="text-sm font-medium text-slate-700">
-                {FREE_PLAN_LIMIT - monthlyEntryCount} remaining
+                {usageStatus.plan_limits.monthly_journal_entries - usageStatus.current_usage.journal_entries_created} remaining
               </div>
               <div className="w-32 bg-slate-200 rounded-full h-2 mt-1">
                 <div 
                   className="bg-orange-500 h-2 rounded-full transition-all duration-300"
                   style={{ 
-                    width: `${Math.min(100, (monthlyEntryCount / FREE_PLAN_LIMIT) * 100)}%` 
+                    width: `${Math.min(100, (usageStatus.current_usage.journal_entries_created / usageStatus.plan_limits.monthly_journal_entries) * 100)}%` 
                   }}
                 />
               </div>
