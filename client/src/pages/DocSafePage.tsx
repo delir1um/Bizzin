@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-import { Upload, FileText, Download, Share2, Lock, Folder, Search, Filter, Trash2, Eye, Edit } from "lucide-react"
+import { Upload, FileText, Download, Share2, Lock, Folder, Search, Filter, Trash2, Eye, Edit, FileSpreadsheet, Image as ImageIcon, Presentation, File } from "lucide-react"
 import { DocumentService } from "@/lib/services/document"
 import { supabase } from "@/lib/supabase"
 import type { Document } from "@/types/document"
@@ -381,84 +381,125 @@ export function DocSafePage() {
             </CardContent>
           </Card>
         ) : (
-          <AnimatedGrid className="space-y-4" stagger={0.1}>
-            {displayDocs.map((doc, index) => (
-              <AnimatedItem key={doc.id}>
-                <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
-                        <span className="text-lg">{doc.file_type.includes('pdf') ? '📄' : doc.file_type.includes('word') ? '📝' : doc.file_type.includes('excel') ? '📊' : doc.file_type.includes('image') ? '🖼️' : '📁'}</span>
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-slate-900 dark:text-white">{doc.name}</h3>
-                        <p className="text-sm text-slate-600 dark:text-slate-400">
-                          {format(new Date(doc.created_at), 'MMM d, yyyy')} • {DocumentService.formatFileSize(doc.file_size)} • {doc.category}
-                        </p>
-                        {doc.description && (
-                          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{doc.description}</p>
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+            {/* Header row */}
+            <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-slate-50 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600 text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">
+              <div className="col-span-6">Name</div>
+              <div className="col-span-2">Size</div>
+              <div className="col-span-2">Modified</div>
+              <div className="col-span-2">Category</div>
+            </div>
+            
+            {/* Document rows */}
+            <AnimatedGrid stagger={0.05}>
+              {displayDocs.map((doc, index) => (
+                <AnimatedItem key={doc.id}>
+                  <div className="group grid grid-cols-12 gap-4 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 border-b border-slate-100 dark:border-slate-700 last:border-b-0 cursor-pointer transition-colors"
+                       onClick={() => handleViewDocument(doc)}>
+                    {/* Name column */}
+                    <div className="col-span-6 flex items-center gap-3 min-w-0">
+                      <div className="flex-shrink-0">
+                        {doc.file_type.includes('pdf') ? (
+                          <FileText className="w-5 h-5 text-red-500" />
+                        ) : doc.file_type.includes('word') ? (
+                          <FileText className="w-5 h-5 text-blue-500" />
+                        ) : doc.file_type.includes('excel') || doc.file_type.includes('sheet') ? (
+                          <FileSpreadsheet className="w-5 h-5 text-green-500" />
+                        ) : doc.file_type.includes('image') ? (
+                          <ImageIcon className="w-5 h-5 text-purple-500" />
+                        ) : doc.file_type.includes('presentation') || doc.file_type.includes('powerpoint') ? (
+                          <Presentation className="w-5 h-5 text-orange-500" />
+                        ) : (
+                          <File className="w-5 h-5 text-slate-400" />
                         )}
-                        {doc.tags && doc.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {doc.tags.map((tag, index) => (
-                              <Badge key={index} variant="secondary" className="text-xs">
-                                {tag}
-                              </Badge>
-                            ))}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-slate-900 dark:text-white truncate">
+                          {doc.name}
+                        </div>
+                        {doc.description && (
+                          <div className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                            {doc.description}
                           </div>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge variant="secondary" className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
-                        <Lock className="w-3 h-3 mr-1" />
-                        Private
+                    
+                    {/* Size column */}
+                    <div className="col-span-2 flex items-center text-sm text-slate-600 dark:text-slate-400">
+                      {DocumentService.formatFileSize(doc.file_size)}
+                    </div>
+                    
+                    {/* Modified column */}
+                    <div className="col-span-2 flex items-center text-sm text-slate-600 dark:text-slate-400">
+                      {format(new Date(doc.created_at), 'MMM d, yyyy')}
+                    </div>
+                    
+                    {/* Category column */}
+                    <div className="col-span-2 flex items-center justify-between">
+                      <Badge variant="secondary" className="text-xs">
+                        {doc.category}
                       </Badge>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => handleViewDocument(doc)}
-                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                        title="View document"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => handleEditDocument(doc)}
-                        className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-                        title="Edit document"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => downloadMutation.mutate(doc)}
-                        disabled={downloadMutation.isPending}
-                        title="Download document"
-                      >
-                        <Download className="w-4 h-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => handleDeleteDocument(doc)}
-                        disabled={deleteDocMutation.isPending}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        title="Delete document"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      
+                      {/* Action buttons - appear on hover */}
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleViewDocument(doc)
+                          }}
+                          className="h-8 w-8 p-0 text-slate-500 hover:text-blue-600 hover:bg-blue-50"
+                          title="View document"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleEditDocument(doc)
+                          }}
+                          className="h-8 w-8 p-0 text-slate-500 hover:text-orange-600 hover:bg-orange-50"
+                          title="Edit document"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            downloadMutation.mutate(doc)
+                          }}
+                          disabled={downloadMutation.isPending}
+                          className="h-8 w-8 p-0 text-slate-500 hover:text-slate-700 hover:bg-slate-100"
+                          title="Download document"
+                        >
+                          <Download className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDeleteDocument(doc)
+                          }}
+                          disabled={deleteDocMutation.isPending}
+                          className="h-8 w-8 p-0 text-slate-500 hover:text-red-600 hover:bg-red-50"
+                          title="Delete document"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-              </AnimatedItem>
-            ))}
-          </AnimatedGrid>
+                </AnimatedItem>
+              ))}
+            </AnimatedGrid>
+          </div>
         )}
       </div>
 
