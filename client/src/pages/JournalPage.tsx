@@ -238,6 +238,7 @@ export function JournalPage() {
       // Close modals and refresh data
       handleCloseModals()
       queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
+      queryClient.invalidateQueries({ queryKey: ['usage-status', user.id] }) // Refresh usage stats
       
       toast({
         title: "Entry deleted",

@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { queryClient } from "@/lib/queryClient"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -75,7 +76,13 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
       
       return data
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      // Invalidate usage stats to update the plan banner
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user?.id) {
+        queryClient.invalidateQueries({ queryKey: ['usage-status', user.id] })
+      }
+      
       toast({
         title: "Entry created successfully",
         description: "Your business insights have been captured and analyzed by AI",
