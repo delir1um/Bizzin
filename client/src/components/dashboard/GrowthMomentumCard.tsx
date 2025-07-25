@@ -276,8 +276,9 @@ export function GrowthMomentumCard({ journalEntries }: GrowthMomentumCardProps) 
         {/* Current Score Display */}
         <div className="text-center h-[60px] flex flex-col justify-center">
           <div className={`text-3xl font-bold mb-1 ${
-            currentScore >= 75 ? 'text-green-600' :
-            currentScore >= 50 ? 'text-yellow-600' : 'text-red-600'
+            currentScore >= 80 ? 'text-green-600' :
+            currentScore >= 60 ? 'text-blue-600' :
+            currentScore >= 40 ? 'text-yellow-600' : 'text-red-600'
           }`}>
             {currentScore}
           </div>
@@ -294,8 +295,9 @@ export function GrowthMomentumCard({ journalEntries }: GrowthMomentumCardProps) 
             {/* Progress indicator */}
             <div 
               className={`absolute top-0 h-full rounded-full transition-all duration-500 ${
-                currentScore >= 75 ? 'bg-green-500' :
-                currentScore >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+                currentScore >= 80 ? 'bg-green-500' :
+                currentScore >= 60 ? 'bg-blue-500' :
+                currentScore >= 40 ? 'bg-yellow-500' : 'bg-red-500'
               }`}
               style={{ width: `${Math.min(currentScore, 100)}%` }}
             />

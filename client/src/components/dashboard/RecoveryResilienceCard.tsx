@@ -316,7 +316,8 @@ export function RecoveryResilienceCard({ journalEntries }: RecoveryResilienceCar
         <div className="text-center h-[60px] flex flex-col justify-center">
           <div className={`text-3xl font-bold mb-1 ${
             resilienceScore >= 75 ? 'text-green-600' :
-            resilienceScore >= 50 ? 'text-yellow-600' : 'text-red-600'
+            resilienceScore >= 55 ? 'text-blue-600' :
+            resilienceScore >= 35 ? 'text-yellow-600' : 'text-red-600'
           }`}>
             {resilienceScore}
           </div>
@@ -334,7 +335,8 @@ export function RecoveryResilienceCard({ journalEntries }: RecoveryResilienceCar
             <div 
               className={`absolute top-0 h-full rounded-full transition-all duration-500 ${
                 resilienceScore >= 75 ? 'bg-green-500' :
-                resilienceScore >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+                resilienceScore >= 55 ? 'bg-blue-500' :
+                resilienceScore >= 35 ? 'bg-yellow-500' : 'bg-red-500'
               }`}
               style={{ width: `${Math.min(resilienceScore, 100)}%` }}
             />

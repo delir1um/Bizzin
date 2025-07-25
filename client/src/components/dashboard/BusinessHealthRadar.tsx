@@ -311,10 +311,7 @@ export function BusinessHealthRadar({ journalEntries }: BusinessHealthRadarProps
         
         {/* Overall Score */}
         <div className="text-center h-[60px] flex flex-col justify-center">
-          <div className={`text-3xl font-bold mb-1 ${
-            metrics.overallHealth >= 75 ? 'text-green-600' :
-            metrics.overallHealth >= 50 ? 'text-yellow-600' : 'text-red-600'
-          }`}>
+          <div className={`text-3xl font-bold mb-1 ${getHealthColor(metrics.overallHealth)}`}>
             {metrics.overallHealth}
           </div>
           <div className="text-sm text-slate-600">Overall Score</div>
@@ -330,7 +327,8 @@ export function BusinessHealthRadar({ journalEntries }: BusinessHealthRadarProps
             {/* Progress indicator */}
             <div 
               className={`absolute top-0 h-full rounded-full transition-all duration-500 ${
-                metrics.overallHealth >= 75 ? 'bg-green-500' :
+                metrics.overallHealth >= 80 ? 'bg-green-500' :
+                metrics.overallHealth >= 65 ? 'bg-blue-500' :
                 metrics.overallHealth >= 50 ? 'bg-yellow-500' : 'bg-red-500'
               }`}
               style={{ width: `${Math.min(metrics.overallHealth, 100)}%` }}

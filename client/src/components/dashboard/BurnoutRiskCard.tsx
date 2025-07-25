@@ -222,10 +222,7 @@ export function BurnoutRiskCard({ journalEntries }: BurnoutRiskCardProps) {
         
         {/* Current Risk Level Display */}
         <div className="text-center h-[60px] flex flex-col justify-center">
-          <div className={`text-3xl font-bold mb-1 ${
-            risk <= 40 ? 'text-green-600' :
-            risk <= 70 ? 'text-yellow-600' : 'text-red-600'
-          }`}>
+          <div className={`text-3xl font-bold mb-1 ${getRiskColor(level)}`}>
             {risk}%
           </div>
           <div className="text-sm text-slate-600">Risk Level</div>
