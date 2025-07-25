@@ -206,23 +206,20 @@ export function GrowthMomentumCard({ journalEntries }: GrowthMomentumCardProps) 
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Current Score & Trend */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-3xl font-bold text-slate-900">{currentScore}</div>
-            <div className="text-sm text-slate-600">Current Score</div>
-          </div>
-          <div className="text-right">
-            <div className={`flex items-center gap-1 ${getTrendColor()}`}>
-              {getTrendIcon()}
-              <span className="font-semibold">
-                {trend === 'neutral' ? 'Stable' : `${Math.abs(trendValue)}pts`}
-              </span>
-            </div>
-            <div className="text-sm text-slate-600">
-              {trend === 'up' ? 'Trending up' : trend === 'down' ? 'Trending down' : 'Stable trend'}
-            </div>
-          </div>
+        {/* Current Score Display */}
+        <div className="text-center mb-4">
+          <div className="text-3xl font-bold text-slate-900">{currentScore}</div>
+          <div className="text-sm text-slate-600">Current Score</div>
+        </div>
+
+        {/* Trend Indicator */}
+        <div className={`flex items-center justify-center gap-2 mb-4 p-2 rounded-lg bg-slate-50`}>
+          {getTrendIcon()}
+          <span className={`font-semibold ${getTrendColor()}`}>
+            {trend === 'neutral' ? 'Stable trend' : 
+             trend === 'up' ? `Trending up ${Math.abs(trendValue)}pts` : 
+             `Trending down ${Math.abs(trendValue)}pts`}
+          </span>
         </div>
 
         {/* Line Chart */}

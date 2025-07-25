@@ -231,7 +231,7 @@ export function BusinessHealthRadar({ journalEntries }: BusinessHealthRadarProps
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Overall Score */}
-        <div className="text-center">
+        <div className="text-center mb-4">
           <div className={`text-3xl font-bold ${getHealthColor(metrics.overallHealth)} mb-1`}>
             {metrics.overallHealth}
           </div>

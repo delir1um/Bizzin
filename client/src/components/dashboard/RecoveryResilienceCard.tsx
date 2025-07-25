@@ -229,32 +229,34 @@ export function RecoveryResilienceCard({ journalEntries }: RecoveryResilienceCar
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Main Metrics */}
-        <div className="grid grid-cols-2 gap-4">
+        {/* Primary Metric Display */}
+        <div className="text-center mb-4">
+          <div className="text-3xl font-bold text-slate-900">
+            {averageRecoveryTime > 0 ? formatRecoveryTime(averageRecoveryTime) : 'N/A'}
+          </div>
+          <div className="text-sm text-slate-600">Avg Recovery Time</div>
+        </div>
+
+        {/* Secondary Metrics Row */}
+        <div className="flex items-center justify-between mb-4 p-3 bg-slate-50 rounded-lg">
           <div className="text-center">
-            <div className="text-2xl font-bold text-slate-900">
-              {averageRecoveryTime > 0 ? formatRecoveryTime(averageRecoveryTime) : 'N/A'}
-            </div>
-            <div className="text-sm text-slate-600">Avg Recovery Time</div>
+            <div className="text-xl font-bold text-slate-900">{resilienceScore}</div>
+            <div className="text-xs text-slate-600">Resilience Score</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-slate-900">{resilienceScore}</div>
-            <div className="text-sm text-slate-600">Resilience Score</div>
+            <div className={`flex items-center gap-1 ${getTrendColor()}`}>
+              {getTrendIcon()}
+              <span className="font-semibold text-sm">
+                {trend === 'neutral' ? 'Stable' : 
+                 trend === 'up' ? `${trendValue}% Faster` : 
+                 `${Math.abs(trendValue)}% Slower`}
+              </span>
+            </div>
+            <div className="text-xs text-slate-600">Recovery Trend</div>
           </div>
         </div>
 
-        {/* Trend Indicator */}
-        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-          <span className="text-sm font-medium text-slate-700">Recovery Trend</span>
-          <div className={`flex items-center gap-1 ${getTrendColor()}`}>
-            {getTrendIcon()}
-            <span className="font-semibold">
-              {trend === 'neutral' ? 'Stable' : 
-               trend === 'up' ? `${trendValue}% Faster` : 
-               `${Math.abs(trendValue)}% Slower`}
-            </span>
-          </div>
-        </div>
+
 
         {/* Recovery Periods */}
         {recoveryPeriods.length > 0 && (

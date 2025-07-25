@@ -146,23 +146,32 @@ export function BurnoutRiskCard({ journalEntries }: BurnoutRiskCardProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Progress Bar */}
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-600">Risk Level</span>
-            <span className={`font-semibold ${getRiskColor(level)}`}>{risk}%</span>
+        {/* Current Risk Level Display */}
+        <div className="text-center mb-4">
+          <div className={`text-3xl font-bold ${getRiskColor(level)} mb-1`}>
+            {risk}%
           </div>
-          <div className="w-full bg-slate-200 rounded-full h-3">
+          <div className="text-sm text-slate-600">Risk Level</div>
+        </div>
+
+        {/* Progress Bar with Zones */}
+        <div className="space-y-2">
+          <div className="relative w-full bg-slate-200 rounded-full h-4">
+            {/* Zone backgrounds */}
+            <div className="absolute left-0 w-2/5 h-full bg-green-100 rounded-l-full"></div>
+            <div className="absolute left-2/5 w-1/3 h-full bg-yellow-100"></div>
+            <div className="absolute right-0 w-3/10 h-full bg-red-100 rounded-r-full"></div>
+            {/* Progress indicator */}
             <div 
-              className={`h-3 rounded-full transition-all duration-500 ${getProgressColor(level)}`}
+              className={`absolute top-0 h-full rounded-full transition-all duration-500 ${getProgressColor(level)}`}
               style={{ width: `${Math.min(risk, 100)}%` }}
             />
           </div>
-          {/* Zone indicators */}
-          <div className="flex justify-between text-xs text-slate-500 mt-1">
-            <span>0% Safe</span>
-            <span>40% Caution</span>
-            <span>70% High Risk</span>
+          {/* Zone labels */}
+          <div className="flex justify-between text-xs text-slate-500">
+            <span>Safe</span>
+            <span>Caution</span>
+            <span>High Risk</span>
           </div>
         </div>
 
