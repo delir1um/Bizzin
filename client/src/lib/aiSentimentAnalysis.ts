@@ -159,6 +159,15 @@ function performEnhancedLocalAnalysis(text: string): BusinessSentiment {
     primaryMood = 'Determined';
     energy = 'medium';
     confidence = 85;
+  } else if (lowerText.includes('stressed') || lowerText.includes('overwhelmed') || lowerText.includes('pressure') || 
+             lowerText.includes('anxious') || lowerText.includes('worried') || lowerText.includes('tense') ||
+             (lowerText.includes('cash flow') && lowerText.includes('tight')) ||
+             (lowerText.includes('lying awake') && lowerText.includes('night')) ||
+             (lowerText.includes('emotionally draining')) ||
+             (lowerText.includes('running numbers') && lowerText.includes('head'))) {
+    primaryMood = 'Stressed';
+    energy = 'low';
+    confidence = 92;
   } else if (lowerText.includes('excited') || lowerText.includes('cant wait') || lowerText.includes('looking forward') || lowerText.includes('next big') || lowerText.includes('incredible week') || lowerText.includes('beyond excited') || lowerText.includes('amazing')) {
     primaryMood = 'Excited';
     energy = 'high';
@@ -653,12 +662,27 @@ export async function analyzeBusinessSentimentAI(content: string, title?: string
       if (trainingMatch) {
         console.log('Training validation match found:', trainingMatch.expected_category);
         
-        // If training data has a different category and higher confidence, use it
+        // Apply all training data corrections, not just category
         if (trainingMatch.expected_category.toLowerCase() !== aiResult.business_category.toLowerCase()) {
           console.log(`Correcting category from ${aiResult.business_category} to ${trainingMatch.expected_category} based on training data`);
           aiResult.business_category = trainingMatch.expected_category.toLowerCase() as any;
-          aiResult.confidence = Math.max(aiResult.confidence, trainingMatch.confidence_range[0]);
         }
+        
+        // Correct mood if training data suggests different mood
+        if (trainingMatch.expected_mood && trainingMatch.expected_mood !== aiResult.primary_mood) {
+          console.log(`Correcting mood from ${aiResult.primary_mood} to ${trainingMatch.expected_mood} based on training data`);
+          aiResult.primary_mood = trainingMatch.expected_mood;
+          aiResult.mood = trainingMatch.expected_mood; // Legacy compatibility
+        }
+        
+        // Correct energy if training data suggests different energy
+        if (trainingMatch.expected_energy && trainingMatch.expected_energy !== aiResult.energy) {
+          console.log(`Correcting energy from ${aiResult.energy} to ${trainingMatch.expected_energy} based on training data`);
+          aiResult.energy = trainingMatch.expected_energy as 'low' | 'medium' | 'high';
+        }
+        
+        // Use training data confidence range
+        aiResult.confidence = Math.max(aiResult.confidence, trainingMatch.confidence_range[0]);
       }
       
       // Generate title for AI result if missing
