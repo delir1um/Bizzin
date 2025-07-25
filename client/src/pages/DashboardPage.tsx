@@ -247,15 +247,6 @@ export function DashboardPage() {
 
         {/* Platform Features Section */}
         <div className="space-y-6">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-              Platform Features Overview
-            </h2>
-            <p className="text-slate-600 dark:text-slate-300">
-              Quick access to your business tools and progress tracking
-            </p>
-          </div>
-
           {/* Feature Statistics Cards */}
           <div className="grid grid-cols-1 xl:grid-cols-4 lg:grid-cols-2 gap-4">
             <JournalStatsCard 
