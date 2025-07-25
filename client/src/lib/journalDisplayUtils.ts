@@ -91,15 +91,17 @@ export function mapBusinessCategoryToJournal(businessCategory: string): string {
 }
 
 export function getDisplayMood(entry: JournalEntry): string {
-  return entry.sentiment_data?.primary_mood 
+  // Prioritize manual user edits over AI sentiment data
+  return entry.mood || (entry.sentiment_data?.primary_mood 
     ? mapAIMoodToJournal(entry.sentiment_data.primary_mood) 
-    : entry.mood || ''
+    : '')
 }
 
 export function getDisplayCategory(entry: JournalEntry): string {
-  return entry.sentiment_data?.business_category 
+  // Prioritize manual user edits over AI sentiment data
+  return entry.category || (entry.sentiment_data?.business_category 
     ? mapBusinessCategoryToJournal(entry.sentiment_data.business_category) 
-    : entry.category || ''
+    : '')
 }
 
 export function getDisplayEnergy(entry: JournalEntry): string {
