@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { PaystackUpgrade } from "@/components/plans/PaystackUpgrade"
+import { PaystackService } from "@/lib/services/paystack"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { usePlans } from "@/hooks/usePlans"
 import { useAuth } from "@/hooks/AuthProvider"
@@ -42,6 +43,10 @@ export function PlanManagement() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const { user } = useAuth()
   const { usageStatus, isPremium, isFree, isLoading, refetch } = usePlans()
+  
+  // Get ZAR pricing for display
+  const monthlyPrice = PaystackService.getSubscriptionPrice('monthly')
+  const formattedMonthlyPrice = PaystackService.formatAmount(monthlyPrice)
 
 
 
@@ -265,7 +270,7 @@ export function PlanManagement() {
                 onClick={() => setShowUpgradeModal(true)}
                 className="w-full bg-orange-600 hover:bg-orange-700 text-white"
               >
-                Upgrade to Premium
+                Upgrade to Premium - {formattedMonthlyPrice}/month
               </Button>
             </div>
           )}
