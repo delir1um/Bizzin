@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/AuthProvider'
 import { GoalsService } from '@/lib/services/goals'
 import { Goal } from '@/types/goals'
 import { JournalService } from '@/lib/services/journal'
-import { InspirationalQuotes } from '@/lib/inspirationalQuotes'
+import { BusinessQuoteService } from '@/data/businessQuotes'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -14,7 +14,7 @@ import { AnimatedGrid, AnimatedItem } from '@/components/ui/animated-card'
 import { ConfettiCelebration, CelebrationToast } from '@/components/ConfettiCelebration'
 import {
   Target, TrendingUp, Clock, AlertTriangle, File, Flame, 
-  Brain, Plus, ArrowRight, PlayCircle, BarChart3, Notebook
+  Brain, Plus, ArrowRight, PlayCircle, BarChart3, Notebook, Quote
 } from 'lucide-react'
 import { isToday, format, subDays, differenceInDays } from 'date-fns'
 
@@ -183,8 +183,8 @@ export function DashboardPage() {
     return Math.max(0, Math.min(100, Math.round(score)));
   })()
 
-  // Get daily quote
-  const dailyQuote = InspirationalQuotes.getDailyInspiration(user)
+  // Get daily business quote
+  const dailyQuote = BusinessQuoteService.getDailyQuote()
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -201,6 +201,35 @@ export function DashboardPage() {
           </h1>
           <p className="text-slate-600 dark:text-slate-300 text-lg">Your business command center</p>
         </div>
+
+        {/* Daily Business Quote */}
+        <Card className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/50 dark:to-amber-950/50 border-orange-200 dark:border-orange-800 shadow-sm">
+          <CardContent className="p-6">
+            <div className="flex items-start gap-4">
+              <div className="p-2 bg-orange-500 rounded-lg shadow-sm flex-shrink-0">
+                <Quote className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1">
+                <blockquote className="text-slate-700 dark:text-slate-300 text-lg italic leading-relaxed mb-3">
+                  "{dailyQuote.text}"
+                </blockquote>
+                <div className="flex items-center justify-between">
+                  <cite className="text-sm text-orange-600 dark:text-orange-400 font-medium not-italic">
+                    — {dailyQuote.author}
+                    {dailyQuote.title && (
+                      <span className="text-slate-500 dark:text-slate-400 font-normal">
+                        , {dailyQuote.title}
+                      </span>
+                    )}
+                  </cite>
+                  <Badge variant="outline" className="text-xs bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900 dark:text-orange-300 dark:border-orange-700 capitalize">
+                    {dailyQuote.category}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Blank Canvas - Ready for your guidance */}
         <div className="text-center py-16">
