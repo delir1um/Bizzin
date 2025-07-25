@@ -384,10 +384,10 @@ export function DocSafePage() {
           <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
             {/* Header row */}
             <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-slate-50 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600 text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">
-              <div className="col-span-6">Name</div>
+              <div className="col-span-5">Name</div>
               <div className="col-span-2">Size</div>
               <div className="col-span-2">Modified</div>
-              <div className="col-span-2">Category</div>
+              <div className="col-span-3">Category</div>
             </div>
             
             {/* Document rows */}
@@ -397,7 +397,7 @@ export function DocSafePage() {
                   <div className="group grid grid-cols-12 gap-4 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 border-b border-slate-100 dark:border-slate-700 last:border-b-0 cursor-pointer transition-colors"
                        onClick={() => handleViewDocument(doc)}>
                     {/* Name column */}
-                    <div className="col-span-6 flex items-center gap-3 min-w-0">
+                    <div className="col-span-5 flex items-center gap-3 min-w-0">
                       <div className="flex-shrink-0">
                         {doc.file_type.includes('pdf') ? (
                           <FileText className="w-5 h-5 text-red-500" />
@@ -435,14 +435,14 @@ export function DocSafePage() {
                       {format(new Date(doc.created_at), 'MMM d, yyyy')}
                     </div>
                     
-                    {/* Category column */}
-                    <div className="col-span-2 flex items-center justify-between">
-                      <Badge variant="secondary" className="text-xs">
+                    {/* Category column with actions */}
+                    <div className="col-span-3 flex items-center justify-between min-w-0">
+                      <Badge variant="secondary" className="text-xs flex-shrink-0">
                         {doc.category}
                       </Badge>
                       
                       {/* Action buttons - appear on hover */}
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-2">
                         <Button 
                           variant="ghost" 
                           size="sm"
@@ -450,10 +450,10 @@ export function DocSafePage() {
                             e.stopPropagation()
                             handleViewDocument(doc)
                           }}
-                          className="h-8 w-8 p-0 text-slate-500 hover:text-blue-600 hover:bg-blue-50"
+                          className="h-7 w-7 p-0 text-slate-500 hover:text-blue-600 hover:bg-blue-50"
                           title="View document"
                         >
-                          <Eye className="w-4 h-4" />
+                          <Eye className="w-3.5 h-3.5" />
                         </Button>
                         <Button 
                           variant="ghost" 
@@ -462,10 +462,10 @@ export function DocSafePage() {
                             e.stopPropagation()
                             handleEditDocument(doc)
                           }}
-                          className="h-8 w-8 p-0 text-slate-500 hover:text-orange-600 hover:bg-orange-50"
+                          className="h-7 w-7 p-0 text-slate-500 hover:text-orange-600 hover:bg-orange-50"
                           title="Edit document"
                         >
-                          <Edit className="w-4 h-4" />
+                          <Edit className="w-3.5 h-3.5" />
                         </Button>
                         <Button 
                           variant="ghost" 
@@ -475,10 +475,10 @@ export function DocSafePage() {
                             downloadMutation.mutate(doc)
                           }}
                           disabled={downloadMutation.isPending}
-                          className="h-8 w-8 p-0 text-slate-500 hover:text-slate-700 hover:bg-slate-100"
+                          className="h-7 w-7 p-0 text-slate-500 hover:text-slate-700 hover:bg-slate-100"
                           title="Download document"
                         >
-                          <Download className="w-4 h-4" />
+                          <Download className="w-3.5 h-3.5" />
                         </Button>
                         <Button 
                           variant="ghost" 
@@ -488,10 +488,10 @@ export function DocSafePage() {
                             handleDeleteDocument(doc)
                           }}
                           disabled={deleteDocMutation.isPending}
-                          className="h-8 w-8 p-0 text-slate-500 hover:text-red-600 hover:bg-red-50"
+                          className="h-7 w-7 p-0 text-slate-500 hover:text-red-600 hover:bg-red-50"
                           title="Delete document"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </Button>
                       </div>
                     </div>
