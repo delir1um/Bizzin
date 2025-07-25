@@ -14,6 +14,7 @@ import { DocumentService } from "@/lib/services/document"
 import { DOCUMENT_CATEGORIES, MAX_FILE_SIZE, ALLOWED_FILE_TYPES } from "@/types/document"
 import type { CreateDocumentRequest } from "@/types/document"
 import { useToast } from "@/hooks/use-toast"
+import { usePlans } from "@/hooks/usePlans"
 
 const uploadSchema = z.object({
   name: z.string().min(1, "Document name is required").max(200, "Name must be less than 200 characters"),
@@ -26,9 +27,10 @@ type FormData = z.infer<typeof uploadSchema>
 interface UploadModalProps {
   isOpen: boolean
   onClose: () => void
+  stats?: any // Storage stats from parent
 }
 
-export function UploadModal({ isOpen, onClose }: UploadModalProps) {
+export function UploadModal({ isOpen, onClose, stats }: UploadModalProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [dragActive, setDragActive] = useState(false)
   const [tags, setTags] = useState<string[]>([])
@@ -38,6 +40,7 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
   const { toast } = useToast()
+  const { hasStorageSpace, usageStatus, isLoading: plansLoading } = usePlans()
 
   const {
     register,
@@ -148,6 +151,24 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
       return
     }
 
+    // Check storage space - use plan system if available, otherwise fallback to 50MB limit
+    const storageCheckFailed = usageStatus ? 
+      !hasStorageSpace(file.size) : 
+      stats && (stats.storage_used + file.size) > (50 * 1024 * 1024) // 50MB fallback limit
+    
+    if (storageCheckFailed) {
+      const remainingSpace = usageStatus ? 
+        usageStatus.plan_limits.storage_limit - usageStatus.current_usage.storage_used : 
+        Math.max(0, (50 * 1024 * 1024) - (stats?.storage_used || 0))
+      
+      toast({
+        title: "Storage limit exceeded",
+        description: `Not enough storage space. You have ${DocumentService.formatFileSize(remainingSpace)} remaining. Upgrade to premium for more storage.`,
+        variant: "destructive",
+      })
+      return
+    }
+
     setSelectedFile(file)
     
     // Auto-populate name if not set
@@ -186,6 +207,24 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
       toast({
         title: "No file selected",
         description: "Please select a file to upload",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Final storage check before upload
+    const finalStorageCheckFailed = usageStatus ? 
+      !hasStorageSpace(selectedFile.size) : 
+      stats && (stats.storage_used + selectedFile.size) > (50 * 1024 * 1024) // 50MB fallback limit
+    
+    if (finalStorageCheckFailed) {
+      const remainingSpace = usageStatus ? 
+        usageStatus.plan_limits.storage_limit - usageStatus.current_usage.storage_used : 
+        Math.max(0, (50 * 1024 * 1024) - (stats?.storage_used || 0))
+      
+      toast({
+        title: "Storage limit exceeded",
+        description: `Not enough storage space. You have ${DocumentService.formatFileSize(remainingSpace)} remaining. Upgrade to premium for more storage.`,
         variant: "destructive",
       })
       return
