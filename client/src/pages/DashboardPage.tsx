@@ -47,6 +47,35 @@ export function DashboardPage() {
     enabled: !!user
   })
 
+  // Fetch storage stats for accurate DocSafe metrics
+  const { data: storageStats } = useQuery({
+    queryKey: ['storage-stats', user?.id],
+    queryFn: async () => {
+      if (!user) return null
+      try {
+        const { data: documents } = await supabase
+          .from('documents')
+          .select('file_size')
+          .eq('user_id', user.id)
+        
+        const totalSize = documents?.reduce((sum, doc) => sum + doc.file_size, 0) || 0
+        const totalDocuments = documents?.length || 0
+        const storageLimit = 50 * 1024 * 1024 // 50MB in bytes
+        
+        return {
+          storage_used: totalSize,
+          storage_limit: storageLimit,
+          total_documents: totalDocuments,
+          storage_percentage: Math.round((totalSize / storageLimit) * 100)
+        }
+      } catch (error) {
+        console.error('Error fetching storage stats:', error)
+        return null
+      }
+    },
+    enabled: !!user
+  })
+
   // Calculate comprehensive business intelligence stats from all features
   const stats = GoalsService.calculateStats(goals)
 
@@ -201,7 +230,7 @@ export function DashboardPage() {
         <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
           {/* Business Health Score - Hero Metric */}
           <AnimatedItem>
-            <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-emerald-50 to-green-100 dark:from-emerald-950 dark:to-green-900 border-emerald-200 dark:border-emerald-800 relative overflow-hidden group">
+            <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-emerald-50 to-green-100 dark:from-emerald-950 dark:to-green-900 border-emerald-200 dark:border-emerald-800 relative overflow-hidden group h-[180px] flex flex-col">
               <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
                 <CardTitle className="text-base font-semibold text-emerald-900 dark:text-emerald-100">Business Health</CardTitle>
@@ -209,13 +238,15 @@ export function DashboardPage() {
                   <TrendingUp className="h-5 w-5 text-white" />
                 </div>
               </CardHeader>
-              <CardContent className="relative z-10">
-                <div className="text-4xl font-bold text-emerald-900 dark:text-emerald-100 mb-2">
-                  {businessHealthScore}/100
+              <CardContent className="relative z-10 flex-1 flex flex-col justify-between">
+                <div>
+                  <div className="text-4xl font-bold text-emerald-900 dark:text-emerald-100 mb-2">
+                    {businessHealthScore}/100
+                  </div>
+                  <p className="text-sm text-emerald-700 dark:text-emerald-300 font-medium mb-3">
+                    AI-powered business score
+                  </p>
                 </div>
-                <p className="text-sm text-emerald-700 dark:text-emerald-300 font-medium mb-3">
-                  AI-powered business score
-                </p>
                 <div className="w-full bg-emerald-200 dark:bg-emerald-800 rounded-full h-3">
                   <div 
                     className="bg-emerald-500 h-3 rounded-full transition-all duration-700" 
@@ -228,7 +259,7 @@ export function DashboardPage() {
 
           {/* Active Goals */}
           <AnimatedItem>
-            <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800 relative overflow-hidden group" onClick={() => navigate("/goals")}>
+            <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800 relative overflow-hidden group h-[180px] flex flex-col" onClick={() => navigate("/goals")}>
               <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
                 <CardTitle className="text-base font-semibold text-orange-900 dark:text-orange-100">Active Goals</CardTitle>
@@ -236,7 +267,7 @@ export function DashboardPage() {
                   <Target className="h-5 w-5 text-white" />
                 </div>
               </CardHeader>
-              <CardContent className="relative z-10">
+              <CardContent className="relative z-10 flex-1 flex flex-col justify-center">
                 {goalsLoading ? (
                   <>
                     <Skeleton className="h-10 w-16 mb-2" />
@@ -246,7 +277,7 @@ export function DashboardPage() {
                   <>
                     <div className="text-4xl font-bold text-orange-900 dark:text-orange-100 mb-2">{stats.inProgress}</div>
                     <p className="text-sm text-orange-700 dark:text-orange-300 font-medium">
-                      {stats.completed} completed
+                      {stats.completed} completed • {stats.total} total
                     </p>
                   </>
                 )}
@@ -256,7 +287,7 @@ export function DashboardPage() {
 
           {/* Writing Streak */}
           <AnimatedItem>
-            <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-950 dark:to-indigo-900 border-purple-200 dark:border-purple-800 relative overflow-hidden group" onClick={() => navigate("/journal")}>
+            <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-950 dark:to-indigo-900 border-purple-200 dark:border-purple-800 relative overflow-hidden group h-[180px] flex flex-col" onClick={() => navigate("/journal")}>
               <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
                 <CardTitle className="text-base font-semibold text-purple-900 dark:text-purple-100">Writing Streak</CardTitle>
@@ -264,7 +295,7 @@ export function DashboardPage() {
                   <Flame className="h-5 w-5 text-white" />
                 </div>
               </CardHeader>
-              <CardContent className="relative z-10">
+              <CardContent className="relative z-10 flex-1 flex flex-col justify-center">
                 {journalLoading ? (
                   <>
                     <Skeleton className="h-10 w-16 mb-2" />
@@ -274,7 +305,7 @@ export function DashboardPage() {
                   <>
                     <div className="text-4xl font-bold text-purple-900 dark:text-purple-100 mb-2">{journalInsights.writingStreak}</div>
                     <p className="text-sm text-purple-700 dark:text-purple-300 font-medium">
-                      {journalInsights.thisWeekEntries} this week
+                      {journalInsights.thisWeekEntries} this week • {journalInsights.totalEntries} total
                     </p>
                   </>
                 )}
