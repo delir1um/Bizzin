@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { X, Clock, BookOpen, Edit, Zap, Trash2 } from "lucide-react"
 import type { JournalEntry } from "@/types/journal"
 
@@ -77,15 +78,35 @@ export function ViewEntryModal({ isOpen, onClose, entry, onEdit, onDelete }: Vie
               </Button>
             )}
             {onDelete && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onDelete(entry)}
-                className="text-red-600 hover:text-red-800 hover:bg-red-50 border-red-200 dark:text-red-400 dark:hover:text-red-300"
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-red-600 hover:text-red-800 hover:bg-red-50 border-red-200 dark:text-red-400 dark:hover:text-red-300"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Journal Entry</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this journal entry? This action cannot be undone and will permanently remove the entry and all its insights.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => onDelete(entry)}
+                      className="bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      Delete Entry
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             )}
             <Button
               variant="ghost"

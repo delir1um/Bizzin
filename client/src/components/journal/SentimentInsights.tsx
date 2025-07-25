@@ -45,34 +45,15 @@ export function SentimentInsights({ entry, className = "" }: SentimentInsightsPr
     <Card className={`bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 ${className}`}>
       <CardContent className="p-4 space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-orange-700">
-            <Sparkles className="w-5 h-5" />
-            <span className="font-semibold text-sm">AI Business Insights</span>
-          </div>
-          <AIAnalysisIndicator 
-            confidence={sentiment.confidence}
-            source="ai"
-            className="text-xs"
-          />
+        <div className="flex items-center gap-2 text-orange-700">
+          <Sparkles className="w-5 h-5" />
+          <span className="font-semibold text-sm">AI Business Insights</span>
         </div>
         
         {/* Energy & Context */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            {getEnergyIcon(sentiment.energy)}
-            <span>{getEnergyLabel(sentiment.energy)}</span>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Badge 
-              variant="secondary" 
-              className="text-xs"
-              style={{ backgroundColor: `${moodColor}15`, color: moodColor }}
-            >
-              {Math.round(sentiment.confidence)}% confidence
-            </Badge>
-          </div>
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          {getEnergyIcon(sentiment.energy)}
+          <span>{getEnergyLabel(sentiment.energy)}</span>
         </div>
         
         {/* Business Context */}
