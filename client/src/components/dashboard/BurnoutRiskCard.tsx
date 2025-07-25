@@ -117,8 +117,8 @@ export function BurnoutRiskCard({ journalEntries }: BurnoutRiskCardProps) {
 
   return (
     <Card className="hover:shadow-lg transition-shadow relative">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center justify-between text-lg">
+      <CardHeader className="pb-3 min-h-[72px] flex items-center">
+        <CardTitle className="flex items-center justify-between text-lg w-full">
           <span className="flex items-center gap-2">
             {getRiskIcon(level)}
             Burnout Risk
