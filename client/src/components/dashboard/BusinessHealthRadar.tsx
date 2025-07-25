@@ -59,66 +59,156 @@ export function BusinessHealthRadar({ journalEntries }: BusinessHealthRadarProps
 
   const calculateBurnoutRisk = (entries: JournalEntry[]): number => {
     if (entries.length === 0) return 0
+    if (entries.length < 3) return 20 // Low risk for insufficient data
 
     let riskScore = 0
-    const weights = { mood: 0.4, energy: 0.3, consistency: 0.3 }
 
-    // Mood analysis (stressed/overwhelmed = higher risk)
-    const stressedEntries = entries.filter(entry => 
-      ['stressed', 'overwhelmed', 'frustrated', 'anxious'].includes(
-        entry.sentiment_data?.primary_mood?.toLowerCase() || ''
+    // Enhanced stress mood categorization with severity weighting
+    const highStressMoods = ['overwhelmed', 'burned out', 'exhausted', 'desperate']
+    const mediumStressMoods = ['stressed', 'frustrated', 'anxious', 'pressured', 'worried']
+    const lowStressMoods = ['tired', 'sad', 'conflicted', 'uncertain', 'disappointed']
+
+    // 1. Enhanced Stress/Negative Mood Analysis (40% weight)
+    const highStressEntries = entries.filter(entry => 
+      highStressMoods.includes(entry.sentiment_data?.primary_mood?.toLowerCase() || entry.mood?.toLowerCase() || '')
+    )
+    const mediumStressEntries = entries.filter(entry => 
+      mediumStressMoods.includes(entry.sentiment_data?.primary_mood?.toLowerCase() || entry.mood?.toLowerCase() || '')
+    )
+    const lowStressEntries = entries.filter(entry => 
+      lowStressMoods.includes(entry.sentiment_data?.primary_mood?.toLowerCase() || entry.mood?.toLowerCase() || '')
+    )
+
+    // Weighted stress calculation
+    const highStressRatio = highStressEntries.length / entries.length
+    const mediumStressRatio = mediumStressEntries.length / entries.length
+    const lowStressRatio = lowStressEntries.length / entries.length
+
+    const stressScore = (highStressRatio * 40) + (mediumStressRatio * 25) + (lowStressRatio * 15)
+    riskScore += stressScore
+
+    // 2. Enhanced Energy Analysis (30% weight)
+    const lowEnergyEntries = entries.filter(entry => 
+      entry.sentiment_data?.energy === 'low' || 
+      ['tired', 'exhausted', 'drained', 'depleted', 'burned out'].includes(entry.sentiment_data?.primary_mood?.toLowerCase() || '')
+    )
+    const energyRatio = lowEnergyEntries.length / entries.length
+    const energyScore = energyRatio * 30
+    riskScore += energyScore
+
+    // 3. Enhanced Work-Life Balance Analysis (30% weight)
+    const workStressKeywords = [
+      'working late', 'deadline pressure', 'too much work', 'no breaks', 'overwhelm',
+      'constant meetings', 'unrealistic expectations', 'work weekends', 'no time'
+    ]
+    
+    const challengeEntries = entries.filter(entry => {
+      const isChallenge = entry.sentiment_data?.business_category === 'challenge' || entry.category?.toLowerCase() === 'challenge'
+      const hasWorkStress = workStressKeywords.some(keyword => 
+        entry.content.toLowerCase().includes(keyword)
+      )
+      return isChallenge || hasWorkStress
+    })
+    
+    const balanceRatio = challengeEntries.length / entries.length
+    const balanceScore = balanceRatio * 30
+    riskScore += balanceScore
+
+    // Recovery indicators check (reduce risk)
+    const recoveryKeywords = ['took a break', 'went for walk', 'relaxed', 'vacation', 'rest day', 'self-care']
+    const recoveryEntries = entries.filter(entry =>
+      recoveryKeywords.some(keyword => entry.content.toLowerCase().includes(keyword)) ||
+      ['relaxed', 'refreshed', 'recharged', 'peaceful', 'calm'].includes(
+        entry.sentiment_data?.primary_mood?.toLowerCase() || entry.mood?.toLowerCase() || ''
       )
     )
-    const moodRisk = (stressedEntries.length / entries.length) * 100
-    riskScore += moodRisk * weights.mood
+    
+    if (recoveryEntries.length > 0) {
+      riskScore -= Math.min(15, recoveryEntries.length * 3) // Reduce risk for recovery activities
+    }
 
-    // Energy analysis (consistently low energy = higher risk)
-    const lowEnergyEntries = entries.filter(entry => {
-      const energy = entry.sentiment_data?.energy || 'moderate'
-      return energy === 'low' || energy === 'very low'
-    })
-    const energyRisk = (lowEnergyEntries.length / entries.length) * 100
-    riskScore += energyRisk * weights.energy
-
-    // Consistency analysis (irregular journaling = higher risk)
-    const expectedEntries = Math.min(entries.length, 15) // Expect ~every 2 days
-    const consistencyRisk = Math.max(0, (expectedEntries - entries.length) / expectedEntries) * 100
-    riskScore += consistencyRisk * weights.consistency
-
-    return Math.min(100, Math.round(riskScore))
+    // Ensure score stays within bounds
+    return Math.max(0, Math.min(100, Math.round(riskScore)))
   }
 
   const calculateGrowthMomentum = (entries: JournalEntry[]): number => {
     if (entries.length === 0) return 0
+    if (entries.length < 3) return 30 // Neutral momentum for insufficient data
 
     let momentumScore = 0
-    const weights = { growth: 0.4, confidence: 0.3, achievements: 0.3 }
+    const weights = { growth: 0.35, confidence: 0.25, achievements: 0.25, positivity: 0.15 }
 
-    // Growth category frequency
+    // 1. Growth category frequency (35% weight) - Fixed category matching
     const growthEntries = entries.filter(entry => 
-      entry.sentiment_data?.business_category === 'Growth' ||
-      entry.category === 'Growth'
+      entry.sentiment_data?.business_category?.toLowerCase() === 'growth' ||
+      entry.category?.toLowerCase() === 'growth'
     )
-    const growthScore = Math.min(100, (growthEntries.length / Math.max(1, entries.length * 0.3)) * 100)
+    // More realistic expectation: 15% of entries should be growth-focused (not 30%)
+    const growthRatio = growthEntries.length / entries.length
+    const growthScore = Math.min(100, (growthRatio / 0.15) * 100)
     momentumScore += growthScore * weights.growth
 
-    // Confidence levels
-    const avgConfidence = entries.reduce((sum, entry) => 
-      sum + (entry.sentiment_data?.confidence || 50), 0
-    ) / entries.length
-    const confidenceScore = Math.max(0, (avgConfidence - 50) * 2) // Scale 50-100 to 0-100
-    momentumScore += confidenceScore * weights.confidence
-
-    // Achievement frequency
-    const achievementEntries = entries.filter(entry => 
-      entry.sentiment_data?.business_category === 'Achievement' ||
-      entry.category === 'Achievement' ||
-      ['excited', 'confident', 'accomplished'].includes(entry.sentiment_data?.primary_mood?.toLowerCase() || '')
+    // 2. Enhanced Confidence Analysis (25% weight)
+    const validConfidenceEntries = entries.filter(entry => 
+      entry.sentiment_data?.confidence && entry.sentiment_data.confidence > 0
     )
-    const achievementScore = Math.min(100, (achievementEntries.length / Math.max(1, entries.length * 0.2)) * 100)
+    
+    if (validConfidenceEntries.length > 0) {
+      const avgConfidence = validConfidenceEntries.reduce((sum, entry) => 
+        sum + (entry.sentiment_data?.confidence || 0), 0
+      ) / validConfidenceEntries.length
+      
+      // Normalize confidence: 65+ = good momentum, 85+ = excellent
+      const confidenceScore = Math.max(0, Math.min(100, (avgConfidence - 45) * 2))
+      momentumScore += confidenceScore * weights.confidence
+    } else {
+      // Fallback: analyze positive moods for confidence proxy
+      const confidentMoods = ['confident', 'excited', 'motivated', 'optimistic', 'inspired']
+      const confidentEntries = entries.filter(entry =>
+        confidentMoods.includes(entry.sentiment_data?.primary_mood?.toLowerCase() || entry.mood?.toLowerCase() || '')
+      )
+      const moodConfidenceScore = Math.min(100, (confidentEntries.length / entries.length) * 200)
+      momentumScore += moodConfidenceScore * weights.confidence
+    }
+
+    // 3. Enhanced Achievement Analysis (25% weight) - Fixed category matching
+    const achievementEntries = entries.filter(entry => 
+      entry.sentiment_data?.business_category?.toLowerCase() === 'achievement' ||
+      entry.category?.toLowerCase() === 'achievement' ||
+      ['excited', 'confident', 'accomplished', 'proud', 'successful'].includes(
+        entry.sentiment_data?.primary_mood?.toLowerCase() || entry.mood?.toLowerCase() || ''
+      )
+    )
+    // More realistic expectation: 10% should be achievements (not 20%)
+    const achievementRatio = achievementEntries.length / entries.length
+    const achievementScore = Math.min(100, (achievementRatio / 0.10) * 100)
     momentumScore += achievementScore * weights.achievements
 
-    return Math.min(100, Math.round(momentumScore))
+    // 4. Overall Positivity Indicator (15% weight)
+    const positiveMoods = ['excited', 'confident', 'motivated', 'accomplished', 'inspired', 'optimistic', 'energized']
+    const positiveEntries = entries.filter(entry =>
+      positiveMoods.includes(entry.sentiment_data?.primary_mood?.toLowerCase() || entry.mood?.toLowerCase() || '')
+    )
+    const positivityRatio = positiveEntries.length / entries.length
+    const positivityScore = Math.min(100, positivityRatio * 150) // 67% positive = 100 points
+    momentumScore += positivityScore * weights.positivity
+
+    // Time-weighted recent momentum boost
+    const last7Days = subDays(new Date(), 7)
+    const recentEntries = entries.filter(entry => isAfter(new Date(entry.created_at), last7Days))
+    
+    if (recentEntries.length > 0) {
+      const recentPositiveRatio = recentEntries.filter(entry =>
+        positiveMoods.includes(entry.sentiment_data?.primary_mood?.toLowerCase() || entry.mood?.toLowerCase() || '')
+      ).length / recentEntries.length
+      
+      // Boost for strong recent momentum
+      if (recentPositiveRatio > 0.6) {
+        momentumScore += 10
+      }
+    }
+
+    return Math.max(0, Math.min(100, Math.round(momentumScore)))
   }
 
   const calculateRecoveryResilience = (allEntries: JournalEntry[]): number => {
