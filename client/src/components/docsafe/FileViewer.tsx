@@ -286,12 +286,12 @@ export function FileViewer({ document, isOpen, onClose, onEdit, onDelete }: File
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
-        <DialogHeader className="flex-shrink-0">
+        <DialogHeader className="flex-shrink-0 pr-12">
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-3 min-w-0 flex-1">
               <FileIcon className="h-5 w-5 text-orange-600 mt-0.5 flex-shrink-0" />
               <div className="min-w-0 flex-1">
-                <DialogTitle className="text-lg font-semibold truncate">
+                <DialogTitle className="text-lg font-semibold truncate pr-4">
                   {document.name}
                 </DialogTitle>
                 <div className="flex items-center gap-2 mt-1 text-sm text-slate-600 dark:text-slate-400">
@@ -303,7 +303,7 @@ export function FileViewer({ document, isOpen, onClose, onEdit, onDelete }: File
             </div>
             
             {/* Action buttons */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
               {onEdit && (
                 <Button
                   variant="outline"
