@@ -97,13 +97,13 @@ export function BizBuilderToolsPage() {
       </div>
 
       {/* Tools Grid */}
-      <AnimatedGrid className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" stagger={0.1}>
+      <AnimatedGrid className="grid gap-8 grid-cols-1 md:grid-cols-3" stagger={0.1}>
         {filteredTools.map((tool, index) => {
           const IconComponent = tool.icon
           return (
             <AnimatedItem key={tool.id}>
               <Card 
-                className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-orange-200 dark:hover:border-orange-800"
+                className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-orange-200 dark:hover:border-orange-800 h-full flex flex-col"
                 onClick={() => handleToolSelect(tool.id)}
               >
               <CardHeader className="pb-3">
@@ -121,7 +121,7 @@ export function BizBuilderToolsPage() {
                 </CardDescription>
               </CardHeader>
               
-              <CardContent className="pt-0">
+              <CardContent className="pt-0 flex-1 flex flex-col justify-end">
                 <Button 
                   className="w-full bg-orange-600 hover:bg-orange-700"
                   onClick={(e) => {
