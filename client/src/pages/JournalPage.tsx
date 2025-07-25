@@ -571,20 +571,7 @@ export function JournalPage() {
                                 </button>
                               )}
                             </div>
-                            {entry.sentiment_data?.insights?.[0] && (
-                              <div className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 rounded-lg border p-3">
-                                <div className="flex items-center gap-2 text-orange-700 mb-2">
-                                  <Sparkles className="w-4 h-4" />
-                                  <span className="font-semibold text-xs">AI Business Insights</span>
-                                </div>
-                                <div className="text-xs text-gray-600 bg-white/60 rounded-lg p-2 border border-orange-200/50">
-                                  <div className="flex items-start gap-2">
-                                    <div className="w-1 h-1 rounded-full bg-orange-500 mt-1.5 flex-shrink-0" />
-                                    <span className="leading-relaxed line-clamp-1">{entry.sentiment_data.insights[0]}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
+
                           </CardContent>
                         </Card>
                       </motion.div>
