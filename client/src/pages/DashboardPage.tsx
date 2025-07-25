@@ -6,6 +6,7 @@ import { GoalsService } from '@/lib/services/goals'
 import { Goal } from '@/types/goals'
 import { JournalService } from '@/lib/services/journal'
 import { BusinessQuoteService } from '@/data/businessQuotes'
+import { BusinessHealthRadar } from '@/components/dashboard/BusinessHealthRadar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -231,10 +232,35 @@ export function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Blank Canvas - Ready for your guidance */}
-        <div className="text-center py-16">
-          <div className="text-slate-400 dark:text-slate-500">
-            Ready to build the perfect dashboard. What should we add first?
+        {/* Business Intelligence Section */}
+        <div className="space-y-6">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+              Business Intelligence Dashboard
+            </h2>
+            <p className="text-slate-600 dark:text-slate-300">
+              AI-powered insights from your journal entries
+            </p>
+          </div>
+
+          {/* Business Health Radar */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <BusinessHealthRadar journalEntries={journalEntries} />
+            
+            {/* Additional insights can go here */}
+            <Card className="bg-gradient-to-br from-slate-50 to-gray-100 dark:from-slate-950 dark:to-gray-900 border-slate-200 dark:border-slate-800">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-slate-600" />
+                  More Insights Coming Soon
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                  Additional business intelligence visualizations will be added here based on your journal data patterns and business growth metrics.
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
