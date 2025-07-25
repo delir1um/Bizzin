@@ -50,16 +50,9 @@ export function SentimentInsights({ entry, className = "" }: SentimentInsightsPr
           <span className="font-semibold text-sm">AI Business Insights</span>
         </div>
         
-        {/* Energy & Context */}
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          {getEnergyIcon(sentiment.energy)}
-          <span>{getEnergyLabel(sentiment.energy)}</span>
-        </div>
-        
         {/* Business Context */}
         {sentiment.insights && sentiment.insights.length > 0 && (
           <div>
-            <div className="text-xs font-medium text-gray-700 mb-2">Key Business Insight</div>
             <div className="text-sm text-gray-600 bg-white/60 rounded-lg p-3 border border-orange-200/50">
               <div className="flex items-start gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-orange-500 mt-2 flex-shrink-0" />
