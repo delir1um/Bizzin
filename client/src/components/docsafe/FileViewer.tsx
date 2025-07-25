@@ -157,16 +157,32 @@ export function FileViewer({ document, isOpen, onClose }: FileViewerProps) {
       )
     }
 
-    // PDF files
+    // PDF files - Chrome blocks iframe PDF viewing, so provide download option
     if (document.file_type === 'application/pdf' && fileUrl) {
       return (
-        <div className="h-96 w-full rounded-md border overflow-hidden">
-          <iframe
-            src={fileUrl}
-            className="w-full h-full"
-            style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top left' }}
-            title={document.name}
-          />
+        <div className="flex items-center justify-center h-96 w-full rounded-md border">
+          <div className="text-center max-w-md px-6">
+            <FileText className="h-16 w-16 text-orange-500 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+              PDF Preview
+            </h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
+              Due to browser security restrictions, PDF files cannot be displayed inline. 
+              Click below to download and view the document in your PDF reader.
+            </p>
+            <div className="space-y-3">
+              <Button 
+                onClick={handleDownload} 
+                className="bg-orange-600 hover:bg-orange-700 w-full py-3"
+              >
+                <Download className="h-5 w-5 mr-2" />
+                Download & View PDF
+              </Button>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                File size: {formatFileSize(document.file_size)}
+              </p>
+            </div>
+          </div>
         </div>
       )
     }
@@ -271,9 +287,8 @@ export function FileViewer({ document, isOpen, onClose }: FileViewerProps) {
 
         <Separator className="my-4" />
 
-        {/* Viewer controls */}
-        {(document.file_type === 'application/pdf' || 
-          document.file_type.startsWith('image/') || 
+        {/* Viewer controls - only show for images and text files */}
+        {(document.file_type.startsWith('image/') || 
           document.file_type.startsWith('text/')) && (
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
