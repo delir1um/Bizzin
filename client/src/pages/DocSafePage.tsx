@@ -51,7 +51,7 @@ export function DocSafePage() {
     queryFn: () => user ? DocumentService.getStorageStats(user.id) : null,
     enabled: !!user,
     refetchOnWindowFocus: false,
-    staleTime: 30000, // 30 seconds
+    staleTime: 5000, // 5 seconds for faster updates
   })
 
   // Fetch documents
@@ -81,7 +81,13 @@ export function DocSafePage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents'] })
       queryClient.invalidateQueries({ queryKey: ['storage-stats'] })
+      queryClient.invalidateQueries({ queryKey: ['usage-status'] }) // Refresh plan usage status
       setDocumentToDelete(null)
+      
+      // Force immediate refresh with a slight delay to ensure database is updated
+      setTimeout(() => {
+        refetchStats()
+      }, 100)
       toast({
         title: "Document deleted",
         description: "Document has been successfully deleted.",
