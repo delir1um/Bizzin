@@ -23,6 +23,9 @@ export function getMoodEmoji(mood: string | null | undefined): string {
     'stressed': '😰',
     'uncertain': '🤔',
     'neutral': '😐',
+    'inspired': '✨',
+    'motivated': '🚀',
+    'analytical': '🧠',
     // Capitalized versions (from AI)
     'Optimistic': '😊',
     'Frustrated': '😤',
@@ -38,7 +41,10 @@ export function getMoodEmoji(mood: string | null | undefined): string {
     'Tired': '😴',
     'Conflicted': '😔',
     'Stressed': '😰',
-    'Uncertain': '🤔'
+    'Uncertain': '🤔',
+    'Inspired': '✨',
+    'Motivated': '🚀',
+    'Analytical': '🧠'
   }
   
   return moodEmojis[mood] || moodEmojis[mood.toLowerCase()] || '📝'
