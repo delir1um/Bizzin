@@ -18,7 +18,7 @@ export function DocSafeStatsCard({ storageStats, onNavigate }: DocSafeStatsCardP
   // Default values if storage stats not available
   const stats = storageStats || {
     storage_used: 0,
-    storage_limit: 1024 * 1024 * 1024, // 1GB default
+    storage_limit: 50 * 1024 * 1024, // 50MB default
     total_documents: 0,
     storage_percentage: 0
   }
@@ -148,7 +148,7 @@ export function DocSafeStatsCard({ storageStats, onNavigate }: DocSafeStatsCardP
         </Button>
         
         {/* Info Tooltip */}
-        <div className="absolute bottom-3 left-3" title="Storage usage shows documents uploaded to your secure DocSafe. Current plan includes 1GB storage space.">
+        <div className="absolute bottom-3 left-3" title="Storage usage shows documents uploaded to your secure DocSafe. Free plan includes 50MB storage space.">
           <Info className="h-4 w-4 text-gray-400 hover:text-emerald-600 cursor-help transition-colors" />
         </div>
       </CardContent>
