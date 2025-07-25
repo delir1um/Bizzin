@@ -134,7 +134,7 @@ export function PlanManagement() {
               onClick={() => setShowUpgradeModal(true)}
               className="bg-orange-600 hover:bg-orange-700 text-white"
             >
-              Upgrade to Premium - $9.99/month
+              Upgrade to Premium - {formattedMonthlyPrice}/month
             </Button>
           )}
           {isPremium && (
