@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { PlusCircle, Search, BookOpen, Calendar, Brain, ChevronDown, ChevronRight, Flame, TrendingUp, Heart, Sparkles } from "lucide-react"
+import { PlusCircle, Search, BookOpen, Calendar, Brain, ChevronDown, ChevronRight, Flame, TrendingUp, Heart, Sparkles, Zap } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useToast } from "@/hooks/use-toast"
@@ -531,10 +531,10 @@ export function JournalPage() {
                                 </Badge>
                               )}
                               {entry.sentiment_data?.energy && (
-                                <div className="flex items-center gap-1 text-slate-600">
-                                  <TrendingUp className="w-3 h-3" />
-                                  <span className="text-xs font-medium">{getEnergyLabel(entry.sentiment_data.energy)}</span>
-                                </div>
+                                <Badge variant="secondary" className="bg-slate-100 text-slate-700 border-slate-200 font-medium flex items-center gap-1">
+                                  <Zap className="w-3 h-3" />
+                                  {getEnergyLabel(entry.sentiment_data.energy)}
+                                </Badge>
                               )}
                             </div>
                           </CardHeader>
