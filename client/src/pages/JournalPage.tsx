@@ -19,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { getDisplayMoodEmoji, getEntryDisplayData } from "@/lib/journalDisplayUtils"
 import { usePlans } from "@/hooks/usePlans"
 import { UpgradeModal } from "@/components/plans/UpgradeModal"
+import { PlanLimitBanner } from "@/components/plans/PlanLimitBanner"
 
 export function JournalPage() {
   const [user, setUser] = useState<any>(null)
@@ -417,100 +418,14 @@ export function JournalPage() {
         </div>
       </div>
 
-      {/* Unified Usage Status Banner for Free Users */}
-      {isFree && usageStatus && (
-        <div className={`mb-6 p-4 rounded-lg border ${
-          isAtLimit() 
-            ? 'bg-red-50 border-red-200' 
-            : isApproachingLimit() 
-            ? 'bg-yellow-50 border-yellow-200' 
-            : 'bg-orange-50 border-orange-200'
-        }`}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-full ${
-                isAtLimit() 
-                  ? 'bg-red-100' 
-                  : isApproachingLimit() 
-                  ? 'bg-yellow-100' 
-                  : 'bg-orange-100'
-              }`}>
-                {isAtLimit() ? (
-                  <X className="w-4 h-4 text-red-600" />
-                ) : isApproachingLimit() ? (
-                  <Sparkles className="w-4 h-4 text-yellow-600" />
-                ) : (
-                  <BookOpen className="w-4 h-4 text-orange-600" />
-                )}
-              </div>
-              <div>
-                <h3 className={`font-medium ${
-                  isAtLimit() 
-                    ? 'text-red-800' 
-                    : isApproachingLimit() 
-                    ? 'text-yellow-800' 
-                    : 'text-orange-800'
-                }`}>
-                  {isAtLimit() 
-                    ? "Monthly limit reached"
-                    : isApproachingLimit() 
-                    ? "You're approaching your monthly limit"
-                    : "Monthly Journal Entries"
-                  }
-                </h3>
-                <p className={`text-sm ${
-                  isAtLimit() 
-                    ? 'text-red-700' 
-                    : isApproachingLimit() 
-                    ? 'text-yellow-700' 
-                    : 'text-orange-700'
-                }`}>
-                  {usageStatus.current_usage.journal_entries_created} of {usageStatus.plan_limits.monthly_journal_entries} entries used this month. 
-                  {(isApproachingLimit() || isAtLimit()) && " Upgrade to Premium for unlimited entries."}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <div className={`text-sm font-medium ${
-                  isAtLimit() 
-                    ? 'text-red-700' 
-                    : isApproachingLimit() 
-                    ? 'text-yellow-700' 
-                    : 'text-orange-700'
-                }`}>
-                  -{usageStatus.plan_limits.monthly_journal_entries - usageStatus.current_usage.journal_entries_created} remaining
-                </div>
-                <div className="w-32 bg-white/50 rounded-full h-2 mt-1">
-                  <div 
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      isAtLimit() 
-                        ? 'bg-red-500' 
-                        : isApproachingLimit() 
-                        ? 'bg-yellow-500' 
-                        : 'bg-orange-500'
-                    }`}
-                    style={{ 
-                      width: `${Math.min(100, (usageStatus.current_usage.journal_entries_created / usageStatus.plan_limits.monthly_journal_entries) * 100)}%` 
-                    }}
-                  />
-                </div>
-              </div>
-              {(isApproachingLimit() || isAtLimit()) && (
-                <Button
-                  onClick={() => setShowUpgradeModal(true)}
-                  size="sm"
-                  className={`${
-                    isAtLimit() 
-                      ? 'bg-red-600 hover:bg-red-700' 
-                      : 'bg-yellow-600 hover:bg-yellow-700'
-                  } text-white`}
-                >
-                  Upgrade Now
-                </Button>
-              )}
-            </div>
-          </div>
+      {/* Standard Plan Limit Banner */}
+      {usageStatus && (
+        <div className="mb-8">
+          <PlanLimitBanner 
+            usageStatus={usageStatus} 
+            limitType="journal" 
+            onUpgrade={() => setShowUpgradeModal(true)}
+          />
         </div>
       )}
 
