@@ -1,8 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
 
-// For Node.js environment, we need to use the VITE_ prefixed variables or get them from the app
-const supabaseUrl = 'https://giahpkiwivxpocikndix.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdpYWhwa2l3aXZ4cG9jaWtuZGl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0NjI1OTIsImV4cCI6MjA2OTAzODU5Mn0.qxN9SPNR4oLdAJiE-iQ5VXO5-d--V2Nnr4dQ2QJYaH0'
+const supabaseUrl = process.env.VITE_SUPABASE_URL!
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY!
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error('Missing Supabase credentials')
+  process.exit(1)
+}
+
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 const podcastEpisodes = [
