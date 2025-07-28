@@ -109,9 +109,12 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
     if (diff) acc[diff] = (acc[diff] || 0) + 1
     return acc
   }, {} as Record<string, number>)
-  const mostCommonDifficulty = Object.entries(difficultyCount).reduce((a, b) => 
-    difficultyCount[a[0]] > difficultyCount[b[0]] ? a : b
-  )?.[0] || 'Intermediate'
+  
+  const mostCommonDifficulty = Object.keys(difficultyCount).length > 0 
+    ? Object.entries(difficultyCount).reduce((a, b) => 
+        difficultyCount[a[0]] > difficultyCount[b[0]] ? a : b
+      )[0] 
+    : 'Intermediate'
 
   if (!seriesInfo) {
     return (
