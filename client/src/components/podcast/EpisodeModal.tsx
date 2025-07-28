@@ -3,7 +3,8 @@ import {
   Dialog, 
   DialogContent, 
   DialogHeader, 
-  DialogTitle 
+  DialogTitle,
+  DialogDescription 
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -60,6 +61,7 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
 
   const handlePlayEpisode = () => {
     setShowPlayer(true)
+    onClose() // Close the modal when starting to play
   }
 
   const handleClosePlayer = () => {
@@ -102,9 +104,9 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
                   </div>
                 </div>
                 <DialogTitle className="text-2xl mb-3">{episode.title}</DialogTitle>
-                <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                <DialogDescription className="text-slate-600 dark:text-slate-400 leading-relaxed">
                   {episode.description}
-                </p>
+                </DialogDescription>
               </div>
             </div>
           </DialogHeader>
