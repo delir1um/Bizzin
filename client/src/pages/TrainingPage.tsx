@@ -21,11 +21,6 @@ export function PodcastPage() {
   const { stats, recentEpisodes, currentlyListening, metrics, isLoading } = usePodcastDashboard()
   const { data: dbEpisodes, isLoading: episodesLoading, error: episodesError } = usePodcastEpisodes()
 
-  // Debug logging
-  console.log('Episodes loading:', episodesLoading)
-  console.log('Episodes data:', dbEpisodes)
-  console.log('Episodes error:', episodesError)
-
   // Convert database episodes to Episode format
   const episodes: Episode[] = dbEpisodes?.map(ep => ({
     id: ep.id,
@@ -39,8 +34,6 @@ export function PodcastPage() {
     keyTakeaways: ep.key_takeaways,
     difficulty: ep.difficulty
   })) || []
-
-  console.log('Converted episodes:', episodes.length, episodes)
 
   const handleEpisodeClick = (episode: Episode) => {
     setSelectedEpisode(episode)
