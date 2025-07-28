@@ -107,7 +107,15 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
         })
       }
     }
-  }, [])
+  }, [currentTime, episode.id, episode.duration, updateProgress])
+
+  // Handle close with progress save
+  const handleClose = () => {
+    if (currentTime > 0) {
+      saveProgress(currentTime)
+    }
+    setTimeout(() => onClose(), 100) // Small delay to ensure progress is saved
+  }
 
 
   const formatTime = (seconds: number) => {
@@ -183,7 +191,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={onClose}
+                onClick={handleClose}
               >
                 <X className="w-4 h-4" />
               </Button>

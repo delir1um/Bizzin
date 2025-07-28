@@ -35,7 +35,8 @@ export function usePodcastProgress() {
   return useQuery({
     queryKey: ['podcast', 'progress'],
     queryFn: () => PodcastService.getUserProgress(),
-    staleTime: 1000 * 60 * 2, // 2 minutes
+    staleTime: 1000 * 30, // 30 seconds for more frequent updates
+    gcTime: 1000 * 60 * 5, // Keep in memory for 5 minutes
   })
 }
 
@@ -54,7 +55,8 @@ export function useRecentlyListened(limit: number = 5) {
   return useQuery({
     queryKey: ['podcast', 'recent', limit],
     queryFn: () => PodcastService.getRecentlyListened(limit),
-    staleTime: 1000 * 60 * 2, // 2 minutes
+    staleTime: 1000 * 30, // 30 seconds for more frequent updates
+    gcTime: 1000 * 60 * 5, // Keep in memory for 5 minutes
   })
 }
 
@@ -73,7 +75,8 @@ export function useSeriesProgress(series: string) {
     queryKey: ['podcast', 'series', series],
     queryFn: () => PodcastService.getSeriesProgress(series),
     enabled: !!series,
-    staleTime: 1000 * 60 * 2, // 2 minutes
+    staleTime: 1000 * 30, // 30 seconds for more frequent updates
+    gcTime: 1000 * 60 * 5, // Keep in memory for 5 minutes
   })
 }
 
@@ -95,8 +98,16 @@ export function useUpdateProgress() {
       await PodcastService.updateProgress(episodeId, progressSeconds, episodeDuration)
     },
     onSuccess: (_, variables) => {
-      // Invalidate and refetch relevant queries
-      queryClient.invalidateQueries({ queryKey: ['podcast'] })
+      // Invalidate specific queries that need immediate updates
+      queryClient.invalidateQueries({ queryKey: ['podcast', 'progress'] })
+      queryClient.invalidateQueries({ queryKey: ['podcast', 'progress', variables.episodeId] })
+      queryClient.invalidateQueries({ queryKey: ['podcast', 'completed'] })
+      queryClient.invalidateQueries({ queryKey: ['podcast', 'recent'] })
+      queryClient.invalidateQueries({ queryKey: ['podcast', 'stats'] })
+      queryClient.invalidateQueries({ queryKey: ['podcast', 'series'] })
+      
+      // Force immediate refetch with reduced stale time
+      queryClient.refetchQueries({ queryKey: ['podcast'] })
       
       // Show completion toast if episode was just completed
       const isCompleted = PodcastService.isEpisodeCompleted(
