@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { useUpdateProgress } from '@/hooks/usePodcastProgress'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
@@ -42,22 +43,46 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
   const [isExpanded, setIsExpanded] = useState(false)
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const updateProgress = useUpdateProgress()
+  const lastSaveTime = useRef(startTime)
 
-  // Simulate audio playback
+  // Save progress every 10 seconds and on pause/close
+  const saveProgress = (time: number) => {
+    if (Math.abs(time - lastSaveTime.current) >= 10 || time >= episode.duration) {
+      updateProgress.mutate({
+        episodeId: episode.id,
+        progressSeconds: Math.floor(time),
+        episodeDuration: episode.duration
+      })
+      lastSaveTime.current = time
+    }
+  }
+
+  // Simulate audio playback with progress tracking
   useEffect(() => {
     if (isPlaying) {
       intervalRef.current = setInterval(() => {
         setCurrentTime(prev => {
-          if (prev >= episode.duration) {
+          const newTime = prev + playbackSpeed
+          
+          if (newTime >= episode.duration) {
             setIsPlaying(false)
+            saveProgress(episode.duration) // Save completion
             return episode.duration
           }
-          return prev + playbackSpeed
+          
+          // Auto-save progress every 10 seconds while playing
+          saveProgress(newTime)
+          return newTime
         })
       }, 1000)
     } else {
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
+      }
+      // Save progress when paused
+      if (currentTime > 0) {
+        saveProgress(currentTime)
       }
     }
 
@@ -66,7 +91,21 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
         clearInterval(intervalRef.current)
       }
     }
-  }, [isPlaying, playbackSpeed, episode.duration])
+  }, [isPlaying, playbackSpeed, episode.duration, episode.id])
+
+  // Save progress when component unmounts (player closed)
+  useEffect(() => {
+    return () => {
+      if (currentTime > 0) {
+        updateProgress.mutate({
+          episodeId: episode.id,
+          progressSeconds: Math.floor(currentTime),
+          episodeDuration: episode.duration
+        })
+      }
+    }
+  }, [])
+
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)

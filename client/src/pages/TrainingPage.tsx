@@ -8,6 +8,7 @@ import { motion } from "framer-motion"
 import { AnimatedCard, AnimatedGrid, AnimatedItem } from "@/components/ui/animated-card"
 import { useState } from "react"
 import { useLocation } from 'wouter'
+import { usePodcastDashboard } from '@/hooks/usePodcastProgress'
 import { EpisodeModal } from '@/components/podcast/EpisodeModal'
 import { PodcastPlayer, Episode } from '@/components/podcast/PodcastPlayer'
 
@@ -16,6 +17,8 @@ export function PodcastPage() {
   const [selectedEpisode, setSelectedEpisode] = useState<Episode | null>(null)
   const [showEpisodeModal, setShowEpisodeModal] = useState(false)
   const [showPlayer, setShowPlayer] = useState(false)
+  
+  const { stats, recentEpisodes, currentlyListening, metrics, isLoading } = usePodcastDashboard()
 
   // Mock episode data
   const episodes: Episode[] = [
@@ -67,37 +70,38 @@ export function PodcastPage() {
     setSelectedEpisode(continueEpisode)
     setShowPlayer(true)
   }
+  // Use real data from database or fallback to demo data
   const statCards = [
     createStatCard(
       'available',
       'Episodes Available',
       42,
-      'Episodes Available',
+      'Total Episodes',
       <Headphones className="w-6 h-6 text-white" />,
       'blue'
     ),
     createStatCard(
       'completed',
       'Episodes Completed',
-      8,
-      'Episodes Completed',
-      <Award className="w-6 h-6 text-white" />,
+      stats?.total_episodes_completed || 0,
+      'Finished Episodes',
+      <BookOpen className="w-6 h-6 text-white" />,
       'green'
     ),
     createStatCard(
       'time',
       'Listening Time',
-      '6.2h',
-      'Listening Time',
+      stats?.total_listening_time ? `${Math.round(stats.total_listening_time / 3600 * 10) / 10}h` : '0h',
+      'Total Hours',
       <Clock className="w-6 h-6 text-white" />,
       'purple'
     ),
     createStatCard(
       'streak',
       'Learning Streak',
-      5,
-      'Learning Streak',
-      <Play className="w-6 h-6 text-white" />,
+      stats?.learning_streak ? `${stats.learning_streak} days` : '0 days',
+      'Current Streak',
+      <Star className="w-6 h-6 text-white" />,
       'orange'
     )
   ]
@@ -120,46 +124,69 @@ export function PodcastPage() {
       showFilters={false}
     >
 
-      {/* Continue Listening */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">Continue Listening</h2>
-        <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge variant="secondary" className="bg-orange-100 text-orange-800">
-                    Episode 8
-                  </Badge>
-                  <span className="text-sm text-slate-500 dark:text-slate-400">Marketing Series</span>
+      {/* Continue Listening - show only if user has progress */}
+      {currentlyListening && (
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">Continue Listening</h2>
+          <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+            <CardContent className="p-6">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant="secondary" className={currentlyListening.episode?.series_color || "bg-orange-100 text-orange-800"}>
+                      Episode {currentlyListening.episode?.episode_number || '#'}
+                    </Badge>
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                      {currentlyListening.episode?.series || 'Unknown'}
+                    </Badge>
                 </div>
-                <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
-                  Digital Marketing on a Startup Budget
-                </h3>
-                <p className="text-slate-600 dark:text-slate-400 mb-4">
-                  Practical strategies to market your business effectively without breaking the bank.
-                </p>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Progress</span>
-                    <span className="text-sm text-slate-600 dark:text-slate-400">8:32 / 15:00</span>
+                  <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
+                    {currentlyListening.episode?.title || 'Unknown Episode'}
+                  </h3>
+                  <p className="text-slate-600 dark:text-slate-400 mb-4">
+                    {currentlyListening.episode?.description || 'No description available.'}
+                  </p>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400">
+                      <span>
+                        {Math.floor(currentlyListening.progress_seconds / 60)}:{String(currentlyListening.progress_seconds % 60).padStart(2, '0')} / {Math.floor((currentlyListening.episode?.duration || 0) / 60)}:{String((currentlyListening.episode?.duration || 0) % 60).padStart(2, '0')}
+                      </span>
+                      <span>
+                        {Math.round((currentlyListening.progress_seconds / (currentlyListening.episode?.duration || 1)) * 100)}% complete
+                      </span>
+                    </div>
+                    <Progress 
+                      value={(currentlyListening.progress_seconds / (currentlyListening.episode?.duration || 1)) * 100} 
+                      className="h-2" 
+                    />
                   </div>
-                  <Progress value={57} className="h-2" />
+                </div>
+                <div className="mt-4 md:mt-0 md:ml-6">
+                  <Button 
+                    onClick={() => {
+                      if (currentlyListening.episode) {
+                        setSelectedEpisode({
+                          id: currentlyListening.episode.id,
+                          title: currentlyListening.episode.title,
+                          description: currentlyListening.episode.description || '',
+                          duration: currentlyListening.episode.duration,
+                          series: currentlyListening.episode.series,
+                          seriesColor: currentlyListening.episode.series_color || ''
+                        })
+                        setShowPlayer(true)
+                      }
+                    }}
+                    className="bg-orange-600 hover:bg-orange-700 text-white"
+                  >
+                    <Play className="w-4 h-4 mr-2" />
+                    Continue Listening
+                  </Button>
                 </div>
               </div>
-              <div className="mt-4 md:mt-0 md:ml-6">
-                <Button 
-                  className="w-full md:w-auto bg-orange-600 hover:bg-orange-700 text-white"
-                  onClick={handleContinueListening}
-                >
-                  <Play className="w-4 h-4 mr-2" />
-                  Continue Listening
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Podcast Series */}
       <div className="mb-8">
