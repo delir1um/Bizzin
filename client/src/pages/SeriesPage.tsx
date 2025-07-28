@@ -19,7 +19,7 @@ import {
 import { AnimatedGrid, AnimatedItem } from '@/components/ui/animated-card'
 import { EpisodeModal } from '@/components/podcast/EpisodeModal'
 import { Episode } from '@/components/podcast/PodcastPlayer'
-import { usePodcastEpisodes, useSeriesProgress, useCompletedEpisodes } from '@/hooks/usePodcastProgress'
+import { usePodcastEpisodes, useSeriesProgress, useCompletedEpisodes, usePodcastProgress } from '@/hooks/usePodcastProgress'
 
 // Series configuration with metadata (UI styling only)
 const seriesConfig: Record<string, {
@@ -75,6 +75,7 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
   const capitalizedSeries = seriesSlug.charAt(0).toUpperCase() + seriesSlug.slice(1)
   const { data: seriesProgress } = useSeriesProgress(capitalizedSeries)
   const { data: completedEpisodes } = useCompletedEpisodes()
+  const { data: allProgress } = usePodcastProgress()
 
   // Get series configuration
   const seriesInfo = seriesConfig[seriesSlug]
@@ -265,57 +266,96 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
             </div>
           ) : (
             <AnimatedGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" stagger={0.1}>
-              {episodes.map((episode, index) => (
-                <AnimatedItem key={episode.id}>
-                  <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge variant="outline" className="text-xs">
-                              Episode {episode.episodeNumber}
-                            </Badge>
-                            {episode.difficulty && (
-                              <Badge variant="secondary" className="text-xs">
-                                {episode.difficulty}
+              {episodes.map((episode, index) => {
+                // Get progress for this episode
+                const episodeProgress = allProgress?.find(p => p.episode_id === episode.id)
+                const isCompleted = completedEpisodes?.some(completedEp => completedEp.episode_id === episode.id)
+                const hasProgress = episodeProgress && episodeProgress.progress_seconds > 0
+                const progressPercentage = hasProgress ? Math.round((episodeProgress.progress_seconds / episode.duration) * 100) : 0
+                
+                // Determine button text and icon
+                let buttonText = 'Listen Now'
+                let buttonIcon = <Play className="w-4 h-4 mr-2" />
+                
+                if (isCompleted) {
+                  buttonText = 'Listen Again'
+                  buttonIcon = <CheckCircle2 className="w-4 h-4 mr-2" />
+                } else if (hasProgress) {
+                  buttonText = 'Continue Listening'
+                  buttonIcon = <Play className="w-4 h-4 mr-2" />
+                }
+
+                return (
+                  <AnimatedItem key={episode.id}>
+                    <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge variant="outline" className="text-xs">
+                                Episode {episode.episodeNumber}
                               </Badge>
-                            )}
+                              {episode.difficulty && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {episode.difficulty}
+                                </Badge>
+                              )}
+                              {isCompleted && (
+                                <Badge className="text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                                  Completed
+                                </Badge>
+                              )}
+                            </div>
+                            <CardTitle className="text-lg text-slate-900 dark:text-white mb-2">
+                              {episode.title}
+                            </CardTitle>
+                            <CardDescription className="text-slate-600 dark:text-slate-400">
+                              {episode.description.length > 80 
+                                ? `${episode.description.substring(0, 80)}...` 
+                                : episode.description}
+                            </CardDescription>
                           </div>
-                          <CardTitle className="text-lg text-slate-900 dark:text-white mb-2">
-                            {episode.title}
-                          </CardTitle>
-                          <CardDescription className="text-slate-600 dark:text-slate-400">
-                            {episode.description.length > 80 
-                              ? `${episode.description.substring(0, 80)}...` 
-                              : episode.description}
-                          </CardDescription>
                         </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400 mb-4">
-                        <div className="flex items-center">
-                          <Clock className="w-4 h-4 mr-1" />
-                          {formatDuration(episode.duration)}
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400 mb-4">
+                          <div className="flex items-center">
+                            <Clock className="w-4 h-4 mr-1" />
+                            {formatDuration(episode.duration)}
+                          </div>
+                          {hasProgress && !isCompleted && (
+                            <div className="flex items-center text-orange-600">
+                              <span className="text-xs font-medium">
+                                {progressPercentage}% complete
+                              </span>
+                            </div>
+                          )}
                         </div>
-                        {completedEpisodes?.some(completedEp => completedEp.episode_id === episode.id) && (
-                          <div className="flex items-center text-green-600">
-                            <CheckCircle2 className="w-4 h-4 mr-1" />
-                            Completed
+                        
+                        {/* Progress bar for episodes with progress */}
+                        {hasProgress && !isCompleted && (
+                          <div className="mb-4">
+                            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
+                              <div 
+                                className="bg-orange-600 h-1.5 rounded-full transition-all duration-300" 
+                                style={{ width: `${progressPercentage}%` }}
+                              ></div>
+                            </div>
                           </div>
                         )}
-                      </div>
-                      <Button 
-                        className="w-full bg-orange-600 hover:bg-orange-700 text-white"
-                        onClick={() => handleEpisodeClick(episode)}
-                      >
-                        <Play className="w-4 h-4 mr-2" />
-                        {completedEpisodes?.some(completedEp => completedEp.episode_id === episode.id) ? 'Listen Again' : 'Listen Now'}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </AnimatedItem>
-              ))}
+                        
+                        <Button 
+                          className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                          onClick={() => handleEpisodeClick(episode)}
+                        >
+                          {buttonIcon}
+                          {buttonText}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </AnimatedItem>
+                )
+              })}
             </AnimatedGrid>
           )}
         </div>
