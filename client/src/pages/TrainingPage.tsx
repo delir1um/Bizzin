@@ -111,7 +111,7 @@ export function PodcastPage() {
     icon: <Search className="w-4 h-4 mr-2" />,
     onClick: () => console.log('Browse episodes'),
     variant: 'outline' as const,
-    className: 'border-orange-200 text-orange-700 hover:bg-orange-50'
+    className: 'border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-950/20'
   }]
 
   return (

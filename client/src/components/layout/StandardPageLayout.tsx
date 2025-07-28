@@ -197,24 +197,24 @@ export function createStatCard(
 ): StatCard {
   const colorSchemes = {
     orange: {
-      gradientColors: 'bg-gradient-to-br from-orange-50 to-amber-50',
-      borderColor: 'border-orange-200'
+      gradientColors: 'bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/50 dark:to-amber-950/50',
+      borderColor: 'border-orange-200 dark:border-orange-800'
     },
     green: {
-      gradientColors: 'bg-gradient-to-br from-green-50 to-emerald-50',
-      borderColor: 'border-green-200'
+      gradientColors: 'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/50 dark:to-emerald-950/50',
+      borderColor: 'border-green-200 dark:border-green-800'
     },
     blue: {
-      gradientColors: 'bg-gradient-to-br from-blue-50 to-cyan-50',
-      borderColor: 'border-blue-200'
+      gradientColors: 'bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/50 dark:to-cyan-950/50',
+      borderColor: 'border-blue-200 dark:border-blue-800'
     },
     purple: {
-      gradientColors: 'bg-gradient-to-br from-purple-50 to-pink-50',
-      borderColor: 'border-purple-200'
+      gradientColors: 'bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/50 dark:to-pink-950/50',
+      borderColor: 'border-purple-200 dark:border-purple-800'
     },
     slate: {
-      gradientColors: 'bg-gradient-to-br from-slate-50 to-slate-100',
-      borderColor: 'border-slate-200'
+      gradientColors: 'bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950/50 dark:to-slate-900/50',
+      borderColor: 'border-slate-200 dark:border-slate-800'
     }
   }
   
