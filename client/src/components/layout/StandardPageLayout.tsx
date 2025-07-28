@@ -81,14 +81,14 @@ export function StandardPageLayout({
   const containerClass = `max-w-${maxWidth} mx-auto px-4 sm:px-6 lg:px-8 py-8`
   
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <div className={containerClass}>
         {/* Standardized Header */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 mb-2">{title}</h1>
-              <p className="text-slate-600">{subtitle}</p>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{title}</h1>
+              <p className="text-slate-600 dark:text-slate-400">{subtitle}</p>
             </div>
             
             {/* Header Actions */}
@@ -121,12 +121,12 @@ export function StandardPageLayout({
           {/* Search Bar */}
           {showSearch && onSearchChange && (
             <div className="relative max-w-md mb-6">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500 w-4 h-4" />
               <Input
                 placeholder={searchPlaceholder}
                 value={searchValue}
                 onChange={(e) => onSearchChange(e.target.value)}
-                className="pl-10"
+                className="pl-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
               />
             </div>
           )}
@@ -136,7 +136,7 @@ export function StandardPageLayout({
             <div className="flex flex-wrap gap-4 mb-6">
               {filters.map((filter, index) => (
                 <div key={index} className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-slate-700">{filter.label}:</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{filter.label}:</span>
                   <Select value={filter.value} onValueChange={filter.onChange}>
                     <SelectTrigger className="w-40">
                       <SelectValue />
@@ -168,8 +168,8 @@ export function StandardPageLayout({
                     {stat.icon}
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
-                    <p className="text-sm text-slate-600">{stat.subtitle}</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{stat.value}</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">{stat.subtitle}</p>
                   </div>
                 </div>
               </CardContent>

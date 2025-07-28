@@ -261,7 +261,7 @@ export function DashboardPage() {
               onNavigate={navigate} 
             />
             <DocSafeStatsCard 
-              storageStats={storageStats} 
+              storageStats={storageStats || null} 
               onNavigate={navigate} 
             />
           </div>

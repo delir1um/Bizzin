@@ -329,18 +329,18 @@ export function JournalPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="text-center py-16">
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-              className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-4"
+              className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 dark:bg-orange-900 rounded-full mb-4"
             >
-              <Brain className="w-8 h-8 text-orange-600" />
+              <Brain className="w-8 h-8 text-orange-600 dark:text-orange-400" />
             </motion.div>
-            <h3 className="text-lg font-medium text-slate-900 mb-2">Loading your journal</h3>
-            <p className="text-slate-600">Preparing your business insights...</p>
+            <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">Loading your journal</h3>
+            <p className="text-slate-600 dark:text-slate-400">Preparing your business insights...</p>
           </div>
         </div>
       </div>
@@ -351,7 +351,7 @@ export function JournalPage() {
 
   return (
     <div 
-      className="min-h-screen"
+      className="min-h-screen bg-slate-50 dark:bg-slate-900"
       onClick={(e) => {
         // Collapse all sections when clicking outside entries
         const target = e.target as HTMLElement
