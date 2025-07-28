@@ -20,7 +20,7 @@ import {
   CheckCircle2
 } from 'lucide-react'
 import { Episode, PodcastPlayer } from './PodcastPlayer'
-import { usePodcastEpisodes, useSeriesProgress, useCompletedEpisodes } from '@/hooks/usePodcastProgress'
+import { usePodcastEpisodes, useSeriesProgress, useCompletedEpisodes, usePodcastProgress } from '@/hooks/usePodcastProgress'
 
 interface EpisodeModalProps {
   episode: Episode | null
@@ -53,6 +53,7 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
   // Get real data from database
   const { data: allEpisodes } = usePodcastEpisodes()
   const { data: completedEpisodes } = useCompletedEpisodes()
+  const { data: allProgress } = usePodcastProgress()
   const relatedEpisodes = useRelatedEpisodes(episode || {} as Episode)
 
   if (!episode) return null
@@ -65,11 +66,14 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
     setShowPlayer(false)
   }
 
-  // Calculate real series progress
+  // Calculate real series progress (same logic as SeriesPage)
   const seriesEpisodes = allEpisodes?.filter(ep => ep.series === episode.series) || []
   const seriesCompletedCount = completedEpisodes?.filter(ep => 
     ep.episode?.series === episode.series
   ).length || 0
+  
+
+  
   const seriesProgressPercentage = seriesEpisodes.length > 0 ? 
     Math.round((seriesCompletedCount / seriesEpisodes.length) * 100) : 0
 
@@ -212,28 +216,64 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
               </div>
             )}
 
-            {/* Series Progress */}
-            <Card className="bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-800">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-semibold text-orange-900 dark:text-orange-100">
-                      {episode.series} Series Progress
-                    </h4>
-                    <p className="text-sm text-orange-700 dark:text-orange-300">
-                      {seriesCompletedCount} of {seriesEpisodes.length} episodes completed
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-orange-600">{seriesProgressPercentage}%</div>
-                    <div className="text-xs text-orange-600">Complete</div>
-                  </div>
-                </div>
-                <div className="mt-3 w-full bg-orange-200 dark:bg-orange-800 rounded-full h-2">
-                  <div className="bg-orange-600 h-2 rounded-full" style={{ width: `${seriesProgressPercentage}%` }}></div>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Episode Progress */}
+            {(() => {
+              const episodeProgress = allProgress?.find(p => p.episode_id === episode.id)
+              const isCompleted = completedEpisodes?.some(completed => completed.episode_id === episode.id)
+              const hasProgress = episodeProgress && episodeProgress.progress_seconds > 0
+              const progressPercentage = hasProgress ? Math.round((episodeProgress.progress_seconds / episode.duration) * 100) : 0
+              
+              if (hasProgress || isCompleted) {
+                return (
+                  <Card className="bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-800">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-semibold text-orange-900 dark:text-orange-100">
+                            Episode Progress
+                          </h4>
+                          <p className="text-sm text-orange-700 dark:text-orange-300">
+                            {isCompleted ? 'Completed' : `${Math.round((episodeProgress.progress_seconds || 0) / 60)} of ${Math.round(episode.duration / 60)} minutes`}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-orange-600">{isCompleted ? 100 : progressPercentage}%</div>
+                          <div className="text-xs text-orange-600">{isCompleted ? 'Complete' : 'Progress'}</div>
+                        </div>
+                      </div>
+                      <div className="mt-3 w-full bg-orange-200 dark:bg-orange-800 rounded-full h-2">
+                        <div className="bg-orange-600 h-2 rounded-full" style={{ width: `${isCompleted ? 100 : progressPercentage}%` }}></div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              }
+              
+              // Show series progress if no individual progress
+              return (
+                <Card className="bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-800">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-semibold text-orange-900 dark:text-orange-100">
+                          {episode.series} Series Progress
+                        </h4>
+                        <p className="text-sm text-orange-700 dark:text-orange-300">
+                          {seriesCompletedCount} of {seriesEpisodes.length} episodes completed
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-orange-600">{seriesProgressPercentage}%</div>
+                        <div className="text-xs text-orange-600">Complete</div>
+                      </div>
+                    </div>
+                    <div className="mt-3 w-full bg-orange-200 dark:bg-orange-800 rounded-full h-2">
+                      <div className="bg-orange-600 h-2 rounded-full" style={{ width: `${seriesProgressPercentage}%` }}></div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })()}
           </div>
         </DialogContent>
       </Dialog>

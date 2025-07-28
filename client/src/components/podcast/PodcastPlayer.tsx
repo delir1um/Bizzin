@@ -52,12 +52,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
   // Save progress every 10 seconds and on pause/close
   const saveProgress = (time: number) => {
     if (Math.abs(time - lastSaveTime.current) >= 10 || time >= episode.duration) {
-      console.log('Saving progress:', {
-        episodeId: episode.id,
-        progressSeconds: Math.floor(time),
-        episodeDuration: episode.duration,
-        percentage: Math.round((time / episode.duration) * 100)
-      })
+
       updateProgress.mutate({
         episodeId: episode.id,
         progressSeconds: Math.floor(time),
