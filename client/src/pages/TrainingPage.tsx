@@ -6,8 +6,65 @@ import { Play, Headphones, Clock, Star, Users, Award, Search, Mic, BookOpen } fr
 import { StandardPageLayout, createStatCard } from "@/components/layout/StandardPageLayout"
 import { motion } from "framer-motion"
 import { AnimatedCard, AnimatedGrid, AnimatedItem } from "@/components/ui/animated-card"
+import { useState } from "react"
+import { EpisodeModal } from '@/components/podcast/EpisodeModal'
+import { PodcastPlayer, Episode } from '@/components/podcast/PodcastPlayer'
 
 export function PodcastPage() {
+  const [selectedEpisode, setSelectedEpisode] = useState<Episode | null>(null)
+  const [showEpisodeModal, setShowEpisodeModal] = useState(false)
+  const [showPlayer, setShowPlayer] = useState(false)
+
+  // Mock episode data
+  const episodes: Episode[] = [
+    {
+      id: 'ep-1',
+      title: 'The 15-Minute Business Model',
+      description: 'Quick framework to validate your business idea and build a sustainable model that attracts customers and generates revenue from day one.',
+      duration: 15 * 60, // 15 minutes in seconds
+      series: 'Strategy',
+      seriesColor: 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200',
+      transcript: 'In this episode, we cover the essential components of building a business model that works. We start with identifying your core value proposition, understanding your target customer segments, and mapping out your revenue streams. The key is to keep it simple and focus on validation over perfection.'
+    },
+    {
+      id: 'ep-2',
+      title: 'Cash Flow Crisis Management',
+      description: 'Practical steps when money gets tight and how to navigate financial challenges while keeping your business operational.',
+      duration: 15 * 60,
+      series: 'Finance',
+      seriesColor: 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200',
+      transcript: 'Cash flow problems are one of the leading causes of business failure. In this episode, we discuss early warning signs, emergency funding options, and strategic decisions to make when facing financial pressure.'
+    },
+    {
+      id: 'ep-3',
+      title: 'Building Team Culture Remotely',
+      description: 'Leadership tactics for distributed teams and creating strong company culture in a remote-first world.',
+      duration: 15 * 60,
+      series: 'Leadership',
+      seriesColor: 'bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200',
+      transcript: 'Remote work has changed the game for team building and company culture. Learn practical strategies for maintaining team cohesion, communication best practices, and building trust across distributed teams.'
+    }
+  ]
+
+  const handleEpisodeClick = (episode: Episode) => {
+    setSelectedEpisode(episode)
+    setShowEpisodeModal(true)
+  }
+
+  const handleContinueListening = () => {
+    // Find episode 8 from mock data or create it
+    const continueEpisode: Episode = {
+      id: 'ep-8',
+      title: 'Digital Marketing on a Startup Budget',
+      description: 'Practical strategies to market your business effectively without breaking the bank.',
+      duration: 15 * 60,
+      series: 'Marketing',
+      seriesColor: 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200',
+      transcript: 'Marketing doesn\'t have to be expensive to be effective. In this episode, we explore cost-effective marketing strategies that deliver real results for startups and small businesses.'
+    }
+    setSelectedEpisode(continueEpisode)
+    setShowPlayer(true)
+  }
   const statCards = [
     createStatCard(
       'available',
@@ -91,7 +148,7 @@ export function PodcastPage() {
               <div className="mt-4 md:mt-0 md:ml-6">
                 <Button 
                   className="w-full md:w-auto bg-orange-600 hover:bg-orange-700 text-white"
-                  onClick={() => console.log('Continue listening to episode 8')}
+                  onClick={handleContinueListening}
                 >
                   <Play className="w-4 h-4 mr-2" />
                   Continue Listening
@@ -203,7 +260,7 @@ export function PodcastPage() {
               </div>
               <Button 
                 className="w-full bg-orange-600 hover:bg-orange-700 text-white"
-                onClick={() => console.log('Listen to: The 15-Minute Business Model')}
+                onClick={() => handleEpisodeClick(episodes[0])}
               >
                 <Play className="w-4 h-4 mr-2" />
                 Listen Now
@@ -243,7 +300,7 @@ export function PodcastPage() {
               </div>
               <Button 
                 className="w-full bg-orange-600 hover:bg-orange-700 text-white"
-                onClick={() => console.log('Listen to: Cash Flow Crisis Management')}
+                onClick={() => handleEpisodeClick(episodes[1])}
               >
                 <Play className="w-4 h-4 mr-2" />
                 Listen Now
@@ -283,7 +340,7 @@ export function PodcastPage() {
               </div>
               <Button 
                 className="w-full bg-orange-600 hover:bg-orange-700 text-white"
-                onClick={() => console.log('Listen to: Building Team Culture Remotely')}
+                onClick={() => handleEpisodeClick(episodes[2])}
               >
                 <Play className="w-4 h-4 mr-2" />
                 Listen Now
@@ -293,6 +350,23 @@ export function PodcastPage() {
           </AnimatedItem>
         </AnimatedGrid>
       </div>
+
+      {/* Episode Modal */}
+      <EpisodeModal
+        episode={selectedEpisode}
+        isOpen={showEpisodeModal}
+        onClose={() => setShowEpisodeModal(false)}
+      />
+
+      {/* Direct Podcast Player */}
+      {showPlayer && selectedEpisode && (
+        <PodcastPlayer
+          episode={selectedEpisode}
+          onClose={() => setShowPlayer(false)}
+          autoPlay={true}
+          startTime={8 * 60 + 32} // Continue from 8:32 for demo
+        />
+      )}
     </StandardPageLayout>
   )
 }
