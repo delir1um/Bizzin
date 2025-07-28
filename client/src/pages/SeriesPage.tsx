@@ -103,6 +103,15 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
       .sort((a, b) => (a.episodeNumber || 0) - (b.episodeNumber || 0))
   }, [dbEpisodes, seriesSlug])
 
+  // Debug logging for progress data
+  console.log('Series Page Progress Data:', {
+    allProgress,
+    completedEpisodes,
+    seriesSlug,
+    capitalizedSeries,
+    episodesCount: episodes.length
+  })
+
   // Calculate series stats from real data
   const totalDuration = episodes.reduce((acc, ep) => acc + ep.duration, 0)
   const totalDurationHours = (totalDuration / 3600).toFixed(1)

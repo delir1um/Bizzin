@@ -2,13 +2,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Play, Headphones, Clock, Star, Users, Award, Search, Mic, BookOpen } from "lucide-react"
+import { Play, Headphones, Clock, Star, Users, Award, Search, Mic, BookOpen, CheckCircle2 } from "lucide-react"
 import { StandardPageLayout, createStatCard } from "@/components/layout/StandardPageLayout"
 import { motion } from "framer-motion"
 import { AnimatedCard, AnimatedGrid, AnimatedItem } from "@/components/ui/animated-card"
 import { useState } from "react"
 import { useLocation } from 'wouter'
-import { usePodcastDashboard, usePodcastEpisodes } from '@/hooks/usePodcastProgress'
+import { usePodcastDashboard, usePodcastEpisodes, usePodcastProgress, useCompletedEpisodes } from '@/hooks/usePodcastProgress'
 import { EpisodeModal } from '@/components/podcast/EpisodeModal'
 import { PodcastPlayer, Episode } from '@/components/podcast/PodcastPlayer'
 
@@ -20,6 +20,15 @@ export function PodcastPage() {
   
   const { stats, recentEpisodes, currentlyListening, metrics, isLoading } = usePodcastDashboard()
   const { data: dbEpisodes, isLoading: episodesLoading, error: episodesError } = usePodcastEpisodes()
+  const { data: allProgress } = usePodcastProgress()
+  const { data: completedEpisodes } = useCompletedEpisodes()
+
+  // Debug logging to see what progress data we have
+  console.log('Training Page Progress Data:', {
+    allProgress,
+    completedEpisodes,
+    episodesCount: episodes.length
+  })
 
   // Convert database episodes to Episode format
   const episodes: Episode[] = dbEpisodes?.map(ep => ({
@@ -287,13 +296,48 @@ export function PodcastPage() {
                         </Badge>
                       )}
                     </div>
-                    <Button 
-                      className="w-full bg-orange-600 hover:bg-orange-700 text-white"
-                      onClick={() => handleEpisodeClick(episode)}
-                    >
-                      <Play className="w-4 h-4 mr-2" />
-                      Listen Now
-                    </Button>
+                    
+                    {/* Episode Progress */}
+                    {(() => {
+                      const episodeProgress = allProgress?.find(p => p.episode_id === episode.id)
+                      const isCompleted = completedEpisodes?.some(completedEp => completedEp.episode_id === episode.id)
+                      const hasProgress = episodeProgress && episodeProgress.progress_seconds > 0
+                      const progressPercentage = hasProgress ? Math.round((episodeProgress.progress_seconds / episode.duration) * 100) : 0
+                      
+                      // Determine button text and icon
+                      let buttonText = 'Listen Now'
+                      let buttonIcon = <Play className="w-4 h-4 mr-2" />
+                      
+                      if (isCompleted) {
+                        buttonText = 'Listen Again'
+                        buttonIcon = <CheckCircle2 className="w-4 h-4 mr-2" />
+                      } else if (hasProgress) {
+                        buttonText = 'Continue Listening'
+                        buttonIcon = <Play className="w-4 h-4 mr-2" />
+                      }
+
+                      return (
+                        <>
+                          {hasProgress && !isCompleted && (
+                            <div className="mb-3">
+                              <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400 mb-1">
+                                <span>Progress</span>
+                                <span>{progressPercentage}%</span>
+                              </div>
+                              <Progress value={progressPercentage} className="h-2" />
+                            </div>
+                          )}
+                          
+                          <Button 
+                            className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                            onClick={() => handleEpisodeClick(episode)}
+                          >
+                            {buttonIcon}
+                            {buttonText}
+                          </Button>
+                        </>
+                      )
+                    })()}
                   </CardContent>
                 </Card>
               </AnimatedItem>
