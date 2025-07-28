@@ -25,6 +25,9 @@ export interface Episode {
   seriesColor: string
   audioUrl?: string // For demo, we'll simulate audio
   transcript?: string
+  episodeNumber?: number
+  keyTakeaways?: string[]
+  difficulty?: 'Beginner' | 'Intermediate' | 'Advanced'
 }
 
 interface PodcastPlayerProps {

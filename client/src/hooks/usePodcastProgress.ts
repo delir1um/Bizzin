@@ -1,6 +1,25 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { PodcastService, UserPodcastProgress, UserPodcastStats } from '@/lib/podcastService'
+import { PodcastService, UserPodcastProgress, UserPodcastStats, PodcastEpisode } from '@/lib/podcastService'
 import { useToast } from '@/hooks/use-toast'
+
+// Hook for getting all podcast episodes
+export function usePodcastEpisodes() {
+  return useQuery({
+    queryKey: ['podcast', 'episodes'],
+    queryFn: () => PodcastService.getAllEpisodes(),
+    staleTime: 1000 * 60 * 10, // 10 minutes
+  })
+}
+
+// Hook for getting episodes by series
+export function usePodcastEpisodesBySeries(series: string) {
+  return useQuery({
+    queryKey: ['podcast', 'episodes', 'series', series],
+    queryFn: () => PodcastService.getEpisodesBySeries(series),
+    enabled: !!series,
+    staleTime: 1000 * 60 * 10, // 10 minutes
+  })
+}
 
 // Hook for getting user's overall podcast statistics
 export function usePodcastStats() {

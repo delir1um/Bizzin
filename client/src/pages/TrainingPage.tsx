@@ -8,7 +8,7 @@ import { motion } from "framer-motion"
 import { AnimatedCard, AnimatedGrid, AnimatedItem } from "@/components/ui/animated-card"
 import { useState } from "react"
 import { useLocation } from 'wouter'
-import { usePodcastDashboard } from '@/hooks/usePodcastProgress'
+import { usePodcastDashboard, usePodcastEpisodes } from '@/hooks/usePodcastProgress'
 import { EpisodeModal } from '@/components/podcast/EpisodeModal'
 import { PodcastPlayer, Episode } from '@/components/podcast/PodcastPlayer'
 
@@ -19,37 +19,21 @@ export function PodcastPage() {
   const [showPlayer, setShowPlayer] = useState(false)
   
   const { stats, recentEpisodes, currentlyListening, metrics, isLoading } = usePodcastDashboard()
+  const { data: dbEpisodes, isLoading: episodesLoading } = usePodcastEpisodes()
 
-  // Mock episode data
-  const episodes: Episode[] = [
-    {
-      id: 'ep-1',
-      title: 'The 15-Minute Business Model',
-      description: 'Quick framework to validate your business idea and build a sustainable model that attracts customers and generates revenue from day one.',
-      duration: 15 * 60, // 15 minutes in seconds
-      series: 'Strategy',
-      seriesColor: 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200',
-      transcript: 'In this episode, we cover the essential components of building a business model that works. We start with identifying your core value proposition, understanding your target customer segments, and mapping out your revenue streams. The key is to keep it simple and focus on validation over perfection.'
-    },
-    {
-      id: 'ep-2',
-      title: 'Cash Flow Crisis Management',
-      description: 'Practical steps when money gets tight and how to navigate financial challenges while keeping your business operational.',
-      duration: 15 * 60,
-      series: 'Finance',
-      seriesColor: 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200',
-      transcript: 'Cash flow problems are one of the leading causes of business failure. In this episode, we discuss early warning signs, emergency funding options, and strategic decisions to make when facing financial pressure.'
-    },
-    {
-      id: 'ep-3',
-      title: 'Building Team Culture Remotely',
-      description: 'Leadership tactics for distributed teams and creating strong company culture in a remote-first world.',
-      duration: 15 * 60,
-      series: 'Leadership',
-      seriesColor: 'bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200',
-      transcript: 'Remote work has changed the game for team building and company culture. Learn practical strategies for maintaining team cohesion, communication best practices, and building trust across distributed teams.'
-    }
-  ]
+  // Convert database episodes to Episode format
+  const episodes: Episode[] = dbEpisodes?.map(ep => ({
+    id: ep.id,
+    title: ep.title,
+    description: ep.description || '',
+    duration: ep.duration,
+    series: ep.series,
+    seriesColor: ep.series_color || 'bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200',
+    transcript: ep.transcript || '',
+    episodeNumber: ep.episode_number,
+    keyTakeaways: ep.key_takeaways,
+    difficulty: ep.difficulty
+  })) || []
 
   const handleEpisodeClick = (episode: Episode) => {
     setSelectedEpisode(episode)
@@ -57,25 +41,18 @@ export function PodcastPage() {
   }
 
   const handleContinueListening = () => {
-    // Find episode 8 from mock data or create it
-    const continueEpisode: Episode = {
-      id: 'ep-8',
-      title: 'Digital Marketing on a Startup Budget',
-      description: 'Practical strategies to market your business effectively without breaking the bank.',
-      duration: 15 * 60,
-      series: 'Marketing',
-      seriesColor: 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200',
-      transcript: 'Marketing doesn\'t have to be expensive to be effective. In this episode, we explore cost-effective marketing strategies that deliver real results for startups and small businesses.'
+    // Find first episode from real database data
+    if (episodes.length > 0) {
+      setSelectedEpisode(episodes[0])
+      setShowPlayer(true)
     }
-    setSelectedEpisode(continueEpisode)
-    setShowPlayer(true)
   }
   // Use real data from database or fallback to demo data
   const statCards = [
     createStatCard(
       'available',
       'Episodes Available',
-      42,
+      episodes.length || 0,
       'Total Episodes',
       <Headphones className="w-6 h-6 text-white" />,
       'blue'
@@ -257,127 +234,72 @@ export function PodcastPage() {
       {/* Featured Episodes */}
       <div>
         <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">Featured Episodes</h2>
-        <AnimatedGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" stagger={0.15}>
-          {/* Episode 1 */}
-          <AnimatedItem>
-            <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-lg text-slate-900 dark:text-white">
-                    The 15-Minute Business Model
-                  </CardTitle>
-                  <CardDescription className="text-slate-600 dark:text-slate-400">
-                    Quick framework to validate your business idea
-                  </CardDescription>
-                </div>
-                <Badge variant="secondary" className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
-                  Strategy
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400 mb-4">
-                <div className="flex items-center">
-                  <Clock className="w-4 h-4 mr-1" />
-                  15 minutes
-                </div>
-                <div className="flex items-center">
-                  <Star className="w-4 h-4 mr-1 text-yellow-500" />
-                  4.8 (234)
-                </div>
-              </div>
-              <Button 
-                className="w-full bg-orange-600 hover:bg-orange-700 text-white"
-                onClick={() => handleEpisodeClick(episodes[0])}
-              >
-                <Play className="w-4 h-4 mr-2" />
-                Listen Now
-              </Button>
-            </CardContent>
-          </Card>
-          </AnimatedItem>
-
-          {/* Episode 2 */}
-          <AnimatedItem>
-            <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-lg text-slate-900 dark:text-white">
-                    Cash Flow Crisis Management
-                  </CardTitle>
-                  <CardDescription className="text-slate-600 dark:text-slate-400">
-                    Practical steps when money gets tight
-                  </CardDescription>
-                </div>
-                <Badge variant="secondary" className="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200">
-                  Finance
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400 mb-4">
-                <div className="flex items-center">
-                  <Clock className="w-4 h-4 mr-1" />
-                  15 minutes
-                </div>
-                <div className="flex items-center">
-                  <Star className="w-4 h-4 mr-1 text-yellow-500" />
-                  4.9 (189)
-                </div>
-              </div>
-              <Button 
-                className="w-full bg-orange-600 hover:bg-orange-700 text-white"
-                onClick={() => handleEpisodeClick(episodes[1])}
-              >
-                <Play className="w-4 h-4 mr-2" />
-                Listen Now
-              </Button>
-            </CardContent>
-          </Card>
-          </AnimatedItem>
-
-          {/* Episode 3 */}
-          <AnimatedItem>
-            <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-lg text-slate-900 dark:text-white">
-                    Building Team Culture Remotely
-                  </CardTitle>
-                  <CardDescription className="text-slate-600 dark:text-slate-400">
-                    Leadership tactics for distributed teams
-                  </CardDescription>
-                </div>
-                <Badge variant="secondary" className="bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200">
-                  Leadership
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400 mb-4">
-                <div className="flex items-center">
-                  <Clock className="w-4 h-4 mr-1" />
-                  15 minutes
-                </div>
-                <div className="flex items-center">
-                  <Star className="w-4 h-4 mr-1 text-yellow-500" />
-                  4.7 (156)
-                </div>
-              </div>
-              <Button 
-                className="w-full bg-orange-600 hover:bg-orange-700 text-white"
-                onClick={() => handleEpisodeClick(episodes[2])}
-              >
-                <Play className="w-4 h-4 mr-2" />
-                Listen Now
-              </Button>
-            </CardContent>
-          </Card>
-          </AnimatedItem>
-        </AnimatedGrid>
+        {episodesLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                <CardHeader>
+                  <div className="animate-pulse">
+                    <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded mb-2"></div>
+                    <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="animate-pulse">
+                    <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded mb-4"></div>
+                    <div className="h-10 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <AnimatedGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" stagger={0.15}>
+            {episodes.slice(0, 6).map((episode, index) => (
+              <AnimatedItem key={episode.id}>
+                <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="text-lg text-slate-900 dark:text-white">
+                          {episode.title}
+                        </CardTitle>
+                        <CardDescription className="text-slate-600 dark:text-slate-400">
+                          {episode.description.length > 60 
+                            ? `${episode.description.substring(0, 60)}...` 
+                            : episode.description}
+                        </CardDescription>
+                      </div>
+                      <Badge variant="secondary" className={episode.seriesColor}>
+                        {episode.series}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400 mb-4">
+                      <div className="flex items-center">
+                        <Clock className="w-4 h-4 mr-1" />
+                        {Math.round(episode.duration / 60)} min
+                      </div>
+                      {episode.difficulty && (
+                        <Badge variant="outline" className="text-xs">
+                          {episode.difficulty}
+                        </Badge>
+                      )}
+                    </div>
+                    <Button 
+                      className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                      onClick={() => handleEpisodeClick(episode)}
+                    >
+                      <Play className="w-4 h-4 mr-2" />
+                      Listen Now
+                    </Button>
+                  </CardContent>
+                </Card>
+              </AnimatedItem>
+            ))}
+          </AnimatedGrid>
+        )}
       </div>
 
       {/* Episode Modal */}
