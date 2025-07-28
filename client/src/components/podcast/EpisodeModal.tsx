@@ -20,6 +20,7 @@ import {
   CheckCircle2
 } from 'lucide-react'
 import { Episode, PodcastPlayer } from './PodcastPlayer'
+import { usePodcastEpisodes, useSeriesProgress, useCompletedEpisodes } from '@/hooks/usePodcastProgress'
 
 interface EpisodeModalProps {
   episode: Episode | null
@@ -27,33 +28,32 @@ interface EpisodeModalProps {
   onClose: () => void
 }
 
-// Mock related episodes
-const getRelatedEpisodes = (currentEpisode: Episode) => [
-  {
-    id: 'related-1',
-    title: 'Market Research on a Budget',
-    duration: 12 * 60,
-    series: currentEpisode.series,
-    completed: true
-  },
-  {
-    id: 'related-2', 
-    title: 'Customer Validation Techniques',
-    duration: 18 * 60,
-    series: currentEpisode.series,
-    completed: false
-  },
-  {
-    id: 'related-3',
-    title: 'MVP Development Strategy',
-    duration: 15 * 60,
-    series: currentEpisode.series,
-    completed: false
-  }
-]
+// Get related episodes from database (other episodes in same series)
+const useRelatedEpisodes = (currentEpisode: Episode) => {
+  const { data: allEpisodes } = usePodcastEpisodes()
+  const { data: completedEpisodes } = useCompletedEpisodes()
+  
+  if (!allEpisodes) return []
+  
+  return allEpisodes
+    .filter(ep => ep.series === currentEpisode.series && ep.id !== currentEpisode.id)
+    .slice(0, 3) // Limit to 3 related episodes
+    .map(ep => ({
+      id: ep.id,
+      title: ep.title,
+      duration: ep.duration,
+      series: ep.series,
+      completed: completedEpisodes?.some(completed => completed.episode_id === ep.id) || false
+    }))
+}
 
 export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
   const [showPlayer, setShowPlayer] = useState(false)
+
+  // Get real data from database
+  const { data: allEpisodes } = usePodcastEpisodes()
+  const { data: completedEpisodes } = useCompletedEpisodes()
+  const relatedEpisodes = useRelatedEpisodes(episode || {} as Episode)
 
   if (!episode) return null
 
@@ -65,7 +65,13 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
     setShowPlayer(false)
   }
 
-  const relatedEpisodes = getRelatedEpisodes(episode)
+  // Calculate real series progress
+  const seriesEpisodes = allEpisodes?.filter(ep => ep.series === episode.series) || []
+  const seriesCompletedCount = completedEpisodes?.filter(ep => 
+    ep.episode?.series === episode.series
+  ).length || 0
+  const seriesProgressPercentage = seriesEpisodes.length > 0 ? 
+    Math.round((seriesCompletedCount / seriesEpisodes.length) * 100) : 0
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -150,71 +156,61 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
             <Separator />
 
             {/* Key Takeaways */}
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Key Takeaways</h3>
-              <div className="space-y-3">
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-orange-600 dark:text-orange-400 text-sm font-bold">1</span>
-                  </div>
-                  <p className="text-slate-700 dark:text-slate-300">
-                    Understand the essential components of a viable business model
-                  </p>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-orange-600 dark:text-orange-400 text-sm font-bold">2</span>
-                  </div>
-                  <p className="text-slate-700 dark:text-slate-300">
-                    Learn rapid validation techniques to test your ideas quickly
-                  </p>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-orange-600 dark:text-orange-400 text-sm font-bold">3</span>
-                  </div>
-                  <p className="text-slate-700 dark:text-slate-300">
-                    Discover common pitfalls and how to avoid them in early stages
-                  </p>
+            {episode.keyTakeaways && episode.keyTakeaways.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Key Takeaways</h3>
+                <div className="space-y-3">
+                  {episode.keyTakeaways.map((takeaway, index) => (
+                    <div key={index} className="flex items-start space-x-3">
+                      <div className="w-6 h-6 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-orange-600 dark:text-orange-400 text-sm font-bold">{index + 1}</span>
+                      </div>
+                      <p className="text-slate-700 dark:text-slate-300">
+                        {takeaway}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
+            )}
 
             <Separator />
 
             {/* Related Episodes */}
-            <div>
-              <h3 className="text-lg font-semibold mb-4">More from {episode.series} Series</h3>
-              <div className="space-y-3">
-                {relatedEpisodes.map((relatedEpisode) => (
-                  <Card key={relatedEpisode.id} className="border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3 flex-1">
-                          {relatedEpisode.completed ? (
-                            <CheckCircle2 className="w-5 h-5 text-green-600" />
-                          ) : (
-                            <div className="w-5 h-5 border-2 border-slate-300 rounded-full" />
-                          )}
-                          <div className="flex-1">
-                            <h4 className="font-medium text-slate-900 dark:text-white">
-                              {relatedEpisode.title}
-                            </h4>
-                            <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
-                              <Clock className="w-4 h-4 mr-1" />
-                              {formatDuration(relatedEpisode.duration)}
+            {relatedEpisodes.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-4">More from {episode.series} Series</h3>
+                <div className="space-y-3">
+                  {relatedEpisodes.map((relatedEpisode) => (
+                    <Card key={relatedEpisode.id} className="border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3 flex-1">
+                            {relatedEpisode.completed ? (
+                              <CheckCircle2 className="w-5 h-5 text-green-600" />
+                            ) : (
+                              <div className="w-5 h-5 border-2 border-slate-300 rounded-full" />
+                            )}
+                            <div className="flex-1">
+                              <h4 className="font-medium text-slate-900 dark:text-white">
+                                {relatedEpisode.title}
+                              </h4>
+                              <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
+                                <Clock className="w-4 h-4 mr-1" />
+                                {formatDuration(relatedEpisode.duration)}
+                              </div>
                             </div>
                           </div>
+                          <Button variant="ghost" size="sm">
+                            <ArrowRight className="w-4 h-4" />
+                          </Button>
                         </div>
-                        <Button variant="ghost" size="sm">
-                          <ArrowRight className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Series Progress */}
             <Card className="bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-800">
@@ -225,16 +221,16 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
                       {episode.series} Series Progress
                     </h4>
                     <p className="text-sm text-orange-700 dark:text-orange-300">
-                      1 of 12 episodes completed
+                      {seriesCompletedCount} of {seriesEpisodes.length} episodes completed
                     </p>
                   </div>
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-orange-600">8%</div>
+                    <div className="text-2xl font-bold text-orange-600">{seriesProgressPercentage}%</div>
                     <div className="text-xs text-orange-600">Complete</div>
                   </div>
                 </div>
                 <div className="mt-3 w-full bg-orange-200 dark:bg-orange-800 rounded-full h-2">
-                  <div className="bg-orange-600 h-2 rounded-full" style={{ width: '8%' }}></div>
+                  <div className="bg-orange-600 h-2 rounded-full" style={{ width: `${seriesProgressPercentage}%` }}></div>
                 </div>
               </CardContent>
             </Card>
