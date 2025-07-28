@@ -235,7 +235,7 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
                             Episode Progress
                           </h4>
                           <p className="text-sm text-orange-700 dark:text-orange-300">
-                            {isCompleted ? 'Completed' : `${Math.round((episodeProgress.progress_seconds || 0) / 60)} of ${Math.round(episode.duration / 60)} minutes`}
+                            {isCompleted ? 'Completed' : `${Math.round((episodeProgress?.progress_seconds || 0) / 60)} of ${Math.round(episode.duration / 60)} minutes`}
                           </p>
                         </div>
                         <div className="text-right">
@@ -281,13 +281,19 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
       </Dialog>
 
       {/* Podcast Player */}
-      {showPlayer && (
-        <PodcastPlayer
-          episode={episode}
-          onClose={handleClosePlayer}
-          autoPlay={true}
-        />
-      )}
+      {showPlayer && (() => {
+        const episodeProgress = allProgress?.find(p => p.episode_id === episode.id)
+        const startTime = episodeProgress?.progress_seconds || 0
+        
+        return (
+          <PodcastPlayer
+            episode={episode}
+            onClose={handleClosePlayer}
+            autoPlay={true}
+            startTime={startTime}
+          />
+        )
+      })()}
     </>
   )
 }

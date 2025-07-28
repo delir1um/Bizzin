@@ -45,10 +45,22 @@ export function PodcastPage() {
   }
 
   const handleContinueListening = () => {
-    // Find first episode from real database data
-    if (episodes.length > 0) {
-      setSelectedEpisode(episodes[0])
-      setShowPlayer(true)
+    // Find first episode with progress from real database data
+    if (episodes.length > 0 && allProgress) {
+      // Find episode with most recent progress
+      const episodeWithProgress = episodes.find(ep => {
+        const progress = allProgress.find(p => p.episode_id === ep.id)
+        return progress && progress.progress_seconds > 0
+      })
+      
+      if (episodeWithProgress) {
+        setSelectedEpisode(episodeWithProgress)
+        setShowPlayer(true)
+      } else {
+        // No progress found, start first episode
+        setSelectedEpisode(episodes[0])
+        setShowPlayer(true)
+      }
     }
   }
   // Use real data from database or fallback to demo data
@@ -349,14 +361,19 @@ export function PodcastPage() {
       />
 
       {/* Direct Podcast Player */}
-      {showPlayer && selectedEpisode && (
-        <PodcastPlayer
-          episode={selectedEpisode}
-          onClose={() => setShowPlayer(false)}
-          autoPlay={true}
-          startTime={8 * 60 + 32} // Continue from 8:32 for demo
-        />
-      )}
+      {showPlayer && selectedEpisode && (() => {
+        const episodeProgress = allProgress?.find(p => p.episode_id === selectedEpisode.id)
+        const startTime = episodeProgress?.progress_seconds || 0
+        
+        return (
+          <PodcastPlayer
+            episode={selectedEpisode}
+            onClose={() => setShowPlayer(false)}
+            autoPlay={true}
+            startTime={startTime}
+          />
+        )
+      })()}
     </StandardPageLayout>
   )
 }
