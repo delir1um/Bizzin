@@ -89,7 +89,10 @@ export function PodcastPage() {
                 </div>
               </div>
               <div className="mt-4 md:mt-0 md:ml-6">
-                <Button className="w-full md:w-auto bg-orange-600 hover:bg-orange-700 text-white">
+                <Button 
+                  className="w-full md:w-auto bg-orange-600 hover:bg-orange-700 text-white"
+                  onClick={() => console.log('Continue listening to episode 8')}
+                >
                   <Play className="w-4 h-4 mr-2" />
                   Continue Listening
                 </Button>
@@ -104,7 +107,10 @@ export function PodcastPage() {
         <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">Popular Series</h2>
         <AnimatedGrid className="grid grid-cols-2 md:grid-cols-4 gap-4" stagger={0.1}>
           <AnimatedItem>
-            <Card className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer">
+            <Card 
+              className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => console.log('Browse Strategy series')}
+            >
             <CardContent className="p-6 text-center">
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mx-auto mb-3">
                 <Mic className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -116,7 +122,10 @@ export function PodcastPage() {
 
           </AnimatedItem>
           <AnimatedItem>
-            <Card className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer">
+            <Card 
+              className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => console.log('Browse Marketing series')}
+            >
               <CardContent className="p-6 text-center">
                 <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mx-auto mb-3">
                   <Users className="w-6 h-6 text-green-600 dark:text-green-400" />
@@ -128,7 +137,10 @@ export function PodcastPage() {
           </AnimatedItem>
 
           <AnimatedItem>
-            <Card className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer">
+            <Card 
+              className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => console.log('Browse Finance series')}
+            >
               <CardContent className="p-6 text-center">
                 <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mx-auto mb-3">
                   <Award className="w-6 h-6 text-purple-600 dark:text-purple-400" />
@@ -140,7 +152,10 @@ export function PodcastPage() {
           </AnimatedItem>
 
           <AnimatedItem>
-            <Card className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer">
+            <Card 
+              className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => console.log('Browse Leadership series')}
+            >
               <CardContent className="p-6 text-center">
                 <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mx-auto mb-3">
                   <Star className="w-6 h-6 text-orange-600 dark:text-orange-400" />
@@ -186,7 +201,10 @@ export function PodcastPage() {
                   4.8 (234)
                 </div>
               </div>
-              <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white">
+              <Button 
+                className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                onClick={() => console.log('Listen to: The 15-Minute Business Model')}
+              >
                 <Play className="w-4 h-4 mr-2" />
                 Listen Now
               </Button>
@@ -223,7 +241,10 @@ export function PodcastPage() {
                   4.9 (189)
                 </div>
               </div>
-              <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white">
+              <Button 
+                className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                onClick={() => console.log('Listen to: Cash Flow Crisis Management')}
+              >
                 <Play className="w-4 h-4 mr-2" />
                 Listen Now
               </Button>
@@ -260,7 +281,10 @@ export function PodcastPage() {
                   4.7 (156)
                 </div>
               </div>
-              <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white">
+              <Button 
+                className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                onClick={() => console.log('Listen to: Building Team Culture Remotely')}
+              >
                 <Play className="w-4 h-4 mr-2" />
                 Listen Now
               </Button>
