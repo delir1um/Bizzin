@@ -107,14 +107,18 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
         })
       }
     }
-  }, [currentTime, episode.id, episode.duration, updateProgress])
+  }, []) // Empty dependency array to only run on unmount
 
   // Handle close with progress save
   const handleClose = () => {
     if (currentTime > 0) {
-      saveProgress(currentTime)
+      updateProgress.mutate({
+        episodeId: episode.id,
+        progressSeconds: Math.floor(currentTime),
+        episodeDuration: episode.duration
+      })
     }
-    setTimeout(() => onClose(), 100) // Small delay to ensure progress is saved
+    onClose()
   }
 
 
