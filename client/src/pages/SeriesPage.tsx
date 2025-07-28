@@ -19,7 +19,7 @@ import {
 import { AnimatedGrid, AnimatedItem } from '@/components/ui/animated-card'
 import { EpisodeModal } from '@/components/podcast/EpisodeModal'
 import { Episode } from '@/components/podcast/PodcastPlayer'
-import { usePodcastEpisodes } from '@/hooks/usePodcastProgress'
+import { usePodcastEpisodes, useSeriesProgress, useCompletedEpisodes } from '@/hooks/usePodcastProgress'
 
 // Series configuration with metadata (UI styling only)
 const seriesConfig: Record<string, {
@@ -70,6 +70,11 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
 
   // Fetch real episode data from database
   const { data: dbEpisodes, isLoading: episodesLoading } = usePodcastEpisodes()
+  
+  // Get real progress data from database
+  const capitalizedSeries = seriesSlug.charAt(0).toUpperCase() + seriesSlug.slice(1)
+  const { data: seriesProgress } = useSeriesProgress(capitalizedSeries)
+  const { data: completedEpisodes } = useCompletedEpisodes()
 
   // Get series configuration
   const seriesInfo = seriesConfig[seriesSlug]
@@ -100,8 +105,13 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
   // Calculate series stats from real data
   const totalDuration = episodes.reduce((acc, ep) => acc + ep.duration, 0)
   const totalDurationHours = (totalDuration / 3600).toFixed(1)
-  const completedEpisodes = 1 // Mock progress for now - would come from user progress data
-  const progressPercentage = episodes.length > 0 ? (completedEpisodes / episodes.length) * 100 : 0
+  
+  // Get actual completed episodes count for this series
+  const seriesCompletedCount = completedEpisodes?.filter(ep => 
+    ep.episode?.series === capitalizedSeries
+  ).length || 0
+  
+  const progressPercentage = episodes.length > 0 ? (seriesCompletedCount / episodes.length) * 100 : 0
   
   // Get most common difficulty level
   const difficulties = episodes.map(ep => ep.difficulty).filter(Boolean)
@@ -173,7 +183,7 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
     createStatCard(
       'completed',
       'Completed',
-      completedEpisodes,
+      seriesCompletedCount,
       'Episodes Finished',
       <CheckCircle2 className="w-6 h-6 text-white" />,
       'green'
@@ -230,7 +240,7 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
                       {seriesInfo.name} Series Progress
                     </h3>
                     <p className={`text-sm ${seriesInfo.color} opacity-80`}>
-                      {completedEpisodes} of {episodes.length} episodes completed
+                      {seriesCompletedCount} of {episodes.length} episodes completed
                     </p>
                   </div>
                 </div>
@@ -288,7 +298,7 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
                           <Clock className="w-4 h-4 mr-1" />
                           {formatDuration(episode.duration)}
                         </div>
-                        {completedEpisodes > index && (
+                        {completedEpisodes?.some(completedEp => completedEp.episode_id === episode.id) && (
                           <div className="flex items-center text-green-600">
                             <CheckCircle2 className="w-4 h-4 mr-1" />
                             Completed
@@ -300,7 +310,7 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
                         onClick={() => handleEpisodeClick(episode)}
                       >
                         <Play className="w-4 h-4 mr-2" />
-                        {completedEpisodes > index ? 'Listen Again' : 'Listen Now'}
+                        {completedEpisodes?.some(completedEp => completedEp.episode_id === episode.id) ? 'Listen Again' : 'Listen Now'}
                       </Button>
                     </CardContent>
                   </Card>
