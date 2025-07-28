@@ -7,7 +7,7 @@ import { Layout } from "@/layout/Layout"
 import { HomePage } from "@/pages/HomePage"
 import { JournalPage } from "@/pages/JournalPage"
 import { GoalsPage } from "@/pages/GoalsPage"
-import { TrainingPage } from "@/pages/TrainingPage"
+import { PodcastPage } from "@/pages/TrainingPage"
 import { DocSafePage } from "@/pages/DocSafePage"
 import { GoalsPreviewPage } from "@/pages/GoalsPreviewPage"
 import { JournalPreviewPage } from "@/pages/JournalPreviewPage"
@@ -69,7 +69,7 @@ function App() {
                 <Route path="/dashboard" component={() => <ProtectedRoute><DashboardPage /></ProtectedRoute>} />
                 <Route path="/journal" component={() => <PreviewOrProtected protectedComponent={JournalPage} previewComponent={JournalPreviewPage} />} />
                 <Route path="/goals" component={() => <PreviewOrProtected protectedComponent={GoalsPage} previewComponent={GoalsPreviewPage} />} />
-                <Route path="/training" component={() => <PreviewOrProtected protectedComponent={TrainingPage} previewComponent={TrainingPreviewPage} />} />
+                <Route path="/training" component={() => <PreviewOrProtected protectedComponent={PodcastPage} previewComponent={TrainingPreviewPage} />} />
                 <Route path="/bizbuilder" component={() => <PreviewOrProtected protectedComponent={BizBuilderToolsPage} previewComponent={BizBuilderToolsPreviewPage} />} />
                 <Route path="/docsafe" component={() => <PreviewOrProtected protectedComponent={DocSafePage} previewComponent={DocSafePreviewPage} />} />
                 <Route path="/privacy" component={PrivacyPage} />

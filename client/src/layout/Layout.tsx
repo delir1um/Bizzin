@@ -30,7 +30,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { path: user ? "/dashboard" : "/", label: user ? "Dashboard" : "Home" },
     { path: "/journal", label: "Journal" },
     { path: "/goals", label: "Goals" },
-    { path: "/training", label: "Training" },
+    { path: "/training", label: "Podcast" },
     { path: "/bizbuilder", label: "BizBuilder Tools" },
     { path: "/docsafe", label: "DocSafe" },
   ]

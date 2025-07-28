@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import { Target, BookOpen, Calculator, Shield, PenTool } from "lucide-react"
+import { Target, BookOpen, Calculator, Shield, PenTool, Headphones } from "lucide-react"
 import { useLocation } from "wouter"
 
 export function HomePage() {
@@ -25,7 +25,7 @@ export function HomePage() {
             
             {/* Description */}
             <p className="mt-6 text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
-              Create your own business goals, journal your journey, learn from expert courses, and use professional calculators to grow your business.
+              Create your own business goals, journal your journey, listen to business podcasts, and use professional calculators to grow your business.
             </p>
 
             {/* CTA Buttons */}
@@ -100,16 +100,16 @@ export function HomePage() {
               <p className="text-slate-600 dark:text-slate-300 text-sm">Write and organize your business thoughts, insights, and reflections.</p>
             </div>
 
-            {/* Training */}
+            {/* Podcast */}
             <div 
               className="bg-slate-50 dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow cursor-pointer"
               onClick={() => setLocation('/training')}
             >
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mb-6">
-                <BookOpen className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                <Headphones className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Training Modules</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Learn from our expert-created business courses and training content.</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Business Podcast</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">15-minute business insights to grow your entrepreneurial mindset.</p>
             </div>
 
             {/* BizBuilder Tools */}
