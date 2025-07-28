@@ -8,6 +8,7 @@ import { HomePage } from "@/pages/HomePage"
 import { JournalPage } from "@/pages/JournalPage"
 import { GoalsPage } from "@/pages/GoalsPage"
 import { PodcastPage } from "@/pages/TrainingPage"
+import { SeriesPage } from "@/pages/SeriesPage"
 import { DocSafePage } from "@/pages/DocSafePage"
 import { GoalsPreviewPage } from "@/pages/GoalsPreviewPage"
 import { JournalPreviewPage } from "@/pages/JournalPreviewPage"
@@ -70,6 +71,9 @@ function App() {
                 <Route path="/journal" component={() => <PreviewOrProtected protectedComponent={JournalPage} previewComponent={JournalPreviewPage} />} />
                 <Route path="/goals" component={() => <PreviewOrProtected protectedComponent={GoalsPage} previewComponent={GoalsPreviewPage} />} />
                 <Route path="/training" component={() => <PreviewOrProtected protectedComponent={PodcastPage} previewComponent={TrainingPreviewPage} />} />
+                <Route path="/training/series/:seriesSlug">
+                  {(params) => <ProtectedRoute><SeriesPage seriesSlug={params.seriesSlug} /></ProtectedRoute>}
+                </Route>
                 <Route path="/bizbuilder" component={() => <PreviewOrProtected protectedComponent={BizBuilderToolsPage} previewComponent={BizBuilderToolsPreviewPage} />} />
                 <Route path="/docsafe" component={() => <PreviewOrProtected protectedComponent={DocSafePage} previewComponent={DocSafePreviewPage} />} />
                 <Route path="/privacy" component={PrivacyPage} />

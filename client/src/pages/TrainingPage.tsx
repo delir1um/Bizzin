@@ -7,10 +7,12 @@ import { StandardPageLayout, createStatCard } from "@/components/layout/Standard
 import { motion } from "framer-motion"
 import { AnimatedCard, AnimatedGrid, AnimatedItem } from "@/components/ui/animated-card"
 import { useState } from "react"
+import { useLocation } from 'wouter'
 import { EpisodeModal } from '@/components/podcast/EpisodeModal'
 import { PodcastPlayer, Episode } from '@/components/podcast/PodcastPlayer'
 
 export function PodcastPage() {
+  const [, setLocation] = useLocation()
   const [selectedEpisode, setSelectedEpisode] = useState<Episode | null>(null)
   const [showEpisodeModal, setShowEpisodeModal] = useState(false)
   const [showPlayer, setShowPlayer] = useState(false)
@@ -166,7 +168,7 @@ export function PodcastPage() {
           <AnimatedItem>
             <Card 
               className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => console.log('Browse Strategy series')}
+              onClick={() => setLocation('/training/series/strategy')}
             >
             <CardContent className="p-6 text-center">
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mx-auto mb-3">
@@ -181,7 +183,7 @@ export function PodcastPage() {
           <AnimatedItem>
             <Card 
               className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => console.log('Browse Marketing series')}
+              onClick={() => setLocation('/training/series/marketing')}
             >
               <CardContent className="p-6 text-center">
                 <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mx-auto mb-3">
@@ -196,7 +198,7 @@ export function PodcastPage() {
           <AnimatedItem>
             <Card 
               className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => console.log('Browse Finance series')}
+              onClick={() => setLocation('/training/series/finance')}
             >
               <CardContent className="p-6 text-center">
                 <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mx-auto mb-3">
@@ -211,7 +213,7 @@ export function PodcastPage() {
           <AnimatedItem>
             <Card 
               className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => console.log('Browse Leadership series')}
+              onClick={() => setLocation('/training/series/leadership')}
             >
               <CardContent className="p-6 text-center">
                 <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mx-auto mb-3">
