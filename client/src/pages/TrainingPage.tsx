@@ -23,13 +23,6 @@ export function PodcastPage() {
   const { data: allProgress } = usePodcastProgress()
   const { data: completedEpisodes } = useCompletedEpisodes()
 
-  // Debug logging to see what progress data we have
-  console.log('Training Page Progress Data:', {
-    allProgress,
-    completedEpisodes,
-    episodesCount: episodes.length
-  })
-
   // Convert database episodes to Episode format
   const episodes: Episode[] = dbEpisodes?.map(ep => ({
     id: ep.id,
@@ -43,6 +36,13 @@ export function PodcastPage() {
     keyTakeaways: ep.key_takeaways,
     difficulty: ep.difficulty
   })) || []
+
+  // Debug logging to see what progress data we have
+  console.log('Training Page Progress Data:', {
+    allProgress,
+    completedEpisodes,
+    episodesCount: episodes.length
+  })
 
   const handleEpisodeClick = (episode: Episode) => {
     setSelectedEpisode(episode)
