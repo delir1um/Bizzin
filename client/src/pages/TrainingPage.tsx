@@ -19,7 +19,12 @@ export function PodcastPage() {
   const [showPlayer, setShowPlayer] = useState(false)
   
   const { stats, recentEpisodes, currentlyListening, metrics, isLoading } = usePodcastDashboard()
-  const { data: dbEpisodes, isLoading: episodesLoading } = usePodcastEpisodes()
+  const { data: dbEpisodes, isLoading: episodesLoading, error: episodesError } = usePodcastEpisodes()
+
+  // Debug logging
+  console.log('Episodes loading:', episodesLoading)
+  console.log('Episodes data:', dbEpisodes)
+  console.log('Episodes error:', episodesError)
 
   // Convert database episodes to Episode format
   const episodes: Episode[] = dbEpisodes?.map(ep => ({
@@ -34,6 +39,8 @@ export function PodcastPage() {
     keyTakeaways: ep.key_takeaways,
     difficulty: ep.difficulty
   })) || []
+
+  console.log('Converted episodes:', episodes.length, episodes)
 
   const handleEpisodeClick = (episode: Episode) => {
     setSelectedEpisode(episode)
@@ -179,7 +186,7 @@ export function PodcastPage() {
                 <Mic className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <h3 className="font-semibold text-slate-900 dark:text-white">Strategy</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">12 episodes</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{episodes.filter(ep => ep.series === 'Strategy').length} episodes</p>
             </CardContent>
           </Card>
 
@@ -194,7 +201,7 @@ export function PodcastPage() {
                   <Users className="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <h3 className="font-semibold text-slate-900 dark:text-white">Marketing</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">10 episodes</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{episodes.filter(ep => ep.series === 'Marketing').length} episodes</p>
               </CardContent>
             </Card>
           </AnimatedItem>
@@ -209,7 +216,7 @@ export function PodcastPage() {
                   <Award className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
                 <h3 className="font-semibold text-slate-900 dark:text-white">Finance</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">8 episodes</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{episodes.filter(ep => ep.series === 'Finance').length} episodes</p>
               </CardContent>
             </Card>
           </AnimatedItem>
@@ -224,7 +231,7 @@ export function PodcastPage() {
                   <Star className="w-6 h-6 text-orange-600 dark:text-orange-400" />
                 </div>
                 <h3 className="font-semibold text-slate-900 dark:text-white">Leadership</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">12 episodes</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{episodes.filter(ep => ep.series === 'Leadership').length} episodes</p>
               </CardContent>
             </Card>
           </AnimatedItem>
