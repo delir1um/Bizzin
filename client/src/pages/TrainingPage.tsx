@@ -83,7 +83,7 @@ export function PodcastPage() {
     createStatCard(
       'completed',
       'Episodes Completed',
-      stats?.total_episodes_completed || 0,
+      (stats?.total_episodes_completed ?? 0),
       'Finished Episodes',
       <BookOpen className="w-6 h-6 text-white" />,
       'green'
