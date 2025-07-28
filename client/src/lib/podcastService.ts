@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { r2Service } from './cloudflareR2Service'
 
 export interface PodcastEpisode {
   id: string
@@ -9,6 +10,9 @@ export interface PodcastEpisode {
   series_color: string
   episode_number: number
   audio_url?: string
+  video_url?: string
+  video_thumbnail?: string
+  has_video: boolean
   transcript?: string
   key_takeaways?: string[]
   difficulty: 'Beginner' | 'Intermediate' | 'Advanced'
@@ -52,6 +56,78 @@ export class PodcastService {
     
     if (error) throw error
     return data || []
+  }
+
+  // Upload video for episode
+  static async uploadEpisodeVideo(episodeId: string, videoFile: File, thumbnailFile?: File): Promise<void> {
+    try {
+      // Upload video to Cloudflare R2
+      const videoUrl = await r2Service.uploadVideo(videoFile, episodeId)
+      
+      // Upload thumbnail if provided
+      let thumbnailUrl: string | undefined
+      if (thumbnailFile) {
+        thumbnailUrl = await r2Service.uploadThumbnail(thumbnailFile, episodeId)
+      }
+
+      // Update episode in database
+      const { error } = await supabase
+        .from('podcast_episodes')
+        .update({
+          video_url: videoUrl,
+          video_thumbnail: thumbnailUrl,
+          has_video: true,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', episodeId)
+
+      if (error) throw error
+    } catch (error) {
+      console.error('Error uploading episode video:', error)
+      throw new Error('Failed to upload episode video')
+    }
+  }
+
+  // Remove video from episode
+  static async removeEpisodeVideo(episodeId: string): Promise<void> {
+    try {
+      // Get current episode data
+      const { data: episode, error: fetchError } = await supabase
+        .from('podcast_episodes')
+        .select('video_url, video_thumbnail')
+        .eq('id', episodeId)
+        .single()
+
+      if (fetchError) throw fetchError
+
+      // Delete video from R2 if exists
+      if (episode.video_url) {
+        const videoKey = r2Service.extractVideoKey(episode.video_url)
+        await r2Service.deleteVideo(videoKey)
+      }
+
+      // Delete thumbnail from R2 if exists
+      if (episode.video_thumbnail) {
+        const thumbnailKey = r2Service.extractVideoKey(episode.video_thumbnail)
+        await r2Service.deleteVideo(thumbnailKey)
+      }
+
+      // Update episode in database
+      const { error } = await supabase
+        .from('podcast_episodes')
+        .update({
+          video_url: null,
+          video_thumbnail: null,
+          has_video: false,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', episodeId)
+
+      if (error) throw error
+    } catch (error) {
+      console.error('Error removing episode video:', error)
+      throw new Error('Failed to remove episode video')
+    }
   }
 
   // Get episodes by series

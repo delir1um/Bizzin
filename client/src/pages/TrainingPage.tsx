@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Play, Headphones, Clock, Star, Users, Award, Search, Mic, BookOpen, CheckCircle2 } from "lucide-react"
+import { Play, Headphones, Clock, Star, Users, Award, Search, Mic, BookOpen, CheckCircle2, Video } from "lucide-react"
 import { StandardPageLayout, createStatCard } from "@/components/layout/StandardPageLayout"
 import { motion } from "framer-motion"
 import { AnimatedCard, AnimatedGrid, AnimatedItem } from "@/components/ui/animated-card"
@@ -31,6 +31,10 @@ export function PodcastPage() {
     duration: ep.duration,
     series: ep.series,
     seriesColor: ep.series_color || 'bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200',
+    audioUrl: ep.audio_url,
+    videoUrl: ep.video_url,
+    videoThumbnail: ep.video_thumbnail,
+    hasVideo: ep.has_video,
     transcript: ep.transcript || '',
     episodeNumber: ep.episode_number,
     keyTakeaways: ep.key_takeaways,
@@ -293,9 +297,17 @@ export function PodcastPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400 mb-4">
-                      <div className="flex items-center">
-                        <Clock className="w-4 h-4 mr-1" />
-                        {Math.round(episode.duration / 60)} min
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center">
+                          <Clock className="w-4 h-4 mr-1" />
+                          {Math.round(episode.duration / 60)} min
+                        </div>
+                        {episode.hasVideo && (
+                          <div className="flex items-center text-orange-600">
+                            <Video className="w-4 h-4 mr-1" />
+                            <span className="text-xs">Video</span>
+                          </div>
+                        )}
                       </div>
                       {episode.difficulty && (
                         <Badge variant="outline" className="text-xs">

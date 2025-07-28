@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { Badge } from '@/components/ui/badge'
+import { VideoPlayer } from './VideoPlayer'
 import { 
   Play, 
   Pause, 
@@ -13,7 +14,9 @@ import {
   VolumeX,
   X,
   Maximize2,
-  Minimize2
+  Minimize2,
+  Video,
+  Headphones
 } from 'lucide-react'
 
 export interface Episode {
@@ -24,6 +27,9 @@ export interface Episode {
   series: string
   seriesColor: string
   audioUrl?: string // For demo, we'll simulate audio
+  videoUrl?: string // Video URL from Cloudflare R2
+  videoThumbnail?: string // Video thumbnail URL
+  hasVideo?: boolean // Whether episode has video content
   transcript?: string
   episodeNumber?: number
   keyTakeaways?: string[]
@@ -35,15 +41,17 @@ interface PodcastPlayerProps {
   onClose: () => void
   autoPlay?: boolean
   startTime?: number // Continue from specific time
+  preferVideo?: boolean // Whether to prefer video over audio if both available
 }
 
-export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 0 }: PodcastPlayerProps) {
+export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 0, preferVideo = true }: PodcastPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(autoPlay)
   const [currentTime, setCurrentTime] = useState(startTime)
   const [volume, setVolume] = useState(75)
   const [isMuted, setIsMuted] = useState(false)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
   const [isExpanded, setIsExpanded] = useState(false)
+  const [showVideo, setShowVideo] = useState(preferVideo && episode.hasVideo && episode.videoUrl)
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const updateProgress = useUpdateProgress()
@@ -163,6 +171,22 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
 
   const progress = (currentTime / episode.duration) * 100
 
+  const toggleVideoMode = () => {
+    if (episode.hasVideo && episode.videoUrl) {
+      setShowVideo(!showVideo)
+    }
+  }
+
+  const handleVideoTimeUpdate = (time: number) => {
+    setCurrentTime(time)
+    saveProgress(time)
+  }
+
+  const handleVideoEnded = () => {
+    setIsPlaying(false)
+    saveProgress(episode.duration)
+  }
+
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end">
       <Card className={`w-full ${isExpanded ? 'h-full' : 'h-auto'} bg-white dark:bg-slate-900 rounded-t-xl border-0 transition-all duration-300`}>
@@ -186,6 +210,16 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
               </Button>
             </div>
             <div className="flex items-center space-x-2">
+              {episode.hasVideo && episode.videoUrl && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleVideoMode}
+                  className={showVideo ? 'bg-orange-100 dark:bg-orange-900' : ''}
+                >
+                  {showVideo ? <Video className="w-4 h-4" /> : <Headphones className="w-4 h-4" />}
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
@@ -214,6 +248,21 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
               </p>
             )}
           </div>
+
+          {/* Video Player (when video mode is enabled) */}
+          {showVideo && episode.videoUrl && isExpanded && (
+            <div className="mb-6">
+              <VideoPlayer
+                videoUrl={episode.videoUrl}
+                thumbnailUrl={episode.videoThumbnail}
+                title={episode.title}
+                onTimeUpdate={handleVideoTimeUpdate}
+                onEnded={handleVideoEnded}
+                startTime={startTime}
+                className="w-full h-64 md:h-96"
+              />
+            </div>
+          )}
 
           {/* Progress Bar */}
           <div className="space-y-2 mb-6">
