@@ -305,10 +305,15 @@ export function PodcastPage() {
                           <Clock className="w-4 h-4 mr-1" />
                           {Math.round(episode.duration / 60)} min
                         </div>
-                        {episode.hasVideo && (
+                        {episode.hasVideo ? (
                           <div className="flex items-center text-orange-600">
                             <Video className="w-4 h-4 mr-1" />
                             <span className="text-xs">Video</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center text-blue-600">
+                            <Headphones className="w-4 h-4 mr-1" />
+                            <span className="text-xs">Audio</span>
                           </div>
                         )}
                       </div>

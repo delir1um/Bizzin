@@ -51,7 +51,8 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
   const [isMuted, setIsMuted] = useState(false)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
   const [isExpanded, setIsExpanded] = useState(false)
-  const [showVideo, setShowVideo] = useState(Boolean(preferVideo && episode.hasVideo && episode.videoUrl))
+  // Episodes are either audio or video, not both - no toggle needed
+  const isVideoEpisode = Boolean(episode.hasVideo && episode.videoUrl)
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const updateProgress = useUpdateProgress()
@@ -141,8 +142,13 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
     setIsPlaying(!isPlaying)
   }
 
+  // Remove seeking capability - users should not skip ahead
   const handleSeek = (value: number[]) => {
-    setCurrentTime(value[0])
+    // Only allow seeking backwards to prevent skipping ahead
+    const newTime = value[0]
+    if (newTime <= currentTime) {
+      setCurrentTime(newTime)
+    }
   }
 
   const handleVolumeChange = (value: number[]) => {
@@ -154,8 +160,10 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
     setIsMuted(!isMuted)
   }
 
+  // Remove skip forward - users should not skip ahead in learning content
   const skipForward = () => {
-    setCurrentTime(prev => Math.min(prev + 15, episode.duration))
+    // Disabled to prevent skipping ahead
+    return
   }
 
   const skipBackward = () => {
@@ -171,11 +179,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
 
   const progress = (currentTime / episode.duration) * 100
 
-  const toggleVideoMode = () => {
-    if (episode.hasVideo && episode.videoUrl) {
-      setShowVideo(!showVideo)
-    }
-  }
+  // No longer needed - episodes are either audio or video, not both
 
   const handleVideoTimeUpdate = (time: number) => {
     setCurrentTime(time)
@@ -210,27 +214,20 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
               </Button>
             </div>
             <div className="flex items-center space-x-2">
-              {episode.hasVideo && episode.videoUrl && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={toggleVideoMode}
-                  className={showVideo ? 'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300' : 'bg-slate-100 dark:bg-slate-800'}
-                  title={showVideo ? 'Switch to Audio Mode' : 'Switch to Video Mode'}
-                >
-                  {showVideo ? (
-                    <>
-                      <Video className="w-4 h-4 mr-1" />
-                      <span className="text-xs">Video</span>
-                    </>
-                  ) : (
-                    <>
-                      <Headphones className="w-4 h-4 mr-1" />
-                      <span className="text-xs">Audio</span>
-                    </>
-                  )}
-                </Button>
-              )}
+              {/* Content type indicator (no toggle needed) */}
+              <div className="flex items-center px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-md">
+                {isVideoEpisode ? (
+                  <>
+                    <Video className="w-4 h-4 mr-1 text-orange-600" />
+                    <span className="text-xs text-slate-700 dark:text-slate-300">Video</span>
+                  </>
+                ) : (
+                  <>
+                    <Headphones className="w-4 h-4 mr-1 text-blue-600" />
+                    <span className="text-xs text-slate-700 dark:text-slate-300">Audio</span>
+                  </>
+                )}
+              </div>
               <Button
                 variant="ghost"
                 size="sm"
@@ -260,11 +257,11 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
             )}
           </div>
 
-          {/* Video Player (when video mode is enabled) */}
-          {showVideo && episode.videoUrl && isExpanded && (
+          {/* Video Player (for video episodes only) */}
+          {isVideoEpisode && isExpanded && (
             <div className="mb-6">
               <VideoPlayer
-                videoUrl={episode.videoUrl}
+                videoUrl={episode.videoUrl || ''}
                 thumbnailUrl={episode.videoThumbnail}
                 title={episode.title}
                 onTimeUpdate={handleVideoTimeUpdate}
@@ -275,19 +272,29 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
             </div>
           )}
 
-          {/* Progress Bar */}
+          {/* Progress Bar - Only allows seeking backwards */}
           <div className="space-y-2 mb-6">
-            <Slider
-              value={[currentTime]}
-              max={episode.duration}
-              step={1}
-              onValueChange={handleSeek}
-              className="w-full"
-            />
+            <div className="relative">
+              <Slider
+                value={[currentTime]}
+                max={episode.duration}
+                step={1}
+                onValueChange={handleSeek}
+                className="w-full"
+              />
+              {/* Visual indicator for completed progress */}
+              <div 
+                className="absolute top-0 left-0 h-2 bg-orange-200 dark:bg-orange-800 rounded-full -z-10"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
             <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
               <span>{formatTime(currentTime)}</span>
               <span>{formatTime(episode.duration)}</span>
             </div>
+            <p className="text-xs text-slate-400 dark:text-slate-500 text-center">
+              You can only replay content you've already completed
+            </p>
           </div>
 
           {/* Controls */}
@@ -297,6 +304,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
               size="sm"
               onClick={skipBackward}
               className="text-slate-600 dark:text-slate-400"
+              title="Replay last 15 seconds"
             >
               <SkipBack className="w-5 h-5" />
             </Button>
@@ -309,14 +317,10 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
               {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-1" />}
             </Button>
             
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={skipForward}
-              className="text-slate-600 dark:text-slate-400"
-            >
-              <SkipForward className="w-5 h-5" />
-            </Button>
+            {/* Skip forward removed - users should not skip ahead in learning content */}
+            <div className="w-10 h-10 flex items-center justify-center opacity-30">
+              <SkipForward className="w-5 h-5 text-slate-400" />
+            </div>
           </div>
 
           {/* Volume Control */}
