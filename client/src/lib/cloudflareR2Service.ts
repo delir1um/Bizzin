@@ -55,10 +55,15 @@ class CloudflareR2Service {
     try {
       console.log('Attempting to upload:', { fileName, fileSize: file.size, fileType: file.type })
       
+      // Convert File to ArrayBuffer for better browser compatibility
+      console.log('Converting file to ArrayBuffer...')
+      const arrayBuffer = await file.arrayBuffer()
+      console.log('File converted successfully, size:', arrayBuffer.byteLength)
+      
       const command = new PutObjectCommand({
         Bucket: BUCKET_NAME,
         Key: fileName,
-        Body: file,
+        Body: new Uint8Array(arrayBuffer),
         ContentType: file.type,
         Metadata: {
           'episode-id': episodeId,
@@ -99,10 +104,13 @@ class CloudflareR2Service {
     try {
       console.log('Uploading thumbnail:', { fileName, fileSize: file.size, fileType: file.type })
       
+      // Convert File to ArrayBuffer for browser compatibility
+      const arrayBuffer = await file.arrayBuffer()
+      
       const command = new PutObjectCommand({
         Bucket: BUCKET_NAME,
         Key: fileName,
-        Body: file,
+        Body: new Uint8Array(arrayBuffer),
         ContentType: file.type,
         Metadata: {
           'episode-id': episodeId,
