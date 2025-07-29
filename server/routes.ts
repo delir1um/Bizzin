@@ -254,6 +254,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         Key: key,
         Body: buffer,
         ContentType: contentType,
+        CacheControl: 'max-age=31536000', // 1 year cache
         Metadata: {
           'episode-id': episodeId,
           'original-name': fileName,
@@ -265,7 +266,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await s3Client.send(command)
       console.log('Upload successful!')
       
-      // For now, use the direct R2 endpoint URL (bucket needs to be public or have custom domain)
+      // Use direct R2 public URL (requires bucket to be set as public in Cloudflare dashboard)
       const publicUrl = `https://${process.env.VITE_CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com/${BUCKET_NAME}/${key}`
       
       res.json({ 
