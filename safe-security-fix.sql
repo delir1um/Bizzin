@@ -137,27 +137,20 @@ BEGIN
     END IF;
 END $$;
 
--- 7. Create comprehensive security function for admin operations
-CREATE OR REPLACE FUNCTION auth.is_admin()
-RETURNS BOOLEAN AS $$
-BEGIN
-  RETURN auth.role() = 'service_role';
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- 8. Update podcast episodes policy to allow admin inserts
+-- 7. Update podcast episodes policy to allow service role operations
 DROP POLICY IF EXISTS "podcast_episodes_admin_insert" ON podcast_episodes;
 DROP POLICY IF EXISTS "podcast_episodes_admin_update" ON podcast_episodes;
 DROP POLICY IF EXISTS "podcast_episodes_admin_delete" ON podcast_episodes;
 
-CREATE POLICY "podcast_episodes_admin_insert" ON podcast_episodes
-FOR INSERT WITH CHECK (auth.is_admin());
+-- Allow service role to insert/update/delete episodes directly
+CREATE POLICY "podcast_episodes_service_insert" ON podcast_episodes
+FOR INSERT WITH CHECK (auth.role() = 'service_role');
 
-CREATE POLICY "podcast_episodes_admin_update" ON podcast_episodes
-FOR UPDATE USING (auth.is_admin());
+CREATE POLICY "podcast_episodes_service_update" ON podcast_episodes
+FOR UPDATE USING (auth.role() = 'service_role');
 
-CREATE POLICY "podcast_episodes_admin_delete" ON podcast_episodes
-FOR DELETE USING (auth.is_admin());
+CREATE POLICY "podcast_episodes_service_delete" ON podcast_episodes
+FOR DELETE USING (auth.role() = 'service_role');
 
 -- 9. Create indexes for better performance (only for existing tables)
 DO $$ 
