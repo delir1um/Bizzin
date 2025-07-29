@@ -45,12 +45,20 @@ interface PodcastPlayerProps {
 }
 
 export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 0, preferVideo = true }: PodcastPlayerProps) {
+  // Get existing progress to set max progress reached correctly
+  const { data: existingProgress } = useEpisodeProgress(episode.id)
+  
   const [isPlaying, setIsPlaying] = useState(autoPlay)
   const [currentTime, setCurrentTime] = useState(startTime)
   const [actualDuration, setActualDuration] = useState(episode.duration) // Track actual media duration
-  const [maxProgressReached, setMaxProgressReached] = useState(
-    Math.max(startTime, existingProgress?.progressSeconds || 0)
-  ) // Track highest progress point
+  const [maxProgressReached, setMaxProgressReached] = useState(startTime) // Track highest progress point
+  
+  // Update max progress when existing progress loads
+  useEffect(() => {
+    if (existingProgress?.progressSeconds) {
+      setMaxProgressReached(Math.max(startTime, existingProgress.progressSeconds))
+    }
+  }, [existingProgress, startTime])
   const [volume, setVolume] = useState(75)
   const [isMuted, setIsMuted] = useState(false)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
@@ -61,9 +69,6 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const updateProgress = useUpdateProgress()
   const lastSaveTime = useRef(startTime)
-  
-  // Get existing progress to set max progress reached correctly
-  const { data: existingProgress } = useEpisodeProgress(episode.id)
 
   // Save progress every 15 seconds and on pause/close to reduce API calls
   const saveProgress = (time: number) => {
