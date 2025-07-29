@@ -340,7 +340,7 @@ export function EditGoalModal({ open, onOpenChange, goal, onGoalCompleted }: Edi
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent className="w-auto p-0 z-50" align="start">
                       <Calendar
                         mode="single"
                         selected={field.value}
@@ -354,6 +354,7 @@ export function EditGoalModal({ open, onOpenChange, goal, onGoalCompleted }: Edi
                           return date < today
                         }}
                         initialFocus
+                        className="relative"
                       />
                     </PopoverContent>
                   </Popover>
