@@ -199,4 +199,5 @@ BEGIN
     END LOOP;
 END $$;
 
-RAISE NOTICE 'Security fix completed successfully!';
+-- Security fix completed
+SELECT 'Security fix completed successfully!' AS result;
