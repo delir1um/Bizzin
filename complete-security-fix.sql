@@ -113,9 +113,7 @@ FOR UPDATE USING (auth.uid() = user_id);
 CREATE OR REPLACE FUNCTION auth.is_admin()
 RETURNS BOOLEAN AS $$
 BEGIN
-  RETURN auth.role() = 'service_role' OR 
-         (auth.uid() IS NOT NULL AND 
-          EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin'));
+  RETURN auth.role() = 'service_role';
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -137,7 +135,13 @@ CREATE INDEX IF NOT EXISTS idx_goals_user_id ON goals(user_id);
 CREATE INDEX IF NOT EXISTS idx_documents_user_id ON documents(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_plans_user_id ON user_plans(user_id);
 CREATE INDEX IF NOT EXISTS idx_usage_limits_user_id ON usage_limits(user_id);
-CREATE INDEX IF NOT EXISTS idx_profiles_user_id ON profiles(user_id);
+-- Index for user_profiles if it exists
+DO $$ 
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'user_profiles') THEN
+        CREATE INDEX IF NOT EXISTS idx_user_profiles_user_id ON user_profiles(user_id);
+    END IF;
+END $$;
 
 -- Verify all tables have RLS enabled
 DO $$
@@ -148,7 +152,7 @@ BEGIN
         SELECT tablename 
         FROM pg_tables 
         WHERE schemaname = 'public' 
-        AND tablename IN ('journal_entries', 'goals', 'documents', 'user_plans', 'usage_limits', 'profiles', 'podcast_episodes', 'user_podcast_progress', 'user_podcast_stats')
+        AND tablename IN ('journal_entries', 'goals', 'documents', 'user_plans', 'usage_limits', 'user_profiles', 'podcast_episodes', 'user_podcast_progress', 'user_podcast_stats')
     LOOP
         EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', r.tablename);
         RAISE NOTICE 'Enabled RLS for table: %', r.tablename;
