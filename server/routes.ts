@@ -265,7 +265,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await s3Client.send(command)
       console.log('Upload successful!')
       
-      const publicUrl = `https://${process.env.VITE_CLOUDFLARE_R2_PUBLIC_DOMAIN}/${key}`
+      // For now, use the direct R2 endpoint URL (bucket needs to be public or have custom domain)
+      const publicUrl = `https://${process.env.VITE_CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com/${BUCKET_NAME}/${key}`
       
       res.json({ 
         success: true, 

@@ -43,6 +43,8 @@ export function VideoPlayer({
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [showControls, setShowControls] = useState(true)
+  const [hasError, setHasError] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -72,14 +74,29 @@ export function VideoPlayer({
       onEnded()
     }
 
+    const handleError = () => {
+      console.error('Video loading failed for:', videoUrl)
+      setHasError(true)
+      setIsLoading(false)
+    }
+
+    const handleCanPlay = () => {
+      setIsLoading(false)
+      setHasError(false)
+    }
+
     video.addEventListener('loadedmetadata', handleLoadedMetadata)
     video.addEventListener('timeupdate', handleTimeUpdate)
     video.addEventListener('ended', handleEnded)
+    video.addEventListener('error', handleError)
+    video.addEventListener('canplay', handleCanPlay)
 
     return () => {
       video.removeEventListener('loadedmetadata', handleLoadedMetadata)
       video.removeEventListener('timeupdate', handleTimeUpdate)
       video.removeEventListener('ended', handleEnded)
+      video.removeEventListener('error', handleError)
+      video.removeEventListener('canplay', handleCanPlay)
     }
   }, [startTime, onTimeUpdate, onEnded])
 
@@ -205,7 +222,34 @@ export function VideoPlayer({
         poster={thumbnailUrl}
         className="w-full h-full"
         onClick={togglePlay}
+        crossOrigin="anonymous"
+        preload="metadata"
       />
+      
+      {/* Loading State */}
+      {isLoading && !hasError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-white text-sm">Loading video...</p>
+          </div>
+        </div>
+      )}
+      
+      {/* Error State */}
+      {hasError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+          <div className="flex flex-col items-center space-y-4 text-center p-6">
+            <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center">
+              <X className="w-6 h-6 text-red-500" />
+            </div>
+            <div className="space-y-2">
+              <p className="text-white font-medium">Video unavailable</p>
+              <p className="text-gray-300 text-sm">The video content is currently not accessible</p>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Video Controls Overlay */}
       <div 
