@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { useUpdateProgress } from '@/hooks/usePodcastProgress'
+import { useUpdateProgress, useEpisodeProgress } from '@/hooks/usePodcastProgress'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
@@ -48,6 +48,9 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
   const [isPlaying, setIsPlaying] = useState(autoPlay)
   const [currentTime, setCurrentTime] = useState(startTime)
   const [actualDuration, setActualDuration] = useState(episode.duration) // Track actual media duration
+  const [maxProgressReached, setMaxProgressReached] = useState(
+    Math.max(startTime, existingProgress?.progressSeconds || 0)
+  ) // Track highest progress point
   const [volume, setVolume] = useState(75)
   const [isMuted, setIsMuted] = useState(false)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
@@ -58,6 +61,9 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const updateProgress = useUpdateProgress()
   const lastSaveTime = useRef(startTime)
+  
+  // Get existing progress to set max progress reached correctly
+  const { data: existingProgress } = useEpisodeProgress(episode.id)
 
   // Save progress every 15 seconds and on pause/close to reduce API calls
   const saveProgress = (time: number) => {
@@ -86,8 +92,14 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
           
           if (newTime >= actualDuration) {
             setIsPlaying(false)
+            setMaxProgressReached(actualDuration) // Update max progress
             saveProgress(actualDuration) // Save completion
             return actualDuration
+          }
+          
+          // Track maximum progress reached
+          if (newTime > maxProgressReached) {
+            setMaxProgressReached(newTime)
           }
           
           // Auto-save progress every 10 seconds while playing
@@ -110,7 +122,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
         clearInterval(intervalRef.current)
       }
     }
-  }, [isPlaying, playbackSpeed, episode.duration, episode.id])
+  }, [isPlaying, playbackSpeed, actualDuration, maxProgressReached])
 
   // Save progress when component unmounts (player closed)
   useEffect(() => {
@@ -185,15 +197,24 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
     setPlaybackSpeed(speeds[nextIndex])
   }
 
-  const progress = Math.min((currentTime / actualDuration) * 100, 100)
-  const isCompleted = progress >= 95
+  const currentProgress = Math.min((currentTime / actualDuration) * 100, 100)
+  const maxProgress = Math.min((maxProgressReached / actualDuration) * 100, 100)
+  const isCompleted = maxProgress >= 95
+  
+  // Display progress should show the maximum reached, not current position for completed episodes
+  const displayProgress = isCompleted ? Math.max(maxProgress, 95) : currentProgress
 
   // No longer needed - episodes are either audio or video, not both
 
   const handleVideoTimeUpdate = (time: number) => {
     setCurrentTime(time)
+    
+    // Track maximum progress reached
+    if (time > maxProgressReached) {
+      setMaxProgressReached(time)
+    }
+    
     saveProgress(time)
-    console.log('Video time update:', time, 'Duration:', actualDuration, 'Progress:', Math.round((time / actualDuration) * 100) + '%')
   }
 
   const handleVideoDurationUpdate = (duration: number) => {
@@ -291,7 +312,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
               <div className="mt-4 flex justify-between items-center text-sm text-slate-600 dark:text-slate-400">
                 <span>{formatTime(currentTime)} / {formatTime(actualDuration)}</span>
                 <div className="flex items-center space-x-2">
-                  <span className="font-semibold text-orange-600">{Math.round(Math.min(progress, 100))}% Complete</span>
+                  <span className="font-semibold text-orange-600">{Math.round(displayProgress)}% Complete</span>
                   {isCompleted && (
                     <span className="text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded-full">
                       ✓ Completed
@@ -316,7 +337,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                 {/* Visual indicator for completed progress */}
                 <div 
                   className="absolute top-0 left-0 h-2 bg-orange-200 dark:bg-orange-800 rounded-full -z-10"
-                  style={{ width: `${progress}%` }}
+                  style={{ width: `${displayProgress}%` }}
                 />
               </div>
               <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
@@ -390,7 +411,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
               {/* Episode Stats - Show for both audio and video episodes */}
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                  <div className="text-2xl font-bold text-orange-600">{Math.round(Math.min(progress, 100))}%</div>
+                  <div className="text-2xl font-bold text-orange-600">{Math.round(displayProgress)}%</div>
                   <div className="text-xs text-slate-500 dark:text-slate-400">Progress</div>
                 </div>
                 <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
@@ -416,7 +437,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
           )}
 
           {/* Completion Badge */}
-          {progress >= 95 && (
+          {isCompleted && (
             <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
