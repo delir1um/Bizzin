@@ -281,27 +281,30 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
                     <PopoverContent 
                       className="w-auto p-0 z-50" 
                       align="start"
-                      onOpenAutoFocus={(e) => e.preventDefault()}
+                      onInteractOutside={(e) => {
+                        // Don't close when clicking calendar navigation or dates
+                        const target = e.target as Element
+                        if (target.closest('.rdp')) {
+                          e.preventDefault()
+                        }
+                      }}
                     >
-                      <div onClick={(e) => e.stopPropagation()}>
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={(date) => {
-                            if (date) {
-                              field.onChange(date)
-                              setCalendarOpen(false)
-                            }
-                          }}
-                          disabled={(date) => {
-                            const today = new Date()
-                            today.setHours(0, 0, 0, 0)
-                            return date < today
-                          }}
-                          initialFocus
-                          className="relative"
-                        />
-                      </div>
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={(date) => {
+                          if (date) {
+                            field.onChange(date)
+                            setCalendarOpen(false)
+                          }
+                        }}
+                        disabled={(date) => {
+                          const today = new Date()
+                          today.setHours(0, 0, 0, 0)
+                          return date < today
+                        }}
+                        initialFocus
+                      />
                     </PopoverContent>
                   </Popover>
                   <FormMessage />
