@@ -33,8 +33,11 @@ class CloudflareR2Service {
       const base64Data = await this.fileToBase64(file)
       console.log('File converted successfully')
       
-      // Upload via backend API
+      // Upload via backend API with timeout
       console.log('Sending to backend...')
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 120000) // 2 minute timeout
+      
       const response = await fetch('/api/upload-video', {
         method: 'POST',
         headers: {
@@ -45,8 +48,11 @@ class CloudflareR2Service {
           fileName: file.name,
           fileData: base64Data,
           contentType: file.type,
-        })
+        }),
+        signal: controller.signal
       })
+      
+      clearTimeout(timeoutId)
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
@@ -60,6 +66,11 @@ class CloudflareR2Service {
       
     } catch (error) {
       console.error('Backend upload error:', error)
+      
+      if ((error as any)?.name === 'AbortError') {
+        throw new Error('Upload timed out after 2 minutes. Please try with a smaller file.')
+      }
+      
       throw new Error(`Upload failed: ${(error as any)?.message || 'Unknown error'}`)
     }
   }
