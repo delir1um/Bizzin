@@ -220,7 +220,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
       }
 
-      const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3')
+      const { S3Client, PutObjectCommand, ListBucketsCommand } = await import('@aws-sdk/client-s3')
       const s3Client = new S3Client(R2_CONFIG)
       const BUCKET_NAME = process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || 'bizzin-podcasts'
 
@@ -233,6 +233,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         accessKeyPrefix: R2_CONFIG.credentials.accessKeyId?.substring(0, 8) + '...',
         bucketName: BUCKET_NAME
       })
+
+      // Test connection with a simple list buckets operation first
+      console.log('Testing R2 connection...')
+      try {
+        const listResult = await s3Client.send(new ListBucketsCommand({}))
+        console.log('R2 connection successful! Found buckets:', listResult.Buckets?.map(b => b.Name))
+      } catch (testError) {
+        console.error('R2 connection test failed:', testError)
+        throw new Error(`R2 authentication failed: ${(testError as Error).message}`)
+      }
       
       console.log('Converting base64 to buffer...')
       const buffer = Buffer.from(fileData, 'base64')
