@@ -19,8 +19,9 @@ This guide will help you set up Cloudflare R2 for video hosting and streaming in
 2. **Configure Bucket for Public Access:**
    - Click on your `bizzin-podcasts` bucket
    - Go to Settings tab
-   - Under "Bucket access", enable "Public access"
-   - This allows videos to be directly accessible via URL
+   - Under "Public access", enable public access
+   - Copy the "Public bucket URL" (e.g., https://pub-b3498cd071e1420b9d379a5510ba4bb8.r2.dev)
+   - This allows videos to be directly accessible via public URL
 
 2. **Create API Token:**
    - Go to "Manage R2 API Tokens"

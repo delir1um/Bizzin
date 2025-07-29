@@ -266,8 +266,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await s3Client.send(command)
       console.log('Upload successful!')
       
-      // Use direct R2 public URL (requires bucket to be set as public in Cloudflare dashboard)
-      const publicUrl = `https://${process.env.VITE_CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com/${BUCKET_NAME}/${key}`
+      // Use public R2 development URL for video access
+      const publicUrl = `https://pub-b3498cd071e1420b9d379a5510ba4bb8.r2.dev/${key}`
       
       res.json({ 
         success: true, 
