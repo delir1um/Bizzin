@@ -180,40 +180,32 @@ export class PodcastService {
     return data
   }
 
-  // Update listening progress
+  // Update listening progress using direct table operations
   static async updateProgress(episodeId: string, progressSeconds: number, episodeDuration: number): Promise<void> {
     try {
-      // Try RPC function first
-      const { error: rpcError } = await supabase.rpc('update_podcast_progress', {
-        p_episode_id: episodeId,
-        p_progress_seconds: progressSeconds,
-        p_episode_duration: episodeDuration
-      })
+      // Use direct table operations to avoid 406 RPC errors
+      const completed = progressSeconds >= (episodeDuration * 0.95)
       
-      if (rpcError) {
-        console.warn('RPC function failed, falling back to direct table operations:', rpcError)
-        
-        // Fallback to direct table operations if RPC fails
-        const completed = progressSeconds >= (episodeDuration * 0.95)
-        
-        const { error: upsertError } = await supabase
-          .from('user_podcast_progress')
-          .upsert({
-            episode_id: episodeId,
-            progress_seconds: progressSeconds,
-            completed: completed,
-            completed_at: completed ? new Date().toISOString() : null,
-            last_listened_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }, {
-            onConflict: 'user_id,episode_id'
-          })
-        
-        if (upsertError) throw upsertError
+      const { error } = await supabase
+        .from('user_podcast_progress')
+        .upsert({
+          episode_id: episodeId,
+          progress_seconds: progressSeconds,
+          completed: completed,
+          completed_at: completed ? new Date().toISOString() : null,
+          last_listened_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,episode_id'
+        })
+      
+      if (error) {
+        console.error('Failed to update progress:', error)
+        // Don't throw to prevent UI disruption
       }
     } catch (error) {
-      console.error('Both RPC and fallback failed:', error)
-      // Don't throw error to prevent UI disruption - progress will be lost but playback continues
+      console.error('Network error updating progress:', error)
+      // Silent fail to prevent playback interruption
     }
   }
 

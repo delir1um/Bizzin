@@ -72,12 +72,14 @@ export function VideoPlayer({
     const handleTimeUpdate = () => {
       const time = video.currentTime
       setCurrentTime(time)
-      onTimeUpdate(time)
       
       // Also update duration if it changed (important for video files)
       if (video.duration && video.duration !== duration) {
         setDuration(video.duration)
       }
+      
+      // Update parent with current time
+      onTimeUpdate(time)
     }
 
     const handleEnded = () => {
