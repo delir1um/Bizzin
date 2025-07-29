@@ -47,6 +47,7 @@ interface PodcastPlayerProps {
 export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 0, preferVideo = true }: PodcastPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(autoPlay)
   const [currentTime, setCurrentTime] = useState(startTime)
+  const [actualDuration, setActualDuration] = useState(episode.duration) // Track actual media duration
   const [volume, setVolume] = useState(75)
   const [isMuted, setIsMuted] = useState(false)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
@@ -60,12 +61,12 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
 
   // Save progress every 10 seconds and on pause/close
   const saveProgress = (time: number) => {
-    if (Math.abs(time - lastSaveTime.current) >= 10 || time >= episode.duration) {
+    if (Math.abs(time - lastSaveTime.current) >= 10 || time >= actualDuration) {
 
       updateProgress.mutate({
         episodeId: episode.id,
         progressSeconds: Math.floor(time),
-        episodeDuration: episode.duration
+        episodeDuration: Math.floor(actualDuration) // Use actual media duration
       })
       lastSaveTime.current = time
     }
@@ -78,10 +79,10 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
         setCurrentTime(prev => {
           const newTime = prev + playbackSpeed
           
-          if (newTime >= episode.duration) {
+          if (newTime >= actualDuration) {
             setIsPlaying(false)
-            saveProgress(episode.duration) // Save completion
-            return episode.duration
+            saveProgress(actualDuration) // Save completion
+            return actualDuration
           }
           
           // Auto-save progress every 10 seconds while playing
@@ -113,7 +114,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
         updateProgress.mutate({
           episodeId: episode.id,
           progressSeconds: Math.floor(currentTime),
-          episodeDuration: episode.duration
+          episodeDuration: Math.floor(actualDuration)
         })
       }
     }
@@ -125,7 +126,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
       updateProgress.mutate({
         episodeId: episode.id,
         progressSeconds: Math.floor(currentTime),
-        episodeDuration: episode.duration
+        episodeDuration: Math.floor(actualDuration)
       })
     }
     onClose()
@@ -148,6 +149,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
     const newTime = value[0]
     if (newTime <= currentTime) {
       setCurrentTime(newTime)
+      saveProgress(newTime)
     }
   }
 
@@ -177,7 +179,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
     setPlaybackSpeed(speeds[nextIndex])
   }
 
-  const progress = (currentTime / episode.duration) * 100
+  const progress = (currentTime / actualDuration) * 100
 
   // No longer needed - episodes are either audio or video, not both
 
@@ -186,9 +188,14 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
     saveProgress(time)
   }
 
+  const handleVideoDurationUpdate = (duration: number) => {
+    // Update actual duration when video loads its metadata
+    setActualDuration(duration)
+  }
+
   const handleVideoEnded = () => {
     setIsPlaying(false)
-    saveProgress(episode.duration)
+    saveProgress(actualDuration)
   }
 
   return (
@@ -265,6 +272,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                 thumbnailUrl={episode.videoThumbnail}
                 title={episode.title}
                 onTimeUpdate={handleVideoTimeUpdate}
+                onDurationUpdate={handleVideoDurationUpdate}
                 onEnded={handleVideoEnded}
                 startTime={startTime}
                 className="w-full h-64 md:h-96"
@@ -278,7 +286,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
               <div className="relative">
                 <Slider
                   value={[currentTime]}
-                  max={episode.duration}
+                  max={actualDuration}
                   step={1}
                   onValueChange={handleSeek}
                   className="w-full"
@@ -291,7 +299,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
               </div>
               <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
                 <span>{formatTime(currentTime)}</span>
-                <span>{formatTime(episode.duration)}</span>
+                <span>{formatTime(actualDuration)}</span>
               </div>
               <p className="text-xs text-slate-400 dark:text-slate-500 text-center">
                 You can only replay content you've already completed
@@ -354,21 +362,23 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
           {/* Expanded Content */}
           {isExpanded && (
             <div className="mt-8 space-y-6">
-              {/* Episode Stats */}
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                  <div className="text-2xl font-bold text-orange-600">{Math.round(progress)}%</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">Progress</div>
+              {/* Episode Stats - Only show for audio episodes */}
+              {!isVideoEpisode && (
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                    <div className="text-2xl font-bold text-orange-600">{Math.round(progress)}%</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400">Progress</div>
+                  </div>
+                  <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">{formatTime(actualDuration)}</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400">Duration</div>
+                  </div>
+                  <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">{playbackSpeed}x</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400">Speed</div>
+                  </div>
                 </div>
-                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">{formatTime(episode.duration)}</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">Duration</div>
-                </div>
-                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">{playbackSpeed}x</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">Speed</div>
-                </div>
-              </div>
+              )}
 
               {/* Transcript/Notes */}
               {episode.transcript && (

@@ -21,6 +21,7 @@ interface VideoPlayerProps {
   thumbnailUrl?: string
   title: string
   onTimeUpdate: (currentTime: number) => void
+  onDurationUpdate?: (duration: number) => void
   onEnded: () => void
   startTime?: number
   className?: string
@@ -31,6 +32,7 @@ export function VideoPlayer({
   thumbnailUrl, 
   title, 
   onTimeUpdate, 
+  onDurationUpdate,
   onEnded, 
   startTime = 0,
   className = ""
@@ -57,6 +59,10 @@ export function VideoPlayer({
 
     const handleLoadedMetadata = () => {
       setDuration(video.duration)
+      // Notify parent component of actual duration
+      if (onDurationUpdate) {
+        onDurationUpdate(video.duration)
+      }
       if (startTime > 0) {
         video.currentTime = startTime
         setCurrentTime(startTime)
@@ -67,6 +73,11 @@ export function VideoPlayer({
       const time = video.currentTime
       setCurrentTime(time)
       onTimeUpdate(time)
+      
+      // Also update duration if it changed (important for video files)
+      if (video.duration && video.duration !== duration) {
+        setDuration(video.duration)
+      }
     }
 
     const handleEnded = () => {
