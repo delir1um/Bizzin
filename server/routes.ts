@@ -177,11 +177,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Video upload endpoint that bypasses CORS
   app.post('/api/upload-video', async (req, res) => {
+    console.log('Received video upload request')
+    
     try {
       const { episodeId, fileName, fileData, contentType } = req.body
       
+      console.log('Upload request data:', {
+        episodeId,
+        fileName,
+        contentType,
+        dataLength: fileData?.length || 0
+      })
+      
       if (!episodeId || !fileName || !fileData || !contentType) {
+        console.error('Missing required fields:', { episodeId, fileName, contentType, hasData: !!fileData })
         return res.status(400).json({ error: 'Missing required fields' })
+      }
+      
+      // Validate environment variables
+      if (!process.env.VITE_CLOUDFLARE_ACCOUNT_ID) {
+        console.error('Missing VITE_CLOUDFLARE_ACCOUNT_ID')
+        return res.status(500).json({ error: 'Server configuration error: Missing account ID' })
+      }
+      
+      if (!process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID) {
+        console.error('Missing VITE_CLOUDFLARE_R2_ACCESS_KEY_ID')
+        return res.status(500).json({ error: 'Server configuration error: Missing access key' })
+      }
+      
+      if (!process.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY) {
+        console.error('Missing VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY')
+        return res.status(500).json({ error: 'Server configuration error: Missing secret key' })
       }
       
       // Cloudflare R2 Configuration
@@ -189,20 +215,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         region: 'auto',
         endpoint: `https://${process.env.VITE_CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
         credentials: {
-          accessKeyId: process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID || '',
-          secretAccessKey: process.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY || '',
+          accessKeyId: process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID,
+          secretAccessKey: process.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY,
         },
         forcePathStyle: true,
       }
+
+      console.log('R2 Config:', {
+        region: R2_CONFIG.region,
+        endpoint: R2_CONFIG.endpoint,
+        hasCredentials: !!R2_CONFIG.credentials.accessKeyId
+      })
 
       const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3')
       const s3Client = new S3Client(R2_CONFIG)
       const BUCKET_NAME = process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || 'bizzin-podcasts'
       
-      // Convert base64 to buffer
+      console.log('Converting base64 to buffer...')
       const buffer = Buffer.from(fileData, 'base64')
       const fileExtension = fileName.split('.').pop()
       const key = `videos/${episodeId}.${fileExtension}`
+      
+      console.log('Upload details:', {
+        bucket: BUCKET_NAME,
+        key,
+        bufferSize: buffer.length
+      })
       
       const command = new PutObjectCommand({
         Bucket: BUCKET_NAME,
@@ -216,7 +254,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       })
       
+      console.log('Sending upload command to R2...')
       await s3Client.send(command)
+      console.log('Upload successful!')
       
       const publicUrl = `https://${process.env.VITE_CLOUDFLARE_R2_PUBLIC_DOMAIN}/${key}`
       
@@ -228,9 +268,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
     } catch (error) {
       console.error('Server video upload error:', error)
+      console.error('Error details:', {
+        name: (error as Error).name,
+        message: (error as Error).message,
+        stack: (error as Error).stack
+      })
+      
       res.status(500).json({ 
         error: 'Upload failed',
-        details: error.message 
+        details: (error as Error).message || 'Unknown error'
       })
     }
   })
