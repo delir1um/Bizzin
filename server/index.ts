@@ -3,9 +3,9 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
-// Increase body size limit for video uploads (100MB)
-app.use(express.json({ limit: '100mb' }));
-app.use(express.urlencoded({ limit: '100mb', extended: false }));
+// Increase body size limit for video uploads (200MB to handle larger files)
+app.use(express.json({ limit: '200mb' }));
+app.use(express.urlencoded({ limit: '200mb', extended: false }));
 
 app.use((req, res, next) => {
   const start = Date.now();
