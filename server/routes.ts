@@ -210,7 +210,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ error: 'Server configuration error: Missing secret key' })
       }
       
-      // Cloudflare R2 Configuration
+      // Cloudflare R2 Configuration (following official docs)
       const R2_CONFIG = {
         region: 'auto',
         endpoint: `https://${process.env.VITE_CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
@@ -218,20 +218,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
           accessKeyId: process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID,
           secretAccessKey: process.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY,
         },
-        forcePathStyle: true,
       }
+
+      const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3')
+      const s3Client = new S3Client(R2_CONFIG)
+      const BUCKET_NAME = process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || 'bizzin-podcasts'
 
       console.log('R2 Config:', {
         region: R2_CONFIG.region,
         endpoint: R2_CONFIG.endpoint,
         hasCredentials: !!R2_CONFIG.credentials.accessKeyId,
         accessKeyLength: R2_CONFIG.credentials.accessKeyId?.length || 0,
-        secretKeyLength: R2_CONFIG.credentials.secretAccessKey?.length || 0
+        secretKeyLength: R2_CONFIG.credentials.secretAccessKey?.length || 0,
+        accessKeyPrefix: R2_CONFIG.credentials.accessKeyId?.substring(0, 8) + '...',
+        bucketName: BUCKET_NAME
       })
-
-      const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3')
-      const s3Client = new S3Client(R2_CONFIG)
-      const BUCKET_NAME = process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || 'bizzin-podcasts'
       
       console.log('Converting base64 to buffer...')
       const buffer = Buffer.from(fileData, 'base64')
