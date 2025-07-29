@@ -148,11 +148,12 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
     setIsPlaying(!isPlaying)
   }
 
-  // Remove seeking capability - users should not skip ahead
+  // Seeking capability - allow full navigation for completed episodes
   const handleSeek = (value: number[]) => {
-    // Only allow seeking backwards to prevent skipping ahead
     const newTime = value[0]
-    if (newTime <= currentTime) {
+    // If episode is completed (95%+), allow seeking anywhere
+    // Otherwise, only allow seeking backwards to prevent skipping ahead
+    if (isCompleted || newTime <= currentTime) {
       setCurrentTime(newTime)
       saveProgress(newTime)
     }
@@ -185,6 +186,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
   }
 
   const progress = Math.min((currentTime / actualDuration) * 100, 100)
+  const isCompleted = progress >= 95
 
   // No longer needed - episodes are either audio or video, not both
 
@@ -283,11 +285,19 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                 onEnded={handleVideoEnded}
                 startTime={startTime}
                 className="w-full h-64 md:h-96"
+                isCompleted={isCompleted}
               />
               {/* Video Progress Display */}
               <div className="mt-4 flex justify-between items-center text-sm text-slate-600 dark:text-slate-400">
                 <span>{formatTime(currentTime)} / {formatTime(actualDuration)}</span>
-                <span className="font-semibold text-orange-600">{Math.round(Math.min(progress, 100))}% Complete</span>
+                <div className="flex items-center space-x-2">
+                  <span className="font-semibold text-orange-600">{Math.round(Math.min(progress, 100))}% Complete</span>
+                  {isCompleted && (
+                    <span className="text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded-full">
+                      ✓ Completed
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -314,7 +324,10 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                 <span>{formatTime(actualDuration)}</span>
               </div>
               <p className="text-xs text-slate-400 dark:text-slate-500 text-center">
-                You can only replay content you've already completed
+                {isCompleted 
+                  ? "Episode completed! You can navigate freely through the content" 
+                  : "You can only replay content you've already completed"
+                }
               </p>
             </div>
           )}

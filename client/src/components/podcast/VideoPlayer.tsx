@@ -25,6 +25,7 @@ interface VideoPlayerProps {
   onEnded: () => void
   startTime?: number
   className?: string
+  isCompleted?: boolean // Whether episode is completed (allows free navigation)
 }
 
 export function VideoPlayer({ 
@@ -35,7 +36,8 @@ export function VideoPlayer({
   onDurationUpdate,
   onEnded, 
   startTime = 0,
-  className = ""
+  className = "",
+  isCompleted = false
 }: VideoPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(startTime)
@@ -154,8 +156,9 @@ export function VideoPlayer({
     if (!video) return
 
     const newTime = value[0]
-    // Only allow seeking backwards to prevent skipping ahead
-    if (newTime <= currentTime) {
+    // If episode is completed, allow seeking anywhere
+    // Otherwise, only allow seeking backwards to prevent skipping ahead
+    if (isCompleted || newTime <= currentTime) {
       video.currentTime = newTime
       setCurrentTime(newTime)
     }
@@ -327,7 +330,10 @@ export function VideoPlayer({
               <span>{formatTime(duration)}</span>
             </div>
             <p className="text-xs text-white/60 text-center">
-              You can only replay content you've already completed
+              {isCompleted 
+                ? "Episode completed! You can navigate freely through the content" 
+                : "You can only replay content you've already completed"
+              }
             </p>
           </div>
 
