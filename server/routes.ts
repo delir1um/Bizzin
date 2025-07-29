@@ -175,6 +175,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Video upload endpoint that bypasses CORS
+  app.post('/api/upload-video', async (req, res) => {
+    try {
+      const { episodeId, fileName, fileData, contentType } = req.body
+      
+      if (!episodeId || !fileName || !fileData || !contentType) {
+        return res.status(400).json({ error: 'Missing required fields' })
+      }
+      
+      // Cloudflare R2 Configuration
+      const R2_CONFIG = {
+        region: 'auto',
+        endpoint: `https://${process.env.VITE_CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+        credentials: {
+          accessKeyId: process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID || '',
+          secretAccessKey: process.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY || '',
+        },
+        forcePathStyle: true,
+      }
+
+      const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3')
+      const s3Client = new S3Client(R2_CONFIG)
+      const BUCKET_NAME = process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || 'bizzin-podcasts'
+      
+      // Convert base64 to buffer
+      const buffer = Buffer.from(fileData, 'base64')
+      const fileExtension = fileName.split('.').pop()
+      const key = `videos/${episodeId}.${fileExtension}`
+      
+      const command = new PutObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: key,
+        Body: buffer,
+        ContentType: contentType,
+        Metadata: {
+          'episode-id': episodeId,
+          'original-name': fileName,
+          'upload-date': new Date().toISOString(),
+        }
+      })
+      
+      await s3Client.send(command)
+      
+      const publicUrl = `https://${process.env.VITE_CLOUDFLARE_R2_PUBLIC_DOMAIN}/${key}`
+      
+      res.json({ 
+        success: true, 
+        url: publicUrl,
+        message: 'Video uploaded successfully'
+      })
+      
+    } catch (error) {
+      console.error('Server video upload error:', error)
+      res.status(500).json({ 
+        error: 'Upload failed',
+        details: error.message 
+      })
+    }
+  })
+
   const httpServer = createServer(app);
   return httpServer;
 }

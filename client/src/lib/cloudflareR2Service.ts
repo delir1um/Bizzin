@@ -22,73 +22,63 @@ class CloudflareR2Service {
   }
 
   /**
-   * Upload video file to Cloudflare R2 using presigned URL
+   * Upload video file to Cloudflare R2 via backend proxy
    */
   async uploadVideo(file: File, episodeId: string): Promise<string> {
-    // Validate required environment variables
-    if (!import.meta.env.VITE_CLOUDFLARE_ACCOUNT_ID) {
-      throw new Error('Missing VITE_CLOUDFLARE_ACCOUNT_ID environment variable')
-    }
-    if (!import.meta.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID) {
-      throw new Error('Missing VITE_CLOUDFLARE_R2_ACCESS_KEY_ID environment variable')
-    }
-    if (!import.meta.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY) {
-      throw new Error('Missing VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY environment variable')
-    }
-    if (!import.meta.env.VITE_CLOUDFLARE_R2_PUBLIC_DOMAIN) {
-      throw new Error('Missing VITE_CLOUDFLARE_R2_PUBLIC_DOMAIN environment variable')
-    }
-
-    const fileExtension = file.name.split('.').pop()
-    const fileName = `videos/${episodeId}.${fileExtension}`
-    
     try {
-      console.log('Uploading video using presigned URL:', { fileName, fileSize: file.size, fileType: file.type })
+      console.log('Uploading video via backend proxy:', { fileName: file.name, fileSize: file.size, fileType: file.type })
       
-      // Generate presigned URL for upload
-      const command = new PutObjectCommand({
-        Bucket: BUCKET_NAME,
-        Key: fileName,
-        ContentType: file.type,
-        Metadata: {
-          'episode-id': episodeId,
-          'original-name': file.name,
-          'upload-date': new Date().toISOString(),
-        }
-      })
-
-      console.log('Generating presigned URL...')
-      const presignedUrl = await getSignedUrl(this.s3Client, command, { expiresIn: 3600 })
-      console.log('Presigned URL generated successfully')
+      // Convert file to base64 for backend transfer
+      console.log('Converting file to base64...')
+      const base64Data = await this.fileToBase64(file)
+      console.log('File converted successfully')
       
-      // Upload directly to R2 using presigned URL
-      console.log('Uploading file using fetch...')
-      const uploadResponse = await fetch(presignedUrl, {
-        method: 'PUT',
-        body: file,
+      // Upload via backend API
+      console.log('Sending to backend...')
+      const response = await fetch('/api/upload-video', {
+        method: 'POST',
         headers: {
-          'Content-Type': file.type,
-        }
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          episodeId,
+          fileName: file.name,
+          fileData: base64Data,
+          contentType: file.type,
+        })
       })
 
-      if (!uploadResponse.ok) {
-        throw new Error(`Upload failed with status: ${uploadResponse.status} ${uploadResponse.statusText}`)
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.details || `Upload failed with status: ${response.status}`)
       }
       
-      console.log('Upload successful!')
+      const result = await response.json()
+      console.log('Upload successful via backend!', result)
       
-      // Return the public URL
-      const publicUrl = `https://${import.meta.env.VITE_CLOUDFLARE_R2_PUBLIC_DOMAIN}/${fileName}`
-      console.log('Generated public URL:', publicUrl)
-      return publicUrl
+      return result.url
       
     } catch (error) {
-      console.error('Detailed R2 upload error:', error)
-      console.error('Error name:', (error as any)?.name)
-      console.error('Error message:', (error as any)?.message)
-      
-      throw new Error(`R2 Upload failed: ${(error as any)?.message || 'Unknown error'}`)
+      console.error('Backend upload error:', error)
+      throw new Error(`Upload failed: ${(error as any)?.message || 'Unknown error'}`)
     }
+  }
+
+  /**
+   * Convert File to base64 string
+   */
+  private fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => {
+        const result = reader.result as string
+        // Remove the data:mime/type;base64, prefix
+        const base64 = result.split(',')[1]
+        resolve(base64)
+      }
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
   }
 
   /**
