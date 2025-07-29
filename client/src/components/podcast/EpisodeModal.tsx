@@ -19,10 +19,8 @@ import {
   TrendingUp,
   ArrowRight,
   CheckCircle2,
-  Video
 } from 'lucide-react'
 import { Episode, PodcastPlayer } from './PodcastPlayer'
-import { VideoUploadModal } from './VideoUploadModal'
 import { usePodcastEpisodes, useSeriesProgress, useCompletedEpisodes, usePodcastProgress } from '@/hooks/usePodcastProgress'
 
 interface EpisodeModalProps {
@@ -115,7 +113,7 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
 
           <div className="space-y-6">
             {/* Play Button */}
-            <div className="flex justify-center gap-4">
+            <div className="flex justify-center">
               <Button
                 onClick={handlePlayEpisode}
                 size="lg"
@@ -124,17 +122,6 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
                 <Play className="w-5 h-5 mr-2" />
                 Listen Now
               </Button>
-              
-              {/* Video Upload Test Button */}
-              <VideoUploadModal
-                episodeId={episode.id}
-                episodeTitle={episode.title}
-                hasVideo={episode.hasVideo || false}
-                onVideoUploaded={() => {
-                  // Refresh episodes data after video upload
-                  window.location.reload()
-                }}
-              />
             </div>
 
             <Separator />
