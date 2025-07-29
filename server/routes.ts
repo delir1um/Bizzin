@@ -224,7 +224,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('R2 Config:', {
         region: R2_CONFIG.region,
         endpoint: R2_CONFIG.endpoint,
-        hasCredentials: !!R2_CONFIG.credentials.accessKeyId
+        hasCredentials: !!R2_CONFIG.credentials.accessKeyId,
+        accessKeyLength: R2_CONFIG.credentials.accessKeyId?.length || 0,
+        secretKeyLength: R2_CONFIG.credentials.secretAccessKey?.length || 0
       })
 
       const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3')
