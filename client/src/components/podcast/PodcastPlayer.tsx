@@ -272,78 +272,84 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
             </div>
           )}
 
-          {/* Progress Bar - Only allows seeking backwards */}
-          <div className="space-y-2 mb-6">
-            <div className="relative">
+          {/* Progress Bar - Only show for audio episodes or when video is not expanded */}
+          {(!isVideoEpisode || !isExpanded) && (
+            <div className="space-y-2 mb-6">
+              <div className="relative">
+                <Slider
+                  value={[currentTime]}
+                  max={episode.duration}
+                  step={1}
+                  onValueChange={handleSeek}
+                  className="w-full"
+                />
+                {/* Visual indicator for completed progress */}
+                <div 
+                  className="absolute top-0 left-0 h-2 bg-orange-200 dark:bg-orange-800 rounded-full -z-10"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
+                <span>{formatTime(currentTime)}</span>
+                <span>{formatTime(episode.duration)}</span>
+              </div>
+              <p className="text-xs text-slate-400 dark:text-slate-500 text-center">
+                You can only replay content you've already completed
+              </p>
+            </div>
+          )}
+
+          {/* Controls - Only show for audio episodes or when video is not expanded */}
+          {(!isVideoEpisode || !isExpanded) && (
+            <div className="flex items-center justify-center space-x-4 mb-6">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={skipBackward}
+                className="text-slate-600 dark:text-slate-400"
+                title="Replay last 15 seconds"
+              >
+                <SkipBack className="w-5 h-5" />
+              </Button>
+              
+              <Button
+                onClick={handlePlayPause}
+                size="lg"
+                className="bg-orange-600 hover:bg-orange-700 text-white rounded-full w-14 h-14"
+              >
+                {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-1" />}
+              </Button>
+              
+              {/* Skip forward removed - users should not skip ahead in learning content */}
+              <div className="w-10 h-10 flex items-center justify-center opacity-30">
+                <SkipForward className="w-5 h-5 text-slate-400" />
+              </div>
+            </div>
+          )}
+
+          {/* Volume Control - Only show for audio episodes or when video is not expanded */}
+          {(!isVideoEpisode || !isExpanded) && (
+            <div className="flex items-center space-x-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleMute}
+                className="text-slate-600 dark:text-slate-400"
+              >
+                {isMuted || volume === 0 ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </Button>
               <Slider
-                value={[currentTime]}
-                max={episode.duration}
+                value={[isMuted ? 0 : volume]}
+                max={100}
                 step={1}
-                onValueChange={handleSeek}
-                className="w-full"
+                onValueChange={handleVolumeChange}
+                className="flex-1 max-w-24"
               />
-              {/* Visual indicator for completed progress */}
-              <div 
-                className="absolute top-0 left-0 h-2 bg-orange-200 dark:bg-orange-800 rounded-full -z-10"
-                style={{ width: `${progress}%` }}
-              />
+              <span className="text-xs text-slate-500 dark:text-slate-400 w-8">
+                {isMuted ? 0 : volume}%
+              </span>
             </div>
-            <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
-              <span>{formatTime(currentTime)}</span>
-              <span>{formatTime(episode.duration)}</span>
-            </div>
-            <p className="text-xs text-slate-400 dark:text-slate-500 text-center">
-              You can only replay content you've already completed
-            </p>
-          </div>
-
-          {/* Controls */}
-          <div className="flex items-center justify-center space-x-4 mb-6">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={skipBackward}
-              className="text-slate-600 dark:text-slate-400"
-              title="Replay last 15 seconds"
-            >
-              <SkipBack className="w-5 h-5" />
-            </Button>
-            
-            <Button
-              onClick={handlePlayPause}
-              size="lg"
-              className="bg-orange-600 hover:bg-orange-700 text-white rounded-full w-14 h-14"
-            >
-              {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-1" />}
-            </Button>
-            
-            {/* Skip forward removed - users should not skip ahead in learning content */}
-            <div className="w-10 h-10 flex items-center justify-center opacity-30">
-              <SkipForward className="w-5 h-5 text-slate-400" />
-            </div>
-          </div>
-
-          {/* Volume Control */}
-          <div className="flex items-center space-x-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleMute}
-              className="text-slate-600 dark:text-slate-400"
-            >
-              {isMuted || volume === 0 ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-            </Button>
-            <Slider
-              value={[isMuted ? 0 : volume]}
-              max={100}
-              step={1}
-              onValueChange={handleVolumeChange}
-              className="flex-1 max-w-24"
-            />
-            <span className="text-xs text-slate-500 dark:text-slate-400 w-8">
-              {isMuted ? 0 : volume}%
-            </span>
-          </div>
+          )}
 
           {/* Expanded Content */}
           {isExpanded && (
