@@ -278,21 +278,12 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent 
-                      className="w-auto p-0 z-50" 
-                      align="start"
-                      onInteractOutside={(e) => {
-                        // Don't close when clicking calendar navigation or dates
-                        const target = e.target as Element
-                        if (target.closest('.rdp')) {
-                          e.preventDefault()
-                        }
-                      }}
-                    >
+                    <PopoverContent className="w-auto p-0 z-50" align="start">
                       <Calendar
                         mode="single"
                         selected={field.value}
                         onSelect={(date) => {
+                          console.log('Date selected:', date)
                           if (date) {
                             field.onChange(date)
                             setCalendarOpen(false)
