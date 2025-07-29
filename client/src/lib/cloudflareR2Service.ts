@@ -9,6 +9,7 @@ const R2_CONFIG = {
     accessKeyId: import.meta.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID || '',
     secretAccessKey: import.meta.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY || '',
   },
+  forcePathStyle: true, // Important for R2 compatibility
 }
 
 const BUCKET_NAME = import.meta.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || 'bizzin-podcasts'
@@ -24,10 +25,36 @@ class CloudflareR2Service {
    * Upload video file to Cloudflare R2
    */
   async uploadVideo(file: File, episodeId: string): Promise<string> {
+    // Debug configuration
+    console.log('R2 Config Debug:', {
+      accountId: import.meta.env.VITE_CLOUDFLARE_ACCOUNT_ID ? 'Set' : 'Missing',
+      accessKeyId: import.meta.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID ? 'Set' : 'Missing',
+      secretKey: import.meta.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY ? 'Set' : 'Missing',
+      bucketName: BUCKET_NAME,
+      publicDomain: import.meta.env.VITE_CLOUDFLARE_R2_PUBLIC_DOMAIN || 'Missing',
+      endpoint: R2_CONFIG.endpoint
+    })
+
+    // Validate required environment variables
+    if (!import.meta.env.VITE_CLOUDFLARE_ACCOUNT_ID) {
+      throw new Error('Missing VITE_CLOUDFLARE_ACCOUNT_ID environment variable')
+    }
+    if (!import.meta.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID) {
+      throw new Error('Missing VITE_CLOUDFLARE_R2_ACCESS_KEY_ID environment variable')
+    }
+    if (!import.meta.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY) {
+      throw new Error('Missing VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY environment variable')
+    }
+    if (!import.meta.env.VITE_CLOUDFLARE_R2_PUBLIC_DOMAIN) {
+      throw new Error('Missing VITE_CLOUDFLARE_R2_PUBLIC_DOMAIN environment variable')
+    }
+
     const fileExtension = file.name.split('.').pop()
     const fileName = `videos/${episodeId}.${fileExtension}`
     
     try {
+      console.log('Attempting to upload:', { fileName, fileSize: file.size, fileType: file.type })
+      
       const command = new PutObjectCommand({
         Bucket: BUCKET_NAME,
         Key: fileName,
@@ -40,13 +67,25 @@ class CloudflareR2Service {
         }
       })
 
-      await this.s3Client.send(command)
+      console.log('Sending command to R2...')
+      const result = await this.s3Client.send(command)
+      console.log('Upload successful!', result)
       
       // Return the public URL
-      return `https://${import.meta.env.VITE_CLOUDFLARE_R2_PUBLIC_DOMAIN}/${fileName}`
+      const publicUrl = `https://${import.meta.env.VITE_CLOUDFLARE_R2_PUBLIC_DOMAIN}/${fileName}`
+      console.log('Generated public URL:', publicUrl)
+      return publicUrl
     } catch (error) {
-      console.error('Error uploading video to R2:', error)
-      throw new Error('Failed to upload video')
+      console.error('Detailed R2 upload error:', error)
+      console.error('Error name:', (error as any)?.name)
+      console.error('Error message:', (error as any)?.message)
+      console.error('Error stack:', (error as any)?.stack)
+      
+      if ((error as any)?.$metadata) {
+        console.error('AWS SDK metadata:', (error as any).$metadata)
+      }
+      
+      throw new Error(`R2 Upload failed: ${(error as any)?.message || 'Unknown error'}`)
     }
   }
 
@@ -58,6 +97,8 @@ class CloudflareR2Service {
     const fileName = `thumbnails/${episodeId}.${fileExtension}`
     
     try {
+      console.log('Uploading thumbnail:', { fileName, fileSize: file.size, fileType: file.type })
+      
       const command = new PutObjectCommand({
         Bucket: BUCKET_NAME,
         Key: fileName,
@@ -72,7 +113,9 @@ class CloudflareR2Service {
 
       await this.s3Client.send(command)
       
-      return `https://${import.meta.env.VITE_CLOUDFLARE_R2_PUBLIC_DOMAIN}/${fileName}`
+      const publicUrl = `https://${import.meta.env.VITE_CLOUDFLARE_R2_PUBLIC_DOMAIN}/${fileName}`
+      console.log('Thumbnail upload successful:', publicUrl)
+      return publicUrl
     } catch (error) {
       console.error('Error uploading thumbnail to R2:', error)
       throw new Error('Failed to upload thumbnail')
