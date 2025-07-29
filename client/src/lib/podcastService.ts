@@ -183,12 +183,20 @@ export class PodcastService {
   // Update listening progress using direct table operations
   static async updateProgress(episodeId: string, progressSeconds: number, episodeDuration: number): Promise<void> {
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        console.warn('No authenticated user, skipping progress update')
+        return
+      }
+
       // Use direct table operations to avoid 406 RPC errors
       const completed = progressSeconds >= (episodeDuration * 0.95)
       
       const { error } = await supabase
         .from('user_podcast_progress')
         .upsert({
+          user_id: user.id,
           episode_id: episodeId,
           progress_seconds: progressSeconds,
           completed: completed,
