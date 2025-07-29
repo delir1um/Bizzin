@@ -62,13 +62,18 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
   // Save progress every 10 seconds and on pause/close
   const saveProgress = (time: number) => {
     if (Math.abs(time - lastSaveTime.current) >= 10 || time >= actualDuration) {
-
-      updateProgress.mutate({
-        episodeId: episode.id,
-        progressSeconds: Math.floor(time),
-        episodeDuration: Math.floor(actualDuration) // Use actual media duration
-      })
-      lastSaveTime.current = time
+      // Don't save if mutation is already pending to prevent spam
+      if (updateProgress.isPending) return
+      
+      // Only save if we have meaningful progress (more than 5 seconds)
+      if (time >= 5) {
+        updateProgress.mutate({
+          episodeId: episode.id,
+          progressSeconds: Math.floor(time),
+          episodeDuration: Math.floor(actualDuration) // Use actual media duration
+        })
+        lastSaveTime.current = time
+      }
     }
   }
 

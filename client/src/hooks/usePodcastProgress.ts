@@ -124,11 +124,8 @@ export function useUpdateProgress() {
     },
     onError: (error) => {
       console.error('Failed to update progress:', error)
-      toast({
-        title: "Progress Not Saved",
-        description: "There was an issue saving your progress. Please try again.",
-        variant: "destructive",
-      })
+      // Suppress error toasts to avoid spam during video playback
+      // Progress will be auto-saved on next successful attempt
     }
   })
 }

@@ -182,13 +182,39 @@ export class PodcastService {
 
   // Update listening progress
   static async updateProgress(episodeId: string, progressSeconds: number, episodeDuration: number): Promise<void> {
-    const { error } = await supabase.rpc('update_podcast_progress', {
-      p_episode_id: episodeId,
-      p_progress_seconds: progressSeconds,
-      p_episode_duration: episodeDuration
-    })
-    
-    if (error) throw error
+    try {
+      // Try RPC function first
+      const { error: rpcError } = await supabase.rpc('update_podcast_progress', {
+        p_episode_id: episodeId,
+        p_progress_seconds: progressSeconds,
+        p_episode_duration: episodeDuration
+      })
+      
+      if (rpcError) {
+        console.warn('RPC function failed, falling back to direct table operations:', rpcError)
+        
+        // Fallback to direct table operations if RPC fails
+        const completed = progressSeconds >= (episodeDuration * 0.95)
+        
+        const { error: upsertError } = await supabase
+          .from('user_podcast_progress')
+          .upsert({
+            episode_id: episodeId,
+            progress_seconds: progressSeconds,
+            completed: completed,
+            completed_at: completed ? new Date().toISOString() : null,
+            last_listened_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'user_id,episode_id'
+          })
+        
+        if (upsertError) throw upsertError
+      }
+    } catch (error) {
+      console.error('Both RPC and fallback failed:', error)
+      // Don't throw error to prevent UI disruption - progress will be lost but playback continues
+    }
   }
 
   // Get user podcast statistics
