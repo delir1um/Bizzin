@@ -51,7 +51,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
   const [isMuted, setIsMuted] = useState(false)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
   const [isExpanded, setIsExpanded] = useState(false)
-  const [showVideo, setShowVideo] = useState(preferVideo && episode.hasVideo && episode.videoUrl)
+  const [showVideo, setShowVideo] = useState(Boolean(preferVideo && episode.hasVideo && episode.videoUrl))
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const updateProgress = useUpdateProgress()
@@ -215,9 +215,20 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                   variant="ghost"
                   size="sm"
                   onClick={toggleVideoMode}
-                  className={showVideo ? 'bg-orange-100 dark:bg-orange-900' : ''}
+                  className={showVideo ? 'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300' : 'bg-slate-100 dark:bg-slate-800'}
+                  title={showVideo ? 'Switch to Audio Mode' : 'Switch to Video Mode'}
                 >
-                  {showVideo ? <Video className="w-4 h-4" /> : <Headphones className="w-4 h-4" />}
+                  {showVideo ? (
+                    <>
+                      <Video className="w-4 h-4 mr-1" />
+                      <span className="text-xs">Video</span>
+                    </>
+                  ) : (
+                    <>
+                      <Headphones className="w-4 h-4 mr-1" />
+                      <span className="text-xs">Audio</span>
+                    </>
+                  )}
                 </Button>
               )}
               <Button

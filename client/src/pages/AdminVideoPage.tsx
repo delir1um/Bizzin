@@ -56,7 +56,7 @@ export function AdminVideoPage() {
             Video Management
           </h1>
           <p className="text-lg text-slate-600 dark:text-slate-400 mt-2">
-            Upload and manage video content for podcast episodes
+            Upload and manage video/audio content for learning episodes
           </p>
         </div>
 

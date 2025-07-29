@@ -19,6 +19,7 @@ import {
   TrendingUp,
   ArrowRight,
   CheckCircle2,
+  Video,
 } from 'lucide-react'
 import { Episode, PodcastPlayer } from './PodcastPlayer'
 import { usePodcastEpisodes, useSeriesProgress, useCompletedEpisodes, usePodcastProgress } from '@/hooks/usePodcastProgress'
@@ -119,8 +120,17 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
                 size="lg"
                 className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3"
               >
-                <Play className="w-5 h-5 mr-2" />
-                Listen Now
+                {episode.hasVideo && episode.videoUrl ? (
+                  <>
+                    <Video className="w-5 h-5 mr-2" />
+                    Watch Now
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-5 h-5 mr-2" />
+                    Listen Now
+                  </>
+                )}
               </Button>
             </div>
 

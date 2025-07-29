@@ -87,9 +87,9 @@ export function PodcastPage() {
     ),
     createStatCard(
       'time',
-      'Listening Time',
+      'Learning Time',
       stats?.total_listening_time ? `${Math.round(stats.total_listening_time / 3600 * 10) / 10}h` : '0h',
-      'Total Hours',
+      'Audio & Video',
       <Clock className="w-6 h-6 text-white" />,
       'purple'
     ),
@@ -124,7 +124,7 @@ export function PodcastPage() {
       {/* Continue Listening - show only if user has progress */}
       {currentlyListening && (
         <div className="mb-8">
-          <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">Continue Listening</h2>
+          <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">Continue Learning</h2>
           <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between">
@@ -168,7 +168,10 @@ export function PodcastPage() {
                           description: currentlyListening.episode.description || '',
                           duration: currentlyListening.episode.duration,
                           series: currentlyListening.episode.series,
-                          seriesColor: currentlyListening.episode.series_color || ''
+                          seriesColor: currentlyListening.episode.series_color || '',
+                          hasVideo: currentlyListening.episode.has_video,
+                          videoUrl: currentlyListening.episode.video_url,
+                          audioUrl: currentlyListening.episode.audio_url
                         })
                         setShowPlayer(true)
                       }
@@ -176,7 +179,7 @@ export function PodcastPage() {
                     className="bg-orange-600 hover:bg-orange-700 text-white"
                   >
                     <Play className="w-4 h-4 mr-2" />
-                    Continue Listening
+                    {currentlyListening.episode?.has_video ? 'Continue Watching' : 'Continue Listening'}
                   </Button>
                 </div>
               </div>
@@ -323,16 +326,20 @@ export function PodcastPage() {
                       const hasProgress = episodeProgress && episodeProgress.progress_seconds > 0
                       const progressPercentage = hasProgress ? Math.round((episodeProgress.progress_seconds / episode.duration) * 100) : 0
                       
-                      // Determine button text and icon
-                      let buttonText = 'Listen Now'
-                      let buttonIcon = <Play className="w-4 h-4 mr-2" />
+                      // Determine button text and icon based on content type
+                      let buttonText = episode.hasVideo && episode.videoUrl ? 'Watch Now' : 'Listen Now'
+                      let buttonIcon = episode.hasVideo && episode.videoUrl ? 
+                        <Video className="w-4 h-4 mr-2" /> : 
+                        <Play className="w-4 h-4 mr-2" />
                       
                       if (isCompleted) {
-                        buttonText = 'Listen Again'
+                        buttonText = episode.hasVideo && episode.videoUrl ? 'Watch Again' : 'Listen Again'
                         buttonIcon = <CheckCircle2 className="w-4 h-4 mr-2" />
                       } else if (hasProgress) {
-                        buttonText = 'Continue Listening'
-                        buttonIcon = <Play className="w-4 h-4 mr-2" />
+                        buttonText = episode.hasVideo && episode.videoUrl ? 'Continue Watching' : 'Continue Listening'
+                        buttonIcon = episode.hasVideo && episode.videoUrl ? 
+                          <Video className="w-4 h-4 mr-2" /> : 
+                          <Play className="w-4 h-4 mr-2" />
                       }
 
                       return (
