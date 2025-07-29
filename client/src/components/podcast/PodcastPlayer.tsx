@@ -257,8 +257,8 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
             )}
           </div>
 
-          {/* Video Player (for video episodes only) */}
-          {isVideoEpisode && isExpanded && (
+          {/* Video Player (for video episodes) */}
+          {isVideoEpisode && (
             <div className="mb-6">
               <VideoPlayer
                 videoUrl={episode.videoUrl || ''}
@@ -272,8 +272,8 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
             </div>
           )}
 
-          {/* Progress Bar - Only show for audio episodes or when video is not expanded */}
-          {(!isVideoEpisode || !isExpanded) && (
+          {/* Progress Bar - Only show for audio episodes */}
+          {!isVideoEpisode && (
             <div className="space-y-2 mb-6">
               <div className="relative">
                 <Slider
@@ -299,8 +299,8 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
             </div>
           )}
 
-          {/* Controls - Only show for audio episodes or when video is not expanded */}
-          {(!isVideoEpisode || !isExpanded) && (
+          {/* Controls - Only show for audio episodes */}
+          {!isVideoEpisode && (
             <div className="flex items-center justify-center space-x-4 mb-6">
               <Button
                 variant="ghost"
@@ -327,8 +327,8 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
             </div>
           )}
 
-          {/* Volume Control - Only show for audio episodes or when video is not expanded */}
-          {(!isVideoEpisode || !isExpanded) && (
+          {/* Volume Control - Only show for audio episodes */}
+          {!isVideoEpisode && (
             <div className="flex items-center space-x-3">
               <Button
                 variant="ghost"

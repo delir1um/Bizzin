@@ -141,8 +141,11 @@ export function VideoPlayer({
     if (!video) return
 
     const newTime = value[0]
-    video.currentTime = newTime
-    setCurrentTime(newTime)
+    // Only allow seeking backwards to prevent skipping ahead
+    if (newTime <= currentTime) {
+      video.currentTime = newTime
+      setCurrentTime(newTime)
+    }
   }
 
   const handleVolumeChange = (value: number[]) => {
@@ -184,9 +187,13 @@ export function VideoPlayer({
     const video = videoRef.current
     if (!video) return
 
-    const newTime = Math.max(0, Math.min(duration, currentTime + seconds))
-    video.currentTime = newTime
-    setCurrentTime(newTime)
+    // Only allow skipping backwards (negative seconds)
+    if (seconds < 0) {
+      const newTime = Math.max(0, currentTime + seconds)
+      video.currentTime = newTime
+      setCurrentTime(newTime)
+    }
+    // Skip forward is disabled for learning progression
   }
 
   const toggleFullscreen = () => {
@@ -288,17 +295,27 @@ export function VideoPlayer({
         <div className="absolute bottom-0 left-0 right-0 p-4 space-y-3">
           {/* Progress Bar */}
           <div className="space-y-1">
-            <Slider
-              value={[currentTime]}
-              max={duration}
-              step={1}
-              onValueChange={handleSeek}
-              className="w-full"
-            />
+            <div className="relative">
+              <Slider
+                value={[currentTime]}
+                max={duration}
+                step={1}
+                onValueChange={handleSeek}
+                className="w-full"
+              />
+              {/* Visual indicator for completed progress */}
+              <div 
+                className="absolute top-0 left-0 h-2 bg-orange-200/30 rounded-full -z-10"
+                style={{ width: `${(currentTime / duration) * 100}%` }}
+              />
+            </div>
             <div className="flex justify-between text-xs text-white/80">
               <span>{formatTime(currentTime)}</span>
               <span>{formatTime(duration)}</span>
             </div>
+            <p className="text-xs text-white/60 text-center">
+              You can only replay content you've already completed
+            </p>
           </div>
 
           {/* Control Buttons */}
@@ -318,18 +335,15 @@ export function VideoPlayer({
                 variant="ghost"
                 className="text-white hover:bg-white/20"
                 onClick={() => skip(-10)}
+                title="Replay last 10 seconds"
               >
                 <SkipBack className="w-4 h-4" />
               </Button>
               
-              <Button
-                size="sm"
-                variant="ghost"
-                className="text-white hover:bg-white/20"
-                onClick={() => skip(10)}
-              >
-                <SkipForward className="w-4 h-4" />
-              </Button>
+              {/* Skip forward disabled for learning progression */}
+              <div className="opacity-30">
+                <SkipForward className="w-4 h-4 text-white/40" />
+              </div>
             </div>
 
             <div className="flex items-center space-x-2">
