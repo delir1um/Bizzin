@@ -278,24 +278,11 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent 
-                      className="w-auto p-0 z-50" 
-                      align="start"
-                      onInteractOutside={(e) => {
-                        // Only close if clicking truly outside the calendar
-                        const target = e.target as HTMLElement
-                        if (!target.closest('[data-radix-popper-content-wrapper]')) {
-                          setCalendarOpen(false)
-                        } else {
-                          e.preventDefault()
-                        }
-                      }}
-                    >
+                    <PopoverContent className="w-auto p-0 z-50" align="start">
                       <Calendar
                         mode="single"
                         selected={field.value}
                         onSelect={(date) => {
-                          console.log('Date selected:', date)
                           if (date) {
                             field.onChange(date)
                             setCalendarOpen(false)
