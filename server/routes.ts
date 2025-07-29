@@ -210,39 +210,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ error: 'Server configuration error: Missing secret key' })
       }
       
-      // Cloudflare R2 Configuration (following official docs)
-      const R2_CONFIG = {
+      // Cloudflare R2 Configuration with explicit signing settings
+      const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3')
+      
+      const BUCKET_NAME = process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || 'bizzin-podcasts'
+      const ENDPOINT = `https://${process.env.VITE_CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`
+      
+      const s3Client = new S3Client({
         region: 'auto',
-        endpoint: `https://${process.env.VITE_CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+        endpoint: ENDPOINT,
         credentials: {
           accessKeyId: process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID,
           secretAccessKey: process.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY,
-        },
-      }
-
-      const { S3Client, PutObjectCommand, ListBucketsCommand } = await import('@aws-sdk/client-s3')
-      const s3Client = new S3Client(R2_CONFIG)
-      const BUCKET_NAME = process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || 'bizzin-podcasts'
+        }
+      })
 
       console.log('R2 Config:', {
-        region: R2_CONFIG.region,
-        endpoint: R2_CONFIG.endpoint,
-        hasCredentials: !!R2_CONFIG.credentials.accessKeyId,
-        accessKeyLength: R2_CONFIG.credentials.accessKeyId?.length || 0,
-        secretKeyLength: R2_CONFIG.credentials.secretAccessKey?.length || 0,
-        accessKeyPrefix: R2_CONFIG.credentials.accessKeyId?.substring(0, 8) + '...',
+        region: 'auto',
+        endpoint: ENDPOINT,
+        hasCredentials: !!process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID,
+        accessKeyLength: process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID?.length || 0,
+        secretKeyLength: process.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY?.length || 0,
+        accessKeyPrefix: process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID?.substring(0, 8) + '...',
         bucketName: BUCKET_NAME
       })
 
-      // Test connection with a simple list buckets operation first
-      console.log('Testing R2 connection...')
-      try {
-        const listResult = await s3Client.send(new ListBucketsCommand({}))
-        console.log('R2 connection successful! Found buckets:', listResult.Buckets?.map(b => b.Name))
-      } catch (testError) {
-        console.error('R2 connection test failed:', testError)
-        throw new Error(`R2 authentication failed: ${(testError as Error).message}`)
-      }
+      // Skip ListBuckets test - proceed directly to upload
+      console.log('Proceeding directly to video upload...')
       
       console.log('Converting base64 to buffer...')
       const buffer = Buffer.from(fileData, 'base64')
