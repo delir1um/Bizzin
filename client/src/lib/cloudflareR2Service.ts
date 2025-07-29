@@ -22,19 +22,9 @@ class CloudflareR2Service {
   }
 
   /**
-   * Upload video file to Cloudflare R2
+   * Upload video file to Cloudflare R2 using presigned URL
    */
   async uploadVideo(file: File, episodeId: string): Promise<string> {
-    // Debug configuration
-    console.log('R2 Config Debug:', {
-      accountId: import.meta.env.VITE_CLOUDFLARE_ACCOUNT_ID ? 'Set' : 'Missing',
-      accessKeyId: import.meta.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID ? 'Set' : 'Missing',
-      secretKey: import.meta.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY ? 'Set' : 'Missing',
-      bucketName: BUCKET_NAME,
-      publicDomain: import.meta.env.VITE_CLOUDFLARE_R2_PUBLIC_DOMAIN || 'Missing',
-      endpoint: R2_CONFIG.endpoint
-    })
-
     // Validate required environment variables
     if (!import.meta.env.VITE_CLOUDFLARE_ACCOUNT_ID) {
       throw new Error('Missing VITE_CLOUDFLARE_ACCOUNT_ID environment variable')
@@ -53,17 +43,12 @@ class CloudflareR2Service {
     const fileName = `videos/${episodeId}.${fileExtension}`
     
     try {
-      console.log('Attempting to upload:', { fileName, fileSize: file.size, fileType: file.type })
+      console.log('Uploading video using presigned URL:', { fileName, fileSize: file.size, fileType: file.type })
       
-      // Convert File to ArrayBuffer for better browser compatibility
-      console.log('Converting file to ArrayBuffer...')
-      const arrayBuffer = await file.arrayBuffer()
-      console.log('File converted successfully, size:', arrayBuffer.byteLength)
-      
+      // Generate presigned URL for upload
       const command = new PutObjectCommand({
         Bucket: BUCKET_NAME,
         Key: fileName,
-        Body: new Uint8Array(arrayBuffer),
         ContentType: file.type,
         Metadata: {
           'episode-id': episodeId,
@@ -72,45 +57,54 @@ class CloudflareR2Service {
         }
       })
 
-      console.log('Sending command to R2...')
-      const result = await this.s3Client.send(command)
-      console.log('Upload successful!', result)
+      console.log('Generating presigned URL...')
+      const presignedUrl = await getSignedUrl(this.s3Client, command, { expiresIn: 3600 })
+      console.log('Presigned URL generated successfully')
+      
+      // Upload directly to R2 using presigned URL
+      console.log('Uploading file using fetch...')
+      const uploadResponse = await fetch(presignedUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        }
+      })
+
+      if (!uploadResponse.ok) {
+        throw new Error(`Upload failed with status: ${uploadResponse.status} ${uploadResponse.statusText}`)
+      }
+      
+      console.log('Upload successful!')
       
       // Return the public URL
       const publicUrl = `https://${import.meta.env.VITE_CLOUDFLARE_R2_PUBLIC_DOMAIN}/${fileName}`
       console.log('Generated public URL:', publicUrl)
       return publicUrl
+      
     } catch (error) {
       console.error('Detailed R2 upload error:', error)
       console.error('Error name:', (error as any)?.name)
       console.error('Error message:', (error as any)?.message)
-      console.error('Error stack:', (error as any)?.stack)
-      
-      if ((error as any)?.$metadata) {
-        console.error('AWS SDK metadata:', (error as any).$metadata)
-      }
       
       throw new Error(`R2 Upload failed: ${(error as any)?.message || 'Unknown error'}`)
     }
   }
 
   /**
-   * Upload video thumbnail to Cloudflare R2
+   * Upload video thumbnail to Cloudflare R2 using presigned URL
    */
   async uploadThumbnail(file: File, episodeId: string): Promise<string> {
     const fileExtension = file.name.split('.').pop()
     const fileName = `thumbnails/${episodeId}.${fileExtension}`
     
     try {
-      console.log('Uploading thumbnail:', { fileName, fileSize: file.size, fileType: file.type })
+      console.log('Uploading thumbnail using presigned URL:', { fileName, fileSize: file.size, fileType: file.type })
       
-      // Convert File to ArrayBuffer for browser compatibility
-      const arrayBuffer = await file.arrayBuffer()
-      
+      // Generate presigned URL for upload
       const command = new PutObjectCommand({
         Bucket: BUCKET_NAME,
         Key: fileName,
-        Body: new Uint8Array(arrayBuffer),
         ContentType: file.type,
         Metadata: {
           'episode-id': episodeId,
@@ -119,7 +113,20 @@ class CloudflareR2Service {
         }
       })
 
-      await this.s3Client.send(command)
+      const presignedUrl = await getSignedUrl(this.s3Client, command, { expiresIn: 3600 })
+      
+      // Upload directly to R2 using presigned URL
+      const uploadResponse = await fetch(presignedUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        }
+      })
+
+      if (!uploadResponse.ok) {
+        throw new Error(`Thumbnail upload failed with status: ${uploadResponse.status}`)
+      }
       
       const publicUrl = `https://${import.meta.env.VITE_CLOUDFLARE_R2_PUBLIC_DOMAIN}/${fileName}`
       console.log('Thumbnail upload successful:', publicUrl)
