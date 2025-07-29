@@ -282,6 +282,11 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                 startTime={startTime}
                 className="w-full h-64 md:h-96"
               />
+              {/* Video Progress Display */}
+              <div className="mt-4 flex justify-between items-center text-sm text-slate-600 dark:text-slate-400">
+                <span>{formatTime(currentTime)} / {formatTime(actualDuration)}</span>
+                <span className="font-semibold text-orange-600">{Math.round(progress)}% Complete</span>
+              </div>
             </div>
           )}
 
@@ -367,23 +372,21 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
           {/* Expanded Content */}
           {isExpanded && (
             <div className="mt-8 space-y-6">
-              {/* Episode Stats - Only show for audio episodes */}
-              {!isVideoEpisode && (
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                    <div className="text-2xl font-bold text-orange-600">{Math.round(progress)}%</div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">Progress</div>
-                  </div>
-                  <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">{formatTime(actualDuration)}</div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">Duration</div>
-                  </div>
-                  <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">{playbackSpeed}x</div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">Speed</div>
-                  </div>
+              {/* Episode Stats - Show for both audio and video episodes */}
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <div className="text-2xl font-bold text-orange-600">{Math.round(progress)}%</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">Progress</div>
                 </div>
-              )}
+                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-600">{formatTime(actualDuration)}</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">Duration</div>
+                </div>
+                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">{playbackSpeed}x</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">Speed</div>
+                </div>
+              </div>
 
               {/* Transcript/Notes */}
               {episode.transcript && (
