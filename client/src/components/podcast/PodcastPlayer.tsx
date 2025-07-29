@@ -55,8 +55,8 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
   
   // Update max progress when existing progress loads
   useEffect(() => {
-    if (existingProgress?.progressSeconds) {
-      setMaxProgressReached(Math.max(startTime, existingProgress.progressSeconds))
+    if (existingProgress?.progress_seconds) {
+      setMaxProgressReached(Math.max(startTime, existingProgress.progress_seconds))
     }
   }, [existingProgress, startTime])
   const [volume, setVolume] = useState(75)
