@@ -18,7 +18,14 @@ This guide will help you set up Cloudflare R2 for video hosting and streaming in
 
 2. **Create API Token:**
    - Go to "Manage R2 API Tokens"
-   - Create token with Read & Write permissions
+   - Click "Create API Token"
+   - **IMPORTANT**: Select "Admin Read & Write" permissions (not just "Read & Write")
+   - OR select "Custom" and enable:
+     - Object read
+     - Object write
+     - Bucket read (required for ListBuckets)
+     - Bucket write
+   - Apply to all buckets or specific bucket: `bizzin-podcasts`
    - Note the Access Key ID and Secret Access Key
 
 3. **Set up Custom Domain (Optional but Recommended):**
@@ -84,7 +91,11 @@ This provides massive cost savings compared to traditional video hosting solutio
 - Ensure custom domain is properly configured
 
 **Upload failures:**
-- Confirm API token has Read & Write permissions
+- **Access Denied Error**: Token lacks sufficient permissions
+  - Delete current token and create new one with "Admin Read & Write"
+  - Or use "Custom" with all object/bucket read/write permissions
+  - ListBuckets permission is required for connection testing
+- Confirm API token has correct permissions (not just basic Read & Write)
 - Check file size limits (R2 supports up to 5TB per object)
 - Verify network connectivity to Cloudflare
 
