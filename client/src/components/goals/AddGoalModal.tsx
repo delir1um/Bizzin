@@ -85,7 +85,16 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent 
+        className="sm:max-w-[600px]"
+        onInteractOutside={(e) => {
+          // Prevent closing when clicking calendar dates
+          const target = e.target as HTMLElement
+          if (target.closest('[role="gridcell"]') || target.closest('[data-radix-calendar]')) {
+            e.preventDefault()
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle>Add New Goal</DialogTitle>
           <DialogDescription>
@@ -234,35 +243,23 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent 
-                      className="w-auto p-0" 
-                      align="start"
-                      onInteractOutside={(e) => {
-                        // Prevent closing when interacting with calendar
-                        const target = e.target as HTMLElement
-                        if (target.closest('[data-radix-calendar]') || target.closest('[role="gridcell"]')) {
-                          e.preventDefault()
-                        }
-                      }}
-                    >
-                      <div onClick={(e) => e.stopPropagation()}>
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={(date) => {
-                            if (date) {
-                              field.onChange(date)
-                              setCalendarOpen(false)
-                            }
-                          }}
-                          disabled={(date) => {
-                            const today = new Date()
-                            today.setHours(0, 0, 0, 0)
-                            return date < today
-                          }}
-                          initialFocus
-                        />
-                      </div>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={(date) => {
+                          if (date) {
+                            field.onChange(date)
+                            setCalendarOpen(false)
+                          }
+                        }}
+                        disabled={(date) => {
+                          const today = new Date()
+                          today.setHours(0, 0, 0, 0)
+                          return date < today
+                        }}
+                        initialFocus
+                      />
                     </PopoverContent>
                   </Popover>
                   <FormMessage />
