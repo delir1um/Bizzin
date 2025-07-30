@@ -16,7 +16,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 
 const addGoalSchema = z.object({
@@ -41,7 +40,7 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
   const { user } = useAuth()
   const { toast } = useToast()
   const queryClient = useQueryClient()
-  const [calendarOpen, setCalendarOpen] = useState(false)
+  const [showCalendar, setShowCalendar] = useState(false)
 
   const form = useForm<AddGoalFormData>({
     resolver: zodResolver(addGoalSchema),
@@ -59,10 +58,9 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
     mutationFn: async (data: AddGoalFormData) => {
       if (!user) throw new Error("User not authenticated")
       
-      // Transform form data to match Goal type
       const goalData = {
         ...data,
-        progress: 0, // Default progress for new goals
+        progress: 0,
         user_id: user.id,
       }
       
@@ -95,10 +93,7 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
         className="sm:max-w-[600px]"
-        onInteractOutside={(e) => {
-          // Prevent modal from closing when clicking outside
-          e.preventDefault()
-        }}
+        onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
           <DialogTitle>Add New Goal</DialogTitle>
@@ -228,56 +223,46 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Deadline *</FormLabel>
-                  <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                          disabled={createGoalMutation.isPending}
-                          onClick={(e) => {
-                            e.preventDefault()
-                            setCalendarOpen(true)
-                          }}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a deadline date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent 
-                      className="w-auto p-0" 
-                      align="start"
-                      onOpenAutoFocus={(e) => e.preventDefault()}
+                  <FormControl>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className={cn(
+                        "pl-3 text-left font-normal justify-start",
+                        !field.value && "text-muted-foreground"
+                      )}
+                      disabled={createGoalMutation.isPending}
+                      onClick={() => setShowCalendar(!showCalendar)}
                     >
-                      <div onClick={(e) => e.stopPropagation()}>
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={(date) => {
-                            if (date) {
-                              console.log('Date selected:', date)
-                              field.onChange(date)
-                              setCalendarOpen(false)
-                            }
-                          }}
-                          disabled={(date) => {
-                            const today = new Date()
-                            today.setHours(0, 0, 0, 0)
-                            return date < today
-                          }}
-                          initialFocus
-                        />
-                      </div>
-                    </PopoverContent>
-                  </Popover>
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Pick a deadline date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                  
+                  {showCalendar && (
+                    <div className="border rounded-md p-3 bg-background">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={(date) => {
+                          if (date) {
+                            field.onChange(date)
+                            setShowCalendar(false)
+                          }
+                        }}
+                        disabled={(date) => {
+                          const today = new Date()
+                          today.setHours(0, 0, 0, 0)
+                          return date < today
+                        }}
+                        initialFocus
+                      />
+                    </div>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
