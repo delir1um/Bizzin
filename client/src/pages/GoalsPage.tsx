@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast"
 import { Target, Plus, TrendingUp, CheckCircle, Clock, AlertCircle, Filter, Search, SortAsc, SortDesc, Grid3X3, List, ChevronLeft, ChevronRight } from "lucide-react"
 import { GoalCard } from "@/components/goals/GoalCard"
-
+import { AddGoalModal } from "@/components/goals/AddGoalModal"
 import { EditGoalModal } from "@/components/goals/EditGoalModal"
 import { GoalsService } from "@/lib/services/goals"
 import { useAuth } from "@/hooks/AuthProvider"
@@ -30,7 +30,7 @@ export function GoalsPage() {
   const queryClient = useQueryClient()
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all')
   const [priorityFilter, setPriorityFilter] = useState<FilterPriority>('all')
-
+  const [addGoalModalOpen, setAddGoalModalOpen] = useState(false)
   const [editGoalModalOpen, setEditGoalModalOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null)
@@ -231,11 +231,11 @@ export function GoalsPage() {
           </div>
           <div className="mt-4 sm:mt-0">
             <Button 
-              disabled
-              className="bg-gray-400 text-white cursor-not-allowed"
+              onClick={() => setAddGoalModalOpen(true)}
+              className="bg-orange-600 hover:bg-orange-700 text-white"
             >
               <Plus className="w-4 h-4 mr-2" />
-              New Goal (Removed)
+              New Goal
             </Button>
           </div>
         </div>
@@ -591,7 +591,11 @@ export function GoalsPage() {
         </>
       )}
 
-
+      {/* Add Goal Modal */}
+      <AddGoalModal 
+        open={addGoalModalOpen} 
+        onOpenChange={setAddGoalModalOpen}
+      />
 
       {/* Edit Goal Modal */}
       <EditGoalModal 
