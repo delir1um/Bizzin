@@ -260,7 +260,17 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
                           return date < today
                         }}
                         initialFocus
-                        className="w-full"
+                        className="w-full flex justify-center"
+                        classNames={{
+                          months: "flex w-full justify-center",
+                          month: "w-full",
+                          table: "w-full",
+                          head_row: "flex w-full",
+                          head_cell: "flex-1 text-center",
+                          row: "flex w-full mt-2",
+                          cell: "flex-1 text-center p-0",
+                          day: "h-9 w-full p-0 font-normal aria-selected:opacity-100"
+                        }}
                       />
                     </div>
                   )}
