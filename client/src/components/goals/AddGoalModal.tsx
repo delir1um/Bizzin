@@ -58,7 +58,7 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
   const createGoalMutation = useMutation({
     mutationFn: async (data: AddGoalFormData) => {
       if (!user) throw new Error("User not authenticated")
-      return await GoalsService.createGoal(user.id, data)
+      return await GoalsService.createGoal(data)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['goals'] })
@@ -88,11 +88,8 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
       <DialogContent 
         className="sm:max-w-[600px]"
         onInteractOutside={(e) => {
-          // Prevent closing when clicking calendar dates
-          const target = e.target as HTMLElement
-          if (target.closest('[role="gridcell"]') || target.closest('[data-radix-calendar]')) {
-            e.preventDefault()
-          }
+          // Prevent modal from closing when clicking outside
+          e.preventDefault()
         }}
       >
         <DialogHeader>
