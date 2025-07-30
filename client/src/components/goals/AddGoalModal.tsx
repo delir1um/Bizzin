@@ -244,7 +244,7 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
                   </FormControl>
                   
                   {showCalendar && (
-                    <div className="border rounded-md p-3 bg-background">
+                    <div className="border rounded-md p-3 bg-background w-full">
                       <Calendar
                         mode="single"
                         selected={field.value}
@@ -260,6 +260,7 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
                           return date < today
                         }}
                         initialFocus
+                        className="w-full"
                       />
                     </div>
                   )}
