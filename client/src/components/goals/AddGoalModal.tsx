@@ -234,23 +234,35 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={(date) => {
-                          if (date) {
-                            field.onChange(date)
-                            setCalendarOpen(false)
-                          }
-                        }}
-                        disabled={(date) => {
-                          const today = new Date()
-                          today.setHours(0, 0, 0, 0)
-                          return date < today
-                        }}
-                        initialFocus
-                      />
+                    <PopoverContent 
+                      className="w-auto p-0" 
+                      align="start"
+                      onInteractOutside={(e) => {
+                        // Prevent closing when interacting with calendar
+                        const target = e.target as HTMLElement
+                        if (target.closest('[data-radix-calendar]') || target.closest('[role="gridcell"]')) {
+                          e.preventDefault()
+                        }
+                      }}
+                    >
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={(date) => {
+                            if (date) {
+                              field.onChange(date)
+                              setCalendarOpen(false)
+                            }
+                          }}
+                          disabled={(date) => {
+                            const today = new Date()
+                            today.setHours(0, 0, 0, 0)
+                            return date < today
+                          }}
+                          initialFocus
+                        />
+                      </div>
                     </PopoverContent>
                   </Popover>
                   <FormMessage />
