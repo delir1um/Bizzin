@@ -58,7 +58,15 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
   const createGoalMutation = useMutation({
     mutationFn: async (data: AddGoalFormData) => {
       if (!user) throw new Error("User not authenticated")
-      return await GoalsService.createGoal(data)
+      
+      // Transform form data to match Goal type
+      const goalData = {
+        ...data,
+        progress: 0, // Default progress for new goals
+        user_id: user.id,
+      }
+      
+      return await GoalsService.createGoal(goalData)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['goals'] })
@@ -230,6 +238,10 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
                             !field.value && "text-muted-foreground"
                           )}
                           disabled={createGoalMutation.isPending}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            setCalendarOpen(true)
+                          }}
                         >
                           {field.value ? (
                             format(field.value, "PPP")
@@ -240,23 +252,30 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={(date) => {
-                          if (date) {
-                            field.onChange(date)
-                            setCalendarOpen(false)
-                          }
-                        }}
-                        disabled={(date) => {
-                          const today = new Date()
-                          today.setHours(0, 0, 0, 0)
-                          return date < today
-                        }}
-                        initialFocus
-                      />
+                    <PopoverContent 
+                      className="w-auto p-0" 
+                      align="start"
+                      onOpenAutoFocus={(e) => e.preventDefault()}
+                    >
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={(date) => {
+                            if (date) {
+                              console.log('Date selected:', date)
+                              field.onChange(date)
+                              setCalendarOpen(false)
+                            }
+                          }}
+                          disabled={(date) => {
+                            const today = new Date()
+                            today.setHours(0, 0, 0, 0)
+                            return date < today
+                          }}
+                          initialFocus
+                        />
+                      </div>
                     </PopoverContent>
                   </Popover>
                   <FormMessage />
