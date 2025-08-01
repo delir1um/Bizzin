@@ -29,6 +29,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
   const [isListening, setIsListening] = useState(false)
   const [interimTranscript, setInterimTranscript] = useState("")
   const recognitionRef = useRef<any>(null)
+  const finalTranscriptRef = useRef<string>("")
   const { toast } = useToast()
 
   const createEntryMutation = useMutation({
@@ -143,7 +144,8 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
           let finalTranscript = ''
           let interimTranscript = ''
 
-          for (let i = event.resultIndex; i < event.results.length; i++) {
+          // Process all results
+          for (let i = 0; i < event.results.length; i++) {
             const transcript = event.results[i][0].transcript
             if (event.results[i].isFinal) {
               finalTranscript += transcript + ' '
@@ -152,9 +154,20 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
             }
           }
 
-          if (finalTranscript) {
-            setContent(prev => prev + finalTranscript)
+          // Only update content with final results, and only once
+          if (finalTranscript.trim()) {
+            setContent(prev => {
+              // Avoid duplicates by checking if this text is already at the end
+              const trimmedFinal = finalTranscript.trim()
+              const currentContent = prev.trim()
+              
+              if (!currentContent.endsWith(trimmedFinal)) {
+                return currentContent + (currentContent ? ' ' : '') + trimmedFinal
+              }
+              return prev
+            })
           }
+          
           setInterimTranscript(interimTranscript)
         }
 
@@ -206,6 +219,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
     try {
       setIsListening(true)
       setInterimTranscript("")
+      finalTranscriptRef.current = ""
       recognitionRef.current.start()
       
       toast({
@@ -224,6 +238,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
       recognitionRef.current.stop()
       setIsListening(false)
       setInterimTranscript("")
+      finalTranscriptRef.current = ""
     }
   }
 
