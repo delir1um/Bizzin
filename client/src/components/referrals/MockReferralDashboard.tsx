@@ -73,7 +73,25 @@ export function MockReferralDashboard() {
   }
 
   const getReferralLink = () => {
-    return `${window.location.origin}/auth?ref=${mockDashboard.referral_code}`
+    // Check if we have a custom deployment URL
+    const deploymentUrl = import.meta.env.VITE_DEPLOYMENT_URL
+    if (deploymentUrl) {
+      return `${deploymentUrl}/auth?ref=${mockDashboard.referral_code}`
+    }
+    
+    // Auto-detect deployment URL based on current hostname
+    const currentHostname = window.location.hostname
+    let baseUrl = window.location.origin
+    
+    // If we're on a replit.dev preview URL, convert to the deployment URL
+    if (currentHostname.includes('.replit.dev')) {
+      const matches = currentHostname.match(/^([^-]+)-/)
+      if (matches) {
+        baseUrl = `https://${matches[1]}.replit.app`
+      }
+    }
+    
+    return `${baseUrl}/auth?ref=${mockDashboard.referral_code}`
   }
 
   return (

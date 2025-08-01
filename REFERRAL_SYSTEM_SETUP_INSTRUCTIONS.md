@@ -123,6 +123,19 @@ After running the SQL, verify the setup by checking:
 - Social sharing integrations
 - Referral leaderboards
 
+## Deployment URL Configuration
+
+The referral system automatically generates shareable links. By default, it:
+- Uses the current domain in production
+- Converts `.replit.dev` preview URLs to `.replit.app` deployment URLs
+- Keeps `localhost` for development
+
+**Optional: Custom Domain Setup**
+To use a custom domain for referral links, add to your environment variables:
+```
+VITE_DEPLOYMENT_URL=https://your-custom-domain.com
+```
+
 ## Support
 For issues with the referral system:
 1. Check database trigger logs

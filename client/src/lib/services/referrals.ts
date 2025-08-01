@@ -185,7 +185,27 @@ export class ReferralService {
    * Generate referral link for user
    */
   static generateReferralLink(referralCode: string): string {
-    const baseUrl = window.location.origin
+    // Check if we have a custom deployment URL
+    const deploymentUrl = import.meta.env.VITE_DEPLOYMENT_URL
+    if (deploymentUrl) {
+      return `${deploymentUrl}/auth?ref=${referralCode}`
+    }
+    
+    // Auto-detect deployment URL based on current hostname
+    const currentHostname = window.location.hostname
+    let baseUrl = window.location.origin
+    
+    // If we're on a replit.dev preview URL, convert to the deployment URL
+    if (currentHostname.includes('.replit.dev')) {
+      // Extract project name from replit.dev URL and construct .replit.app URL
+      const matches = currentHostname.match(/^([^-]+)-/)
+      if (matches) {
+        baseUrl = `https://${matches[1]}.replit.app`
+      }
+    }
+    // If we're on localhost, keep as-is for development
+    // If we're already on .replit.app, keep as-is
+    
     return `${baseUrl}/auth?ref=${referralCode}`
   }
 
