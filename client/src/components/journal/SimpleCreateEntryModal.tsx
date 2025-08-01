@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { queryClient } from "@/lib/queryClient"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { PlusCircle, Brain, Sparkles, X } from "lucide-react"
+import { PlusCircle, Brain, Sparkles, X, Mic, MicOff, Volume2 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { useMutation } from "@tanstack/react-query"
 import { useToast } from "@/hooks/use-toast"
@@ -26,6 +26,9 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
   const [content, setContent] = useState("")
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [aiPreview, setAiPreview] = useState<any>(null)
+  const [isListening, setIsListening] = useState(false)
+  const [interimTranscript, setInterimTranscript] = useState("")
+  const recognitionRef = useRef<any>(null)
   const { toast } = useToast()
 
   const createEntryMutation = useMutation({
@@ -118,11 +121,110 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
     setContent("")
     setAiPreview(null)
     setIsAnalyzing(false)
+    stopListening()
     onClose()
   }
 
   const handleUseSuggestedTitle = (suggestedTitle: string) => {
     setTitle(suggestedTitle)
+  }
+
+  // Initialize speech recognition
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition()
+        recognition.continuous = true
+        recognition.interimResults = true
+        recognition.lang = 'en-US'
+
+        recognition.onresult = (event: any) => {
+          let finalTranscript = ''
+          let interimTranscript = ''
+
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript
+            if (event.results[i].isFinal) {
+              finalTranscript += transcript + ' '
+            } else {
+              interimTranscript += transcript
+            }
+          }
+
+          if (finalTranscript) {
+            setContent(prev => prev + finalTranscript)
+          }
+          setInterimTranscript(interimTranscript)
+        }
+
+        recognition.onerror = (event: any) => {
+          console.error('Speech recognition error:', event.error)
+          setIsListening(false)
+          
+          if (event.error === 'not-allowed') {
+            toast({
+              title: "Microphone access denied",
+              description: "Please allow microphone access to use voice input",
+              variant: "destructive"
+            })
+          } else if (event.error === 'no-speech') {
+            toast({
+              title: "No speech detected",
+              description: "Please try speaking again",
+              variant: "destructive"
+            })
+          }
+        }
+
+        recognition.onend = () => {
+          setIsListening(false)
+          setInterimTranscript("")
+        }
+
+        recognitionRef.current = recognition
+      }
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop()
+      }
+    }
+  }, [toast])
+
+  const startListening = () => {
+    if (!recognitionRef.current) {
+      toast({
+        title: "Speech recognition not supported",
+        description: "Your browser doesn't support voice input",
+        variant: "destructive"
+      })
+      return
+    }
+
+    try {
+      setIsListening(true)
+      setInterimTranscript("")
+      recognitionRef.current.start()
+      
+      toast({
+        title: "Listening...",
+        description: "Start speaking your journal entry",
+        className: "border-blue-200 bg-blue-50 text-blue-800"
+      })
+    } catch (error) {
+      console.error('Error starting speech recognition:', error)
+      setIsListening(false)
+    }
+  }
+
+  const stopListening = () => {
+    if (recognitionRef.current && isListening) {
+      recognitionRef.current.stop()
+      setIsListening(false)
+      setInterimTranscript("")
+    }
   }
 
   // Generate a smart title from content
@@ -224,15 +326,55 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
               />
             )}
             
-            <div>
+            <div className="relative">
               <Textarea
-                placeholder="What's on your mind? Start typing and AI will suggest a title and analyze your business thoughts..."
-                value={content}
+                placeholder="What's on your mind? Start typing or use voice input, and AI will analyze your business thoughts..."
+                value={content + (interimTranscript ? ` ${interimTranscript}` : '')}
                 onChange={(e) => setContent(e.target.value)}
-                className="min-h-[120px] resize-none"
+                className="min-h-[120px] resize-none pr-12"
                 rows={6}
                 autoFocus
               />
+              
+              {/* Voice Input Button */}
+              <div className="absolute bottom-3 right-3">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={isListening ? "destructive" : "outline"}
+                  onClick={isListening ? stopListening : startListening}
+                  className={`w-8 h-8 p-0 transition-all duration-200 ${
+                    isListening 
+                      ? 'bg-red-500 hover:bg-red-600 animate-pulse border-red-300' 
+                      : 'hover:bg-orange-50 border-orange-200 text-orange-600'
+                  }`}
+                  title={isListening ? "Stop recording" : "Start voice input"}
+                  disabled={createEntryMutation.isPending}
+                >
+                  {isListening ? (
+                    <MicOff className="w-4 h-4" />
+                  ) : (
+                    <Mic className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
+              
+              {/* Voice Status Indicator */}
+              {isListening && (
+                <div className="mt-2 flex items-center gap-2 text-sm text-blue-600">
+                  <div className="flex items-center gap-1">
+                    <Volume2 className="w-4 h-4 animate-pulse" />
+                    <span>Listening... Speak your journal entry</span>
+                  </div>
+                </div>
+              )}
+              
+              {/* Interim Transcript Preview */}
+              {interimTranscript && (
+                <div className="mt-1 text-sm text-gray-500 italic">
+                  Processing: "{interimTranscript}"
+                </div>
+              )}
             </div>
           </div>
 
