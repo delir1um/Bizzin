@@ -31,6 +31,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
   const recognitionRef = useRef<any>(null)
   const finalTranscriptRef = useRef<string>("")
   const [networkErrorCount, setNetworkErrorCount] = useState(0)
+  const [speechSupported, setSpeechSupported] = useState(true)
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const { toast } = useToast()
 
@@ -169,15 +170,34 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
           
           if (event.error === 'not-allowed') {
             setIsListening(false)
+            setSpeechSupported(false)
             toast({
               title: "Microphone access denied",
               description: "Please allow microphone access to use voice input",
               variant: "destructive"
             })
           } else if (event.error === 'network') {
-            console.log('Network error, will retry on next attempt')
-            setNetworkErrorCount(prev => prev + 1)
-            // Don't automatically stop, let user decide
+            setNetworkErrorCount(prev => {
+              const newCount = prev + 1
+              if (newCount >= 3) {
+                setIsListening(false)
+                setSpeechSupported(false)
+                toast({
+                  title: "Voice input unavailable",
+                  description: "Network connectivity issues prevent voice input from working. You can still type your journal entry normally.",
+                  variant: "destructive"
+                })
+              }
+              return newCount
+            })
+          } else if (event.error === 'service-not-allowed' || event.error === 'audio-capture') {
+            setIsListening(false)
+            setSpeechSupported(false)
+            toast({
+              title: "Voice input not available",
+              description: "Speech recognition service is not available in this environment. Please type your journal entry.",
+              variant: "destructive"
+            })
           } else {
             console.log(`Speech error: ${event.error}, continuing...`)
           }
@@ -222,10 +242,10 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
   }, [toast, isListening])
 
   const startListening = () => {
-    if (!recognitionRef.current) {
+    if (!recognitionRef.current || !speechSupported) {
       toast({
-        title: "Speech recognition not supported",
-        description: "Your browser doesn't support voice input",
+        title: "Voice input not available",
+        description: "Speech recognition is not working in this environment. Please type your journal entry instead.",
         variant: "destructive"
       })
       return
@@ -234,7 +254,6 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
     try {
       setInterimTranscript("")
       finalTranscriptRef.current = ""
-      setNetworkErrorCount(0) // Reset error count on new start
       setIsListening(true)
       recognitionRef.current.start()
       
@@ -246,9 +265,10 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
     } catch (error) {
       console.error('Error starting speech recognition:', error)
       setIsListening(false)
+      setSpeechSupported(false)
       toast({
         title: "Voice input unavailable",
-        description: "Speech recognition may not be supported or microphone access denied",
+        description: "Speech recognition is not working. Please type your journal entry instead.",
         variant: "destructive"
       })
     }
@@ -398,7 +418,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
                         : 'hover:bg-orange-50 border-orange-200 text-orange-600'
                     }`}
                     title={isListening ? "Stop recording" : "Start voice input"}
-                    disabled={createEntryMutation.isPending}
+                    disabled={createEntryMutation.isPending || !speechSupported}
                   >
                     {isListening ? (
                       <div className="relative flex items-center justify-center">
