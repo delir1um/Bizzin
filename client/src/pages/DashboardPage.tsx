@@ -14,6 +14,7 @@ import { JournalStatsCard } from '@/components/dashboard/JournalStatsCard'
 import { GoalsStatsCard } from '@/components/dashboard/GoalsStatsCard'
 import { TrainingStatsCard } from '@/components/dashboard/TrainingStatsCard'
 import { DocSafeStatsCard } from '@/components/dashboard/DocSafeStatsCard'
+import { ReferralStatsCard } from '@/components/dashboard/ReferralStatsCard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -248,7 +249,7 @@ export function DashboardPage() {
         {/* Platform Features Section */}
         <div className="space-y-6">
           {/* Feature Statistics Cards */}
-          <div className="grid grid-cols-1 xl:grid-cols-4 lg:grid-cols-2 gap-4 items-stretch">
+          <div className="grid grid-cols-1 xl:grid-cols-5 lg:grid-cols-3 md:grid-cols-2 gap-4 items-stretch">
             <JournalStatsCard 
               journalEntries={journalEntries} 
               onNavigate={navigate} 
@@ -262,6 +263,9 @@ export function DashboardPage() {
             />
             <DocSafeStatsCard 
               storageStats={storageStats || null} 
+              onNavigate={navigate} 
+            />
+            <ReferralStatsCard 
               onNavigate={navigate} 
             />
           </div>

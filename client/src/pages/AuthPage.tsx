@@ -4,10 +4,13 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { supabase } from "@/lib/supabase"
+import { ReferralService } from "@/lib/services/referrals"
 
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Users } from "lucide-react"
 
 const schema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -20,12 +23,31 @@ export default function AuthPage() {
   const [mode, setMode] = useState<"signIn" | "signUp">("signIn")
   const [message, setMessage] = useState("")
   const [, setLocation] = useLocation()
+  const [referralCode, setReferralCode] = useState<string | null>(null)
+  const [referralValid, setReferralValid] = useState(false)
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({ resolver: zodResolver(schema) })
+
+  // Check for referral code in URL and validate it
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const refCode = urlParams.get('ref')
+    
+    if (refCode) {
+      setReferralCode(refCode)
+      // Validate referral code
+      ReferralService.validateReferralCode(refCode).then(valid => {
+        setReferralValid(valid)
+        if (valid) {
+          setMode("signUp") // Switch to signup mode for referrals
+        }
+      })
+    }
+  }, [])
 
   // Redirect away if already signed in
   useEffect(() => {
@@ -40,16 +62,32 @@ export default function AuthPage() {
     setMessage("")
     const { email, password } = data
 
-    const { error } =
-      mode === "signUp"
-        ? await supabase.auth.signUp({ email, password })
-        : await supabase.auth.signInWithPassword({ email, password })
+    if (mode === "signUp") {
+      const { data: signUpData, error } = await supabase.auth.signUp({ 
+        email, 
+        password 
+      })
 
-    if (error) {
-      setMessage(error.message)
+      if (error) {
+        setMessage(error.message)
+      } else {
+        // Process referral if valid referral code exists
+        if (referralCode && referralValid && signUpData.user) {
+          const success = await ReferralService.processReferralSignup(referralCode, signUpData.user.id)
+          if (success) {
+            setMessage("Account created! Check your email for confirmation. You've been referred and will earn benefits when you upgrade!")
+          } else {
+            setMessage("Account created! Check your email for confirmation.")
+          }
+        } else {
+          setMessage("Check your email for confirmation.")
+        }
+      }
     } else {
-      if (mode === "signUp") {
-        setMessage("Check your email for confirmation.")
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      
+      if (error) {
+        setMessage(error.message)
       } else {
         setLocation("/dashboard")
       }
@@ -74,6 +112,21 @@ export default function AuthPage() {
             }
           </p>
         </div>
+
+        {/* Referral Indicator */}
+        {referralCode && referralValid && (
+          <div className="mb-4 p-4 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg">
+            <div className="flex items-center gap-2">
+              <Users className="w-5 h-5 text-green-600 dark:text-green-400" />
+              <span className="text-green-700 dark:text-green-300 font-medium">
+                You've been referred to Bizzin!
+              </span>
+            </div>
+            <p className="text-sm text-green-600 dark:text-green-400 mt-1">
+              Sign up to start earning benefits through our referral program
+            </p>
+          </div>
+        )}
 
         <Card className="shadow-xl border-0 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
           <CardContent className="p-8 space-y-6">

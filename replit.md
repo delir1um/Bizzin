@@ -25,6 +25,7 @@ The application is built with React 18 and TypeScript, using Tailwind CSS and sh
 - **Dashboard:** A central hub integrating journal insights, business health metrics, and motivational quotes. Business Health features include Burnout Risk, Overall Health, Growth Momentum, and Recovery Resilience, all displayed with consistent progress bars and interactive tooltips.
 - **Profile Management:** User profile page with editable fields (name, contact, bio) and profile picture upload via Supabase Storage.
 - **Freemium System:** Comprehensive plan system with usage tracking and UI components differentiating free vs. premium features across the platform.
+- **Referral System:** Complete referral program where users earn 10 days of free subscription for each successful paid referral. Features include unique referral codes, automatic tracking, real-time activation/deactivation based on referee subscription status, and comprehensive dashboard with referral history and earnings tracking.
 
 **System Design Choices:**
 - **Data Access:** All data access is managed through `@/lib/supabase` using the Supabase client-side SDK.
