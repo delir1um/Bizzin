@@ -30,6 +30,8 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
   const [interimTranscript, setInterimTranscript] = useState("")
   const recognitionRef = useRef<any>(null)
   const finalTranscriptRef = useRef<string>("")
+  const [networkErrorCount, setNetworkErrorCount] = useState(0)
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const { toast } = useToast()
 
   const createEntryMutation = useMutation({
@@ -156,6 +158,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
           
           if (event.error === 'not-allowed') {
             setIsListening(false)
+            setNetworkErrorCount(0)
             toast({
               title: "Microphone access denied",
               description: "Please allow microphone access to use voice input",
@@ -165,17 +168,30 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
             // Don't stop listening for no-speech, just continue
             console.log('No speech detected, continuing to listen...')
           } else if (event.error === 'network') {
-            // Don't stop for network errors, just log and continue
-            console.log('Network error in speech recognition, continuing...')
+            console.log('Network error in speech recognition, attempting recovery...')
+            setNetworkErrorCount(prev => prev + 1)
+            
+            // If too many network errors, stop and inform user
+            if (networkErrorCount >= 3) {
+              setIsListening(false)
+              setNetworkErrorCount(0)
+              toast({
+                title: "Network connectivity issue",
+                description: "Voice input stopped due to repeated network errors. Please check your connection and try again.",
+                variant: "destructive"
+              })
+            }
           } else if (event.error === 'aborted') {
             // User manually stopped
             setIsListening(false)
+            setNetworkErrorCount(0)
           } else {
             // For other errors, stop listening
             setIsListening(false)
+            setNetworkErrorCount(0)
             toast({
               title: "Voice input error",
-              description: "Please try again",
+              description: `Error: ${event.error}. Please try again.`,
               variant: "destructive"
             })
           }
@@ -183,9 +199,10 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
 
         recognition.onend = () => {
           // Only auto-restart if we're still supposed to be listening
-          // and haven't manually stopped
-          if (isListening && recognitionRef.current) {
-            setTimeout(() => {
+          // and haven't had too many network errors
+          if (isListening && recognitionRef.current && networkErrorCount < 3) {
+            const delay = networkErrorCount > 0 ? 1000 + (networkErrorCount * 500) : 500
+            retryTimeoutRef.current = setTimeout(() => {
               try {
                 if (isListening && recognitionRef.current) {
                   recognitionRef.current.start()
@@ -193,10 +210,12 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
               } catch (e) {
                 console.log('Auto-restart failed:', e)
                 setIsListening(false)
+                setNetworkErrorCount(0)
               }
-            }, 500) // Longer delay to prevent rapid restarts
+            }, delay)
           } else {
             setIsListening(false)
+            setNetworkErrorCount(0)
           }
           setInterimTranscript("")
         }
@@ -225,7 +244,8 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
     try {
       setInterimTranscript("")
       finalTranscriptRef.current = ""
-      setIsListening(true) // Set this after clearing states
+      setNetworkErrorCount(0) // Reset error count on new start
+      setIsListening(true)
       recognitionRef.current.start()
       
       toast({
@@ -238,7 +258,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
       setIsListening(false)
       toast({
         title: "Voice input unavailable",
-        description: "Please try again or check microphone permissions",
+        description: "Speech recognition may not be supported or microphone access denied",
         variant: "destructive"
       })
     }
@@ -246,6 +266,14 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
 
   const stopListening = () => {
     setIsListening(false) // Set this first to prevent auto-restart
+    setNetworkErrorCount(0)
+    
+    // Clear any pending retry timeout
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current)
+      retryTimeoutRef.current = null
+    }
+    
     if (recognitionRef.current) {
       try {
         recognitionRef.current.stop()
@@ -399,17 +427,36 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
               
               {/* Voice Status Indicator - Moved outside textarea container */}
               {isListening && (
-                <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-2 sm:p-3 rounded-md border border-red-200">
+                <div className={`flex items-center gap-2 text-sm p-2 sm:p-3 rounded-md border ${
+                  networkErrorCount > 0 
+                    ? 'text-orange-600 bg-orange-50 border-orange-200' 
+                    : 'text-red-600 bg-red-50 border-red-200'
+                }`}>
                   <div className="flex items-center gap-2 w-full">
                     {/* Audio waveform animation */}
                     <div className="flex items-center gap-0.5 flex-shrink-0">
-                      <div className="w-1 bg-red-500 rounded-full animate-pulse" style={{ height: '6px', animationDelay: '0ms' }}></div>
-                      <div className="w-1 bg-red-500 rounded-full animate-pulse" style={{ height: '10px', animationDelay: '150ms' }}></div>
-                      <div className="w-1 bg-red-500 rounded-full animate-pulse" style={{ height: '4px', animationDelay: '300ms' }}></div>
-                      <div className="w-1 bg-red-500 rounded-full animate-pulse" style={{ height: '8px', animationDelay: '450ms' }}></div>
-                      <div className="w-1 bg-red-500 rounded-full animate-pulse" style={{ height: '6px', animationDelay: '600ms' }}></div>
+                      <div className={`w-1 rounded-full animate-pulse ${
+                        networkErrorCount > 0 ? 'bg-orange-500' : 'bg-red-500'
+                      }`} style={{ height: '6px', animationDelay: '0ms' }}></div>
+                      <div className={`w-1 rounded-full animate-pulse ${
+                        networkErrorCount > 0 ? 'bg-orange-500' : 'bg-red-500'
+                      }`} style={{ height: '10px', animationDelay: '150ms' }}></div>
+                      <div className={`w-1 rounded-full animate-pulse ${
+                        networkErrorCount > 0 ? 'bg-orange-500' : 'bg-red-500'
+                      }`} style={{ height: '4px', animationDelay: '300ms' }}></div>
+                      <div className={`w-1 rounded-full animate-pulse ${
+                        networkErrorCount > 0 ? 'bg-orange-500' : 'bg-red-500'
+                      }`} style={{ height: '8px', animationDelay: '450ms' }}></div>
+                      <div className={`w-1 rounded-full animate-pulse ${
+                        networkErrorCount > 0 ? 'bg-orange-500' : 'bg-red-500'
+                      }`} style={{ height: '6px', animationDelay: '600ms' }}></div>
                     </div>
-                    <span className="font-medium text-xs sm:text-sm truncate">Recording... Speak clearly, then pause</span>
+                    <span className="font-medium text-xs sm:text-sm truncate">
+                      {networkErrorCount > 0 
+                        ? `Recording... (${networkErrorCount} network error${networkErrorCount > 1 ? 's' : ''})` 
+                        : 'Recording... Speak clearly, then pause'
+                      }
+                    </span>
                   </div>
                 </div>
               )}
