@@ -29,37 +29,36 @@ Bizzin is a modern SaaS platform designed for entrepreneurs to plan, journal, an
 
 ### **2.1 Core Journaling Features**
 - ✅ Create, edit, delete journal entries
-- ✅ Rich text editor for entry content
-- ✅ Entry categorization system
-- ✅ Custom tagging system
-- ✅ Entry date and time tracking
-- ✅ Entry privacy controls
-- ✅ Draft saving functionality
+- ✅ Simple textarea for entry content (no rich text editor)
+- ✅ Entry title and content fields
+- ✅ Entry date tracking (entry_date + created_at)
+- ✅ Basic tagging system (string array)
+- ✅ Category assignment from predefined list
+- ✅ No draft functionality (entries saved immediately)
 
 ### **2.2 AI-Powered Features**
-- ✅ **Sentiment Analysis Engine**: Business-focused emotion detection
-- ✅ **Contextual Categorization**: Automatic entry classification
-- ✅ **Energy Level Tracking**: AI-powered mood assessment
-- ✅ **Smart Reflection Prompts**: AI-generated coaching questions
+- ✅ **Sentiment Analysis Engine**: Business-focused emotion detection via Hugging Face
+- ✅ **Auto Title Suggestions**: AI generates titles from content
+- ✅ **Mood Detection**: AI determines primary mood and energy levels
+- ✅ **Business Category Classification**: Automatic categorization
 - ✅ **Hybrid AI Architecture**: Hugging Face API + local fallback
-- ✅ **Retroactive AI Migration**: Apply AI improvements to existing entries
-- ✅ **Invisible AI Operation**: Background processing without UI clutter
+- ✅ **AI Migration System**: Retroactive analysis for existing entries
+- ✅ **Invisible AI Operation**: Background processing during entry creation
 
 ### **2.3 Journal Navigation & Organization**
-- ✅ Calendar-based navigation
-- ✅ Daily entry grouping
-- ✅ Search functionality across all entries
-- ✅ Filter by categories, moods, and tags
-- ✅ Date range filtering
-- ✅ Entry status indicators
-- ✅ Progress tracking visualization
+- ✅ Time-based organization (Today, This Week, This Month, This Year)
+- ✅ Expandable/collapsible time sections
+- ✅ Search functionality across titles, content, categories, moods
+- ✅ Entry display with mood emojis and categories
+- ✅ View and edit entry modals
+- ✅ Simple list-based interface (no calendar view)
 
 ### **2.4 Journal Analytics & Insights**
-- ✅ Mood trend analysis
-- ✅ Writing frequency metrics
-- ✅ Category distribution charts
-- ✅ Personal growth insights
-- ✅ Business health correlation
+- ✅ AI-powered sentiment insights stored with entries
+- ✅ Basic entry statistics (displayed in dashboard)
+- ✅ Mood and energy tracking via AI analysis
+- ✅ Business category insights
+- ✅ Integration with dashboard business health metrics
 
 ---
 
