@@ -169,18 +169,20 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
             console.log('No speech detected, continuing to listen...')
           } else if (event.error === 'network') {
             console.log('Network error in speech recognition, attempting recovery...')
-            setNetworkErrorCount(prev => prev + 1)
-            
-            // If too many network errors, stop and inform user
-            if (networkErrorCount >= 3) {
-              setIsListening(false)
-              setNetworkErrorCount(0)
-              toast({
-                title: "Network connectivity issue",
-                description: "Voice input stopped due to repeated network errors. Please check your connection and try again.",
-                variant: "destructive"
-              })
-            }
+            setNetworkErrorCount(prev => {
+              const newCount = prev + 1
+              // If too many network errors, stop and inform user
+              if (newCount >= 3) {
+                setIsListening(false)
+                toast({
+                  title: "Network connectivity issue",
+                  description: "Voice input stopped due to repeated network errors. Please check your connection and try again.",
+                  variant: "destructive"
+                })
+                return 0
+              }
+              return newCount
+            })
           } else if (event.error === 'aborted') {
             // User manually stopped
             setIsListening(false)
@@ -201,16 +203,28 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
           // Only auto-restart if we're still supposed to be listening
           // and haven't had too many network errors
           if (isListening && recognitionRef.current && networkErrorCount < 3) {
-            const delay = networkErrorCount > 0 ? 1000 + (networkErrorCount * 500) : 500
+            const delay = Math.min(1000 + (networkErrorCount * 500), 3000) // Max 3 second delay
+            console.log(`Recognition ended, restarting in ${delay}ms...`)
             retryTimeoutRef.current = setTimeout(() => {
-              try {
-                if (isListening && recognitionRef.current) {
+              if (isListening && recognitionRef.current) {
+                try {
+                  console.log('Restarting speech recognition...')
                   recognitionRef.current.start()
+                } catch (e) {
+                  console.log('Auto-restart failed:', e)
+                  // Try again with longer delay if first restart fails
+                  retryTimeoutRef.current = setTimeout(() => {
+                    if (isListening && recognitionRef.current) {
+                      try {
+                        recognitionRef.current.start()
+                      } catch (err) {
+                        console.log('Second restart attempt failed:', err)
+                        setIsListening(false)
+                        setNetworkErrorCount(0)
+                      }
+                    }
+                  }, 2000)
                 }
-              } catch (e) {
-                console.log('Auto-restart failed:', e)
-                setIsListening(false)
-                setNetworkErrorCount(0)
               }
             }, delay)
           } else {
@@ -227,6 +241,9 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
     return () => {
       if (recognitionRef.current) {
         recognitionRef.current.stop()
+      }
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current)
       }
     }
   }, [toast])
@@ -453,7 +470,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
                     </div>
                     <span className="font-medium text-xs sm:text-sm truncate">
                       {networkErrorCount > 0 
-                        ? `Recording... (${networkErrorCount} network error${networkErrorCount > 1 ? 's' : ''})` 
+                        ? `Recording... (${networkErrorCount} network error${networkErrorCount > 1 ? 's' : ''} - retrying)` 
                         : 'Recording... Speak clearly, then pause'
                       }
                     </span>
