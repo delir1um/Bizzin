@@ -86,11 +86,11 @@ export class ReferralService {
       .from('referrals')
       .select(`
         id,
+        referee_id,
         is_active,
         signup_date,
         activation_date,
-        deactivation_date,
-        referee:referee_id(email)
+        deactivation_date
       `)
       .eq('referrer_id', userId)
       .order('signup_date', { ascending: false })
@@ -100,9 +100,10 @@ export class ReferralService {
       return []
     }
 
+    // Return referrals with placeholder emails (will be populated when foreign keys are properly set up)
     return data.map(referral => ({
       id: referral.id,
-      referee_email: (referral.referee as any)?.email || 'Unknown',
+      referee_email: `User ${referral.referee_id.substring(0, 8)}...`,
       is_active: referral.is_active,
       signup_date: referral.signup_date,
       activation_date: referral.activation_date,
