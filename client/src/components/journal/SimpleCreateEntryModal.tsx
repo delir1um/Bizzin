@@ -136,39 +136,19 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
       if (SpeechRecognition) {
         const recognition = new SpeechRecognition()
-        recognition.continuous = true
-        recognition.interimResults = true
+        recognition.continuous = false
+        recognition.interimResults = false
         recognition.lang = 'en-US'
 
         recognition.onresult = (event: any) => {
-          let finalTranscript = ''
-          let interimTranscript = ''
-
-          // Process all results
-          for (let i = 0; i < event.results.length; i++) {
-            const transcript = event.results[i][0].transcript
-            if (event.results[i].isFinal) {
-              finalTranscript += transcript + ' '
-            } else {
-              interimTranscript += transcript
-            }
-          }
-
-          // Only update content with final results, and only once
-          if (finalTranscript.trim()) {
+          const transcript = event.results[0][0].transcript
+          
+          if (transcript && transcript.trim()) {
             setContent(prev => {
-              // Avoid duplicates by checking if this text is already at the end
-              const trimmedFinal = finalTranscript.trim()
               const currentContent = prev.trim()
-              
-              if (!currentContent.endsWith(trimmedFinal)) {
-                return currentContent + (currentContent ? ' ' : '') + trimmedFinal
-              }
-              return prev
+              return currentContent + (currentContent ? ' ' : '') + transcript.trim()
             })
           }
-          
-          setInterimTranscript(interimTranscript)
         }
 
         recognition.onerror = (event: any) => {
@@ -193,6 +173,19 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
         recognition.onend = () => {
           setIsListening(false)
           setInterimTranscript("")
+          
+          // Auto-restart if still listening (for continuous capture)
+          if (isListening) {
+            setTimeout(() => {
+              if (recognitionRef.current && isListening) {
+                try {
+                  recognitionRef.current.start()
+                } catch (e) {
+                  console.log('Auto-restart failed:', e)
+                }
+              }
+            }, 100)
+          }
         }
 
         recognitionRef.current = recognition
@@ -344,7 +337,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
             <div className="relative">
               <Textarea
                 placeholder="What's on your mind? Start typing or use voice input, and AI will analyze your business thoughts..."
-                value={content + (interimTranscript ? ` ${interimTranscript}` : '')}
+                value={content}
                 onChange={(e) => setContent(e.target.value)}
                 className="min-h-[120px] resize-none pr-12"
                 rows={6}
@@ -379,15 +372,8 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
                 <div className="mt-2 flex items-center gap-2 text-sm text-blue-600">
                   <div className="flex items-center gap-1">
                     <Volume2 className="w-4 h-4 animate-pulse" />
-                    <span>Listening... Speak your journal entry</span>
+                    <span>Listening... Speak clearly, then pause for text to appear</span>
                   </div>
-                </div>
-              )}
-              
-              {/* Interim Transcript Preview */}
-              {interimTranscript && (
-                <div className="mt-1 text-sm text-gray-500 italic">
-                  Processing: "{interimTranscript}"
                 </div>
               )}
             </div>
