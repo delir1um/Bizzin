@@ -83,11 +83,18 @@ export function MockReferralDashboard() {
     const currentHostname = window.location.hostname
     let baseUrl = window.location.origin
     
-    // If we're on a replit.dev preview URL, convert to the deployment URL
-    if (currentHostname.includes('.replit.dev')) {
-      const matches = currentHostname.match(/^([^-]+)-/)
-      if (matches) {
-        baseUrl = `https://${matches[1]}.replit.app`
+    // Handle Replit development URLs - convert to deployment URL
+    if (currentHostname.includes('.repl.co') || currentHostname.includes('.replit.dev')) {
+      // Extract REPL ID from various Replit URL formats
+      const replIdMatch = currentHostname.match(/^([a-f0-9-]+)-\d+-[a-z0-9]+\./)
+      if (replIdMatch) {
+        baseUrl = `https://${replIdMatch[1]}.replit.app`
+      } else {
+        // Fallback: try to extract any UUID-like pattern
+        const uuidMatch = currentHostname.match(/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/)
+        if (uuidMatch) {
+          baseUrl = `https://${uuidMatch[1]}.replit.app`
+        }
       }
     }
     
