@@ -80,7 +80,7 @@ export default function AuthPage() {
           if (isValid) {
             const success = await ReferralService.processReferralSignup(codeToProcess, signUpData.user.id)
             if (success) {
-              setMessage("Account created! Check your email for confirmation. Welcome bonus applied - you'll get 5 extra days free when you upgrade!")
+              setMessage("Account created! Check your email for confirmation. Welcome bonus applied - you'll get 30 days free when you upgrade!")
             } else {
               setMessage("Account created! Check your email for confirmation.")
             }
@@ -185,7 +185,7 @@ export default function AuthPage() {
                     className="h-12 border-slate-200 dark:border-slate-600 focus:border-orange-500 focus:ring-orange-500"
                   />
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Got a referral code? You'll get <strong>5 extra days free</strong> when you upgrade to premium!
+                    Got a referral code? You'll get <strong>30 days free</strong> when you upgrade to premium!
                   </p>
                 </div>
               )}

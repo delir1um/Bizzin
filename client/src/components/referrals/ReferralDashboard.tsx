@@ -125,7 +125,7 @@ export function ReferralDashboard() {
           Referral Program
         </h1>
         <p className="text-gray-600 dark:text-gray-300">
-          Refer friends and both of you get free days! You get 10 days, they get 5 days when they upgrade.
+          Refer friends and both of you get free days! You get 10 days, they get 30 days when they upgrade.
         </p>
       </div>
 
@@ -234,7 +234,7 @@ export function ReferralDashboard() {
               <strong>How it works:</strong> Share this code with friends. When they sign up and enter your code:
             </p>
             <ul className="text-sm text-blue-700 dark:text-blue-300 mt-2 space-y-1">
-              <li>• They get <strong>5 extra days free</strong> when they upgrade</li>
+              <li>• They get <strong>30 days free</strong> when they upgrade</li>
               <li>• You get <strong>10 days free</strong> when they upgrade to premium</li>
               <li>• It's a win-win for everyone!</li>
             </ul>
