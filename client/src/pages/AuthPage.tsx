@@ -15,6 +15,7 @@ import { Users } from "lucide-react"
 const schema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+  referralCode: z.string().optional(),
 })
 
 type FormData = z.infer<typeof schema>
@@ -71,13 +72,20 @@ export default function AuthPage() {
       if (error) {
         setMessage(error.message)
       } else {
-        // Process referral if valid referral code exists
-        if (referralCode && referralValid && signUpData.user) {
-          const success = await ReferralService.processReferralSignup(referralCode, signUpData.user.id)
-          if (success) {
-            setMessage("Account created! Check your email for confirmation. You've been referred and will earn benefits when you upgrade!")
+        // Process referral if code provided (from form or URL)
+        const codeToProcess = referralCode || data.referralCode
+        if (codeToProcess && signUpData.user) {
+          // Validate the code first
+          const isValid = await ReferralService.validateReferralCode(codeToProcess)
+          if (isValid) {
+            const success = await ReferralService.processReferralSignup(codeToProcess, signUpData.user.id)
+            if (success) {
+              setMessage("Account created! Check your email for confirmation. You've been referred and will earn benefits when you upgrade!")
+            } else {
+              setMessage("Account created! Check your email for confirmation.")
+            }
           } else {
-            setMessage("Account created! Check your email for confirmation.")
+            setMessage("Account created! Check your email for confirmation. (Invalid referral code)")
           }
         } else {
           setMessage("Check your email for confirmation.")
@@ -163,6 +171,24 @@ export default function AuthPage() {
                   </p>
                 )}
               </div>
+
+              {/* Referral Code Field - Only show for signup */}
+              {mode === "signUp" && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Referral Code (Optional)
+                  </label>
+                  <Input
+                    placeholder="Enter referral code"
+                    {...register("referralCode")}
+                    defaultValue={referralCode || ""}
+                    className="h-12 border-slate-200 dark:border-slate-600 focus:border-orange-500 focus:ring-orange-500"
+                  />
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Got a referral code? Enter it to get special benefits!
+                  </p>
+                </div>
+              )}
 
               <Button 
                 className="w-full h-12 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 mt-6" 

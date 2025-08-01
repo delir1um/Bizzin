@@ -64,6 +64,24 @@ export function ReferralDashboard() {
     }
   }
 
+  const handleCopyReferralCode = async () => {
+    if (!dashboard?.referral_code) return
+
+    try {
+      await navigator.clipboard.writeText(dashboard.referral_code)
+      toast({
+        title: "Copied!",
+        description: "Referral code copied to clipboard"
+      })
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to copy code. Please try again.",
+        variant: "destructive"
+      })
+    }
+  }
+
   const getReferralLink = () => {
     if (!dashboard?.referral_code) return ''
     return ReferralService.generateReferralLink(dashboard.referral_code)
@@ -190,29 +208,32 @@ export function ReferralDashboard() {
         </Card>
       </div>
 
-      {/* Referral Link Section */}
+      {/* Referral Code Section */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <ExternalLink className="w-5 h-5 text-orange-600" />
-            Your Referral Link
+            <Copy className="w-5 h-5 text-orange-600" />
+            Your Referral Code
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center gap-2">
-            <div className="flex-1 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border">
-              <code className="text-sm break-all">
-                {getReferralLink()}
-              </code>
+            <div className="flex-1 p-4 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950 dark:to-amber-950 rounded-lg border border-orange-200 dark:border-orange-800 text-center">
+              <div className="text-3xl font-mono font-bold text-orange-900 dark:text-orange-100">
+                {dashboard.referral_code}
+              </div>
             </div>
-            <Button onClick={handleCopyReferralLink} size="sm" className="shrink-0">
+            <Button onClick={handleCopyReferralCode} size="sm" className="shrink-0 bg-orange-600 hover:bg-orange-700">
               <Copy className="w-4 h-4 mr-2" />
-              Copy
+              Copy Code
             </Button>
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            Share this link with friends. When they sign up and subscribe to a paid plan, 
-            you'll earn 10 days of free subscription!
+          
+          <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              <strong>How it works:</strong> Share this code with friends. When they sign up and enter your code during registration, 
+              you'll earn 10 days of free subscription when they upgrade to premium!
+            </p>
           </div>
         </CardContent>
       </Card>
