@@ -153,39 +153,52 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
 
         recognition.onerror = (event: any) => {
           console.error('Speech recognition error:', event.error)
-          setIsListening(false)
           
           if (event.error === 'not-allowed') {
+            setIsListening(false)
             toast({
               title: "Microphone access denied",
               description: "Please allow microphone access to use voice input",
               variant: "destructive"
             })
           } else if (event.error === 'no-speech') {
+            // Don't stop listening for no-speech, just continue
+            console.log('No speech detected, continuing to listen...')
+          } else if (event.error === 'network') {
+            // Don't stop for network errors, just log and continue
+            console.log('Network error in speech recognition, continuing...')
+          } else if (event.error === 'aborted') {
+            // User manually stopped
+            setIsListening(false)
+          } else {
+            // For other errors, stop listening
+            setIsListening(false)
             toast({
-              title: "No speech detected",
-              description: "Please try speaking again",
+              title: "Voice input error",
+              description: "Please try again",
               variant: "destructive"
             })
           }
         }
 
         recognition.onend = () => {
-          setIsListening(false)
-          setInterimTranscript("")
-          
-          // Auto-restart if still listening (for continuous capture)
-          if (isListening) {
+          // Only auto-restart if we're still supposed to be listening
+          // and haven't manually stopped
+          if (isListening && recognitionRef.current) {
             setTimeout(() => {
-              if (recognitionRef.current && isListening) {
-                try {
+              try {
+                if (isListening && recognitionRef.current) {
                   recognitionRef.current.start()
-                } catch (e) {
-                  console.log('Auto-restart failed:', e)
                 }
+              } catch (e) {
+                console.log('Auto-restart failed:', e)
+                setIsListening(false)
               }
-            }, 100)
+            }, 500) // Longer delay to prevent rapid restarts
+          } else {
+            setIsListening(false)
           }
+          setInterimTranscript("")
         }
 
         recognitionRef.current = recognition
@@ -210,9 +223,9 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
     }
 
     try {
-      setIsListening(true)
       setInterimTranscript("")
       finalTranscriptRef.current = ""
+      setIsListening(true) // Set this after clearing states
       recognitionRef.current.start()
       
       toast({
@@ -223,16 +236,25 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
     } catch (error) {
       console.error('Error starting speech recognition:', error)
       setIsListening(false)
+      toast({
+        title: "Voice input unavailable",
+        description: "Please try again or check microphone permissions",
+        variant: "destructive"
+      })
     }
   }
 
   const stopListening = () => {
-    if (recognitionRef.current && isListening) {
-      recognitionRef.current.stop()
-      setIsListening(false)
-      setInterimTranscript("")
-      finalTranscriptRef.current = ""
+    setIsListening(false) // Set this first to prevent auto-restart
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop()
+      } catch (e) {
+        console.log('Error stopping recognition:', e)
+      }
     }
+    setInterimTranscript("")
+    finalTranscriptRef.current = ""
   }
 
   // Generate a smart title from content
