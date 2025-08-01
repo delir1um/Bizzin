@@ -351,28 +351,41 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
                   size="sm"
                   variant={isListening ? "destructive" : "outline"}
                   onClick={isListening ? stopListening : startListening}
-                  className={`w-8 h-8 p-0 transition-all duration-200 ${
+                  className={`w-10 h-10 p-0 transition-all duration-200 relative ${
                     isListening 
-                      ? 'bg-red-500 hover:bg-red-600 animate-pulse border-red-300' 
+                      ? 'bg-red-500 hover:bg-red-600 border-red-300 shadow-lg' 
                       : 'hover:bg-orange-50 border-orange-200 text-orange-600'
                   }`}
                   title={isListening ? "Stop recording" : "Start voice input"}
                   disabled={createEntryMutation.isPending}
                 >
                   {isListening ? (
-                    <MicOff className="w-4 h-4" />
+                    <div className="relative flex items-center justify-center">
+                      {/* Pulsing recording animation */}
+                      <div className="absolute inset-0 bg-red-400 rounded-full animate-ping opacity-75"></div>
+                      <div className="absolute inset-1 bg-red-300 rounded-full animate-pulse"></div>
+                      {/* Recording dot */}
+                      <div className="relative w-3 h-3 bg-white rounded-full z-10"></div>
+                    </div>
                   ) : (
-                    <Mic className="w-4 h-4" />
+                    <Mic className="w-5 h-5" />
                   )}
                 </Button>
               </div>
               
               {/* Voice Status Indicator */}
               {isListening && (
-                <div className="mt-2 flex items-center gap-2 text-sm text-blue-600">
-                  <div className="flex items-center gap-1">
-                    <Volume2 className="w-4 h-4 animate-pulse" />
-                    <span>Listening... Speak clearly, then pause for text to appear</span>
+                <div className="mt-2 flex items-center gap-2 text-sm text-red-600 bg-red-50 p-2 rounded-md border border-red-200">
+                  <div className="flex items-center gap-2">
+                    {/* Audio waveform animation */}
+                    <div className="flex items-center gap-0.5">
+                      <div className="w-1 bg-red-500 rounded-full animate-pulse" style={{ height: '8px', animationDelay: '0ms' }}></div>
+                      <div className="w-1 bg-red-500 rounded-full animate-pulse" style={{ height: '12px', animationDelay: '150ms' }}></div>
+                      <div className="w-1 bg-red-500 rounded-full animate-pulse" style={{ height: '6px', animationDelay: '300ms' }}></div>
+                      <div className="w-1 bg-red-500 rounded-full animate-pulse" style={{ height: '10px', animationDelay: '450ms' }}></div>
+                      <div className="w-1 bg-red-500 rounded-full animate-pulse" style={{ height: '8px', animationDelay: '600ms' }}></div>
+                    </div>
+                    <span className="font-medium">Recording... Speak clearly, then pause</span>
                   </div>
                 </div>
               )}
