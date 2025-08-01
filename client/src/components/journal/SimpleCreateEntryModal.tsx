@@ -132,7 +132,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
     setTitle(suggestedTitle)
   }
 
-  // Initialize speech recognition
+  // Initialize speech recognition with simplified approach
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
@@ -141,15 +141,26 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
         recognition.continuous = false
         recognition.interimResults = false
         recognition.lang = 'en-US'
+        recognition.maxAlternatives = 1
+
+        recognition.onstart = () => {
+          console.log('Speech recognition started')
+          setNetworkErrorCount(0) // Reset on successful start
+        }
 
         recognition.onresult = (event: any) => {
           const transcript = event.results[0][0].transcript
+          console.log('Speech result:', transcript)
           
           if (transcript && transcript.trim()) {
             setContent(prev => {
               const currentContent = prev.trim()
-              return currentContent + (currentContent ? ' ' : '') + transcript.trim()
+              const newContent = currentContent + (currentContent ? ' ' : '') + transcript.trim()
+              return newContent
             })
+            
+            // Reset error count on successful recognition
+            setNetworkErrorCount(0)
           }
         }
 
@@ -158,80 +169,38 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
           
           if (event.error === 'not-allowed') {
             setIsListening(false)
-            setNetworkErrorCount(0)
             toast({
               title: "Microphone access denied",
               description: "Please allow microphone access to use voice input",
               variant: "destructive"
             })
-          } else if (event.error === 'no-speech') {
-            // Don't stop listening for no-speech, just continue
-            console.log('No speech detected, continuing to listen...')
           } else if (event.error === 'network') {
-            console.log('Network error in speech recognition, attempting recovery...')
-            setNetworkErrorCount(prev => {
-              const newCount = prev + 1
-              // If too many network errors, stop and inform user
-              if (newCount >= 3) {
-                setIsListening(false)
-                toast({
-                  title: "Network connectivity issue",
-                  description: "Voice input stopped due to repeated network errors. Please check your connection and try again.",
-                  variant: "destructive"
-                })
-                return 0
-              }
-              return newCount
-            })
-          } else if (event.error === 'aborted') {
-            // User manually stopped
-            setIsListening(false)
-            setNetworkErrorCount(0)
+            console.log('Network error, will retry on next attempt')
+            setNetworkErrorCount(prev => prev + 1)
+            // Don't automatically stop, let user decide
           } else {
-            // For other errors, stop listening
-            setIsListening(false)
-            setNetworkErrorCount(0)
-            toast({
-              title: "Voice input error",
-              description: `Error: ${event.error}. Please try again.`,
-              variant: "destructive"
-            })
+            console.log(`Speech error: ${event.error}, continuing...`)
           }
         }
 
         recognition.onend = () => {
-          // Only auto-restart if we're still supposed to be listening
-          // and haven't had too many network errors
-          if (isListening && recognitionRef.current && networkErrorCount < 3) {
-            const delay = Math.min(1000 + (networkErrorCount * 500), 3000) // Max 3 second delay
-            console.log(`Recognition ended, restarting in ${delay}ms...`)
+          console.log('Speech recognition ended')
+          setInterimTranscript("")
+          
+          // Only restart if user is still actively listening
+          if (isListening) {
+            // Short delay before restart
             retryTimeoutRef.current = setTimeout(() => {
               if (isListening && recognitionRef.current) {
                 try {
-                  console.log('Restarting speech recognition...')
                   recognitionRef.current.start()
                 } catch (e) {
-                  console.log('Auto-restart failed:', e)
-                  // Try again with longer delay if first restart fails
-                  retryTimeoutRef.current = setTimeout(() => {
-                    if (isListening && recognitionRef.current) {
-                      try {
-                        recognitionRef.current.start()
-                      } catch (err) {
-                        console.log('Second restart attempt failed:', err)
-                        setIsListening(false)
-                        setNetworkErrorCount(0)
-                      }
-                    }
-                  }, 2000)
+                  console.log('Restart failed:', e)
+                  // Don't automatically stop - let user try again
                 }
               }
-            }, delay)
-          } else {
-            setIsListening(false)
-            setNetworkErrorCount(0)
+            }, 300)
           }
-          setInterimTranscript("")
         }
 
         recognitionRef.current = recognition
@@ -240,13 +209,17 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
 
     return () => {
       if (recognitionRef.current) {
-        recognitionRef.current.stop()
+        try {
+          recognitionRef.current.stop()
+        } catch (e) {
+          console.log('Error stopping recognition:', e)
+        }
       }
       if (retryTimeoutRef.current) {
         clearTimeout(retryTimeoutRef.current)
       }
     }
-  }, [toast])
+  }, [toast, isListening])
 
   const startListening = () => {
     if (!recognitionRef.current) {
@@ -442,37 +415,17 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
                 </div>
               </div>
               
-              {/* Voice Status Indicator - Moved outside textarea container */}
+              {/* Voice Status Indicator - Simplified */}
               {isListening && (
-                <div className={`flex items-center gap-2 text-sm p-2 sm:p-3 rounded-md border ${
-                  networkErrorCount > 0 
-                    ? 'text-orange-600 bg-orange-50 border-orange-200' 
-                    : 'text-red-600 bg-red-50 border-red-200'
-                }`}>
+                <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-2 sm:p-3 rounded-md border border-red-200">
                   <div className="flex items-center gap-2 w-full">
-                    {/* Audio waveform animation */}
+                    {/* Simple recording indicator */}
                     <div className="flex items-center gap-0.5 flex-shrink-0">
-                      <div className={`w-1 rounded-full animate-pulse ${
-                        networkErrorCount > 0 ? 'bg-orange-500' : 'bg-red-500'
-                      }`} style={{ height: '6px', animationDelay: '0ms' }}></div>
-                      <div className={`w-1 rounded-full animate-pulse ${
-                        networkErrorCount > 0 ? 'bg-orange-500' : 'bg-red-500'
-                      }`} style={{ height: '10px', animationDelay: '150ms' }}></div>
-                      <div className={`w-1 rounded-full animate-pulse ${
-                        networkErrorCount > 0 ? 'bg-orange-500' : 'bg-red-500'
-                      }`} style={{ height: '4px', animationDelay: '300ms' }}></div>
-                      <div className={`w-1 rounded-full animate-pulse ${
-                        networkErrorCount > 0 ? 'bg-orange-500' : 'bg-red-500'
-                      }`} style={{ height: '8px', animationDelay: '450ms' }}></div>
-                      <div className={`w-1 rounded-full animate-pulse ${
-                        networkErrorCount > 0 ? 'bg-orange-500' : 'bg-red-500'
-                      }`} style={{ height: '6px', animationDelay: '600ms' }}></div>
+                      <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
                     </div>
-                    <span className="font-medium text-xs sm:text-sm truncate">
-                      {networkErrorCount > 0 
-                        ? `Recording... (${networkErrorCount} network error${networkErrorCount > 1 ? 's' : ''} - retrying)` 
-                        : 'Recording... Speak clearly, then pause'
-                      }
+                    <span className="font-medium text-xs sm:text-sm">
+                      Listening... Speak a phrase and pause for it to appear
+                      {networkErrorCount > 0 && ` (${networkErrorCount} network issues)`}
                     </span>
                   </div>
                 </div>
