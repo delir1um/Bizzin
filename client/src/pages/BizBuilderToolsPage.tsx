@@ -104,7 +104,7 @@ export function BizBuilderToolsPage() {
             <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-500 dark:text-slate-400">
               <div className="flex items-center">
                 <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                <span>Free - Essential business planning tools</span>
+                <span>Core - Essential business planning tools</span>
               </div>
               <div className="flex items-center">
                 <div className="w-3 h-3 bg-amber-500 rounded-full mr-2"></div>
@@ -165,7 +165,7 @@ export function BizBuilderToolsPage() {
                     } 
                     variant="secondary"
                   >
-                    {tool.tier === 'free' ? 'Free' : 'Premium'}
+                    {tool.tier === 'free' ? 'Core' : 'Premium'}
                   </Badge>
                 </div>
                 <CardTitle className="text-lg">{tool.title}</CardTitle>
