@@ -8,8 +8,8 @@ export default {
       // Add line-clamp support
       display: ['responsive'],
       fontFamily: {
-        'orbitron': ['Orbitron', 'Inter', 'system-ui', 'sans-serif'],
         'sans': ['Inter', 'system-ui', 'sans-serif'],
+        'heading': ['Inter', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         lg: "var(--radius)",
