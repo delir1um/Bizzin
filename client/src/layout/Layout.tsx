@@ -12,6 +12,7 @@ import {
 import { useTheme } from "@/lib/theme-provider"
 import { Moon, Sun, User, Settings, LogOut } from "lucide-react"
 import { useAuth } from "@/hooks/AuthProvider"
+import brizzinLogo from "@/assets/brizzin-logo.webp"
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { theme, setTheme } = useTheme()
@@ -45,8 +46,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
             {/* Logo */}
             <div className="flex items-center">
               <Link to="/" className="flex items-center">
-                <div className="w-8 h-8 bg-gradient-to-r from-orange-600 to-orange-500 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">B</span>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+                  <img src={brizzinLogo} alt="Brizzin Logo" className="w-full h-full object-contain" />
                 </div>
                 <span className="ml-2 text-xl font-semibold text-slate-900 dark:text-white">Bizzin</span>
               </Link>
@@ -169,8 +170,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center mb-4 md:mb-0">
-              <div className="w-8 h-8 bg-gradient-to-r from-orange-600 to-orange-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">B</span>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+                <img src={brizzinLogo} alt="Brizzin Logo" className="w-full h-full object-contain" />
               </div>
               <span className="ml-2 text-xl font-semibold text-white">Bizzin</span>
             </div>

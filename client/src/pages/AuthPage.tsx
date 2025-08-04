@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Users } from "lucide-react"
+import brizzinLogo from "@/assets/brizzin-logo.webp"
 
 const schema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -107,8 +108,8 @@ export default function AuthPage() {
       <div className="w-full max-w-[420px]">
         {/* Logo and Welcome */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-r from-orange-600 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <span className="text-white font-bold text-2xl">B</span>
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <img src={brizzinLogo} alt="Brizzin Logo" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
             {mode === "signUp" ? "Join Bizzin" : "Welcome Back"}
