@@ -292,7 +292,7 @@ export default function CompoundInterestCalculator({ onClose }: { onClose: () =>
         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
           <div>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Compound Interest Calculator</h2>
-            <p className="text-slate-600 dark:text-slate-300">Calculate investment growth with compound interest using Excel FV formulas</p>
+            <p className="text-slate-600 dark:text-slate-300">Calculate long-term investment growth with compound interest and regular contributions</p>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose}>
             <X className="w-4 h-4" />
