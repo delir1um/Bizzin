@@ -12,8 +12,8 @@ import {
 import { useTheme } from "@/lib/theme-provider"
 import { Moon, Sun, User, Settings, LogOut } from "lucide-react"
 import { useAuth } from "@/hooks/AuthProvider"
-import brizzinLogoLight from "@/assets/brizzin-logo-light.webp"
-import brizzinLogoDark from "@/assets/brizzin-logo-dark.webp"
+import brizzinLogoLight from "@/assets/brizzin-logo-light-v2.webp"
+import brizzinLogoDark from "@/assets/brizzin-logo-dark-v2.webp"
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { theme, setTheme } = useTheme()
