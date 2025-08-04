@@ -7,6 +7,10 @@ export default {
     extend: {
       // Add line-clamp support
       display: ['responsive'],
+      fontFamily: {
+        'orbitron': ['Orbitron', 'Inter', 'system-ui', 'sans-serif'],
+        'sans': ['Inter', 'system-ui', 'sans-serif'],
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
