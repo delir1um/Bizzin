@@ -6,7 +6,7 @@ import { Calculator, TrendingUp, DollarSign, Car, Home, BarChart3, Target, Activ
 import { motion } from "framer-motion"
 import { AnimatedCard, AnimatedGrid, AnimatedItem } from "@/components/ui/animated-card"
 import { BusinessBudgetCalculator } from "@/components/bizbuilder/BusinessBudgetCalculator"
-import { CashFlowProjectionTool } from "@/components/bizbuilder/CashFlowProjectionTool"
+
 import BreakEvenCalculator from "@/components/bizbuilder/BreakEvenCalculator"
 import LoanAmortisationCalculator from "@/components/bizbuilder/LoanAmortisationCalculator"
 import CashFlowCalculator from "@/components/bizbuilder/CashFlowCalculator"
@@ -21,20 +21,12 @@ const tools = [
     color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
   },
   {
-    id: "cash-flow-projection",
+    id: "cash-flow",
     title: "Cash Flow Projection Calculator",
     description: "Project monthly cash flows and identify potential shortfalls before they happen",
     icon: Calendar,
     category: "Essential Calculators",
     color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-  },
-  {
-    id: "cash-flow",
-    title: "Cash Flow Projection Tool",
-    description: "Forecast your business cash flow to better plan for the future",
-    icon: TrendingUp,
-    category: "Essential Calculators",
-    color: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200"
   },
   {
     id: "break-even",
@@ -164,13 +156,8 @@ export function BizBuilderToolsPage() {
       )}
 
       {/* Cash Flow Projection Calculator */}
-      {selectedTool === 'cash-flow-projection' && (
-        <CashFlowCalculator onClose={() => setSelectedTool(null)} />
-      )}
-
-      {/* Cash Flow Projection Tool */}
       {selectedTool === 'cash-flow' && (
-        <CashFlowProjectionTool onClose={() => setSelectedTool(null)} />
+        <CashFlowCalculator onClose={() => setSelectedTool(null)} />
       )}
 
       {/* Break-Even Calculator */}
@@ -184,7 +171,7 @@ export function BizBuilderToolsPage() {
       )}
 
       {/* Other Tools - Future Implementation */}
-      {selectedTool && !['business-budget', 'cash-flow-projection', 'cash-flow', 'break-even', 'loan-amortisation'].includes(selectedTool) && (
+      {selectedTool && !['business-budget', 'cash-flow', 'break-even', 'loan-amortisation'].includes(selectedTool) && (
         <div className="mt-8 p-6 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
           <div className="text-center">
             <Calculator className="w-12 h-12 text-orange-600 mx-auto mb-4" />
