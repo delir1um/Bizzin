@@ -23,7 +23,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-8 pt-8 border-t border-slate-800 text-center">
-          <p className="text-slate-400 text-sm">&copy; 2024 Bizzin. All rights reserved.</p>
+          <p className="text-slate-400 text-sm">&copy; 2024 <span className="italic">Bizzin</span>. All rights reserved.</p>
         </div>
       </div>
     </footer>

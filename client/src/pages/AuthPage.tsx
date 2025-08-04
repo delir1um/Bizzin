@@ -116,7 +116,11 @@ export default function AuthPage() {
             <img src={currentLogo} alt="Bizzin Logo" className="h-full object-contain" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-            {mode === "signUp" ? "Join Bizzin" : "Welcome Back"}
+            {mode === "signUp" ? (
+              <>Join <span className="italic">Bizzin</span></>
+            ) : (
+              "Welcome Back"
+            )}
           </h1>
           <p className="text-slate-600 dark:text-slate-300">
             {mode === "signUp" 
@@ -132,7 +136,7 @@ export default function AuthPage() {
             <div className="flex items-center gap-2">
               <Users className="w-5 h-5 text-green-600 dark:text-green-400" />
               <span className="text-green-700 dark:text-green-300 font-medium">
-                You've been referred to Bizzin!
+                You've been referred to <span className="italic">Bizzin</span>!
               </span>
             </div>
             <p className="text-sm text-green-600 dark:text-green-400 mt-1">
@@ -216,7 +220,11 @@ export default function AuthPage() {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-white dark:bg-slate-800 px-2 text-slate-500">
-                  {mode === "signIn" ? "New to Bizzin?" : "Already have an account?"}
+                  {mode === "signIn" ? (
+                    <>New to <span className="italic">Bizzin</span>?</>
+                  ) : (
+                    "Already have an account?"
+                  )}
                 </span>
               </div>
             </div>

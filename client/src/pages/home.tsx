@@ -13,7 +13,7 @@ export function Home() {
           <div className="text-center">
             {/* Main Heading */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-white tracking-tight">
-              Welcome to <span className="text-blue-600">Bizzin</span>
+              Welcome to <span className="text-blue-600 italic">Bizzin</span>
             </h1>
             
             {/* Subtitle */}

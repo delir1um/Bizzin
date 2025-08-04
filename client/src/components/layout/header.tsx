@@ -19,7 +19,7 @@ export function Header() {
               <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-sky-500 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">B</span>
               </div>
-              <span className="ml-2 text-xl font-semibold text-slate-900 dark:text-white">Bizzin</span>
+              <span className="ml-2 text-xl font-semibold text-slate-900 dark:text-white italic">Bizzin</span>
             </div>
           </div>
 

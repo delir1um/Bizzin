@@ -26,7 +26,7 @@ export function PrivacyPage() {
         </CardHeader>
         <CardContent>
           <p className="text-slate-700 dark:text-slate-300">
-            Bizzin is built with privacy by design. We collect only the data necessary to provide our services, 
+            <span className="italic">Bizzin</span> is built with privacy by design. We collect only the data necessary to provide our services, 
             implement strong security measures, and give you complete control over your information. Your business 
             data belongs to you, and we're committed to keeping it secure and private.
           </p>
