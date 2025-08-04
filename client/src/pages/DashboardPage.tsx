@@ -207,7 +207,7 @@ export function DashboardPage() {
         {/* Welcome Header */}
         <div className="text-center">
           <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
-            Welcome back, <span className="text-orange-600">
+            Welcome back, <span className="text-orange-600 italic">
               {user?.user_metadata?.full_name || 
                user?.user_metadata?.first_name || 
                user?.email?.split('@')[0] || 
