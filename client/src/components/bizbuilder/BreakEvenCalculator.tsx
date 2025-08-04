@@ -274,18 +274,9 @@ export default function BreakEvenCalculator({ onClose }: { onClose: () => void }
                 {/* Business Information */}
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">Business Information</CardTitle>
+                    <CardTitle className="text-lg">Product/Service Information</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div>
-                      <Label>Business Name</Label>
-                      <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-md">
-                        <span className="text-slate-700 dark:text-slate-300">{businessName}</span>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                          Auto-filled from your profile. Update in Profile Settings to change.
-                        </p>
-                      </div>
-                    </div>
                     <div>
                       <Label>Product/Service Name</Label>
                       <Input

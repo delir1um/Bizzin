@@ -11,7 +11,6 @@ import { X, Download, TrendingUp, TrendingDown, DollarSign, AlertTriangle, Calen
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from "recharts"
 
 interface CashFlowData {
-  businessName: string
   startingCash: number
   projectionMonths: number
   inflows: CashFlowItem[]
@@ -54,7 +53,6 @@ const COLORS = ['#EA7A57', '#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6'
 
 export default function CashFlowCalculator({ onClose }: { onClose: () => void }) {
   const [cashFlowData, setCashFlowData] = useState<CashFlowData>({
-    businessName: '',
     startingCash: 0,
     projectionMonths: 12,
     inflows: [],
@@ -247,7 +245,7 @@ export default function CashFlowCalculator({ onClose }: { onClose: () => void })
     // Header information
     csvData.push(['CASH FLOW PROJECTION REPORT'])
     csvData.push(['Generated on:', new Date().toLocaleDateString()])
-    csvData.push(['Business Name:', cashFlowData.businessName || 'Not specified'])
+
     csvData.push(['Starting Cash Balance:', `R${cashFlowData.startingCash.toLocaleString()}`])
     csvData.push(['Projection Period:', `${cashFlowData.projectionMonths} months`])
     csvData.push([]) // Empty row
@@ -304,14 +302,13 @@ export default function CashFlowCalculator({ onClose }: { onClose: () => void })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `cashflow-${cashFlowData.businessName?.replace(/[^a-zA-Z0-9]/g, '-') || 'business'}-${new Date().toISOString().split('T')[0]}.csv`
+    a.download = `cashflow-projection-${new Date().toISOString().split('T')[0]}.csv`
     a.click()
     URL.revokeObjectURL(url)
   }
 
   const resetTool = () => {
     setCashFlowData({
-      businessName: '',
       startingCash: 0,
       projectionMonths: 12,
       inflows: [],
@@ -352,18 +349,10 @@ export default function CashFlowCalculator({ onClose }: { onClose: () => void })
                 {/* Business Information */}
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">Business Information</CardTitle>
-                    <CardDescription>Enter basic business details</CardDescription>
+                    <CardTitle className="text-lg">Cash Flow Setup</CardTitle>
+                    <CardDescription>Configure your cash flow projection</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div>
-                      <Label>Business Name</Label>
-                      <Input
-                        value={cashFlowData.businessName}
-                        onChange={(e) => setCashFlowData(prev => ({ ...prev, businessName: e.target.value }))}
-                        placeholder="Enter your business name"
-                      />
-                    </div>
                     <div>
                       <Label>Starting Cash Balance (R)</Label>
                       <Input

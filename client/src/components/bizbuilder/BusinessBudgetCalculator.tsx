@@ -33,7 +33,7 @@ interface BudgetData {
   income: IncomeItem[]
   expenses: ExpenseItem[]
   notes: string
-  businessName: string
+
   period: 'monthly' | 'quarterly' | 'annually'
 }
 
@@ -72,7 +72,6 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
     income: [],
     expenses: [],
     notes: '',
-    businessName: '',
     period: 'monthly'
   })
 
@@ -146,10 +145,10 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
     
     const item: IncomeItem = {
       id: Date.now().toString(),
-      name: newIncomeItem.name,
-      amount: newIncomeItem.amount,
+      name: newIncomeItem.name || '',
+      amount: newIncomeItem.amount || 0,
       frequency: newIncomeItem.frequency || 'monthly',
-      category: newIncomeItem.category
+      category: newIncomeItem.category || ''
     }
     
     setBudgetData(prev => ({ ...prev, income: [...prev.income, item] }))
@@ -172,10 +171,10 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
     
     const item: ExpenseItem = {
       id: Date.now().toString(),
-      name: newExpenseItem.name,
-      amount: newExpenseItem.amount,
+      name: newExpenseItem.name || '',
+      amount: newExpenseItem.amount || 0,
       frequency: newExpenseItem.frequency || 'monthly',
-      category: newExpenseItem.category,
+      category: newExpenseItem.category || '',
       type: newExpenseItem.type || 'variable'
     }
     
@@ -218,7 +217,7 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
     
     // Header
     csvData.push(['Business Budget Report'])
-    csvData.push(['Business Name:', budgetData.businessName || 'N/A'])
+
     csvData.push(['Period:', budgetData.period])
     csvData.push(['Generated:', new Date().toLocaleDateString()])
     csvData.push([]) // Empty row
@@ -275,7 +274,7 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `budget-${budgetData.businessName?.replace(/[^a-zA-Z0-9]/g, '-') || 'business'}-${new Date().toISOString().split('T')[0]}.csv`
+    a.download = `budget-report-${new Date().toISOString().split('T')[0]}.csv`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -285,7 +284,6 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
       income: [],
       expenses: [],
       notes: '',
-      businessName: '',
       period: 'monthly'
     })
     localStorage.removeItem('businessBudgetCalculator')
@@ -317,13 +315,7 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
             <div className="mb-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="businessName">Business Name</Label>
-                  <Input
-                    id="businessName"
-                    value={budgetData.businessName}
-                    onChange={(e) => setBudgetData(prev => ({ ...prev, businessName: e.target.value }))}
-                    placeholder="Enter business name"
-                  />
+
                 </div>
                 <div>
                   <Label htmlFor="period">Budget Period</Label>
