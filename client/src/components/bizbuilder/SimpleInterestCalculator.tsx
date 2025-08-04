@@ -324,22 +324,23 @@ export default function SimpleInterestCalculator({ onClose }: { onClose: () => v
                   </CardContent>
                 </Card>
 
-                {/* Calculation Information */}
-                <Card className="border-blue-300 bg-blue-50 dark:bg-blue-900/20">
+                {/* Business Use Cases */}
+                <Card className="border-green-300 bg-green-50 dark:bg-green-900/20">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-lg text-blue-800 dark:text-blue-200">
-                      Calculation Method
+                    <CardTitle className="text-lg text-green-800 dark:text-green-200">
+                      Common Business Applications
                     </CardTitle>
-                    <CardDescription className="text-blue-600 dark:text-blue-300">
-                      Advanced monthly compounding for accurate results
+                    <CardDescription className="text-green-600 dark:text-green-300">
+                      Perfect for these financial scenarios
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-2 text-sm text-blue-700 dark:text-blue-300">
-                      <p>• Monthly compounding with beginning-of-period calculation</p>
-                      <p>• More accurate than basic simple interest for short-term loans</p>
-                      <p>• Side-by-side comparison with pure simple interest</p>
-                      <p>• Professional-grade financial calculations</p>
+                    <div className="space-y-2 text-sm text-green-700 dark:text-green-300">
+                      <p>• Short-term business loans and credit facilities</p>
+                      <p>• Quick investment return calculations</p>
+                      <p>• Supplier payment terms analysis</p>
+                      <p>• Cash flow planning with interest costs</p>
+                      <p>• Comparing loan offers from different banks</p>
                     </div>
                   </CardContent>
                 </Card>
