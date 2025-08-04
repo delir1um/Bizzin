@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Users } from "lucide-react"
-import brizzinLogo from "@/assets/bizzin-logo.webp"
+import brizzinLogo from "@/assets/bizzin-logo-new.webp"
 
 const schema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
