@@ -2,7 +2,7 @@ import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Calculator, TrendingUp, DollarSign, Car, Home, BarChart3, Target, Activity, CreditCard, Calendar, PiggyBank } from "lucide-react"
+import { Calculator, TrendingUp, DollarSign, Car, Home, BarChart3, Target, Activity, CreditCard, Calendar, PiggyBank, Percent } from "lucide-react"
 import { motion } from "framer-motion"
 import { AnimatedCard, AnimatedGrid, AnimatedItem } from "@/components/ui/animated-card"
 import { BusinessBudgetCalculator } from "@/components/bizbuilder/BusinessBudgetCalculator"
@@ -11,6 +11,7 @@ import BreakEvenCalculator from "@/components/bizbuilder/BreakEvenCalculator"
 import LoanAmortisationCalculator from "@/components/bizbuilder/LoanAmortisationCalculator"
 import CashFlowCalculator from "@/components/bizbuilder/CashFlowCalculator"
 import CompoundInterestCalculator from "@/components/bizbuilder/CompoundInterestCalculator"
+import SimpleInterestCalculator from "@/components/bizbuilder/SimpleInterestCalculator"
 
 const tools = [
   {
@@ -52,6 +53,14 @@ const tools = [
     icon: PiggyBank,
     category: "Essential Calculators",
     color: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200"
+  },
+  {
+    id: "simple-interest",
+    title: "Simple Interest Calculator",
+    description: "Calculate simple interest with monthly compounding and tax considerations",
+    icon: Percent,
+    category: "Essential Calculators",
+    color: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
   }
 ]
 
@@ -184,8 +193,13 @@ export function BizBuilderToolsPage() {
         <CompoundInterestCalculator onClose={() => setSelectedTool(null)} />
       )}
 
+      {/* Simple Interest Calculator */}
+      {selectedTool === 'simple-interest' && (
+        <SimpleInterestCalculator onClose={() => setSelectedTool(null)} />
+      )}
+
       {/* Other Tools - Future Implementation */}
-      {selectedTool && !['business-budget', 'cash-flow', 'break-even', 'loan-amortisation', 'compound-interest'].includes(selectedTool) && (
+      {selectedTool && !['business-budget', 'cash-flow', 'break-even', 'loan-amortisation', 'compound-interest', 'simple-interest'].includes(selectedTool) && (
         <div className="mt-8 p-6 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
           <div className="text-center">
             <Calculator className="w-12 h-12 text-orange-600 mx-auto mb-4" />
