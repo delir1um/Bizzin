@@ -76,7 +76,7 @@ export default function BreakEvenCalculator({ onClose }: { onClose: () => void }
     localStorage.setItem('breakEvenCalculator', JSON.stringify(breakEvenData))
   }, [breakEvenData])
 
-  // Calculations
+  // Calculations (using Excel template formulas)
   const totalFixedCosts = breakEvenData.fixedCosts.reduce((sum, cost) => sum + cost.amount, 0)
   const contributionMargin = breakEvenData.sellingPrice - breakEvenData.variableCostPerUnit
   const contributionMarginRatio = breakEvenData.sellingPrice > 0 ? (contributionMargin / breakEvenData.sellingPrice) * 100 : 0
@@ -84,6 +84,11 @@ export default function BreakEvenCalculator({ onClose }: { onClose: () => void }
   const breakEvenRevenue = breakEvenUnits * breakEvenData.sellingPrice
   const safetyMarginUnits = Math.max(0, breakEvenUnits * 0.2) // 20% safety margin
   const recommendedUnits = breakEvenUnits + safetyMarginUnits
+  
+  // Additional Excel template calculations
+  const marginOfSafetyUnits = (units: number) => Math.max(0, units - breakEvenUnits)
+  const marginOfSafetyPercentage = (units: number) => units > 0 ? (marginOfSafetyUnits(units) / units) * 100 : 0
+  const profitAtUnits = (units: number) => (units * contributionMargin) - totalFixedCosts
 
   // Validation for adding fixed costs
   const addFixedCost = () => {
