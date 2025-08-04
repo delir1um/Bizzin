@@ -187,7 +187,7 @@ export default function LoanAmortisationCalculator({ onClose }: LoanAmortisation
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="loanAmount">Loan Amount</Label>
+                  <Label htmlFor="loanAmount">Loan Amount (R)</Label>
                   <Input
                     id="loanAmount"
                     type="number"
@@ -242,7 +242,7 @@ export default function LoanAmortisationCalculator({ onClose }: LoanAmortisation
                 </div>
 
                 <div>
-                  <Label htmlFor="extraPayment">Optional Extra Payment</Label>
+                  <Label htmlFor="extraPayment">Optional Extra Payment (R)</Label>
                   <Input
                     id="extraPayment"
                     type="number"
@@ -277,7 +277,7 @@ export default function LoanAmortisationCalculator({ onClose }: LoanAmortisation
                     <div>
                       <p className="text-sm text-slate-600 dark:text-slate-300">Monthly Payment</p>
                       <p className="text-lg font-semibold text-slate-900 dark:text-white">
-                        ${calculations.monthlyPayment.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        R{calculations.monthlyPayment.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </p>
                     </div>
                   </div>
@@ -305,7 +305,7 @@ export default function LoanAmortisationCalculator({ onClose }: LoanAmortisation
                     <div>
                       <p className="text-sm text-slate-600 dark:text-slate-300">Total Interest</p>
                       <p className="text-lg font-semibold text-slate-900 dark:text-white">
-                        ${calculations.totalInterest.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        R{calculations.totalInterest.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </p>
                     </div>
                   </div>
@@ -319,7 +319,7 @@ export default function LoanAmortisationCalculator({ onClose }: LoanAmortisation
                     <div>
                       <p className="text-sm text-slate-600 dark:text-slate-300">Total Cost</p>
                       <p className="text-lg font-semibold text-slate-900 dark:text-white">
-                        ${(parseFloat(loanAmount) + calculations.totalInterest).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        R{(parseFloat(loanAmount) + calculations.totalInterest).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </p>
                     </div>
                   </div>
@@ -341,7 +341,7 @@ export default function LoanAmortisationCalculator({ onClose }: LoanAmortisation
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="payment" />
                           <YAxis />
-                          <Tooltip formatter={(value: any) => [`$${value.toLocaleString()}`, '']} />
+                          <Tooltip formatter={(value: any) => [`R${value.toLocaleString()}`, '']} />
                           <Area type="monotone" dataKey="principal" stackId="1" stroke="#8884d8" fill="#8884d8" />
                           <Area type="monotone" dataKey="interest" stackId="1" stroke="#82ca9d" fill="#82ca9d" />
                         </AreaChart>
@@ -361,7 +361,7 @@ export default function LoanAmortisationCalculator({ onClose }: LoanAmortisation
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="payment" />
                           <YAxis />
-                          <Tooltip formatter={(value: any) => [`$${value.toLocaleString()}`, 'Balance']} />
+                          <Tooltip formatter={(value: any) => [`R${value.toLocaleString()}`, 'Balance']} />
                           <Line type="monotone" dataKey="balance" stroke="#ff7300" strokeWidth={2} />
                         </LineChart>
                       </ResponsiveContainer>
@@ -406,12 +406,12 @@ export default function LoanAmortisationCalculator({ onClose }: LoanAmortisation
                           <TableRow key={entry.paymentNumber}>
                             <TableCell>{entry.paymentNumber}</TableCell>
                             <TableCell>{entry.paymentDate.toLocaleDateString()}</TableCell>
-                            <TableCell>${entry.beginningBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                            <TableCell>${entry.scheduledPayment.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                            <TableCell>${entry.extraPayment.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                            <TableCell>${entry.principal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                            <TableCell>${entry.interest.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                            <TableCell>${entry.endingBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                            <TableCell>R{entry.beginningBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                            <TableCell>R{entry.scheduledPayment.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                            <TableCell>R{entry.extraPayment.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                            <TableCell>R{entry.principal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                            <TableCell>R{entry.interest.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                            <TableCell>R{entry.endingBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
