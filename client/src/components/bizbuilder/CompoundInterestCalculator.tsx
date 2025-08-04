@@ -9,9 +9,9 @@ import { Badge } from "@/components/ui/badge"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { X, Download, TrendingUp, DollarSign, PiggyBank, Calendar, Target, Zap } from "lucide-react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from "recharts"
+import { useBusinessName } from "@/hooks/useUserProfile"
 
 interface CompoundInterestData {
-  businessName: string
   calculationType: 'lump-sum' | 'monthly-contributions' | 'both'
   // Lump sum fields
   principal: number
@@ -37,8 +37,8 @@ const compoundingFrequencies = [
 const COLORS = ['#EA7A57', '#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6']
 
 export default function CompoundInterestCalculator({ onClose }: { onClose: () => void }) {
+  const businessName = useBusinessName()
   const [compoundData, setCompoundData] = useState<CompoundInterestData>({
-    businessName: '',
     calculationType: 'lump-sum',
     principal: 5000,
     annualRate: 5,
@@ -179,7 +179,7 @@ export default function CompoundInterestCalculator({ onClose }: { onClose: () =>
     // Header information
     csvData.push(['COMPOUND INTEREST CALCULATION REPORT'])
     csvData.push(['Generated on:', new Date().toLocaleDateString()])
-    csvData.push(['Business Name:', compoundData.businessName || 'Not specified'])
+    csvData.push(['Business Name:', businessName])
     csvData.push(['Calculation Type:', compoundData.calculationType.replace('-', ' ').toUpperCase()])
     csvData.push([]) // Empty row
     
@@ -263,14 +263,13 @@ export default function CompoundInterestCalculator({ onClose }: { onClose: () =>
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `compound-interest-${compoundData.businessName?.replace(/[^a-zA-Z0-9]/g, '-') || 'calculation'}-${new Date().toISOString().split('T')[0]}.csv`
+    a.download = `compound-interest-${businessName.replace(/[^a-zA-Z0-9]/g, '-')}-${new Date().toISOString().split('T')[0]}.csv`
     a.click()
     URL.revokeObjectURL(url)
   }
 
   const resetTool = () => {
     setCompoundData({
-      businessName: '',
       calculationType: 'lump-sum',
       principal: 5000,
       annualRate: 5,
@@ -320,11 +319,12 @@ export default function CompoundInterestCalculator({ onClose }: { onClose: () =>
                   <CardContent className="space-y-4">
                     <div>
                       <Label>Business/Investment Name</Label>
-                      <Input
-                        value={compoundData.businessName}
-                        onChange={(e) => setCompoundData(prev => ({ ...prev, businessName: e.target.value }))}
-                        placeholder="Enter investment name"
-                      />
+                      <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-md">
+                        <span className="text-slate-700 dark:text-slate-300">{businessName}</span>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                          Auto-filled from your profile. Update in Profile Settings to change.
+                        </p>
+                      </div>
                     </div>
                     <div>
                       <Label>Calculation Type</Label>

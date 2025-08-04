@@ -8,9 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { X, Download, Calculator, DollarSign, Calendar, TrendingUp, Target } from "lucide-react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from "recharts"
+import { useBusinessName } from "@/hooks/useUserProfile"
 
 interface SimpleInterestData {
-  businessName: string
   principal: number
   annualRate: number
   termYears: number
@@ -20,8 +20,8 @@ interface SimpleInterestData {
 }
 
 export default function SimpleInterestCalculator({ onClose }: { onClose: () => void }) {
+  const businessName = useBusinessName()
   const [interestData, setInterestData] = useState<SimpleInterestData>({
-    businessName: '',
     principal: 25000,
     annualRate: 15,
     termYears: 3,
@@ -148,7 +148,7 @@ export default function SimpleInterestCalculator({ onClose }: { onClose: () => v
     // Header information
     csvData.push(['SIMPLE INTEREST CALCULATION REPORT'])
     csvData.push(['Generated on:', new Date().toLocaleDateString()])
-    csvData.push(['Business Name:', interestData.businessName || 'Not specified'])
+    csvData.push(['Business Name:', businessName])
     csvData.push([]) // Empty row
     
     // Investment parameters
@@ -215,14 +215,13 @@ export default function SimpleInterestCalculator({ onClose }: { onClose: () => v
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `simple-interest-${interestData.businessName?.replace(/[^a-zA-Z0-9]/g, '-') || 'calculation'}-${new Date().toISOString().split('T')[0]}.csv`
+    a.download = `simple-interest-${businessName.replace(/[^a-zA-Z0-9]/g, '-')}-${new Date().toISOString().split('T')[0]}.csv`
     a.click()
     URL.revokeObjectURL(url)
   }
 
   const resetTool = () => {
     setInterestData({
-      businessName: '',
       principal: 25000,
       annualRate: 15,
       termYears: 3,
@@ -268,11 +267,12 @@ export default function SimpleInterestCalculator({ onClose }: { onClose: () => v
                   <CardContent className="space-y-4">
                     <div>
                       <Label>Business/Investment Name</Label>
-                      <Input
-                        value={interestData.businessName}
-                        onChange={(e) => setInterestData(prev => ({ ...prev, businessName: e.target.value }))}
-                        placeholder="Enter investment or loan name"
-                      />
+                      <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-md">
+                        <span className="text-slate-700 dark:text-slate-300">{businessName}</span>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                          Auto-filled from your profile. Update in Profile Settings to change.
+                        </p>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

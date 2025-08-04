@@ -10,9 +10,9 @@ import { Badge } from "@/components/ui/badge"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { X, Download, Calculator, TrendingUp, DollarSign, Target, AlertTriangle } from "lucide-react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts"
+import { useBusinessName } from "@/hooks/useUserProfile"
 
 interface BreakEvenData {
-  businessName: string
   productName: string
   sellingPrice: number
   variableCostPerUnit: number
@@ -40,8 +40,8 @@ const fixedCostCategories = [
 ]
 
 export default function BreakEvenCalculator({ onClose }: { onClose: () => void }) {
+  const businessName = useBusinessName()
   const [breakEvenData, setBreakEvenData] = useState<BreakEvenData>({
-    businessName: '',
     productName: '',
     sellingPrice: 0,
     variableCostPerUnit: 0,
@@ -158,7 +158,7 @@ export default function BreakEvenCalculator({ onClose }: { onClose: () => void }
     // Header information
     csvData.push(['BREAK-EVEN ANALYSIS REPORT'])
     csvData.push(['Generated on:', new Date().toLocaleDateString()])
-    csvData.push(['Business Name:', breakEvenData.businessName || 'Not specified'])
+    csvData.push(['Business Name:', businessName])
     csvData.push(['Product/Service:', breakEvenData.productName || 'Not specified'])
     csvData.push(['Timeframe:', breakEvenData.timeframe])
     csvData.push([]) // Empty row
@@ -222,14 +222,13 @@ export default function BreakEvenCalculator({ onClose }: { onClose: () => void }
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `breakeven-${breakEvenData.businessName?.replace(/[^a-zA-Z0-9]/g, '-') || 'business'}-${new Date().toISOString().split('T')[0]}.csv`
+    a.download = `breakeven-${businessName.replace(/[^a-zA-Z0-9]/g, '-')}-${new Date().toISOString().split('T')[0]}.csv`
     a.click()
     URL.revokeObjectURL(url)
   }
 
   const resetTool = () => {
     setBreakEvenData({
-      businessName: '',
       productName: '',
       sellingPrice: 0,
       variableCostPerUnit: 0,
@@ -280,11 +279,12 @@ export default function BreakEvenCalculator({ onClose }: { onClose: () => void }
                   <CardContent className="space-y-4">
                     <div>
                       <Label>Business Name</Label>
-                      <Input
-                        value={breakEvenData.businessName}
-                        onChange={(e) => setBreakEvenData(prev => ({ ...prev, businessName: e.target.value }))}
-                        placeholder="Enter your business name"
-                      />
+                      <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-md">
+                        <span className="text-slate-700 dark:text-slate-300">{businessName}</span>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                          Auto-filled from your profile. Update in Profile Settings to change.
+                        </p>
+                      </div>
                     </div>
                     <div>
                       <Label>Product/Service Name</Label>

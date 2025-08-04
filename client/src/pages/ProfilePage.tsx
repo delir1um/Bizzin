@@ -19,6 +19,7 @@ const profileSchema = z.object({
   first_name: z.string().min(1, "First name is required").max(50, "First name must be less than 50 characters"),
   last_name: z.string().max(50, "Last name must be less than 50 characters").optional(),
   full_name: z.string().min(1, "Full name is required").max(100, "Full name must be less than 100 characters"),
+  business_name: z.string().max(100, "Business name must be less than 100 characters").optional(),
   phone: z.string().max(20, "Phone number must be less than 20 characters").optional(),
   location: z.string().max(100, "Location must be less than 100 characters").optional(),
   bio: z.string().max(500, "Bio must be less than 500 characters").optional(),
@@ -50,6 +51,7 @@ export default function ProfilePage() {
       setValue('first_name', metadata.first_name || '')
       setValue('last_name', metadata.last_name || '')
       setValue('full_name', metadata.full_name || '')
+      setValue('business_name', metadata.business_name || '')
       setValue('phone', metadata.phone || '')
       setValue('location', metadata.location || '')
       setValue('bio', metadata.bio || '')
@@ -400,6 +402,21 @@ export default function ProfilePage() {
                   )}
                   <p className="text-sm text-muted-foreground">
                     This is how your name will appear in quotes and throughout the app.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="business_name">Business Name</Label>
+                  <Input
+                    id="business_name"
+                    {...register('business_name')}
+                    placeholder="Enter your business name"
+                  />
+                  {errors.business_name && (
+                    <p className="text-sm text-red-600">{errors.business_name.message}</p>
+                  )}
+                  <p className="text-sm text-muted-foreground">
+                    This will be automatically used in financial calculators and reports.
                   </p>
                 </div>
               </div>
