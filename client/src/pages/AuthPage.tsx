@@ -11,7 +11,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Users } from "lucide-react"
-import brizzinLogo from "@/assets/bizzin-logo-new.webp"
+import { useTheme } from "@/lib/theme-provider"
+import brizzinLogoLight from "@/assets/bizzin-logo-light.webp"
+import brizzinLogoDark from "@/assets/bizzin-logo-dark.webp"
 
 const schema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -27,6 +29,9 @@ export default function AuthPage() {
   const [, setLocation] = useLocation()
   const [referralCode, setReferralCode] = useState<string | null>(null)
   const [referralValid, setReferralValid] = useState(false)
+  const { theme } = useTheme()
+  
+  const currentLogo = theme === "dark" ? brizzinLogoDark : brizzinLogoLight
 
   const {
     register,
@@ -109,7 +114,7 @@ export default function AuthPage() {
         {/* Logo and Welcome */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <img src={brizzinLogo} alt="Brizzin Logo" className="w-full h-full object-contain" />
+            <img src={currentLogo} alt="Bizzin Logo" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
             {mode === "signUp" ? "Join Bizzin" : "Welcome Back"}

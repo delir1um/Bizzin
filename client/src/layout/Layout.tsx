@@ -12,12 +12,15 @@ import {
 import { useTheme } from "@/lib/theme-provider"
 import { Moon, Sun, User, Settings, LogOut } from "lucide-react"
 import { useAuth } from "@/hooks/AuthProvider"
-import brizzinLogo from "@/assets/bizzin-logo-new.webp"
+import brizzinLogoLight from "@/assets/bizzin-logo-light.webp"
+import brizzinLogoDark from "@/assets/bizzin-logo-dark.webp"
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { theme, setTheme } = useTheme()
   const [location] = useLocation()
   const { user, signOut } = useAuth()
+  
+  const currentLogo = theme === "dark" ? brizzinLogoDark : brizzinLogoLight
 
   const toggleTheme = () => {
     setTheme(theme === "light" ? "dark" : "light")
@@ -47,7 +50,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <div className="flex items-center">
               <Link to="/" className="flex items-center">
                 <div className="h-8 flex items-center justify-center">
-                  <img src={brizzinLogo} alt="Bizzin Logo" className="h-full object-contain" />
+                  <img src={currentLogo} alt="Bizzin Logo" className="h-full object-contain" />
                 </div>
               </Link>
             </div>
@@ -170,7 +173,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center mb-4 md:mb-0">
               <div className="h-8 flex items-center justify-center">
-                <img src={brizzinLogo} alt="Bizzin Logo" className="h-full object-contain" />
+                <img src={currentLogo} alt="Bizzin Logo" className="h-full object-contain" />
               </div>
             </div>
             <div className="flex space-x-6">
