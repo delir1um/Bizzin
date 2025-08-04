@@ -21,6 +21,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { user, signOut } = useAuth()
   
   const currentLogo = theme === "dark" ? brizzinLogoDark : brizzinLogoLight
+  const footerLogo = brizzinLogoDark // Footer always uses dark version due to dark background
 
   const toggleTheme = () => {
     setTheme(theme === "light" ? "dark" : "light")
@@ -173,7 +174,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center mb-4 md:mb-0">
               <div className="h-8 flex items-center justify-center">
-                <img src={currentLogo} alt="Bizzin Logo" className="h-full object-contain" />
+                <img src={footerLogo} alt="Bizzin Logo" className="h-full object-contain" />
               </div>
             </div>
             <div className="flex space-x-6">
