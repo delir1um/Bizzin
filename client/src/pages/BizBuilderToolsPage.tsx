@@ -14,12 +14,14 @@ import CompoundInterestCalculator from "@/components/bizbuilder/CompoundInterest
 import SimpleInterestCalculator from "@/components/bizbuilder/SimpleInterestCalculator"
 
 const tools = [
+  // FREE TIER - Core Business Calculators
   {
     id: "business-budget",
     title: "Business Budget Calculator",
     description: "Plan and track your business income and expenses with detailed budget analysis",
     icon: DollarSign,
-    category: "Essential Calculators",
+    category: "Core Tools",
+    tier: "free",
     color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
   },
   {
@@ -27,7 +29,8 @@ const tools = [
     title: "Cash Flow Projection Calculator",
     description: "Project monthly cash flows and identify potential shortfalls before they happen",
     icon: Calendar,
-    category: "Essential Calculators",
+    category: "Core Tools",
+    tier: "free",
     color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
   },
   {
@@ -35,15 +38,18 @@ const tools = [
     title: "Break-Even Calculator",
     description: "Determine the break-even point for your business operations with margin of safety analysis",
     icon: BarChart3,
-    category: "Essential Calculators",
+    category: "Core Tools",
+    tier: "free",
     color: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
   },
+  // PREMIUM TIER - Advanced Financial Tools
   {
     id: "loan-amortisation",
     title: "Loan Amortisation Calculator",
     description: "Calculate loan payments, interest schedules, and early payoff scenarios",
     icon: CreditCard,
-    category: "Essential Calculators",
+    category: "Premium Tools",
+    tier: "premium",
     color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
   },
   {
@@ -51,7 +57,8 @@ const tools = [
     title: "Compound Interest Calculator",
     description: "Calculate investment growth with compound interest and monthly contributions",
     icon: PiggyBank,
-    category: "Essential Calculators",
+    category: "Premium Tools",
+    tier: "premium",
     color: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200"
   },
   {
@@ -59,14 +66,16 @@ const tools = [
     title: "Simple Interest Calculator",
     description: "Calculate simple interest with monthly compounding and tax considerations",
     icon: Percent,
-    category: "Essential Calculators",
+    category: "Premium Tools",
+    tier: "premium",
     color: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
   }
 ]
 
 const categories = [
   "All Tools",
-  "Essential Calculators"
+  "Core Tools",
+  "Premium Tools"
 ]
 
 export function BizBuilderToolsPage() {
@@ -90,8 +99,18 @@ export function BizBuilderToolsPage() {
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white">BizBuilder Tools</h1>
             <p className="mt-2 text-lg text-slate-600 dark:text-slate-300">
-              Essential calculators and tools to help you plan and manage your business
+              Core and premium calculators to help you plan and manage your business
             </p>
+            <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-500 dark:text-slate-400">
+              <div className="flex items-center">
+                <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                <span>Free - Essential business planning tools</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 bg-amber-500 rounded-full mr-2"></div>
+                <span>Premium - Advanced financial analysis</span>
+              </div>
+            </div>
           </div>
           <div className="mt-4 sm:mt-0">
             <Button 
@@ -139,8 +158,14 @@ export function BizBuilderToolsPage() {
                   <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mb-3">
                     <IconComponent className="w-6 h-6 text-orange-600 dark:text-orange-400" />
                   </div>
-                  <Badge className={tool.color} variant="secondary">
-                    {tool.category.split(' ')[0]}
+                  <Badge 
+                    className={tool.tier === 'free' 
+                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" 
+                      : "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200"
+                    } 
+                    variant="secondary"
+                  >
+                    {tool.tier === 'free' ? 'Free' : 'Premium'}
                   </Badge>
                 </div>
                 <CardTitle className="text-lg">{tool.title}</CardTitle>
