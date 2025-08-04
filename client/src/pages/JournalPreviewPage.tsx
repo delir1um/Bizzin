@@ -138,7 +138,7 @@ export function JournalPreviewPage() {
             {demoEntries.map((entry, index) => (
               <Card 
                 key={entry.id}
-                className={`relative overflow-hidden bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm ${entry.isBlurred ? 'opacity-60' : ''}`}
+                className={`relative overflow-hidden bg-white/60 dark:bg-card/60 backdrop-blur-sm ${entry.isBlurred ? 'opacity-60' : ''}`}
               >
                 {entry.isBlurred && (
                   <div className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10 flex items-center justify-center">
