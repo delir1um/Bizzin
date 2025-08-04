@@ -12,7 +12,7 @@ import {
 import { useTheme } from "@/lib/theme-provider"
 import { Moon, Sun, User, Settings, LogOut } from "lucide-react"
 import { useAuth } from "@/hooks/AuthProvider"
-import brizzinLogo from "@/assets/brizzin-logo.webp"
+import brizzinLogo from "@/assets/bizzin-logo.webp"
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { theme, setTheme } = useTheme()
