@@ -2,12 +2,13 @@ import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Calculator, TrendingUp, DollarSign, Car, Home, BarChart3, Target, Activity } from "lucide-react"
+import { Calculator, TrendingUp, DollarSign, Car, Home, BarChart3, Target, Activity, CreditCard } from "lucide-react"
 import { motion } from "framer-motion"
 import { AnimatedCard, AnimatedGrid, AnimatedItem } from "@/components/ui/animated-card"
 import { BusinessBudgetCalculator } from "@/components/bizbuilder/BusinessBudgetCalculator"
 import { CashFlowProjectionTool } from "@/components/bizbuilder/CashFlowProjectionTool"
 import BreakEvenCalculator from "@/components/bizbuilder/BreakEvenCalculator"
+import LoanAmortisationCalculator from "@/components/bizbuilder/LoanAmortisationCalculator"
 
 const tools = [
   {
@@ -33,6 +34,14 @@ const tools = [
     icon: BarChart3,
     category: "Essential Calculators",
     color: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+  },
+  {
+    id: "loan-amortisation",
+    title: "Loan Amortisation Calculator",
+    description: "Calculate loan payments, interest schedules, and early payoff scenarios",
+    icon: CreditCard,
+    category: "Essential Calculators",
+    color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
   }
 ]
 
@@ -155,8 +164,13 @@ export function BizBuilderToolsPage() {
         <BreakEvenCalculator onClose={() => setSelectedTool(null)} />
       )}
 
+      {/* Loan Amortisation Calculator */}
+      {selectedTool === 'loan-amortisation' && (
+        <LoanAmortisationCalculator onClose={() => setSelectedTool(null)} />
+      )}
+
       {/* Other Tools - Future Implementation */}
-      {selectedTool && !['business-budget', 'cash-flow', 'break-even'].includes(selectedTool) && (
+      {selectedTool && !['business-budget', 'cash-flow', 'break-even', 'loan-amortisation'].includes(selectedTool) && (
         <div className="mt-8 p-6 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
           <div className="text-center">
             <Calculator className="w-12 h-12 text-orange-600 mx-auto mb-4" />
