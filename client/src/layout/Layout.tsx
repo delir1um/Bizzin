@@ -50,7 +50,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             {/* Logo */}
             <div className="flex items-center">
               <Link to="/" className="flex items-center">
-                <div className="h-8 flex items-center justify-center">
+                <div className="h-10 flex items-center justify-center">
                   <img src={currentLogo} alt="Bizzin Logo" className="h-full object-contain" />
                 </div>
               </Link>
@@ -173,7 +173,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center mb-4 md:mb-0">
-              <div className="h-8 flex items-center justify-center">
+              <div className="h-10 flex items-center justify-center">
                 <img src={footerLogo} alt="Bizzin Logo" className="h-full object-contain" />
               </div>
             </div>
