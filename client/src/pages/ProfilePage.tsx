@@ -164,6 +164,7 @@ export default function ProfilePage() {
           first_name: data.first_name,
           last_name: data.last_name || '',
           full_name: data.full_name,
+          business_name: data.business_name || '',
           phone: data.phone || '',
           location: data.location || '',
           bio: data.bio || '',
