@@ -12,7 +12,6 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Users } from "lucide-react"
 import { useTheme } from "@/lib/theme-provider"
-import brizzinLogoLight from "@/assets/brizzin-logo-light-v2.webp"
 import brizzinLogoDark from "@/assets/brizzin-logo-dark-v2.webp"
 
 const schema = z.object({
@@ -31,7 +30,7 @@ export default function AuthPage() {
   const [referralValid, setReferralValid] = useState(false)
   const { theme } = useTheme()
   
-  const currentLogo = theme === "dark" ? brizzinLogoDark : brizzinLogoLight
+  const currentLogo = brizzinLogoDark // Always use dark version
 
   const {
     register,

@@ -12,7 +12,6 @@ import {
 import { useTheme } from "@/lib/theme-provider"
 import { Moon, Sun, User, Settings, LogOut } from "lucide-react"
 import { useAuth } from "@/hooks/AuthProvider"
-import brizzinLogoLight from "@/assets/brizzin-logo-light-v2.webp"
 import brizzinLogoDark from "@/assets/brizzin-logo-dark-v2.webp"
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -20,8 +19,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation()
   const { user, signOut } = useAuth()
   
-  const currentLogo = theme === "dark" ? brizzinLogoDark : brizzinLogoLight
-  const footerLogo = brizzinLogoDark // Footer always uses dark version due to dark background
+  const currentLogo = brizzinLogoDark // Always use dark version
 
   const toggleTheme = () => {
     setTheme(theme === "light" ? "dark" : "light")
@@ -169,12 +167,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </main>
 
       {/* Footer */}
-      <footer className="bg-slate-900 dark:bg-black">
+      <footer className="bg-slate-900" style={{ backgroundColor: '#0B0A1D' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center mb-4 md:mb-0">
               <div className="h-10 flex items-center justify-center">
-                <img src={footerLogo} alt="Bizzin Logo" className="h-full object-contain" />
+                <img src={currentLogo} alt="Bizzin Logo" className="h-full object-contain" />
               </div>
             </div>
             <div className="flex space-x-6">
