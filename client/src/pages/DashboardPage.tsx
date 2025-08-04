@@ -212,7 +212,7 @@ export function DashboardPage() {
                user?.user_metadata?.first_name || 
                user?.email?.split('@')[0] || 
                "Entrepreneur"}
-            </span>!
+            </span>
           </h1>
           <p className="text-slate-600 dark:text-slate-300 text-lg">Your business command center</p>
         </div>
