@@ -175,6 +175,14 @@ export default function BreakEvenCalculator({ onClose }: { onClose: () => void }
     csvData.push(['Recommended Units (with 20% buffer):', recommendedUnits.toLocaleString()])
     csvData.push([]) // Empty row
     
+    // Margin of Safety Analysis (from Excel template)
+    csvData.push(['MARGIN OF SAFETY ANALYSIS'])
+    csvData.push(['Margin of Safety Units:', marginOfSafetyUnits(recommendedUnits).toLocaleString()])
+    csvData.push(['Margin of Safety Percentage:', `${marginOfSafetyPercentage(recommendedUnits).toFixed(1)}%`])
+    csvData.push(['Expected Profit at Recommended Units:', `R${profitAtUnits(recommendedUnits).toLocaleString()}`])
+    csvData.push(['Revenue at Recommended Units:', `R${(recommendedUnits * breakEvenData.sellingPrice).toLocaleString()}`])
+    csvData.push([]) // Empty row
+    
     // Fixed Costs Breakdown
     csvData.push(['FIXED COSTS BREAKDOWN'])
     csvData.push(['Cost Name', 'Category', 'Amount'])
@@ -488,6 +496,48 @@ export default function BreakEvenCalculator({ onClose }: { onClose: () => void }
                     <div className="flex justify-between">
                       <span>Revenue at Recommended Units:</span>
                       <span className="font-medium">R{(recommendedUnits * breakEvenData.sellingPrice).toLocaleString()}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Margin of Safety Analysis (from Excel template) */}
+                <Card className="mb-6">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <AlertTriangle className="w-5 h-5 text-amber-600" />
+                      Margin of Safety Analysis
+                    </CardTitle>
+                    <CardDescription>How much sales can drop before reaching break-even</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="text-center p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                        <p className="text-lg font-bold text-amber-800 dark:text-amber-200">
+                          {marginOfSafetyUnits(recommendedUnits).toLocaleString()}
+                        </p>
+                        <p className="text-xs text-amber-600 dark:text-amber-300">Safety Units</p>
+                      </div>
+                      <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                        <p className="text-lg font-bold text-green-800 dark:text-green-200">
+                          {marginOfSafetyPercentage(recommendedUnits).toFixed(1)}%
+                        </p>
+                        <p className="text-xs text-green-600 dark:text-green-300">Safety Margin</p>
+                      </div>
+                      <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <p className="text-lg font-bold text-blue-800 dark:text-blue-200">
+                          R{profitAtUnits(recommendedUnits).toLocaleString()}
+                        </p>
+                        <p className="text-xs text-blue-600 dark:text-blue-300">Expected Profit</p>
+                      </div>
+                    </div>
+                    
+                    <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                      <h4 className="font-medium text-slate-900 dark:text-slate-100 mb-2">What this means:</h4>
+                      <ul className="text-sm text-slate-600 dark:text-slate-300 space-y-1">
+                        <li>• You can sell {marginOfSafetyUnits(recommendedUnits).toLocaleString()} units below target before breaking even</li>
+                        <li>• Sales can drop by {marginOfSafetyPercentage(recommendedUnits).toFixed(1)}% and you'll still be profitable</li>
+                        <li>• At recommended sales level, you'll generate R{profitAtUnits(recommendedUnits).toLocaleString()} profit</li>
+                      </ul>
                     </div>
                   </CardContent>
                 </Card>
