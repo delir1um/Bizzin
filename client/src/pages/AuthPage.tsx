@@ -113,8 +113,8 @@ export default function AuthPage() {
       <div className="w-full max-w-[420px]">
         {/* Logo and Welcome */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <img src={currentLogo} alt="Bizzin Logo" className="w-full h-full object-contain" />
+          <div className="h-10 flex items-center justify-center mx-auto mb-4">
+            <img src={currentLogo} alt="Bizzin Logo" className="h-full object-contain" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
             {mode === "signUp" ? "Join Bizzin" : "Welcome Back"}
