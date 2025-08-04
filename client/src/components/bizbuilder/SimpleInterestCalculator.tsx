@@ -240,7 +240,7 @@ export default function SimpleInterestCalculator({ onClose }: { onClose: () => v
         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
           <div>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Simple Interest Calculator</h2>
-            <p className="text-slate-600 dark:text-slate-300">Calculate interest with monthly compounding using Excel FV formulas</p>
+            <p className="text-slate-600 dark:text-slate-300">Calculate simple interest with monthly compounding for loans and investments</p>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose}>
             <X className="w-4 h-4" />
@@ -324,24 +324,22 @@ export default function SimpleInterestCalculator({ onClose }: { onClose: () => v
                   </CardContent>
                 </Card>
 
-                {/* Formula Information */}
+                {/* Calculation Information */}
                 <Card className="border-blue-300 bg-blue-50 dark:bg-blue-900/20">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg text-blue-800 dark:text-blue-200">
                       Calculation Method
                     </CardTitle>
                     <CardDescription className="text-blue-600 dark:text-blue-300">
-                      Uses Excel FV formula with monthly compounding
+                      Advanced monthly compounding for accurate results
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2 text-sm text-blue-700 dark:text-blue-300">
-                      <p className="font-mono text-xs bg-blue-100 dark:bg-blue-800 p-2 rounded">
-                        FV(monthly_rate, months, 0, -principal, 1)
-                      </p>
-                      <p>• Monthly compounding with annuity due calculation</p>
-                      <p>• More accurate than simple interest for short-term investments</p>
-                      <p>• Comparison with pure simple interest included</p>
+                      <p>• Monthly compounding with beginning-of-period calculation</p>
+                      <p>• More accurate than basic simple interest for short-term loans</p>
+                      <p>• Side-by-side comparison with pure simple interest</p>
+                      <p>• Professional-grade financial calculations</p>
                     </div>
                   </CardContent>
                 </Card>
