@@ -45,7 +45,7 @@ export function BizBuilderToolsPreviewPage() {
               <h1 className="text-3xl font-bold text-slate-900 dark:text-white">BizBuilder Tools</h1>
             </div>
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Use our essential business calculators and planning tools for your business decisions
+              Business Budget Calculator, Break-Even Analysis, Cash Flow Projections, and premium loan/investment calculators
             </p>
           </div>
         </div>

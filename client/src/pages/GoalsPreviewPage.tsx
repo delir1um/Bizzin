@@ -68,7 +68,7 @@ export function GoalsPreviewPage() {
               <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Goals Tracking</h1>
             </div>
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Create and track your own business goals with our comprehensive management system
+              Set and manage business goals with progress tracking, priority levels, filtering, and integration with your journal entries
             </p>
           </div>
         </div>
@@ -114,7 +114,7 @@ export function GoalsPreviewPage() {
         {/* CTA Section */}
         <div className="text-center mb-8">
           <div className="bg-gradient-to-r from-orange-600 to-red-500 text-white p-6 rounded-lg mb-6">
-            <h2 className="text-2xl font-bold mb-2">Ready to Set Your Goals?</h2>
+            <h2 className="text-2xl font-bold mb-2">Start Goal Tracking Today</h2>
             <p className="text-orange-100 mb-4">Create and manage your own business objectives with our goal tracking system</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button 

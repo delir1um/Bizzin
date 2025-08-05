@@ -58,10 +58,10 @@ export function TrainingPreviewPage() {
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
               <GraduationCap className="w-8 h-8 text-blue-600" />
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Business Training</h1>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Business Podcast</h1>
             </div>
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Learn from our expert-created business courses and training modules
+              15-minute business podcast episodes with progress tracking, completion detection, learning streaks, and audio/video content
             </p>
           </div>
         </div>

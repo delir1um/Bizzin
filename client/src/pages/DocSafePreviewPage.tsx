@@ -65,7 +65,7 @@ export function DocSafePreviewPage() {
               <h1 className="text-3xl font-bold text-slate-900 dark:text-white">DocSafe</h1>
             </div>
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Upload and organize your own business documents with secure cloud storage
+              Drag & drop file upload, multi-format viewer, search functionality, and categorization. Free: 50MB, Premium: 10GB storage
             </p>
           </div>
         </div>

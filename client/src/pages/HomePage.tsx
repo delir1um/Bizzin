@@ -85,7 +85,7 @@ export function HomePage() {
                 <Target className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Goals Tracking</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Create and track your own 3, 6, and 12-month business goals.</p>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">Set business goals with progress tracking, priority levels, and journal integration.</p>
             </div>
 
             {/* Journal */}
@@ -97,7 +97,7 @@ export function HomePage() {
                 <PenTool className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Business Journal</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Write and organize your business thoughts, insights, and reflections.</p>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">AI-powered sentiment analysis, mood tracking, and reflection prompts. 10 entries/month free.</p>
             </div>
 
             {/* Podcast */}
@@ -109,7 +109,7 @@ export function HomePage() {
                 <Headphones className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Business Podcast</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">15-minute business insights to grow your entrepreneurial mindset.</p>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">15-minute episodes with progress tracking, completion detection, and learning streaks.</p>
             </div>
 
             {/* BizBuilder Tools */}
@@ -121,7 +121,7 @@ export function HomePage() {
                 <Calculator className="w-6 h-6 text-amber-600 dark:text-amber-400" />
               </div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">BizBuilder Tools</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Use our professional calculators for budget, cash flow, and break-even analysis.</p>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">Budget calculator, break-even analysis, cash flow projections, and premium financial tools.</p>
             </div>
 
             {/* DocSafe */}
@@ -133,7 +133,7 @@ export function HomePage() {
                 <Shield className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
               </div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">DocSafe</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Upload and organize your business documents with secure cloud storage.</p>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">Drag & drop file upload, multi-format viewer, search, and categorization. 50MB free.</p>
             </div>
           </div>
         </div>
@@ -155,11 +155,11 @@ export function HomePage() {
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center text-slate-700 dark:text-slate-300">
                   <Target className="w-5 h-5 text-green-500 mr-3" />
-                  Basic goal tracking
+                  Unlimited goal tracking
                 </li>
                 <li className="flex items-center text-slate-700 dark:text-slate-300">
                   <PenTool className="w-5 h-5 text-green-500 mr-3" />
-                  Personal journal entries
+                  10 journal entries per month
                 </li>
                 <li className="flex items-center text-slate-700 dark:text-slate-300">
                   <BookOpen className="w-5 h-5 text-green-500 mr-3" />

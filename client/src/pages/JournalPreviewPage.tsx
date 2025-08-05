@@ -55,7 +55,7 @@ export function JournalPreviewPage() {
               <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Business Journal</h1>
             </div>
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Create and manage your own personal business journal entries
+              Document your business journey with AI-powered sentiment analysis, mood tracking, and smart reflection prompts
             </p>
           </div>
         </div>
@@ -101,8 +101,8 @@ export function JournalPreviewPage() {
         {/* CTA Section */}
         <div className="text-center mb-8">
           <div className="bg-gradient-to-r from-purple-600 to-blue-500 text-white p-6 rounded-lg mb-6">
-            <h2 className="text-2xl font-bold mb-2">Create Your Business Journal</h2>
-            <p className="text-purple-100 mb-4">Write and organize your own business thoughts, insights, and reflections</p>
+            <h2 className="text-2xl font-bold mb-2">Create Your AI-Enhanced Business Journal</h2>
+            <p className="text-purple-100 mb-4">Write entries with automatic sentiment analysis, mood tracking, and personalized reflection prompts. Free plan includes 10 entries per month.</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button 
                 onClick={() => setLocation('/auth')}
