@@ -19,8 +19,8 @@ const todayEntry = {
 const weekEntries = [
   {
     id: "week-1",
-    title: "Achievement Unlocked: 18 Months",
-    content: "We did it! After 18 months of development, negotiations, and countless iterations, we finally closed the partnership deal with Microsoft. This is the breakthrough we've been...",
+    title: "Major Client Win: Standard Bank Partnership",
+    content: "Incredible news! We just secured Standard Bank as our largest enterprise client. After months of presentations and negotiations, they've chosen our platform to digitize their SME onboarding process across all South African branches. This R2.5M contract validates everything we've built...",
     date: "Aug 4, 2025",
     category: "Achievement",
     emoji: "🏆",
@@ -28,11 +28,29 @@ const weekEntries = [
   },
   {
     id: "week-2",
-    title: "Strategic Planning: Plan",
-    content: "Spent the entire day working on our 2025 strategic plan. I've been analyzing market trends, competitor movements, and our internal capabilities to chart our course for next...",
-    date: "Aug 4, 2025",
-    category: "Planning",
-    emoji: "🧠",
+    title: "Team Milestone: 50 Employees",
+    content: "Today we welcomed our 50th team member - Thabo, a brilliant AI engineer from Wits University. From our humble beginnings in a Sandton co-working space to now having offices in Johannesburg, Cape Town, and Durban. The energy in our teams is incredible and we're building something truly special for South African businesses...",
+    date: "Aug 3, 2025",
+    category: "Team",
+    emoji: "🎉",
+    isBlurred: true
+  },
+  {
+    id: "week-3",
+    title: "Revenue Breakthrough: R10M ARR",
+    content: "We've officially crossed R10 million in Annual Recurring Revenue! What started as a side project to help local businesses manage their operations has grown into something that's genuinely transforming how South African companies work. Our client retention rate is at 94% and the testimonials keep pouring in...",
+    date: "Aug 2, 2025",
+    category: "Finance",
+    emoji: "💰",
+    isBlurred: true
+  },
+  {
+    id: "week-4",
+    title: "Product Launch Success: Mobile App",
+    content: "The mobile app launch exceeded all expectations! Over 5,000 downloads in the first week, with an average rating of 4.8 stars on Google Play Store. South African business owners are loving the ability to manage their operations on-the-go. The feedback has been overwhelmingly positive, especially the offline functionality for areas with poor connectivity...",
+    date: "Aug 1, 2025",
+    category: "Product",
+    emoji: "🚀",
     isBlurred: true
   }
 ]
@@ -81,7 +99,7 @@ export function JournalPreviewPage() {
                   <TrendingUp className="h-4 w-4 text-green-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-green-900 dark:text-green-100">3</div>
+                  <div className="text-2xl font-bold text-green-900 dark:text-green-100">7</div>
                   <div className="text-sm text-green-700 dark:text-green-300">Growth Wins</div>
                 </div>
               </div>
@@ -171,11 +189,11 @@ export function JournalPreviewPage() {
           <div className="flex items-center gap-3 mb-4 mt-8">
             <div className="w-1 h-6 bg-blue-500 rounded"></div>
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Earlier this week</h2>
-            <Badge variant="secondary" className="text-xs">2 entries</Badge>
+            <Badge variant="secondary" className="text-xs">4 entries</Badge>
           </div>
 
           {/* Week Entries - Blurred */}
-          {weekEntries.map((entry) => (
+          {weekEntries.slice(0, 2).map((entry) => (
             <Card key={entry.id} className="relative bg-white dark:bg-slate-800 opacity-60">
               <div className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10 flex items-center justify-center">
                 <div className="text-center">
