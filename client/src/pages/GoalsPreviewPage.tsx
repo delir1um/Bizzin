@@ -65,10 +65,10 @@ export function GoalsPreviewPage() {
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
               <Target className="w-8 h-8 text-orange-600" />
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Goals Tracking</h1>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Advanced Goal Analytics</h1>
             </div>
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Set and manage business goals with progress tracking, priority levels, filtering, and integration with your journal entries
+              Professional goal tracking with progress analytics, priority filtering, status monitoring, and intelligent business insights
             </p>
           </div>
         </div>

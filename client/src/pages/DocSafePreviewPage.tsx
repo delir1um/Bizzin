@@ -62,10 +62,10 @@ export function DocSafePreviewPage() {
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
               <Shield className="w-8 h-8 text-emerald-600" />
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">DocSafe</h1>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Intelligent Document Hub</h1>
             </div>
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Drag & drop file upload, multi-format viewer, search functionality, and categorization. Free: 50MB, Premium: 10GB storage
+              Smart categorization, advanced search, multi-format viewer, professional document management, and secure cloud storage with intelligent organization
             </p>
           </div>
         </div>

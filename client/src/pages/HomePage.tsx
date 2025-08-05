@@ -15,17 +15,17 @@ export function HomePage() {
           <div className="text-center">
             {/* Main Heading */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-white tracking-tight">
-              Welcome to <span className="text-orange-600 italic">Bizzin</span>
+              AI-Powered Business Intelligence for <span className="text-orange-600 italic">Bizzin</span>
             </h1>
             
             {/* Subtitle */}
             <p className="mt-6 text-xl sm:text-2xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed">
-              Plan, Learn, and Grow Your Business
+              Professional Business Analytics & Growth Intelligence Platform
             </p>
             
             {/* Description */}
             <p className="mt-6 text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
-              Create your own business goals, journal your journey, listen to business podcasts, and use professional calculators to grow your business.
+              Make data-driven business decisions with comprehensive analytics, AI-powered insights, professional financial tools, and intelligent document management.
             </p>
 
             {/* CTA Buttons */}
@@ -71,8 +71,8 @@ export function HomePage() {
       <section className="py-24 bg-white dark:bg-[#0B0A1D]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Complete Business Management Platform</h2>
-            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">Create your own content with our professional tools and expert-led training</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">AI-Powered Business Intelligence Suite</h2>
+            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">Professional analytics, intelligent insights, and enterprise-grade tools for growing businesses</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
@@ -84,8 +84,8 @@ export function HomePage() {
               <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mb-6">
                 <Target className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Goals Tracking</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Set business goals with progress tracking, priority levels, and journal integration.</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Advanced Goal Analytics</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">Professional goal tracking with progress analytics, priority filtering, and intelligent insights.</p>
             </div>
 
             {/* Journal */}
@@ -96,8 +96,8 @@ export function HomePage() {
               <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mb-6">
                 <PenTool className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Business Journal</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">AI-powered sentiment analysis, mood tracking, and reflection prompts. 10 entries/month free.</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">AI Business Intelligence</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">Automatic mood detection, trend analysis, and AI-powered business insights from your entries.</p>
             </div>
 
             {/* Podcast */}
@@ -108,8 +108,8 @@ export function HomePage() {
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mb-6">
                 <Headphones className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Business Podcast</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">15-minute episodes with progress tracking, completion detection, and learning streaks.</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Learning Analytics</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">Professional development tracking with completion analytics, streak monitoring, and progress insights.</p>
             </div>
 
             {/* BizBuilder Tools */}
@@ -120,8 +120,8 @@ export function HomePage() {
               <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900 rounded-lg flex items-center justify-center mb-6">
                 <Calculator className="w-6 h-6 text-amber-600 dark:text-amber-400" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">BizBuilder Tools</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Budget calculator, break-even analysis, cash flow projections, and premium financial tools.</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Professional Financial Suite</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">Enterprise-grade calculators with CSV export, real-time calculations, and advanced financial modeling.</p>
             </div>
 
             {/* DocSafe */}
@@ -132,8 +132,8 @@ export function HomePage() {
               <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900 rounded-lg flex items-center justify-center mb-6">
                 <Shield className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">DocSafe</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Drag & drop file upload, multi-format viewer, search, and categorization. 50MB free.</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Intelligent Document Hub</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">Smart categorization, advanced search, multi-format viewer, and professional document management.</p>
             </div>
           </div>
         </div>
@@ -155,19 +155,19 @@ export function HomePage() {
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center text-slate-700 dark:text-slate-300">
                   <Target className="w-5 h-5 text-green-500 mr-3" />
-                  Unlimited goal tracking
+                  Basic goal tracking & analytics
                 </li>
                 <li className="flex items-center text-slate-700 dark:text-slate-300">
                   <PenTool className="w-5 h-5 text-green-500 mr-3" />
-                  10 journal entries per month
+                  10 AI-analyzed entries per month
                 </li>
                 <li className="flex items-center text-slate-700 dark:text-slate-300">
                   <BookOpen className="w-5 h-5 text-green-500 mr-3" />
-                  Limited training content
+                  Core business calculators
                 </li>
                 <li className="flex items-center text-slate-700 dark:text-slate-300">
-                  <Calculator className="w-5 h-5 text-green-500 mr-3" />
-                  Limited calculator usage
+                  <Shield className="w-5 h-5 text-green-500 mr-3" />
+                  50MB secure document storage
                 </li>
               </ul>
               <Button 
@@ -189,23 +189,23 @@ export function HomePage() {
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center text-slate-700 dark:text-slate-300">
                   <Target className="w-5 h-5 text-orange-500 mr-3" />
-                  Unlimited goal tracking with analytics
+                  Advanced goal analytics & health metrics
                 </li>
                 <li className="flex items-center text-slate-700 dark:text-slate-300">
                   <PenTool className="w-5 h-5 text-orange-500 mr-3" />
-                  Advanced journal features
+                  Unlimited AI analysis & business insights
                 </li>
                 <li className="flex items-center text-slate-700 dark:text-slate-300">
                   <BookOpen className="w-5 h-5 text-orange-500 mr-3" />
-                  Full training library access
+                  Premium financial calculators + CSV export
                 </li>
                 <li className="flex items-center text-slate-700 dark:text-slate-300">
                   <Calculator className="w-5 h-5 text-orange-500 mr-3" />
-                  Unlimited calculator usage
+                  Referral program - earn free subscription days
                 </li>
                 <li className="flex items-center text-slate-700 dark:text-slate-300">
                   <Shield className="w-5 h-5 text-orange-500 mr-3" />
-                  Increased storage limits
+                  10GB professional document storage
                 </li>
               </ul>
               <Button 
@@ -213,6 +213,53 @@ export function HomePage() {
                 className="w-full bg-orange-600 hover:bg-orange-700"
               >
                 Start Free Trial
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Referral Program Section */}
+      <section className="py-24 bg-gradient-to-r from-orange-50 to-red-50 dark:bg-gradient-to-r dark:from-[#0B0A1D] dark:to-slate-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Earn Free Subscription Days</h2>
+            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">Professional referral program with real rewards</p>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-xl border border-slate-200 dark:border-slate-700 max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+              <div>
+                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">1</span>
+                </div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Share Your Link</h3>
+                <p className="text-slate-600 dark:text-slate-300 text-sm">Get your unique referral code and share with business contacts</p>
+              </div>
+              
+              <div>
+                <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-green-600 dark:text-green-400">2</span>
+                </div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Friend Subscribes</h3>
+                <p className="text-slate-600 dark:text-slate-300 text-sm">They sign up and subscribe to any paid plan</p>
+              </div>
+              
+              <div>
+                <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-orange-600 dark:text-orange-400">10</span>
+                </div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">You Get Rewarded</h3>
+                <p className="text-slate-600 dark:text-slate-300 text-sm">Earn 10 days free subscription for each active referral</p>
+              </div>
+            </div>
+            
+            <div className="mt-8 text-center">
+              <Button 
+                onClick={() => setLocation('/auth')}
+                className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 text-lg font-medium"
+              >
+                Start Earning Free Days
               </Button>
             </div>
           </div>

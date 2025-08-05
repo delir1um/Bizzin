@@ -52,10 +52,10 @@ export function JournalPreviewPage() {
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
               <BookOpen className="w-8 h-8 text-purple-600" />
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Business Journal</h1>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">AI Business Intelligence Journal</h1>
             </div>
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Document your business journey with AI-powered sentiment analysis, mood tracking, and smart reflection prompts
+              Automatic mood detection, business health analytics, trend analysis, and AI-powered insights from your daily entries
             </p>
           </div>
         </div>

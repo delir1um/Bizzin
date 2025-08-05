@@ -42,10 +42,10 @@ export function BizBuilderToolsPreviewPage() {
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
               <Calculator className="w-8 h-8 text-orange-600" />
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">BizBuilder Tools</h1>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Professional Financial Suite</h1>
             </div>
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Business Budget Calculator, Break-Even Analysis, Cash Flow Projections, and premium loan/investment calculators
+              Enterprise-grade calculators with CSV export, real-time calculations, advanced financial modeling, and professional business analysis tools
             </p>
           </div>
         </div>
