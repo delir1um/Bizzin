@@ -1,33 +1,66 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Calculator, TrendingUp, DollarSign, Car, Home, BarChart3, Target, Activity, Lock, ArrowRight } from "lucide-react"
+import { Calculator, TrendingUp, DollarSign, Calendar, BarChart3, CreditCard, PiggyBank, Percent, ArrowRight, Target } from "lucide-react"
 import { useLocation } from "wouter"
 
+// Actual BizBuilder tools from the portal
 const demoTools = [
+  // Core Tools (Free)
   {
     id: "business-budget",
     title: "Business Budget Calculator",
-    description: "Plan and track your business income and expenses",
+    description: "Plan and track your business income and expenses with detailed budget analysis",
     icon: DollarSign,
-    category: "Essential Calculators",
-    isBlurred: false
+    category: "Core",
+    tier: "free",
+    color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
   },
   {
     id: "cash-flow",
-    title: "Cash Flow Projection Tool", 
-    description: "Forecast your business cash flow for better planning",
-    icon: TrendingUp,
-    category: "Essential Calculators",
-    isBlurred: true
+    title: "Cash Flow Projection Calculator", 
+    description: "Project monthly cash flows and identify potential shortfalls before they happen",
+    icon: Calendar,
+    category: "Core",
+    tier: "free",
+    color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
   },
   {
     id: "break-even",
     title: "Break-Even Calculator",
-    description: "Determine the break-even point for your business",
+    description: "Determine the break-even point for your business operations with margin of safety analysis",
     icon: BarChart3,
-    category: "Essential Calculators",
-    isBlurred: true
+    category: "Core",
+    tier: "free",
+    color: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+  },
+  // Premium Tools
+  {
+    id: "loan-amortisation",
+    title: "Loan Amortisation Calculator",
+    description: "Calculate loan payments, interest schedules, and early payoff scenarios",
+    icon: CreditCard,
+    category: "Premium",
+    tier: "premium",
+    color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+  },
+  {
+    id: "compound-interest",
+    title: "Compound Interest Calculator",
+    description: "Calculate investment growth with compound interest and monthly contributions",
+    icon: PiggyBank,
+    category: "Premium",
+    tier: "premium",
+    color: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200"
+  },
+  {
+    id: "simple-interest",
+    title: "Simple Interest Calculator",
+    description: "Calculate simple interest with monthly compounding and tax considerations",
+    icon: Percent,
+    category: "Premium",
+    tier: "premium",
+    color: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
   }
 ]
 
@@ -60,8 +93,8 @@ export function BizBuilderToolsPreviewPage() {
               <Calculator className="h-4 w-4 text-orange-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">3</div>
-              <p className="text-xs text-muted-foreground">Essential calculators</p>
+              <div className="text-2xl font-bold">6</div>
+              <p className="text-xs text-muted-foreground">Professional calculators</p>
             </CardContent>
           </Card>
 
@@ -117,32 +150,14 @@ export function BizBuilderToolsPreviewPage() {
             </Button>
           </div>
 
-          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-            {demoTools.map((tool, index) => {
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            {demoTools.map((tool) => {
               const IconComponent = tool.icon
               return (
                 <Card 
                   key={tool.id}
-                  className={`relative overflow-hidden bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm hover:shadow-lg transition-all ${tool.isBlurred ? 'opacity-60' : ''}`}
+                  className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm hover:shadow-lg transition-all"
                 >
-                  {tool.isBlurred && (
-                    <div className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10 flex items-center justify-center">
-                      <div className="text-center">
-                        <Lock className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                        <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                          Sign up to access
-                        </p>
-                        <Button 
-                          size="sm" 
-                          className="mt-2 bg-orange-600 hover:bg-orange-700"
-                          onClick={() => setLocation('/auth')}
-                        >
-                          Unlock Tools
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
                   <CardHeader className="pb-3">
                     <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mb-3">
                       <IconComponent className="w-6 h-6 text-orange-600 dark:text-orange-400" />
@@ -154,7 +169,7 @@ export function BizBuilderToolsPreviewPage() {
                   </CardHeader>
                   
                   <CardContent className="pt-0">
-                    <Badge variant="outline" className="mb-3">
+                    <Badge className={tool.color + " mb-3"}>
                       {tool.category}
                     </Badge>
                     <Button 
