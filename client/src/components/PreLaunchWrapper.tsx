@@ -1,35 +1,12 @@
 import React from 'react';
-import { usePlatformSettings } from '@/hooks/usePlatformSettings';
-import { useAuth } from '@/hooks/AuthProvider';
-import PreLaunchPage from '@/pages/PreLaunchPage';
 
+// This wrapper is no longer needed since we handle pre-launch logic directly in App.tsx
+// Keeping it for compatibility but making it a simple passthrough
 interface PreLaunchWrapperProps {
   children: React.ReactNode;
-  bypassForAuth?: boolean; // Allow auth page even in pre-launch mode
+  bypassForAuth?: boolean;
 }
 
-export function PreLaunchWrapper({ children, bypassForAuth = false }: PreLaunchWrapperProps) {
-  const { data: settings, isLoading } = usePlatformSettings();
-  const { user, loading: authLoading } = useAuth();
-
-  // Show loading while checking settings and auth
-  if (isLoading || authLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
-          <p className="mt-2 text-slate-600 dark:text-slate-400">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // If pre-launch mode is enabled and user is not authenticated
-  if (settings?.pre_launch_mode && !user && !bypassForAuth) {
-    return <PreLaunchPage />;
-  }
-
-  // If pre-launch mode is enabled but user is authenticated, they can access the platform
-  // If pre-launch mode is disabled, show normal content
+export function PreLaunchWrapper({ children }: PreLaunchWrapperProps) {
   return <>{children}</>;
 }

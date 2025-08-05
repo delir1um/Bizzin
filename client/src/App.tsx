@@ -28,14 +28,12 @@ import { DashboardPage } from "@/pages/DashboardPage"
 import PreLaunchPage from "@/pages/PreLaunchPage"
 import AdminDashboardPage from "@/pages/AdminDashboardPage"
 import { useEffect } from "react"
+import { usePlatformSettings } from "@/hooks/usePlatformSettings"
 
 // Component to handle root route logic
 function MainRouter() {
   const { user, loading } = useAuth()
   const [, setLocation] = useLocation()
-
-  // Check if pre-launch mode is enabled (you can toggle this easily)
-  const isPreLaunchMode = import.meta.env.VITE_PRE_LAUNCH_MODE === 'true'
 
   useEffect(() => {
     if (!loading && user) {
@@ -56,15 +54,35 @@ function MainRouter() {
     )
   }
 
-  // Show PreLaunchPage if pre-launch mode is enabled for unauthenticated users
-  if (!user && isPreLaunchMode) {
-    return <PreLaunchPage />
-  }
-
-  // Show HomePage for unauthenticated users (development mode)
+  // Always show HomePage for unauthenticated users - let PreLaunchWrapper handle auth page redirects
   return user ? null : <HomePage />
 }
 
+
+// Component that wraps auth page with pre-launch logic
+function AuthPageWrapper() {
+  const { data: settings, isLoading } = usePlatformSettings();
+  const { user } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
+          <p className="mt-2 text-slate-600 dark:text-slate-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If pre-launch mode is enabled and user is not authenticated, show pre-launch signup
+  if (settings?.pre_launch_mode && !user) {
+    return <PreLaunchPage />;
+  }
+
+  // Otherwise show the normal auth page
+  return <AuthPage />;
+}
 
 function App() {
   return (
@@ -73,48 +91,24 @@ function App() {
         <ThemeProvider defaultTheme="light" storageKey="bizzin-ui-theme">
           <TooltipProvider>
             <Router>
-              {/* Pre-launch mode check */}
-              {import.meta.env.VITE_PRE_LAUNCH_MODE === 'true' ? (
-                // Pre-launch mode: Only show pre-launch page and auth
-                <>
-                  <Route path="/" component={() => <PreLaunchPage />} />
-                  <Route path="/auth" component={AuthPage} />
-                  <Route path="/dashboard" component={() => <ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-                  <Route path="/profile" component={() => <ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-                  {/* Add other protected routes for authenticated users */}
-                  <Route path="/journal" component={() => <ProtectedRoute><JournalPage /></ProtectedRoute>} />
-                  <Route path="/goals" component={() => <ProtectedRoute><GoalsPage /></ProtectedRoute>} />
-                  <Route path="/training" component={() => <ProtectedRoute><PodcastPage /></ProtectedRoute>} />
-                  <Route path="/training/series/:seriesSlug">
-                    {(params) => <ProtectedRoute><SeriesPage seriesSlug={params.seriesSlug} /></ProtectedRoute>}
-                  </Route>
-                  <Route path="/bizbuilder" component={() => <ProtectedRoute><BizBuilderToolsPage /></ProtectedRoute>} />
-                  <Route path="/docsafe" component={() => <ProtectedRoute><DocSafePage /></ProtectedRoute>} />
-                  <Route path="/admin" component={() => <ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
-                  <Route path="/admin/videos" component={() => <ProtectedRoute><AdminVideoPage /></ProtectedRoute>} />
-                  <Route path="/privacy" component={PrivacyPage} />
-                </>
-              ) : (
-                // Development mode: Full platform with layout
-                <Layout>
-                  <Route path="/" component={() => <MainRouter />} />
-                  <Route path="/auth" component={AuthPage} />
-                  <Route path="/profile" component={() => <ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-                  <Route path="/dashboard" component={() => <ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+              <Layout>
+                <Route path="/" component={() => <MainRouter />} />
+                <Route path="/auth" component={AuthPageWrapper} />
+                <Route path="/profile" component={() => <ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                <Route path="/dashboard" component={() => <ProtectedRoute><DashboardPage /></ProtectedRoute>} />
 
-                  <Route path="/journal" component={() => <PreviewOrProtected protectedComponent={JournalPage} previewComponent={JournalPreviewPage} />} />
-                  <Route path="/goals" component={() => <PreviewOrProtected protectedComponent={GoalsPage} previewComponent={GoalsPreviewPage} />} />
-                  <Route path="/training" component={() => <PreviewOrProtected protectedComponent={PodcastPage} previewComponent={TrainingPreviewPage} />} />
-                  <Route path="/training/series/:seriesSlug">
-                    {(params) => <ProtectedRoute><SeriesPage seriesSlug={params.seriesSlug} /></ProtectedRoute>}
-                  </Route>
-                  <Route path="/bizbuilder" component={() => <PreviewOrProtected protectedComponent={BizBuilderToolsPage} previewComponent={BizBuilderToolsPreviewPage} />} />
-                  <Route path="/docsafe" component={() => <PreviewOrProtected protectedComponent={DocSafePage} previewComponent={DocSafePreviewPage} />} />
-                  <Route path="/admin" component={() => <ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
-                  <Route path="/admin/videos" component={() => <ProtectedRoute><AdminVideoPage /></ProtectedRoute>} />
-                  <Route path="/privacy" component={PrivacyPage} />
-                </Layout>
-              )}
+                <Route path="/journal" component={() => <PreviewOrProtected protectedComponent={JournalPage} previewComponent={JournalPreviewPage} />} />
+                <Route path="/goals" component={() => <PreviewOrProtected protectedComponent={GoalsPage} previewComponent={GoalsPreviewPage} />} />
+                <Route path="/training" component={() => <PreviewOrProtected protectedComponent={PodcastPage} previewComponent={TrainingPreviewPage} />} />
+                <Route path="/training/series/:seriesSlug">
+                  {(params) => <ProtectedRoute><SeriesPage seriesSlug={params.seriesSlug} /></ProtectedRoute>}
+                </Route>
+                <Route path="/bizbuilder" component={() => <PreviewOrProtected protectedComponent={BizBuilderToolsPage} previewComponent={BizBuilderToolsPreviewPage} />} />
+                <Route path="/docsafe" component={() => <PreviewOrProtected protectedComponent={DocSafePage} previewComponent={DocSafePreviewPage} />} />
+                <Route path="/admin" component={() => <ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
+                <Route path="/admin/videos" component={() => <ProtectedRoute><AdminVideoPage /></ProtectedRoute>} />
+                <Route path="/privacy" component={PrivacyPage} />
+              </Layout>
             </Router>
             <Toaster />
           </TooltipProvider>
