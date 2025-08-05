@@ -24,19 +24,35 @@ export function PreLaunchToggle() {
   const [tempMessage, setTempMessage] = useState('');
 
   // Fetch current platform settings
-  const { data: settings, isLoading } = useQuery({
+  const { data: settings, isLoading, error: settingsError } = useQuery({
     queryKey: ['platform-settings'],
     queryFn: async () => {
+      console.log('Fetching platform settings...');
+      
       const { data, error } = await supabase
         .from('platform_settings')
         .select('*')
-        .limit(1)
-        .single();
+        .limit(1);
 
-      if (error && error.code === 'PGRST116') {
-        // No settings found, create default
+      console.log('Platform settings query result:', { data, error });
+
+      if (error) {
+        console.error('Platform settings error:', error);
+        // Return default settings if table doesn't exist
+        return {
+          id: 'default',
+          pre_launch_mode: false,
+          launch_message: "We're putting the finishing touches on *Bizzin*! Sign up to be notified when we launch.",
+          maintenance_mode: false,
+          maintenance_message: "We're currently performing maintenance. Please check back soon."
+        } as PlatformSettings;
+      }
+
+      if (!data || data.length === 0) {
+        console.log('No settings found, creating default...');
+        
+        // Try to insert default settings
         const defaultSettings = {
-          id: crypto.randomUUID(),
           pre_launch_mode: false,
           launch_message: "We're putting the finishing touches on *Bizzin*! Sign up to be notified when we launch.",
           maintenance_mode: false,
@@ -49,20 +65,55 @@ export function PreLaunchToggle() {
           .select()
           .single();
 
-        if (insertError) throw insertError;
+        if (insertError) {
+          console.error('Insert error:', insertError);
+          // Return default if insert fails
+          return {
+            id: 'default',
+            ...defaultSettings
+          } as PlatformSettings;
+        }
+        
+        console.log('Created new settings:', newData);
         return newData as PlatformSettings;
       }
 
-      if (error) throw error;
-      return data as PlatformSettings;
+      return data[0] as PlatformSettings;
     }
   });
 
   // Toggle pre-launch mode
   const togglePreLaunchMode = useMutation({
     mutationFn: async (enabled: boolean) => {
+      console.log('Toggling pre-launch mode to:', enabled);
+      console.log('Current settings:', settings);
+      
       if (!settings) throw new Error('Settings not loaded');
 
+      if (settings.id === 'default') {
+        // If using default settings, create a real record first
+        console.log('Creating real settings record...');
+        const { data: newData, error: insertError } = await supabase
+          .from('platform_settings')
+          .insert({
+            pre_launch_mode: enabled,
+            launch_message: settings.launch_message,
+            maintenance_mode: settings.maintenance_mode,
+            maintenance_message: settings.maintenance_message
+          })
+          .select()
+          .single();
+
+        if (insertError) {
+          console.error('Insert error:', insertError);
+          throw insertError;
+        }
+        
+        console.log('New settings created:', newData);
+        return enabled;
+      }
+
+      console.log('Updating existing settings...');
       const { error } = await supabase
         .from('platform_settings')
         .update({ 
@@ -71,7 +122,12 @@ export function PreLaunchToggle() {
         })
         .eq('id', settings.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Update error:', error);
+        throw error;
+      }
+      
+      console.log('Settings updated successfully');
       return enabled;
     },
     onSuccess: (enabled) => {
@@ -84,12 +140,12 @@ export function PreLaunchToggle() {
       });
     },
     onError: (error) => {
+      console.error('Pre-launch toggle error:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to update pre-launch mode',
+        title: 'Database Error',
+        description: error?.message || 'Failed to update pre-launch mode. Check if platform_settings table exists.',
         variant: 'destructive'
       });
-      console.error('Pre-launch toggle error:', error);
     }
   });
 
