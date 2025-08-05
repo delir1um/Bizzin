@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { Input } from "@/components/ui/input"
 import { Play, Headphones, Clock, Star, Users, Award, Search, Mic, BookOpen, CheckCircle2, Video } from "lucide-react"
 import { StandardPageLayout, createStatCard } from "@/components/layout/StandardPageLayout"
 import { motion } from "framer-motion"
@@ -117,25 +118,20 @@ export function PodcastPage() {
       subtitle="15-minute business insights to grow your entrepreneurial mindset"
       secondaryActions={secondaryActions}
       stats={statCards}
-      showSearch={true}
+      showSearch={false}
       searchPlaceholder="Search episodes by title or series..."
       searchValue=""
       onSearchChange={() => {}}
       showFilters={false}
     >
-      {/* CTA Banner - Matching Journal and Goals Style */}
+      {/* Search Bar - Now positioned after stats cards */}
       <div className="mb-8">
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-lg">
-          <h2 className="text-2xl font-bold mb-2">Start Your Business Learning Journey</h2>
-          <p className="text-blue-100 mb-4">15-minute business insights to accelerate your entrepreneurial growth</p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button 
-              onClick={handleContinueListening}
-              className="bg-white text-blue-600 hover:bg-blue-50 font-medium"
-            >
-              Start Learning <Play className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+          <Input
+            placeholder="Search episodes by title or series..."
+            className="pl-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+          />
         </div>
       </div>
 
