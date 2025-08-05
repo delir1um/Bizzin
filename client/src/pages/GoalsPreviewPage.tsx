@@ -8,35 +8,57 @@ import { useLocation } from "wouter"
 const demoGoals = [
   {
     id: "demo-1",
-    title: "Launch MVP Product",
-    description: "Develop and launch the minimum viable product for our SaaS platform",
-    progress: 75,
+    title: "Scale to $2M ARR",
+    description: "Achieve $2 million Annual Recurring Revenue through enterprise client acquisition and premium subscription growth. Focus on Fortune 500 companies and mid-market segments with our AI-powered business intelligence platform.",
+    progress: 68,
     status: "in_progress",
     priority: "high",
-    category: "Product",
-    deadline: "2025-08-15",
+    category: "Revenue",
+    deadline: "2025-12-31",
     isBlurred: false
   },
   {
     id: "demo-2", 
-    title: "Hire 3 Engineers",
-    description: "Expand the technical team to accelerate development",
-    progress: 40,
+    title: "Launch Enterprise AI Suite",
+    description: "Deploy advanced AI analytics suite with predictive business modeling, automated insight generation, and custom dashboard creation for enterprise clients. Target 15+ Fortune 500 pilot customers.",
+    progress: 45,
     status: "in_progress",
-    priority: "medium",
-    category: "Growth",
-    deadline: "2025-09-01",
+    priority: "high",
+    category: "Product",
+    deadline: "2025-09-15",
     isBlurred: true
   },
   {
     id: "demo-3",
-    title: "Reach $10K MRR",
-    description: "Achieve monthly recurring revenue milestone",
-    progress: 90,
-    status: "completed",
-    priority: "high", 
-    category: "Revenue",
-    deadline: "2025-07-30",
+    title: "Expand to European Markets",
+    description: "Establish operations in London, Berlin, and Amsterdam with localized product offerings, GDPR compliance, and multilingual support. Target €500K revenue in first year.",
+    progress: 32,
+    status: "in_progress",
+    priority: "medium", 
+    category: "Expansion",
+    deadline: "2025-11-01",
+    isBlurred: true
+  },
+  {
+    id: "demo-4",
+    title: "Microsoft Partnership Deal",
+    description: "Secure strategic partnership with Microsoft for integrated business intelligence solutions. Establish co-marketing agreements, technical integrations, and Azure marketplace presence.",
+    progress: 85,
+    status: "in_progress",
+    priority: "high",
+    category: "Partnerships",
+    deadline: "2025-08-30",
+    isBlurred: true
+  },
+  {
+    id: "demo-5",
+    title: "IPO Readiness Program",
+    description: "Implement enterprise-grade compliance, financial reporting systems, and governance structures to achieve IPO readiness by Q2 2026. Target $50M+ ARR threshold.",
+    progress: 15,
+    status: "in_progress",
+    priority: "medium",
+    category: "Corporate",
+    deadline: "2026-06-30",
     isBlurred: true
   }
 ]
@@ -75,38 +97,61 @@ export function GoalsPreviewPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Preview - Matching Portal Layout */}
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mb-8">
-          <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Goals</CardTitle>
-              <Target className="h-4 w-4 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">5</div>
-              <p className="text-xs text-muted-foreground">In progress</p>
+        {/* Stats Preview - Exact Portal Match */}
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-4 mb-6">
+          <Card className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-orange-100 dark:bg-orange-800 p-2 rounded">
+                  <Target className="h-4 w-4 text-orange-600" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">1</div>
+                  <div className="text-sm text-orange-700 dark:text-orange-300">Total Goals</div>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Completed</CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">12</div>
-              <p className="text-xs text-muted-foreground">This year</p>
+          <Card className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-green-100 dark:bg-green-800 p-2 rounded">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-green-900 dark:text-green-100">0</div>
+                  <div className="text-sm text-green-700 dark:text-green-300">Completed</div>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
-              <TrendingUp className="h-4 w-4 text-orange-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-600">87%</div>
-              <p className="text-xs text-muted-foreground">Overall</p>
+          <Card className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-blue-100 dark:bg-blue-800 p-2 rounded">
+                  <Clock className="h-4 w-4 text-blue-600" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">1</div>
+                  <div className="text-sm text-blue-700 dark:text-blue-300">In Progress</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-purple-100 dark:bg-purple-800 p-2 rounded">
+                  <TrendingUp className="h-4 w-4 text-purple-600" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">0%</div>
+                  <div className="text-sm text-purple-700 dark:text-purple-300">Success Rate</div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -127,82 +172,141 @@ export function GoalsPreviewPage() {
           </div>
         </div>
 
+        {/* Search and Filters - Portal Style */}
+        <div className="mb-6 space-y-4">
+          <div className="relative">
+            <input 
+              type="text" 
+              placeholder="Search goals by title or description..." 
+              className="w-full pl-4 pr-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+              disabled
+            />
+          </div>
+          
+          {/* Filter Tags */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Filters:</span>
+            <Badge variant="outline" className="text-xs">Status: All Goals (1)</Badge>
+            <Badge variant="outline" className="text-xs">Active (1)</Badge>
+            <Badge variant="outline" className="text-xs">Completed (0)</Badge>
+            <Badge variant="outline" className="text-xs">At Risk (0)</Badge>
+            <Badge variant="outline" className="text-xs">Priority: All Priorities (1)</Badge>
+            <Badge variant="outline" className="text-xs">High (0)</Badge>
+            <Badge variant="outline" className="text-xs">Medium (1)</Badge>
+            <Badge variant="outline" className="text-xs">Low (0)</Badge>
+          </div>
+          
+          <div className="text-sm text-slate-600 dark:text-slate-300">
+            Showing 1-1 of 1 goals &nbsp;&nbsp;&nbsp;&nbsp; Page 1 of 1
+          </div>
+        </div>
+
         {/* Goals Preview */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Example Goal Layout</h2>
             <Button 
               onClick={() => setLocation('/auth')}
-              className="bg-orange-600 hover:bg-orange-700"
+              className="bg-orange-600 hover:bg-orange-700 ml-auto"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Goal
+              New Goal
             </Button>
           </div>
 
+          {/* Main Goal Display - Portal Style Single Card */}
           <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-            {demoGoals.map((goal, index) => (
-              <Card 
-                key={goal.id} 
-                className={`${priorityColors[goal.priority as keyof typeof priorityColors]} border-l-4 relative overflow-hidden bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm ${goal.isBlurred ? 'opacity-60' : ''}`}
-              >
-                {goal.isBlurred && (
-                  <div className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10 flex items-center justify-center">
-                    <div className="text-center">
-                      <Lock className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                        Sign up to see all goals
-                      </p>
-                      <Button 
-                        size="sm" 
-                        className="mt-2 bg-orange-600 hover:bg-orange-700"
-                        onClick={() => setLocation('/auth')}
-                      >
-                        Unlock Now
-                      </Button>
+            {/* Main visible goal */}
+            <Card className={`${priorityColors[demoGoals[0].priority as keyof typeof priorityColors]} border-l-4 bg-white dark:bg-slate-800`}>
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-lg">{demoGoals[0].title}</CardTitle>
+                    <CardDescription className="text-sm mt-1 line-clamp-2">
+                      {demoGoals[0].description}
+                    </CardDescription>
+                  </div>
+                  <Badge className={statusConfig[demoGoals[0].status as keyof typeof statusConfig].className}>
+                    {statusConfig[demoGoals[0].status as keyof typeof statusConfig].label}
+                  </Badge>
+                </div>
+              </CardHeader>
+              
+              <CardContent className="pt-0">
+                <div className="space-y-3">
+                  {/* Progress */}
+                  <div>
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-slate-600 dark:text-slate-300">Progress</span>
+                      <span className="font-medium">{demoGoals[0].progress}%</span>
+                    </div>
+                    <Progress value={demoGoals[0].progress} className="h-2" />
+                  </div>
+                  
+                  {/* Metadata */}
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-4">
+                      <Badge variant="outline" className="capitalize">{demoGoals[0].priority}</Badge>
+                      <Badge variant="secondary">{demoGoals[0].category}</Badge>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-slate-500 dark:text-slate-400">📅 14 days remaining</span>
+                      <span className="text-green-600">✓ On track</span>
                     </div>
                   </div>
-                )}
-                
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <CardTitle className="text-lg truncate">{goal.title}</CardTitle>
-                      <CardDescription className="text-sm mt-1">
-                        {goal.description}
-                      </CardDescription>
-                    </div>
-                    <Badge className={statusConfig[goal.status as keyof typeof statusConfig].className}>
-                      {statusConfig[goal.status as keyof typeof statusConfig].label}
-                    </Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Locked/Blurred goal preview */}
+            <Card className="relative bg-white dark:bg-slate-800 opacity-60">
+              <div className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10 flex items-center justify-center">
+                <div className="text-center">
+                  <Lock className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                    Sign up to see all goals
+                  </p>
+                  <Button 
+                    size="sm" 
+                    className="mt-2 bg-orange-600 hover:bg-orange-700"
+                    onClick={() => setLocation('/auth')}
+                  >
+                    Unlock Now
+                  </Button>
+                </div>
+              </div>
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-lg">Launch Enterprise AI Suite</CardTitle>
+                    <CardDescription className="text-sm mt-1">
+                      Deploy advanced AI analytics suite with predictive business modeling...
+                    </CardDescription>
                   </div>
-                </CardHeader>
-                
-                <CardContent className="pt-0">
-                  <div className="space-y-3">
-                    {/* Progress */}
-                    <div>
-                      <div className="flex justify-between text-sm mb-2">
-                        <span className="text-slate-600 dark:text-slate-300">Progress</span>
-                        <span className="font-medium">{goal.progress}%</span>
-                      </div>
-                      <Progress value={goal.progress} className="h-2" />
+                  <Badge className="bg-orange-100 text-orange-800">In Progress</Badge>
+                </div>
+              </CardHeader>
+              
+              <CardContent className="pt-0">
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-slate-600 dark:text-slate-300">Progress</span>
+                      <span className="font-medium">75%</span>
                     </div>
-                    
-                    {/* Metadata */}
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-4">
-                        <Badge variant="outline">{goal.priority}</Badge>
-                        <Badge variant="secondary">{goal.category}</Badge>
-                      </div>
-                      <span className="text-slate-500 dark:text-slate-400">
-                        Due {new Date(goal.deadline).toLocaleDateString()}
-                      </span>
-                    </div>
+                    <Progress value={75} className="h-2" />
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                  
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-4">
+                      <Badge variant="outline">High</Badge>
+                      <Badge variant="secondary">Product</Badge>
+                    </div>
+                    <span className="text-slate-500 dark:text-slate-400">
+                      Due 15/08/2025
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
 
