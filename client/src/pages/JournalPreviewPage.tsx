@@ -4,42 +4,38 @@ import { Badge } from "@/components/ui/badge"
 import { BookOpen, Plus, Calendar, Lock, ArrowRight, PenTool, TrendingUp, Target, Search, Brain, Flame } from "lucide-react"
 import { useLocation } from "wouter"
 
-const demoEntries = [
+// Portal-matching entries
+const todayEntry = {
+  id: "today-1",
+  title: "Strategic Planning: Plan",
+  content: "Spent the entire day working on our 2025 strategic plan. I've been analyzing market trends, competitor movements, and our internal capabilities to chart our course for next year. The key priorities are: expanding our AI capabilities, entering two new market verticals, and building a world-class customer...",
+  date: "Aug 5, 2025",
+  category: "Planning",
+  mood: "Medium Energy",
+  emoji: "🧠",
+  isBlurred: false
+}
+
+const weekEntries = [
   {
-    id: "demo-1",
-    title: "Q3 Planning Session",
-    content: "Completed strategic planning for Q3. Key focus areas: product development, team scaling, and market expansion. Set aggressive but achievable targets for revenue growth...",
-    date: "2025-07-20",
-    mood: "Optimistic",
-    tags: ["Planning", "Strategy", "Q3"],
-    isBlurred: false
-  },
-  {
-    id: "demo-2",
-    title: "Customer Feedback Review",
-    content: "Analyzed feedback from 50+ customer interviews. Main insights: users love the core features but want better mobile experience. Need to prioritize mobile app development...",
-    date: "2025-07-18",
-    mood: "Thoughtful",
-    tags: ["Customer Research", "Product"],
+    id: "week-1",
+    title: "Achievement Unlocked: 18 Months",
+    content: "We did it! After 18 months of development, negotiations, and countless iterations, we finally closed the partnership deal with Microsoft. This is the breakthrough we've been...",
+    date: "Aug 4, 2025",
+    category: "Achievement",
+    emoji: "🏆",
     isBlurred: true
   },
   {
-    id: "demo-3",
-    title: "Team Meeting Reflections",
-    content: "Great team sync today. Everyone is aligned on our vision and excited about upcoming features. Sarah's ideas for user onboarding are brilliant. Need to document and implement...",
-    date: "2025-07-15",
-    mood: "Inspired",
-    tags: ["Team", "Leadership", "Ideas"],
+    id: "week-2",
+    title: "Strategic Planning: Plan",
+    content: "Spent the entire day working on our 2025 strategic plan. I've been analyzing market trends, competitor movements, and our internal capabilities to chart our course for next...",
+    date: "Aug 4, 2025",
+    category: "Planning",
+    emoji: "🧠",
     isBlurred: true
   }
 ]
-
-const moodColors = {
-  "Optimistic": "bg-green-100 text-green-800",
-  "Thoughtful": "bg-blue-100 text-blue-800", 
-  "Inspired": "bg-purple-100 text-purple-800",
-  "Focused": "bg-orange-100 text-orange-800"
-}
 
 export function JournalPreviewPage() {
   const [, setLocation] = useLocation()
@@ -62,38 +58,47 @@ export function JournalPreviewPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Preview - Matching Portal Layout */}
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mb-8">
-          <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Entry Streak</CardTitle>
-              <BookOpen className="h-4 w-4 text-orange-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">1</div>
-              <p className="text-xs text-muted-foreground">Day writing streak</p>
+        {/* Stats Preview - Exact Portal Match */}
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mb-6">
+          <Card className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-orange-100 dark:bg-orange-800 p-2 rounded">
+                  <Calendar className="h-4 w-4 text-orange-600" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">2</div>
+                  <div className="text-sm text-orange-700 dark:text-orange-300">Day Streak</div>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">AI Analysis</CardTitle>
-              <Brain className="h-4 w-4 text-purple-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-purple-600">Smart</div>
-              <p className="text-xs text-muted-foreground">Mood detection</p>
+          <Card className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-green-100 dark:bg-green-800 p-2 rounded">
+                  <TrendingUp className="h-4 w-4 text-green-600" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-green-900 dark:text-green-100">3</div>
+                  <div className="text-sm text-green-700 dark:text-green-300">Growth Wins</div>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Search & Filter</CardTitle>
-              <Search className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">Organized</div>
-              <p className="text-xs text-muted-foreground">Find entries easily</p>
+          <Card className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-blue-100 dark:bg-blue-800 p-2 rounded">
+                  <Brain className="h-4 w-4 text-blue-600" />
+                </div>
+                <div>
+                  <div className="text-lg font-bold text-blue-900 dark:text-blue-100">Analytical</div>
+                  <div className="text-sm text-blue-700 dark:text-blue-300">Dominant Mood</div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -114,111 +119,140 @@ export function JournalPreviewPage() {
           </div>
         </div>
 
-        {/* Journal Entries Preview */}
+        {/* Search Bar - Portal Style */}
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <input 
+              type="text" 
+              placeholder="Search your entries..." 
+              className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+              disabled
+            />
+          </div>
+        </div>
+
+        {/* Today Section - Exact Portal Match */}
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Example Journal Layout</h2>
-            <Button 
-              onClick={() => setLocation('/auth')}
-              className="bg-purple-600 hover:bg-purple-700"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Start Your Journal
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-1 h-6 bg-orange-500 rounded"></div>
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Today</h2>
+            <Badge variant="secondary" className="text-xs">1 entries</Badge>
+          </div>
+
+          {/* Today's Entry */}
+          <Card className="bg-white dark:bg-slate-800 hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <div className="text-2xl">{todayEntry.emoji}</div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-slate-900 dark:text-white mb-1">{todayEntry.title}</h3>
+                  <div className="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400 mb-2">
+                    <span>{todayEntry.date}</span>
+                    <Badge variant="outline" className="text-xs">{todayEntry.category}</Badge>
+                    <span>🔥 {todayEntry.mood}</span>
+                  </div>
+                  <p className="text-slate-600 dark:text-slate-300 text-sm line-clamp-2">
+                    {todayEntry.content}
+                  </p>
+                  <Button 
+                    variant="link" 
+                    className="p-0 h-auto text-orange-600 hover:text-orange-700 text-sm"
+                    onClick={() => setLocation('/auth')}
+                  >
+                    Read more...
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Earlier this week section */}
+          <div className="flex items-center gap-3 mb-4 mt-8">
+            <div className="w-1 h-6 bg-blue-500 rounded"></div>
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Earlier this week</h2>
+            <Badge variant="secondary" className="text-xs">2 entries</Badge>
+          </div>
+
+          {/* Week Entries - Blurred */}
+          {weekEntries.map((entry) => (
+            <Card key={entry.id} className="relative bg-white dark:bg-slate-800 opacity-60">
+              <div className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10 flex items-center justify-center">
+                <div className="text-center">
+                  <PenTool className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                    Sign up to start journaling
+                  </p>
+                  <Button 
+                    size="sm" 
+                    className="mt-2 bg-purple-600 hover:bg-purple-700"
+                    onClick={() => setLocation('/auth')}
+                  >
+                    Start Writing
+                  </Button>
+                </div>
+              </div>
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <div className="text-2xl">{entry.emoji}</div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-slate-900 dark:text-white mb-1">{entry.title}</h3>
+                    <div className="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400 mb-2">
+                      <span>{entry.date}</span>
+                      <Badge variant="outline" className="text-xs">{entry.category}</Badge>
+                    </div>
+                    <p className="text-slate-600 dark:text-slate-300 text-sm line-clamp-2">
+                      {entry.content}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+
+          {/* More sections - collapsed */}
+          <div className="flex items-center gap-3 mb-4 mt-8">
+            <div className="w-1 h-6 bg-purple-500 rounded"></div>
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Earlier this year</h2>
+            <Badge variant="secondary" className="text-xs">5 entries</Badge>
+            <Button variant="ghost" size="sm" className="ml-auto">
+              <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
-          
-          <div className="mb-4 p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
-            <p className="text-sm text-purple-700 dark:text-purple-300">
-              <strong>Note:</strong> This shows the journal interface layout. You'll create and write all your own entries once you sign up.
-            </p>
-          </div>
 
-          <div className="space-y-4">
-            {demoEntries.map((entry, index) => (
-              <Card 
-                key={entry.id}
-                className={`relative overflow-hidden bg-white/60 dark:bg-card/60 backdrop-blur-sm ${entry.isBlurred ? 'opacity-60' : ''}`}
-              >
-                {entry.isBlurred && (
-                  <div className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10 flex items-center justify-center">
-                    <div className="text-center">
-                      <PenTool className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                        Sign up to start journaling
-                      </p>
-                      <Button 
-                        size="sm" 
-                        className="mt-2 bg-purple-600 hover:bg-purple-700"
-                        onClick={() => setLocation('/auth')}
-                      >
-                        Start Writing
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <CardTitle className="text-lg">{entry.title}</CardTitle>
-                      <CardDescription className="text-sm text-slate-500 dark:text-slate-400">
-                        {new Date(entry.date).toLocaleDateString('en-US', { 
-                          weekday: 'long', 
-                          year: 'numeric', 
-                          month: 'long', 
-                          day: 'numeric' 
-                        })}
-                      </CardDescription>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className={moodColors[entry.mood as keyof typeof moodColors]}>
-                        {entry.mood}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-                
-                <CardContent className="pt-0">
-                  <p className="text-slate-700 dark:text-slate-300 mb-4 line-clamp-3">
-                    {entry.content}
-                  </p>
-                  
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {entry.tags.map((tag, tagIndex) => (
-                      <Badge key={tagIndex} variant="outline" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-1 h-6 bg-slate-500 rounded"></div>
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">2024</h2>
+            <Badge variant="secondary" className="text-xs">1 entries</Badge>
+            <Button variant="ghost" size="sm" className="ml-auto">
+              <ArrowRight className="w-4 h-4" />
+            </Button>
           </div>
         </div>
 
         {/* Features Highlight */}
         <div className="mt-12 grid gap-6 grid-cols-1 md:grid-cols-3">
           <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
-            <PenTool className="w-12 h-12 text-purple-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Business Journaling</h3>
+            <Brain className="w-12 h-12 text-purple-600 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">AI Mood Detection</h3>
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              Document your business journey, insights, and learning experiences
+              Automatic analysis of business emotions and energy levels from your entries
             </p>
           </div>
           
           <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
-            <Target className="w-12 h-12 text-green-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Entry Management</h3>
+            <TrendingUp className="w-12 h-12 text-green-600 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Progress Tracking</h3>
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              Create, edit, and organize journal entries with categories and tags
+              Track your entrepreneurial journey with visual insights and patterns
             </p>
           </div>
           
           <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
-            <TrendingUp className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Search & Filter</h3>
+            <Search className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Smart Search</h3>
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              Find specific entries quickly with search and date filtering tools
+              Find and filter entries by mood, category, or content keywords
             </p>
           </div>
         </div>
@@ -230,7 +264,7 @@ export function JournalPreviewPage() {
             onClick={() => setLocation('/auth')}
             className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 text-lg"
           >
-            Start Your Business Journal
+            Start Journaling Today
             <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
