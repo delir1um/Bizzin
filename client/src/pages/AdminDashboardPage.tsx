@@ -58,16 +58,16 @@ export default function AdminDashboardPage() {
   // Use the reusable admin check hook
   const { data: isAdmin, isLoading: adminLoading } = useAdminCheck()
 
-  // Fetch admin statistics with better error handling
+  // Fetch admin statistics with comprehensive real data
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['admin-stats'],
     queryFn: async () => {
-      console.log('Fetching admin stats...')
+      console.log('Fetching comprehensive admin stats...')
       
-      // Start with default stats
+      // Initialize stats object
       let stats = {
-        totalUsers: 1, // At least you exist
-        activeUsers: 1,
+        totalUsers: 0,
+        activeUsers: 0,
         paidUsers: 0,
         earlySignups: 0,
         totalRevenue: 0,
@@ -80,43 +80,116 @@ export default function AdminDashboardPage() {
         systemHealth: 'healthy' as const
       }
 
-      // Try to get real data from existing tables
       try {
-        // Check for early_signups
+        // 1. Get total users from user_profiles
+        const { data: usersData, error: usersError } = await supabase
+          .from('user_profiles')
+          .select('id, created_at, updated_at')
+        
+        if (!usersError && usersData) {
+          stats.totalUsers = usersData.length
+          
+          // Calculate active users (updated in last 7 days)
+          const sevenDaysAgo = new Date()
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+          stats.activeUsers = usersData.filter(user => 
+            new Date(user.updated_at || user.created_at) > sevenDaysAgo
+          ).length
+        }
+
+        // 2. Get paid users and revenue from user_plans
+        const { data: plansData, error: plansError } = await supabase
+          .from('user_plans')
+          .select('plan_type, created_at, expires_at')
+        
+        if (!plansError && plansData) {
+          const now = new Date()
+          const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+          
+          // Count active premium users
+          stats.paidUsers = plansData.filter(plan => 
+            plan.plan_type === 'premium' && 
+            (!plan.expires_at || new Date(plan.expires_at) > now)
+          ).length
+          
+          // Calculate revenue (assuming R99.99 per premium user per month)
+          const premiumPrice = 99.99
+          stats.totalRevenue = stats.paidUsers * premiumPrice * 12 // Annual estimate
+          
+          // Monthly revenue from plans created this month
+          const monthlyNewPlans = plansData.filter(plan => 
+            plan.plan_type === 'premium' && 
+            new Date(plan.created_at) >= currentMonth
+          ).length
+          stats.monthlyRevenue = monthlyNewPlans * premiumPrice
+        }
+
+        // 3. Get early signups
         const { data: signupsData, error: signupsError } = await supabase
           .from('early_signups')
-          .select('id', { count: 'exact' })
+          .select('id')
         
-        console.log('Early signups result:', { count: signupsData, error: signupsError })
         if (!signupsError && signupsData) {
-          stats.earlySignups = signupsData.length || 0
+          stats.earlySignups = signupsData.length
         }
         
-        // Check for documents  
+        // 4. Get documents and storage usage
         const { data: documentsData, error: documentsError } = await supabase
           .from('documents')
           .select('file_size')
         
-        console.log('Documents result:', { count: documentsData?.length, error: documentsError })
         if (!documentsError && documentsData) {
           stats.documentUploads = documentsData.length
           stats.storageUsed = documentsData.reduce((sum, doc) => sum + (doc.file_size || 0), 0)
         }
         
-        // Check for journal entries
+        // 5. Get journal entries count
         const { data: journalData, error: journalError } = await supabase
           .from('journal_entries')
-          .select('id', { count: 'exact' })
+          .select('id')
         
         if (!journalError && journalData) {
-          stats.journalEntries = journalData.length || 0
+          stats.journalEntries = journalData.length
         }
+
+        // 6. Get completed goals count
+        const { data: goalsData, error: goalsError } = await supabase
+          .from('goals')
+          .select('status')
+        
+        if (!goalsError && goalsData) {
+          stats.completedGoals = goalsData.filter(goal => 
+            goal.status === 'completed'
+          ).length
+        }
+
+        // 7. Get podcast progress/views
+        const { data: podcastData, error: podcastError } = await supabase
+          .from('user_podcast_progress')
+          .select('completed, progress_seconds')
+        
+        if (!podcastError && podcastData) {
+          // Count total interactions as "views"
+          stats.podcastViews = podcastData.length
+        }
+
+        // 8. Calculate system health based on actual metrics
+        let healthScore = 100
+        
+        // Deduct points for potential issues
+        if (stats.totalUsers === 0) healthScore -= 20
+        if (stats.activeUsers / Math.max(stats.totalUsers, 1) < 0.1) healthScore -= 15
+        if (stats.storageUsed > 1000000000) healthScore -= 10 // >1GB total storage
+        
+        stats.systemHealth = healthScore >= 80 ? 'healthy' : 
+                           healthScore >= 60 ? 'warning' : 'critical'
         
       } catch (error) {
-        console.log('Error fetching stats:', error)
+        console.error('Error fetching comprehensive stats:', error)
+        stats.systemHealth = 'critical'
       }
 
-      console.log('Final stats:', stats)
+      console.log('Final comprehensive stats:', stats)
       return stats
     },
     enabled: !!isAdmin,
@@ -242,12 +315,15 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="flex items-center space-x-2">
-                <Badge variant={currentStats.systemHealth === 'healthy' ? 'default' : 'destructive'}>
-                  {currentStats.systemHealth}
+                <Badge variant={
+                  currentStats.systemHealth === 'healthy' ? 'default' : 
+                  currentStats.systemHealth === 'warning' ? 'secondary' : 'destructive'
+                }>
+                  {currentStats.systemHealth.toUpperCase()}
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground">
-                {(currentStats.storageUsed / (1024 * 1024 * 1024)).toFixed(1)}GB storage used
+                {(currentStats.storageUsed / (1024 * 1024)).toFixed(1)}MB storage used
               </p>
             </CardContent>
           </Card>
