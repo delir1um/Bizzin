@@ -83,9 +83,20 @@ export function AdminUserManagement() {
         const [plansData, journalData, goalsData, documentsData] = await Promise.all([
           supabase.from('user_plans').select('user_id, plan_type, plan_status').in('user_id', userIds),
           supabase.from('journal_entries').select('user_id').in('user_id', userIds),
-          supabase.from('goals').select('user_id, completed').in('user_id', userIds),
-          supabase.from('documents').select('user_id, file_size').in('user_id', userIds)
+          supabase.from('goals').select('user_id, completed, title').in('user_id', userIds),
+          supabase.from('documents').select('user_id, file_size, filename').in('user_id', userIds)
         ])
+
+        console.log('Detailed query results:', {
+          plansData: plansData.data,
+          plansError: plansData.error,
+          journalData: journalData.data?.length,
+          journalError: journalData.error,
+          goalsData: goalsData.data,
+          goalsError: goalsData.error,
+          documentsData: documentsData.data?.length,
+          documentsError: documentsData.error
+        })
 
         console.log('Raw data fetched:', {
           plans: plansData.data?.length || 0,
