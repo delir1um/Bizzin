@@ -135,17 +135,22 @@ export function AdminFinancialOverview() {
           return total + (plan.amount_paid || 0)
         }, 0) || 0
 
-        // Calculate actual subscription counts
+        // Calculate actual subscription counts - ONLY count premium/paid plans
         const activeCount = allPlans?.filter(plan => {
+          if (plan.plan_type === 'free') return false // Don't count free plans as subscriptions
           if (plan.expires_at && new Date(plan.expires_at) < now) return false
           if (plan.cancelled_at) return false
           return true
         }).length || 0
 
-        const cancelledCount = allPlans?.filter(plan => plan.cancelled_at).length || 0
-        const expiredCount = allPlans?.filter(plan => 
-          plan.expires_at && new Date(plan.expires_at) < now
-        ).length || 0
+        const cancelledCount = allPlans?.filter(plan => {
+          if (plan.plan_type === 'free') return false // Don't count free plans as subscriptions
+          return plan.cancelled_at
+        }).length || 0
+        const expiredCount = allPlans?.filter(plan => {
+          if (plan.plan_type === 'free') return false // Don't count free plans as subscriptions
+          return plan.expires_at && new Date(plan.expires_at) < now
+        }).length || 0
 
         const result = {
           totalRevenue,
@@ -153,7 +158,7 @@ export function AdminFinancialOverview() {
           averageRevenuePerUser: activePremiumPlans.length > 0 ? monthlyRevenue / activePremiumPlans.length : 0,
           churnRate: 0, // Calculate real churn rate from data
           subscriptions: {
-            total: allPlans?.length || 0,
+            total: (allPlans?.filter(plan => plan.plan_type !== 'free').length || 0), // Only count paid plans
             active: activeCount,
             cancelled: cancelledCount,
             expired: expiredCount
