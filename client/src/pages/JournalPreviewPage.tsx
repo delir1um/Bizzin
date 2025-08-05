@@ -162,24 +162,24 @@ export function JournalPreviewPage() {
             <Badge variant="secondary" className="text-xs">1 entries</Badge>
           </div>
 
-          {/* Today's Entry */}
-          <Card className="bg-white dark:bg-slate-800 hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <div className="text-2xl">{todayEntry.emoji}</div>
+          {/* Today's Entry - Larger and More Prominent */}
+          <Card className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow border-l-4 border-l-orange-500">
+            <CardContent className="p-6">
+              <div className="flex items-start gap-4">
+                <div className="text-3xl">{todayEntry.emoji}</div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-slate-900 dark:text-white mb-1">{todayEntry.title}</h3>
-                  <div className="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400 mb-2">
-                    <span>{todayEntry.date}</span>
-                    <Badge variant="outline" className="text-xs">{todayEntry.category}</Badge>
-                    <span>🔥 {todayEntry.mood}</span>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{todayEntry.title}</h3>
+                  <div className="flex items-center gap-4 text-base text-slate-500 dark:text-slate-400 mb-4">
+                    <span className="font-medium">{todayEntry.date}</span>
+                    <Badge variant="outline" className="text-sm px-3 py-1">{todayEntry.category}</Badge>
+                    <span className="text-green-600 font-medium">🔥 {todayEntry.mood}</span>
                   </div>
-                  <p className="text-slate-600 dark:text-slate-300 text-sm line-clamp-2">
+                  <p className="text-slate-600 dark:text-slate-300 text-base leading-relaxed mb-4">
                     {todayEntry.content}
                   </p>
                   <Button 
                     variant="link" 
-                    className="p-0 h-auto text-orange-600 hover:text-orange-700 text-sm"
+                    className="p-0 h-auto text-orange-600 hover:text-orange-700 text-base font-medium"
                     onClick={() => setLocation('/auth')}
                   >
                     Read more...
