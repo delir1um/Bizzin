@@ -12,7 +12,8 @@ import {
   Download,
   RefreshCw,
   CreditCard,
-  AlertTriangle
+  AlertTriangle,
+  Activity
 } from "lucide-react"
 import { 
   BarChart, 
@@ -32,6 +33,20 @@ import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/lib/supabase"
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns"
 
+interface UserSegment {
+  free: number
+  trial: number
+  premium: number
+  expired_trial: number
+}
+
+interface ConversionMetrics {
+  free_to_trial: number
+  trial_to_premium: number
+  trial_to_churn: number
+  overall_conversion: number
+}
+
 interface FinancialMetrics {
   totalRevenue: number
   monthlyRevenue: number
@@ -43,6 +58,8 @@ interface FinancialMetrics {
     cancelled: number
     expired: number
   }
+  userSegmentation: UserSegment
+  conversionMetrics: ConversionMetrics
   revenueGrowth: number
   refunds: number
 }
@@ -84,6 +101,18 @@ export function AdminFinancialOverview() {
               cancelled: 0,
               expired: 0
             },
+            userSegmentation: {
+              free: 0,
+              trial: 0,
+              premium: 0,
+              expired_trial: 0
+            },
+            conversionMetrics: {
+              free_to_trial: 0,
+              trial_to_premium: 0,
+              trial_to_churn: 0,
+              overall_conversion: 0
+            },
             revenueGrowth: 0,
             refunds: 0
           } as FinancialMetrics
@@ -116,6 +145,45 @@ export function AdminFinancialOverview() {
 
         const now = new Date()
         const lastMonth = subMonths(now, 1)
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+
+        // Enhanced User Segmentation
+        const freeUsers = allPlans?.filter(plan => plan.plan_type === 'free').length || 0
+        
+        // Trial users: premium plans created within last 30 days without payment
+        const trialUsers = allPlans?.filter(plan => {
+          if (plan.plan_type !== 'premium') return false
+          const createdAt = new Date(plan.created_at)
+          const isRecent = createdAt >= thirtyDaysAgo
+          const hasNotPaid = !plan.amount_paid || plan.amount_paid === 0
+          return isRecent && hasNotPaid && !plan.cancelled_at && (!plan.expires_at || new Date(plan.expires_at) > now)
+        }).length || 0
+        
+        // Premium users: paid premium plans that are active
+        const premiumUsers = allPlans?.filter(plan => {
+          if (plan.plan_type !== 'premium') return false
+          const hasPaid = plan.amount_paid && plan.amount_paid > 0
+          const isActive = !plan.cancelled_at && (!plan.expires_at || new Date(plan.expires_at) > now)
+          return hasPaid && isActive
+        }).length || 0
+        
+        // Expired trial users: premium plans that expired without payment (now likely on free)
+        const expiredTrialUsers = allPlans?.filter(plan => {
+          if (plan.plan_type !== 'premium') return false
+          const hasNotPaid = !plan.amount_paid || plan.amount_paid === 0
+          const isExpired = plan.expires_at && new Date(plan.expires_at) <= now
+          return hasNotPaid && isExpired
+        }).length || 0
+
+        // Conversion Metrics Calculation
+        const totalFreeToTrial = trialUsers + premiumUsers + expiredTrialUsers // Users who tried premium
+        const freeToTrialRate = freeUsers > 0 ? (totalFreeToTrial / (freeUsers + totalFreeToTrial)) * 100 : 0
+        
+        const trialToPremiumRate = (trialUsers + expiredTrialUsers) > 0 ? (premiumUsers / (trialUsers + premiumUsers + expiredTrialUsers)) * 100 : 0
+        
+        const trialToChurnRate = (trialUsers + premiumUsers + expiredTrialUsers) > 0 ? (expiredTrialUsers / (trialUsers + premiumUsers + expiredTrialUsers)) * 100 : 0
+        
+        const overallConversionRate = (freeUsers + totalFreeToTrial) > 0 ? (premiumUsers / (freeUsers + totalFreeToTrial)) * 100 : 0
         
         // Only count real premium subscriptions that haven't expired
         const activePremiumPlans = allPlans?.filter(plan => {
@@ -155,13 +223,25 @@ export function AdminFinancialOverview() {
         const result = {
           totalRevenue,
           monthlyRevenue,
-          averageRevenuePerUser: activePremiumPlans.length > 0 ? monthlyRevenue / activePremiumPlans.length : 0,
-          churnRate: 0, // Calculate real churn rate from data
+          averageRevenuePerUser: premiumUsers > 0 ? monthlyRevenue / premiumUsers : 0,
+          churnRate: trialToChurnRate,
           subscriptions: {
             total: (allPlans?.filter(plan => plan.plan_type !== 'free').length || 0), // Only count paid plans
             active: activeCount,
             cancelled: cancelledCount,
             expired: expiredCount
+          },
+          userSegmentation: {
+            free: freeUsers,
+            trial: trialUsers,
+            premium: premiumUsers,
+            expired_trial: expiredTrialUsers
+          },
+          conversionMetrics: {
+            free_to_trial: Math.round(freeToTrialRate * 10) / 10,
+            trial_to_premium: Math.round(trialToPremiumRate * 10) / 10,
+            trial_to_churn: Math.round(trialToChurnRate * 10) / 10,
+            overall_conversion: Math.round(overallConversionRate * 10) / 10
           },
           revenueGrowth: 0, // Calculate real growth from historical data
           refunds: 0 // No dummy data
@@ -182,6 +262,18 @@ export function AdminFinancialOverview() {
             active: 0,
             cancelled: 0,
             expired: 0
+          },
+          userSegmentation: {
+            free: 0,
+            trial: 0,
+            premium: 0,
+            expired_trial: 0
+          },
+          conversionMetrics: {
+            free_to_trial: 0,
+            trial_to_premium: 0,
+            trial_to_churn: 0,
+            overall_conversion: 0
           },
           revenueGrowth: 0,
           refunds: 0
@@ -206,6 +298,13 @@ export function AdminFinancialOverview() {
     { name: 'Active', value: metrics.subscriptions.active, color: '#10B981' },
     { name: 'Cancelled', value: metrics.subscriptions.cancelled, color: '#F59E0B' },
     { name: 'Expired', value: metrics.subscriptions.expired, color: '#EF4444' }
+  ] : []
+
+  const userSegmentationData = metrics ? [
+    { name: 'Free Users', value: metrics.userSegmentation.free, color: '#6B7280' },
+    { name: 'Trial Users', value: metrics.userSegmentation.trial, color: '#3B82F6' },
+    { name: 'Premium Users', value: metrics.userSegmentation.premium, color: '#10B981' },
+    { name: 'Expired Trials', value: metrics.userSegmentation.expired_trial, color: '#EF4444' }
   ] : []
 
   // Fetch real transactions from user_plans (simplified to avoid foreign key issues)
@@ -309,67 +408,183 @@ export function AdminFinancialOverview() {
         </div>
       </div>
 
+      {/* User Segmentation Overview */}
+      <div>
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">User Segmentation</h3>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Free Users</CardTitle>
+              <Users className="h-4 w-4 text-gray-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-600">{metrics.userSegmentation?.free || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Exploring platform
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Trial Users</CardTitle>
+              <TrendingUp className="h-4 w-4 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-600">{metrics.userSegmentation?.trial || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Testing premium features
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Premium Users</CardTitle>
+              <Crown className="h-4 w-4 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">{metrics.userSegmentation?.premium || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Paying customers
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Expired Trials</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-red-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600">{metrics.userSegmentation?.expired_trial || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Potential re-engagement
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Conversion Metrics */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Free to Trial</CardTitle>
+              <TrendingUp className="h-4 w-4 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-600">{metrics.conversionMetrics?.free_to_trial || 0}%</div>
+              <p className="text-xs text-muted-foreground">
+                Conversion rate
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Trial to Premium</CardTitle>
+              <Crown className="h-4 w-4 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">{metrics.conversionMetrics?.trial_to_premium || 0}%</div>
+              <p className="text-xs text-muted-foreground">
+                Conversion rate
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Trial to Churn</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-red-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600">{metrics.conversionMetrics?.trial_to_churn || 0}%</div>
+              <p className="text-xs text-muted-foreground">
+                Churn rate
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Overall Conversion</CardTitle>
+              <Activity className="h-4 w-4 text-purple-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-purple-600">{metrics.conversionMetrics?.overall_conversion || 0}%</div>
+              <p className="text-xs text-muted-foreground">
+                Free to premium
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
       {/* Key Financial Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">R{metrics.totalRevenue.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">
-              Lifetime revenue
-            </p>
-          </CardContent>
-        </Card>
+      <div>
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Revenue Metrics</h3>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">R{metrics.totalRevenue.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">
+                Lifetime revenue
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">R{metrics.monthlyRevenue.toLocaleString()}</div>
-            <div className="flex items-center text-xs">
-              {metrics.revenueGrowth >= 0 ? (
-                <TrendingUp className="w-3 h-3 text-green-600 mr-1" />
-              ) : (
-                <TrendingDown className="w-3 h-3 text-red-600 mr-1" />
-              )}
-              <span className={metrics.revenueGrowth >= 0 ? 'text-green-600' : 'text-red-600'}>
-                {metrics.revenueGrowth.toFixed(1)}%
-              </span>
-              <span className="text-muted-foreground ml-1">vs last month</span>
-            </div>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">R{metrics.monthlyRevenue.toLocaleString()}</div>
+              <div className="flex items-center text-xs">
+                {metrics.revenueGrowth >= 0 ? (
+                  <TrendingUp className="w-3 h-3 text-green-600 mr-1" />
+                ) : (
+                  <TrendingDown className="w-3 h-3 text-red-600 mr-1" />
+                )}
+                <span className={metrics.revenueGrowth >= 0 ? 'text-green-600' : 'text-red-600'}>
+                  {metrics.revenueGrowth.toFixed(1)}%
+                </span>
+                <span className="text-muted-foreground ml-1">vs last month</span>
+              </div>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">ARPU</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">R{metrics.averageRevenuePerUser.toFixed(0)}</div>
-            <p className="text-xs text-muted-foreground">
-              Average Revenue Per User
-            </p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">ARPU</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">R{metrics.averageRevenuePerUser.toFixed(0)}</div>
+              <p className="text-xs text-muted-foreground">
+                Average Revenue Per User
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Churn Rate</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0%</div>
-            <p className="text-xs text-muted-foreground">
-              Monthly churn rate
-            </p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Churn Rate</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{metrics.churnRate.toFixed(1)}%</div>
+              <p className="text-xs text-muted-foreground">
+                Monthly churn rate
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Subscription Breakdown */}
