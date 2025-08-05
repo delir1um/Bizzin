@@ -10,14 +10,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useTheme } from "@/lib/theme-provider"
-import { Moon, Sun, User, LogOut } from "lucide-react"
+import { Moon, Sun, User, LogOut, Shield } from "lucide-react"
 import { useAuth } from "@/hooks/AuthProvider"
+import { useAdminCheck } from "@/hooks/useAdminCheck"
 import brizzinLogoDark from "@/assets/brizzin-logo-dark-v2.webp"
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { theme, setTheme } = useTheme()
   const [location] = useLocation()
   const { user, signOut } = useAuth()
+  const { data: isAdmin, isLoading: adminLoading } = useAdminCheck()
   
   const currentLogo = brizzinLogoDark // Always use dark version
 
@@ -104,6 +106,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         <span>Profile</span>
                       </DropdownMenuItem>
                     </Link>
+                    {isAdmin && (
+                      <Link to="/admin">
+                        <DropdownMenuItem>
+                          <Shield className="mr-2 h-4 w-4" />
+                          <span>Admin</span>
+                        </DropdownMenuItem>
+                      </Link>
+                    )}
                     <DropdownMenuItem onClick={toggleTheme}>
                       {theme === "light" ? (
                         <>
