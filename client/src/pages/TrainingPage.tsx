@@ -136,6 +136,72 @@ export function PodcastPage() {
         </div>
       </div>
 
+      {/* Podcast Series - Top Content Section */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">Popular Series</h2>
+        <AnimatedGrid className="grid grid-cols-2 md:grid-cols-4 gap-4" stagger={0.1}>
+          <AnimatedItem>
+            <Card 
+              className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setLocation('/training/series/strategy')}
+            >
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mx-auto mb-3">
+                <Mic className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="font-semibold text-slate-900 dark:text-white">Strategy</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{episodes.filter(ep => ep.series === 'Strategy').length} episodes</p>
+            </CardContent>
+          </Card>
+
+          </AnimatedItem>
+          <AnimatedItem>
+            <Card 
+              className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setLocation('/training/series/marketing')}
+            >
+              <CardContent className="p-6 text-center">
+                <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Users className="w-6 h-6 text-green-600 dark:text-green-400" />
+                </div>
+                <h3 className="font-semibold text-slate-900 dark:text-white">Marketing</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{episodes.filter(ep => ep.series === 'Marketing').length} episodes</p>
+              </CardContent>
+            </Card>
+          </AnimatedItem>
+
+          <AnimatedItem>
+            <Card 
+              className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setLocation('/training/series/finance')}
+            >
+              <CardContent className="p-6 text-center">
+                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Award className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                </div>
+                <h3 className="font-semibold text-slate-900 dark:text-white">Finance</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{episodes.filter(ep => ep.series === 'Finance').length} episodes</p>
+              </CardContent>
+            </Card>
+          </AnimatedItem>
+
+          <AnimatedItem>
+            <Card 
+              className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setLocation('/training/series/leadership')}
+            >
+              <CardContent className="p-6 text-center">
+                <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Star className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                </div>
+                <h3 className="font-semibold text-slate-900 dark:text-white">Leadership</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{episodes.filter(ep => ep.series === 'Leadership').length} episodes</p>
+              </CardContent>
+            </Card>
+          </AnimatedItem>
+        </AnimatedGrid>
+      </div>
+
       {/* Continue Listening - show only if user has progress */}
       {currentlyListening && (
         <div className="mb-8">
@@ -202,72 +268,6 @@ export function PodcastPage() {
           </Card>
         </div>
       )}
-
-      {/* Podcast Series */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">Popular Series</h2>
-        <AnimatedGrid className="grid grid-cols-2 md:grid-cols-4 gap-4" stagger={0.1}>
-          <AnimatedItem>
-            <Card 
-              className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => setLocation('/training/series/strategy')}
-            >
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mx-auto mb-3">
-                <Mic className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-              </div>
-              <h3 className="font-semibold text-slate-900 dark:text-white">Strategy</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{episodes.filter(ep => ep.series === 'Strategy').length} episodes</p>
-            </CardContent>
-          </Card>
-
-          </AnimatedItem>
-          <AnimatedItem>
-            <Card 
-              className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => setLocation('/training/series/marketing')}
-            >
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <Users className="w-6 h-6 text-green-600 dark:text-green-400" />
-                </div>
-                <h3 className="font-semibold text-slate-900 dark:text-white">Marketing</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{episodes.filter(ep => ep.series === 'Marketing').length} episodes</p>
-              </CardContent>
-            </Card>
-          </AnimatedItem>
-
-          <AnimatedItem>
-            <Card 
-              className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => setLocation('/training/series/finance')}
-            >
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <Award className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                </div>
-                <h3 className="font-semibold text-slate-900 dark:text-white">Finance</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{episodes.filter(ep => ep.series === 'Finance').length} episodes</p>
-              </CardContent>
-            </Card>
-          </AnimatedItem>
-
-          <AnimatedItem>
-            <Card 
-              className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => setLocation('/training/series/leadership')}
-            >
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <Star className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-                </div>
-                <h3 className="font-semibold text-slate-900 dark:text-white">Leadership</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{episodes.filter(ep => ep.series === 'Leadership').length} episodes</p>
-              </CardContent>
-            </Card>
-          </AnimatedItem>
-        </AnimatedGrid>
-      </div>
 
       {/* Featured Episodes */}
       <div>
