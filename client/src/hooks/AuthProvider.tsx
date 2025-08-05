@@ -23,18 +23,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(data.session)
         setUser(data.session.user)
         
-        // Update last_login for existing session (user already logged in)
-        try {
-          await supabase
-            .from('user_profiles')
-            .update({ 
-              last_login: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            })
-            .eq('user_id', data.session.user.id)
-        } catch (error) {
-          console.log('Could not update last_login for existing session:', error)
-        }
+        // Update last_login for existing session (non-blocking)
+        supabase
+          .from('user_profiles')
+          .update({ 
+            last_login: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', data.session.user.id)
+          .then(() => console.log('Updated last_login'))
+          .catch(error => console.log('Could not update last_login:', error))
       }
       setLoading(false)
     }
@@ -43,19 +41,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session)
       setUser(session?.user ?? null)
       
-      // Update last_login when user signs in
+      // Update last_login when user signs in (non-blocking)
       if (event === 'SIGNED_IN' && session?.user) {
-        try {
-          await supabase
-            .from('user_profiles')
-            .update({ 
-              last_login: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            })
-            .eq('user_id', session.user.id)
-        } catch (error) {
-          console.log('Could not update last_login:', error)
-        }
+        supabase
+          .from('user_profiles')
+          .update({ 
+            last_login: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', session.user.id)
+          .then(() => console.log('Updated last_login on sign in'))
+          .catch(error => console.log('Could not update last_login:', error))
       }
     })
 
