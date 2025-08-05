@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useTheme } from "@/lib/theme-provider"
-import { Moon, Sun, User, Settings, LogOut } from "lucide-react"
+import { Moon, Sun, User, LogOut } from "lucide-react"
 import { useAuth } from "@/hooks/AuthProvider"
 import brizzinLogoDark from "@/assets/brizzin-logo-dark-v2.webp"
 
@@ -104,10 +104,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         <span>Profile</span>
                       </DropdownMenuItem>
                     </Link>
-                    <DropdownMenuItem>
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
-                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={toggleTheme}>
                       {theme === "light" ? (
                         <>
