@@ -156,38 +156,38 @@ export default function PreLaunchPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0B0A1D] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-100 flex items-center justify-center p-4">
       <div className="max-w-md w-full space-y-6">
         {/* Header */}
         <div className="text-center space-y-4">
-          <div className="w-16 h-16 mx-auto bg-orange-100 dark:bg-orange-900/50 rounded-full flex items-center justify-center">
-            <Construction className="w-8 h-8 text-orange-600 dark:text-orange-400" />
+          <div className="w-16 h-16 mx-auto bg-orange-100 rounded-full flex items-center justify-center">
+            <Construction className="w-8 h-8 text-orange-600" />
           </div>
           
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold text-white">
-              <em className="text-orange-400">Bizzin</em> is Coming Soon
+            <h1 className="text-3xl font-bold text-gray-900">
+              <em className="text-orange-600">Bizzin</em> is Coming Soon
             </h1>
             <div className="space-y-1">
-              <Badge variant="secondary" className="bg-orange-900/30 text-orange-300 border-orange-700">
+              <Badge variant="secondary" className="bg-orange-100 text-orange-700 border-orange-200">
                 Under Construction
               </Badge>
             </div>
           </div>
 
-          <p className="text-slate-300 leading-relaxed">
+          <p className="text-gray-600 leading-relaxed">
             {settings?.launch_message || "We're putting the finishing touches on *Bizzin*! Sign up to be notified when we launch."}
           </p>
         </div>
 
         {/* Early Access Form */}
-        <Card className="bg-slate-800/50 border-slate-700">
+        <Card className="bg-white border-gray-200 shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <Rocket className="w-5 h-5 text-orange-400" />
+            <CardTitle className="flex items-center gap-2 text-gray-900">
+              <Rocket className="w-5 h-5 text-orange-600" />
               Get Early Access
             </CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardDescription className="text-gray-600">
               Be the first to experience AI-powered business intelligence
             </CardDescription>
           </CardHeader>
@@ -195,78 +195,78 @@ export default function PreLaunchPage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="first_name" className="text-slate-300">First Name</Label>
+                <Label htmlFor="first_name" className="text-gray-700">First Name</Label>
                 <Input
                   id="first_name"
                   value={formData.first_name}
                   onChange={(e) => handleInputChange('first_name', e.target.value)}
                   placeholder="Enter your first name"
-                  className="bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500"
+                  className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-orange-500 focus:ring-orange-500"
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-slate-300">Email Address</Label>
+                <Label htmlFor="email" className="text-gray-700">Email Address</Label>
                 <Input
                   id="email"
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   placeholder="Enter your email address"
-                  className="bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500"
+                  className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-orange-500 focus:ring-orange-500"
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="business_name" className="text-slate-300">Business Name</Label>
+                <Label htmlFor="business_name" className="text-gray-700">Business Name</Label>
                 <Input
                   id="business_name"
                   value={formData.business_name}
                   onChange={(e) => handleInputChange('business_name', e.target.value)}
                   placeholder="Enter your business name"
-                  className="bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500"
+                  className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-orange-500 focus:ring-orange-500"
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="business_type" className="text-slate-300">Business Type</Label>
+                <Label htmlFor="business_type" className="text-gray-700">Business Type</Label>
                 <Select value={formData.business_type} onValueChange={(value) => handleInputChange('business_type', value)}>
-                  <SelectTrigger className="bg-slate-900/50 border-slate-600 text-white">
-                    <SelectValue placeholder="Select business type" className="placeholder:text-slate-500" />
+                  <SelectTrigger className="bg-white border-gray-300 text-gray-900 focus:border-orange-500 focus:ring-orange-500">
+                    <SelectValue placeholder="Select business type" className="placeholder:text-gray-500" />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
-                    <SelectItem value="startup" className="text-white hover:bg-slate-700">Startup</SelectItem>
-                    <SelectItem value="small_business" className="text-white hover:bg-slate-700">Small Business</SelectItem>
-                    <SelectItem value="consulting" className="text-white hover:bg-slate-700">Consulting</SelectItem>
-                    <SelectItem value="ecommerce" className="text-white hover:bg-slate-700">E-commerce</SelectItem>
-                    <SelectItem value="freelance" className="text-white hover:bg-slate-700">Freelance</SelectItem>
-                    <SelectItem value="other" className="text-white hover:bg-slate-700">Other</SelectItem>
+                  <SelectContent className="bg-white border-gray-200">
+                    <SelectItem value="startup" className="text-gray-900 hover:bg-orange-50">Startup</SelectItem>
+                    <SelectItem value="small_business" className="text-gray-900 hover:bg-orange-50">Small Business</SelectItem>
+                    <SelectItem value="consulting" className="text-gray-900 hover:bg-orange-50">Consulting</SelectItem>
+                    <SelectItem value="ecommerce" className="text-gray-900 hover:bg-orange-50">E-commerce</SelectItem>
+                    <SelectItem value="freelance" className="text-gray-900 hover:bg-orange-50">Freelance</SelectItem>
+                    <SelectItem value="other" className="text-gray-900 hover:bg-orange-50">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="business_size" className="text-slate-300">Business Size</Label>
+                <Label htmlFor="business_size" className="text-gray-700">Business Size</Label>
                 <Select value={formData.business_size} onValueChange={(value) => handleInputChange('business_size', value)}>
-                  <SelectTrigger className="bg-slate-900/50 border-slate-600 text-white">
-                    <SelectValue placeholder="Select business size" className="placeholder:text-slate-500" />
+                  <SelectTrigger className="bg-white border-gray-300 text-gray-900 focus:border-orange-500 focus:ring-orange-500">
+                    <SelectValue placeholder="Select business size" className="placeholder:text-gray-500" />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
-                    <SelectItem value="solo" className="text-white hover:bg-slate-700">Solo Entrepreneur</SelectItem>
-                    <SelectItem value="2-5" className="text-white hover:bg-slate-700">2-5 Employees</SelectItem>
-                    <SelectItem value="6-20" className="text-white hover:bg-slate-700">6-20 Employees</SelectItem>
-                    <SelectItem value="21-50" className="text-white hover:bg-slate-700">21-50 Employees</SelectItem>
-                    <SelectItem value="50+" className="text-white hover:bg-slate-700">50+ Employees</SelectItem>
+                  <SelectContent className="bg-white border-gray-200">
+                    <SelectItem value="solo" className="text-gray-900 hover:bg-orange-50">Solo Entrepreneur</SelectItem>
+                    <SelectItem value="2-5" className="text-gray-900 hover:bg-orange-50">2-5 Employees</SelectItem>
+                    <SelectItem value="6-20" className="text-gray-900 hover:bg-orange-50">6-20 Employees</SelectItem>
+                    <SelectItem value="21-50" className="text-gray-900 hover:bg-orange-50">21-50 Employees</SelectItem>
+                    <SelectItem value="50+" className="text-gray-900 hover:bg-orange-50">50+ Employees</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <Button 
                 type="submit" 
-                className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                className="w-full bg-orange-600 hover:bg-orange-700 text-white shadow-lg hover:shadow-xl transition-shadow"
                 disabled={submitSignup.isPending}
               >
                 {submitSignup.isPending ? 'Joining List...' : 'Get Early Access'}
@@ -276,24 +276,24 @@ export default function PreLaunchPage() {
         </Card>
 
         {/* Features Preview */}
-        <Card className="bg-slate-800/30 border-slate-700">
+        <Card className="bg-white border-gray-200 shadow-lg">
           <CardContent className="p-4">
-            <h3 className="font-medium text-white mb-3">What to expect:</h3>
+            <h3 className="font-medium text-gray-900 mb-3">What to expect:</h3>
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-slate-300">
-                <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
                 AI-powered business intelligence and insights
               </div>
-              <div className="flex items-center gap-2 text-sm text-slate-300">
-                <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
                 Smart journaling with sentiment analysis
               </div>
-              <div className="flex items-center gap-2 text-sm text-slate-300">
-                <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
                 Advanced goal tracking and analytics
               </div>
-              <div className="flex items-center gap-2 text-sm text-slate-300">
-                <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
                 Professional document management
               </div>
             </div>
