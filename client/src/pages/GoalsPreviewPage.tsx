@@ -290,10 +290,10 @@ export function GoalsPreviewPage() {
             ))}
           </div>
           
-          {/* Show More Goals Option */}
+          {/* Call to Action */}
           <div className="text-center mt-6">
             <p className="text-slate-600 dark:text-slate-300 mb-4">
-              Plus 1 more goal - showing examples of what you could track with <em>Bizzin</em>
+              These are examples of goals you could track for your South African business with <em>Bizzin</em>
             </p>
             <Button 
               onClick={() => setLocation('/auth')}
