@@ -16,6 +16,8 @@ Bizzin is a modern SaaS platform designed for entrepreneurs to plan, journal, an
 ## System Architecture
 The application is built with React 18 and TypeScript, using Tailwind CSS and shadcn/ui for a consistent and modern UI/UX. Routing is managed by React Router DOM, and Vite serves as the build tool. The core architectural decision is a frontend-only approach, relying entirely on Supabase for backend services, including Row-Level Security for data access control and Supabase Storage for document uploads.
 
+**Database Connection:** The application uses Supabase cloud database exclusively with proper secret-based authentication (VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY). All database operations are performed through the Supabase client in @/lib/supabase, with no local PostgreSQL or Drizzle ORM dependencies.
+
 **UI/UX Decisions:** The platform adopts a clean, modern aesthetic with a primary brand color of orange (#EA7A57), complemented by multi-colored data visualizations. Consistent design patterns are applied across all pages, featuring standardized headers, sub-headings, colored stats cards with gradient backgrounds and hover animations, and unified search/filter components. Interactive charts (recharts-based) are integrated for data visualization, and celebration animations are used for goal completion. Dark mode is fully supported with consistent #0B0A1D background color across all pages, components, and marketing materials. All "Bizzin" brand text appears in italics for elegant typography, and logos are standardized to 40px height throughout the platform.
 
 **Technical Implementations & Feature Specifications:**
@@ -65,7 +67,7 @@ The application is built with React 18 and TypeScript, using Tailwind CSS and sh
   - DocSafe: "Intelligent Document Hub" emphasizing smart categorization and professional management
   - Added referral program marketing section highlighting ability to "Earn Free Subscription Days"
   - Updated plan features to accurately reflect AI analysis limits, storage quotas, and professional capabilities
-- **Pre-Launch System (August 5, 2025):** Created environment variable toggle system (`VITE_PRE_LAUNCH_MODE`) to switch between development and marketing modes, preserving all existing work while allowing lead capture functionality
+- **Pre-Launch System (August 5, 2025):** Implemented database-driven platform settings system replacing environment variables, allowing real-time switching between pre-launch and live modes through admin dashboard
 - **Comprehensive Admin Dashboard (August 5, 2025):** Implemented full-featured admin dashboard with real-time synchronization:
   - User Management: Search, filter, and manage all platform users with detailed profiles
   - Early Signups: Lead management system with bulk operations and export capabilities
@@ -82,3 +84,9 @@ The application is built with React 18 and TypeScript, using Tailwind CSS and sh
   - Removed excessive documentation files (consolidated into replit.md)
   - Maintained working admin system (database-manager.ts, admin-user-manager.ts) and core functionality
   - Reduced root directory from 100+ files to 18 essential files for better maintainability
+- **Database Architecture Cleanup (August 5, 2025):** Permanently resolved Supabase connection by:
+  - Converting shared/schema.ts from Drizzle ORM to pure TypeScript types for Supabase compatibility
+  - Removing all PostgreSQL/DATABASE_URL references that caused confusion
+  - Ensuring all database operations use Supabase client with proper secrets (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY)
+  - Created platform_settings table using supabase.rpc('exec_sql') for admin control
+  - Confirmed Pre-Launch Toggle works without errors with real-time database switching
