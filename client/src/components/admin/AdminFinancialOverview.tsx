@@ -203,19 +203,14 @@ export function AdminFinancialOverview() {
     { name: 'Expired', value: metrics.subscriptions.expired, color: '#EF4444' }
   ] : []
 
-  // Fetch real transactions from user_plans
+  // Fetch real transactions from user_plans (simplified to avoid foreign key issues)
   const { data: recentTransactions } = useQuery({
     queryKey: ['admin-recent-transactions'],
     queryFn: async () => {
+      // Since there's no foreign key relationship, just get basic plan data
       const { data: plans, error } = await supabase
         .from('user_plans')
-        .select(`
-          id,
-          amount_paid,
-          plan_type,
-          created_at,
-          user_profiles!inner(email)
-        `)
+        .select('id, user_id, amount_paid, plan_type, created_at')
         .not('amount_paid', 'is', null)
         .order('created_at', { ascending: false })
         .limit(10)
@@ -225,14 +220,28 @@ export function AdminFinancialOverview() {
         return []
       }
 
-      return plans?.map(plan => ({
-        id: plan.id,
-        user_email: plan.user_profiles?.email || 'Unknown',
-        amount: plan.amount_paid || 0,
-        plan_type: plan.plan_type,
-        status: 'completed' as const,
-        created_at: plan.created_at
-      })) || []
+      if (!plans || plans.length === 0) {
+        return []
+      }
+
+      // Get user emails separately to avoid foreign key issues
+      const userIds = plans.map(plan => plan.user_id)
+      const { data: profiles } = await supabase
+        .from('user_profiles')
+        .select('user_id, email')
+        .in('user_id', userIds)
+
+      return plans.map(plan => {
+        const profile = profiles?.find(p => p.user_id === plan.user_id)
+        return {
+          id: plan.id,
+          user_email: profile?.email || 'Unknown User',
+          amount: plan.amount_paid || 0,
+          plan_type: plan.plan_type,
+          status: 'completed' as const,
+          created_at: plan.created_at
+        }
+      })
     },
     enabled: !!metrics // Only fetch if main metrics loaded
   })
