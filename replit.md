@@ -4,15 +4,14 @@
 Bizzin is a modern SaaS platform designed for entrepreneurs to plan, journal, and track business goals. It's a frontend-only React application leveraging Supabase for authentication, database management, and file storage. The project's vision is to provide a comprehensive, intuitive tool that empowers entrepreneurs through structured goal setting, reflective journaling, and insightful tracking, ultimately boosting business success and personal growth. Key capabilities include a public landing page, protected user-specific pages for journaling, goals, training, biz-building tools, and document management, alongside user authentication and role-based access for freemium and premium features.
 
 ## User Preferences
-- Do not add Express.js, Drizzle ORM, or backend logic
-- Use `@/lib/supabase` for all data access
-- Use `shadcn/ui` components where possible
-- Do not reference any `/api` or `server/` folder
-- Use Supabase client-side SDK for authentication, CRUD, and file uploads
-- Maintain consistent branding with custom #0B0A1D background color across all pages
-- Use Inter font over Orbitron for better SaaS readability
-- All instances of "Bizzin" brand name must appear in italics
-- Standardize logo sizing to 40px height across all components
+- **Database Architecture**: Always use Supabase database with proper table structure (user_profiles, journal_entries, goals, documents, etc.) - never use simple Drizzle schema
+- **Data Access**: Use `@/lib/supabase` for all data access with Supabase client-side SDK
+- **Authentication**: Use Supabase Auth system (auth.users table) with user_profiles extension table
+- **Admin System**: Use admin_users table or is_admin column in user_profiles for role-based access
+- **UI Components**: Use `shadcn/ui` components where possible
+- **No Backend Logic**: Do not reference any `/api` or `server/` folder - frontend-only with Supabase
+- **Branding**: Maintain consistent #0B0A1D background color across all pages
+- **Typography**: Use Inter font, all "Bizzin" instances in italics, 40px logo height standard
 
 ## System Architecture
 The application is built with React 18 and TypeScript, using Tailwind CSS and shadcn/ui for a consistent and modern UI/UX. Routing is managed by React Router DOM, and Vite serves as the build tool. The core architectural decision is a frontend-only approach, relying entirely on Supabase for backend services, including Row-Level Security for data access control and Supabase Storage for document uploads.
@@ -32,10 +31,12 @@ The application is built with React 18 and TypeScript, using Tailwind CSS and sh
 - **Referral System:** Complete referral program where users earn 10 days of free subscription for each successful paid referral. Features include unique referral codes, automatic tracking, real-time activation/deactivation based on referee subscription status, and comprehensive dashboard with referral history and earnings tracking.
 
 **System Design Choices:**
-- **Data Access:** All data access is managed through `@/lib/supabase` using the Supabase client-side SDK.
-- **Component-Based:** Heavy reliance on reusable React components and `shadcn/ui` for modularity and consistency.
-- **AI Integration:** Utilizes a hybrid AI architecture for sentiment analysis, leveraging Hugging Face inference API as primary and a robust local analysis engine as fallback. AI operates invisibly, providing personalized insights and coaching without cluttering the UI. A retroactive AI migration system ensures all existing entries benefit from AI improvements.
-- **Security:** Robust Row-Level Security (RLS) policies are implemented across all Supabase tables to ensure data isolation and security.
+- **Database Architecture:** Comprehensive Supabase schema with user_profiles (extends auth.users), user_plans, journal_entries, goals, documents, podcast_episodes, early_signups, and admin_users tables with proper RLS policies
+- **Data Access:** All data access is managed through `@/lib/supabase` using the Supabase client-side SDK with proper table relationships and foreign keys
+- **Admin System:** Full-featured admin dashboard with role-based access using admin_users table or is_admin column, real-time synchronization via Supabase subscriptions
+- **Component-Based:** Heavy reliance on reusable React components and `shadcn/ui` for modularity and consistency
+- **AI Integration:** Utilizes a hybrid AI architecture for sentiment analysis, leveraging Hugging Face inference API as primary and a robust local analysis engine as fallback
+- **Security:** Robust Row-Level Security (RLS) policies are implemented across all Supabase tables to ensure data isolation and admin access control
 
 ## External Dependencies
 - **Supabase:** Used for authentication, database (PostgreSQL), and storage (Supabase Storage).
