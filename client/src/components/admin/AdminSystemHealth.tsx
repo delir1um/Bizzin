@@ -59,7 +59,7 @@ export function AdminSystemHealth() {
           journalData,
           goalsData
         ] = await Promise.all([
-          supabase.from('user_profiles').select('id, created_at, updated_at'),
+          supabase.from('user_profiles').select('user_id, created_at, updated_at'),
           supabase.from('documents').select('file_size'),
           supabase.from('journal_entries').select('id'),
           supabase.from('goals').select('status')

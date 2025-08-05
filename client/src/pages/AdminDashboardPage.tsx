@@ -85,10 +85,10 @@ export default function AdminDashboardPage() {
         let usersData = null
         let usersError = null
         
-        // First try getting user_profiles
+        // First try getting user_profiles with correct column names
         const profilesResult = await supabase
           .from('user_profiles')
-          .select('id, created_at, updated_at')
+          .select('user_id, created_at, updated_at')
         
         console.log('User profiles query:', { data: profilesResult.data, error: profilesResult.error })
         
