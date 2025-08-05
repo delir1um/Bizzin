@@ -120,6 +120,21 @@ export function PodcastPage() {
       showSearch={false}
       showFilters={false}
     >
+      {/* CTA Banner - Matching Journal and Goals Style */}
+      <div className="mb-8">
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-lg">
+          <h2 className="text-2xl font-bold mb-2">Start Your Business Learning Journey</h2>
+          <p className="text-blue-100 mb-4">15-minute business insights to accelerate your entrepreneurial growth</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button 
+              onClick={handleContinueListening}
+              className="bg-white text-blue-600 hover:bg-blue-50 font-medium"
+            >
+              Start Learning <Play className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
+        </div>
+      </div>
 
       {/* Continue Listening - show only if user has progress */}
       {currentlyListening && (
