@@ -567,8 +567,36 @@ function UserDetailView({ user }: { user: UserProfile }) {
               <Button 
                 variant="outline" 
                 className="w-full justify-start"
-                onClick={() => {
-                  alert(`Edit profile functionality would open a form to modify:\n\n• Name: ${user.full_name}\n• Business: ${user.business_name || 'Not provided'}\n• Plan: ${user.plan_type} (${user.plan_status})\n\nThis would be implemented with a full form component in production.`)
+                onClick={async () => {
+                  const newName = prompt(`Edit name for ${user.email}:`, user.full_name || '')
+                  const newBusiness = prompt(`Edit business name:`, user.business_name || '')
+                  
+                  if (newName !== null || newBusiness !== null) {
+                    try {
+                      const updates: any = {}
+                      if (newName !== null && newName !== user.full_name) {
+                        updates.full_name = newName
+                      }
+                      if (newBusiness !== null && newBusiness !== user.business_name) {
+                        updates.business_name = newBusiness
+                      }
+                      
+                      if (Object.keys(updates).length > 0) {
+                        const { error } = await supabase
+                          .from('user_profiles')
+                          .update(updates)
+                          .eq('user_id', user.user_id)
+                        
+                        if (error) throw error
+                        
+                        alert('Profile updated successfully!')
+                        refetch() // Refresh the user list
+                      }
+                    } catch (error) {
+                      console.error('Error updating profile:', error)
+                      alert('Failed to update profile. Please try again.')
+                    }
+                  }
                 }}
               >
                 <Edit className="w-4 h-4 mr-2" />
@@ -578,8 +606,50 @@ function UserDetailView({ user }: { user: UserProfile }) {
               <Button 
                 variant="outline" 
                 className="w-full justify-start"
-                onClick={() => {
-                  alert(`Activity Log for ${user.email}:\n\n• Account created: ${format(new Date(user.created_at), 'MMM d, yyyy')}\n• Last login: ${user.last_login ? format(new Date(user.last_login), 'MMM d, yyyy') : 'Never'}\n• Journal entries: ${user.total_journal_entries}\n• Goals completed: ${user.completed_goals}\n• Storage used: ${Math.round(user.storage_used / (1024 * 1024))}MB\n\nDetailed activity logs would be fetched from the database in production.`)
+                onClick={async () => {
+                  try {
+                    // Fetch detailed activity data from Supabase
+                    const [journalEntries, goals, documents] = await Promise.all([
+                      supabase.from('journal_entries').select('created_at').eq('user_id', user.user_id).order('created_at', { ascending: false }).limit(5),
+                      supabase.from('goals').select('title, created_at, completed').eq('user_id', user.user_id).order('created_at', { ascending: false }).limit(5),
+                      supabase.from('documents').select('filename, created_at').eq('user_id', user.user_id).order('created_at', { ascending: false }).limit(5)
+                    ])
+                    
+                    let activityLog = `=== ACTIVITY LOG FOR ${user.email.toUpperCase()} ===\n\n`
+                    activityLog += `📊 ACCOUNT SUMMARY:\n`
+                    activityLog += `• Created: ${format(new Date(user.created_at), 'MMM d, yyyy HH:mm')}\n`
+                    activityLog += `• Last login: ${user.last_login ? format(new Date(user.last_login), 'MMM d, yyyy HH:mm') : 'Never'}\n`
+                    activityLog += `• Plan: ${user.plan_type} (${user.plan_status})\n`
+                    activityLog += `• Storage: ${Math.round(user.storage_used / (1024 * 1024))}MB\n\n`
+                    
+                    if (journalEntries.data && journalEntries.data.length > 0) {
+                      activityLog += `📝 RECENT JOURNAL ENTRIES (${user.total_journal_entries} total):\n`
+                      journalEntries.data.forEach((entry, i) => {
+                        activityLog += `${i + 1}. ${format(new Date(entry.created_at), 'MMM d, yyyy HH:mm')}\n`
+                      })
+                      activityLog += `\n`
+                    }
+                    
+                    if (goals.data && goals.data.length > 0) {
+                      activityLog += `🎯 RECENT GOALS (${user.completed_goals} completed):\n`
+                      goals.data.forEach((goal, i) => {
+                        activityLog += `${i + 1}. ${goal.title} - ${goal.completed ? '✅ Completed' : '⏳ In Progress'}\n`
+                      })
+                      activityLog += `\n`
+                    }
+                    
+                    if (documents.data && documents.data.length > 0) {
+                      activityLog += `📄 RECENT DOCUMENTS:\n`
+                      documents.data.forEach((doc, i) => {
+                        activityLog += `${i + 1}. ${doc.filename} - ${format(new Date(doc.created_at), 'MMM d, yyyy')}\n`
+                      })
+                    }
+                    
+                    alert(activityLog)
+                  } catch (error) {
+                    console.error('Error fetching activity log:', error)
+                    alert(`Basic Activity Log for ${user.email}:\n\n• Account created: ${format(new Date(user.created_at), 'MMM d, yyyy')}\n• Last login: ${user.last_login ? format(new Date(user.last_login), 'MMM d, yyyy') : 'Never'}\n• Journal entries: ${user.total_journal_entries}\n• Goals completed: ${user.completed_goals}\n• Storage used: ${Math.round(user.storage_used / (1024 * 1024))}MB`)
+                  }
                 }}
               >
                 <Activity className="w-4 h-4 mr-2" />
@@ -590,12 +660,29 @@ function UserDetailView({ user }: { user: UserProfile }) {
                 <Button 
                   variant="outline" 
                   className="w-full justify-start text-blue-600 hover:text-blue-700"
-                  onClick={() => {
+                  onClick={async () => {
                     if (user.plan_type === 'premium') {
                       alert(`${user.first_name || user.email} is already on the Premium plan.`)
                     } else {
-                      if (confirm(`Upgrade ${user.first_name || user.email} to Premium plan?\n\nThis will give them access to:\n• Unlimited journal entries\n• Advanced analytics\n• Priority support\n• 10GB storage`)) {
-                        alert('Premium upgrade functionality would be implemented here in production.')
+                      if (confirm(`Upgrade ${user.first_name || user.email} to Premium plan?\n\nThis will give them access to:\n• Unlimited journal entries\n• Advanced analytics\n• Priority support\n• 10GB storage\n\nConfirm upgrade?`)) {
+                        try {
+                          const { error } = await supabase
+                            .from('user_plans')
+                            .update({ 
+                              plan_type: 'premium',
+                              plan_status: 'active',
+                              updated_at: new Date().toISOString()
+                            })
+                            .eq('user_id', user.user_id)
+                          
+                          if (error) throw error
+                          
+                          alert(`✅ ${user.first_name || user.email} has been upgraded to Premium!`)
+                          refetch() // Refresh the user list
+                        } catch (error) {
+                          console.error('Error upgrading user:', error)
+                          alert('Failed to upgrade user. Please try again.')
+                        }
                       }
                     }
                   }}
@@ -607,14 +694,58 @@ function UserDetailView({ user }: { user: UserProfile }) {
                 <Button 
                   variant="outline" 
                   className="w-full justify-start text-orange-600 hover:text-orange-700 mt-2"
-                  onClick={() => {
-                    if (confirm(`Reset ${user.first_name || user.email}'s password?\n\nThis will:\n• Generate a new temporary password\n• Send reset instructions to their email\n• Require them to change password on next login`)) {
-                      alert('Password reset functionality would be implemented here in production.')
+                  onClick={async () => {
+                    if (confirm(`Reset ${user.first_name || user.email}'s password?\n\nThis will:\n• Send a password reset email to their address\n• Allow them to create a new password\n• Invalidate their current session\n\nConfirm password reset?`)) {
+                      try {
+                        // Use Supabase Auth API to reset password
+                        const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+                          redirectTo: `${window.location.origin}/auth?mode=reset`
+                        })
+                        
+                        if (error) throw error
+                        
+                        alert(`✅ Password reset email sent to ${user.email}!\n\nThey will receive instructions to create a new password.`)
+                      } catch (error) {
+                        console.error('Error resetting password:', error)
+                        alert('Failed to send password reset email. Please try again or check if the email exists in the system.')
+                      }
                     }
                   }}
                 >
                   <Edit className="w-4 h-4 mr-2" />
                   Reset Password
+                </Button>
+
+                <Button 
+                  variant="outline" 
+                  className={`w-full justify-start mt-2 ${user.is_active ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'}`}
+                  onClick={async () => {
+                    const action = user.is_active ? 'suspend' : 'activate'
+                    const actionPast = user.is_active ? 'suspended' : 'activated'
+                    
+                    if (confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} ${user.first_name || user.email}'s account?\n\n${user.is_active ? 'This will prevent them from logging in until reactivated.' : 'This will restore their access to the platform.'}\n\nConfirm ${action}?`)) {
+                      try {
+                        const { error } = await supabase
+                          .from('user_profiles')
+                          .update({ 
+                            is_active: !user.is_active,
+                            updated_at: new Date().toISOString()
+                          })
+                          .eq('user_id', user.user_id)
+                        
+                        if (error) throw error
+                        
+                        alert(`✅ ${user.first_name || user.email} has been ${actionPast}!`)
+                        refetch() // Refresh the user list
+                      } catch (error) {
+                        console.error(`Error ${action}ing user:`, error)
+                        alert(`Failed to ${action} user. Please try again.`)
+                      }
+                    }
+                  }}
+                >
+                  <Activity className="w-4 h-4 mr-2" />
+                  {user.is_active ? 'Suspend Account' : 'Activate Account'}
                 </Button>
               </div>
             </div>
