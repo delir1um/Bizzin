@@ -18,6 +18,15 @@ import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/lib/supabase"
 import { format } from "date-fns"
 
+interface PlatformActivity {
+  id: string
+  type: 'admin_access' | 'metrics_update' | 'database_check' | 'storage_check' | 'user_activity' | 'system_event'
+  description: string
+  timestamp: string
+  status: 'success' | 'warning' | 'error'
+  metadata?: any
+}
+
 interface SystemMetrics {
   database: {
     status: 'healthy' | 'warning' | 'critical'
@@ -39,16 +48,102 @@ interface SystemMetrics {
     documents: number
     completedGoals: number
   }
-  timestamps: {
-    dashboardAccessed: string
-    metricsUpdated: string
-    lastDatabaseCheck: string
-    lastStorageCheck: string
-    systemStarted: string
-  }
+  recentActivity: PlatformActivity[]
 }
 
 export function AdminSystemHealth() {
+  // Get real platform activity from database
+  const getRecentActivity = async (): Promise<PlatformActivity[]> => {
+    const activities: PlatformActivity[] = []
+    const now = new Date()
+
+    try {
+      // Get recent user activities (last journal entries, goals, documents)
+      const [journalActivity, goalActivity, documentActivity] = await Promise.all([
+        supabase
+          .from('journal_entries')
+          .select('id, created_at, title')
+          .order('created_at', { ascending: false })
+          .limit(2),
+        supabase
+          .from('goals')
+          .select('id, created_at, title, status')
+          .order('created_at', { ascending: false })
+          .limit(2),
+        supabase
+          .from('documents')
+          .select('id, created_at, filename')
+          .order('created_at', { ascending: false })
+          .limit(2)
+      ])
+
+      // Add journal activities
+      journalActivity.data?.forEach(entry => {
+        activities.push({
+          id: `journal-${entry.id}`,
+          type: 'user_activity',
+          description: `New journal entry: "${entry.title || 'Untitled'}"`,
+          timestamp: entry.created_at,
+          status: 'success'
+        })
+      })
+
+      // Add goal activities
+      goalActivity.data?.forEach(goal => {
+        activities.push({
+          id: `goal-${goal.id}`,
+          type: 'user_activity',
+          description: `Goal ${goal.status}: "${goal.title || 'Untitled'}"`,
+          timestamp: goal.created_at,
+          status: goal.status === 'completed' ? 'success' : 'warning'
+        })
+      })
+
+      // Add document activities
+      documentActivity.data?.forEach(doc => {
+        activities.push({
+          id: `document-${doc.id}`,
+          type: 'user_activity',
+          description: `Document uploaded: ${doc.filename}`,
+          timestamp: doc.created_at,
+          status: 'success'
+        })
+      })
+
+      // Add system activities
+      activities.push({
+        id: 'admin-access',
+        type: 'admin_access',
+        description: 'Admin dashboard accessed',
+        timestamp: now.toISOString(),
+        status: 'success'
+      })
+
+      activities.push({
+        id: 'metrics-update',
+        type: 'metrics_update',
+        description: 'System metrics refreshed',
+        timestamp: now.toISOString(),
+        status: 'success'
+      })
+
+      // Sort by timestamp (most recent first) and take top 5
+      return activities
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .slice(0, 5)
+
+    } catch (error) {
+      console.error('Error fetching platform activity:', error)
+      return [{
+        id: 'error',
+        type: 'system_event',
+        description: 'Error fetching recent activity',
+        timestamp: now.toISOString(),
+        status: 'error'
+      }]
+    }
+  }
+
   // Fetch system health metrics
   const { data: metrics, isLoading, refetch } = useQuery({
     queryKey: ['admin-system-health'],
@@ -95,6 +190,7 @@ export function AdminSystemHealth() {
         ).length || 1 // At least 1 (current admin)
 
         const currentTime = new Date()
+        const recentActivity = await getRecentActivity()
         
         return {
           database: {
@@ -117,13 +213,7 @@ export function AdminSystemHealth() {
             documents: documentsData.data?.length || 0,
             completedGoals: goalsData.data?.filter(goal => goal.status === 'completed').length || 0
           },
-          timestamps: {
-            dashboardAccessed: currentTime.toISOString(),
-            metricsUpdated: currentTime.toISOString(),
-            lastDatabaseCheck: currentTime.toISOString(),
-            lastStorageCheck: currentTime.toISOString(),
-            systemStarted: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() // 2 hours ago
-          }
+          recentActivity
         } as SystemMetrics
         
       } catch (error) {
@@ -151,13 +241,13 @@ export function AdminSystemHealth() {
             documents: 0,
             completedGoals: 0
           },
-          timestamps: {
-            dashboardAccessed: currentTime.toISOString(),
-            metricsUpdated: currentTime.toISOString(),
-            lastDatabaseCheck: currentTime.toISOString(),
-            lastStorageCheck: currentTime.toISOString(),
-            systemStarted: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
-          }
+          recentActivity: [{
+            id: 'error',
+            type: 'system_event',
+            description: 'Database connection failed',
+            timestamp: currentTime.toISOString(),
+            status: 'error'
+          }]
         } as SystemMetrics
       }
     },
@@ -400,41 +490,53 @@ export function AdminSystemHealth() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <div className="flex items-center gap-3 text-sm">
-              <CheckCircle className="w-4 h-4 text-green-600" />
-              <span className="text-muted-foreground font-mono">
-                {format(new Date(metrics.timestamps?.dashboardAccessed || new Date()), 'HH:mm:ss')}
-              </span>
-              <span>Admin dashboard accessed successfully</span>
-            </div>
-            <div className="flex items-center gap-3 text-sm">
-              <CheckCircle className="w-4 h-4 text-blue-600" />
-              <span className="text-muted-foreground font-mono">
-                {format(new Date(metrics.timestamps?.metricsUpdated || new Date()), 'HH:mm:ss')}
-              </span>
-              <span>Real-time metrics updated - {metrics.content?.journalEntries || 0} journal entries tracked</span>
-            </div>
-            <div className="flex items-center gap-3 text-sm">
-              <CheckCircle className="w-4 h-4 text-green-600" />
-              <span className="text-muted-foreground font-mono">
-                {format(new Date(metrics.timestamps?.lastDatabaseCheck || new Date()), 'HH:mm:ss')}
-              </span>
-              <span>Database connectivity maintained - {metrics.database.isConnected ? 'Connected' : 'Disconnected'}</span>
-            </div>
-            <div className="flex items-center gap-3 text-sm">
-              <CheckCircle className="w-4 h-4 text-green-600" />
-              <span className="text-muted-foreground font-mono">
-                {format(new Date(metrics.timestamps?.lastStorageCheck || new Date()), 'HH:mm:ss')}
-              </span>
-              <span>Storage usage: {(metrics.storage.used / (1024 * 1024)).toFixed(1)}MB of {(metrics.storage.limit / (1024 * 1024 * 1024)).toFixed(0)}GB</span>
-            </div>
-            <div className="flex items-center gap-3 text-sm">
-              <CheckCircle className="w-4 h-4 text-green-600" />
-              <span className="text-muted-foreground font-mono">
-                {format(new Date(metrics.timestamps?.systemStarted || new Date()), 'HH:mm:ss')}
-              </span>
-              <span>Platform monitoring and analytics operational</span>
-            </div>
+            {metrics.recentActivity?.map(activity => {
+              const getActivityIcon = (type: string, status: string) => {
+                if (status === 'error') return <AlertTriangle className="w-4 h-4 text-red-600" />
+                if (status === 'warning') return <AlertTriangle className="w-4 h-4 text-yellow-600" />
+                
+                switch (type) {
+                  case 'admin_access': return <Shield className="w-4 h-4 text-green-600" />
+                  case 'metrics_update': return <RefreshCw className="w-4 h-4 text-blue-600" />
+                  case 'database_check': return <Database className="w-4 h-4 text-green-600" />
+                  case 'storage_check': return <HardDrive className="w-4 h-4 text-green-600" />
+                  case 'user_activity': return <Users className="w-4 h-4 text-purple-600" />
+                  default: return <CheckCircle className="w-4 h-4 text-green-600" />
+                }
+              }
+
+              const getRelativeTime = (timestamp: string) => {
+                const now = new Date()
+                const activityTime = new Date(timestamp)
+                const diffInMinutes = Math.floor((now.getTime() - activityTime.getTime()) / (1000 * 60))
+                
+                if (diffInMinutes < 1) return 'Just now'
+                if (diffInMinutes < 60) return `${diffInMinutes}m ago`
+                
+                const diffInHours = Math.floor(diffInMinutes / 60)
+                if (diffInHours < 24) return `${diffInHours}h ago`
+                
+                const diffInDays = Math.floor(diffInHours / 24)
+                return `${diffInDays}d ago`
+              }
+
+              return (
+                <div key={activity.id} className="flex items-center gap-3 text-sm">
+                  {getActivityIcon(activity.type, activity.status)}
+                  <span className="text-muted-foreground font-mono min-w-[60px]">
+                    {getRelativeTime(activity.timestamp)}
+                  </span>
+                  <span className="flex-1">{activity.description}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {format(new Date(activity.timestamp), 'HH:mm')}
+                  </span>
+                </div>
+              )
+            }) || (
+              <div className="text-sm text-muted-foreground text-center py-4">
+                No recent activity found
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
