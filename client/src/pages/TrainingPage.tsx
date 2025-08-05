@@ -117,7 +117,10 @@ export function PodcastPage() {
       subtitle="15-minute business insights to grow your entrepreneurial mindset"
       secondaryActions={secondaryActions}
       stats={statCards}
-      showSearch={false}
+      showSearch={true}
+      searchPlaceholder="Search episodes by title or series..."
+      searchValue=""
+      onSearchChange={() => {}}
       showFilters={false}
     >
       {/* CTA Banner - Matching Journal and Goals Style */}
