@@ -61,53 +61,98 @@ export function AdminFinancialOverview() {
   const { data: metrics, isLoading: metricsLoading, refetch } = useQuery({
     queryKey: ['admin-financial-metrics'],
     queryFn: async () => {
-      // Fetch subscription data
-      const { data: subscriptions, error: subsError } = await supabase
-        .from('user_plans')
-        .select('plan_type, plan_status, created_at, updated_at')
+      console.log('Fetching financial metrics...')
+      
+      try {
+        // Fetch subscription data
+        const { data: subscriptions, error: subsError } = await supabase
+          .from('user_plans')
+          .select('plan_type, plan_status, created_at, updated_at')
 
-      if (subsError) throw subsError
+        // Handle the case where user_plans table doesn't exist or is empty
+        if (subsError) {
+          console.log('Error fetching user_plans:', subsError)
+          // If table doesn't exist, return default financial metrics
+          return {
+            totalRevenue: 0,
+            monthlyRevenue: 0,
+            averageRevenuePerUser: 0,
+            churnRate: 0,
+            subscriptions: {
+              total: 0,
+              active: 0,
+              cancelled: 0,
+              expired: 0
+            },
+            revenueGrowth: 0,
+            refunds: 0
+          } as FinancialMetrics
+        }
 
-      const now = new Date()
-      const lastMonth = subMonths(now, 1)
-      
-      const activeSubscriptions = subscriptions?.filter(s => s.plan_status === 'active') || []
-      const paidSubscriptions = activeSubscriptions.filter(s => s.plan_type === 'premium')
-      
-      // Calculate revenue (assuming R199/month for premium)
-      const monthlyRevenue = paidSubscriptions.length * 199
-      const totalRevenue = monthlyRevenue * 6 // Assuming 6 months average
-      
-      // Calculate growth (mock data for now)
-      const lastMonthSubs = subscriptions?.filter(s => 
-        new Date(s.created_at) >= startOfMonth(lastMonth) && 
-        new Date(s.created_at) <= endOfMonth(lastMonth)
-      ).length || 0
-      
-      const thisMonthSubs = subscriptions?.filter(s => 
-        new Date(s.created_at) >= startOfMonth(now) && 
-        new Date(s.created_at) <= endOfMonth(now)
-      ).length || 0
-      
-      const revenueGrowth = lastMonthSubs > 0 ? 
-        ((thisMonthSubs - lastMonthSubs) / lastMonthSubs) * 100 : 0
+        console.log('User plans data:', subscriptions)
 
-      return {
-        totalRevenue,
-        monthlyRevenue,
-        averageRevenuePerUser: paidSubscriptions.length > 0 ? monthlyRevenue / paidSubscriptions.length : 0,
-        churnRate: 2.5, // Mock churn rate
-        subscriptions: {
-          total: subscriptions?.length || 0,
-          active: activeSubscriptions.length,
-          cancelled: subscriptions?.filter(s => s.plan_status === 'cancelled').length || 0,
-          expired: subscriptions?.filter(s => s.plan_status === 'expired').length || 0
-        },
-        revenueGrowth,
-        refunds: 0 // Mock refunds
-      } as FinancialMetrics
+        const now = new Date()
+        const lastMonth = subMonths(now, 1)
+        
+        const activeSubscriptions = subscriptions?.filter(s => s.plan_status === 'active') || []
+        const paidSubscriptions = activeSubscriptions.filter(s => s.plan_type === 'premium')
+        
+        // Calculate revenue (assuming R199/month for premium)
+        const monthlyRevenue = paidSubscriptions.length * 199
+        const totalRevenue = monthlyRevenue * 6 // Assuming 6 months average
+        
+        // Calculate growth
+        const lastMonthSubs = subscriptions?.filter(s => 
+          new Date(s.created_at) >= startOfMonth(lastMonth) && 
+          new Date(s.created_at) <= endOfMonth(lastMonth)
+        ).length || 0
+        
+        const thisMonthSubs = subscriptions?.filter(s => 
+          new Date(s.created_at) >= startOfMonth(now) && 
+          new Date(s.created_at) <= endOfMonth(now)
+        ).length || 0
+        
+        const revenueGrowth = lastMonthSubs > 0 ? 
+          ((thisMonthSubs - lastMonthSubs) / lastMonthSubs) * 100 : 0
+
+        const result = {
+          totalRevenue,
+          monthlyRevenue,
+          averageRevenuePerUser: paidSubscriptions.length > 0 ? monthlyRevenue / paidSubscriptions.length : 0,
+          churnRate: 2.5, // Mock churn rate
+          subscriptions: {
+            total: subscriptions?.length || 0,
+            active: activeSubscriptions.length,
+            cancelled: subscriptions?.filter(s => s.plan_status === 'cancelled').length || 0,
+            expired: subscriptions?.filter(s => s.plan_status === 'expired').length || 0
+          },
+          revenueGrowth,
+          refunds: 0 // Mock refunds
+        } as FinancialMetrics
+
+        console.log('Calculated financial metrics:', result)
+        return result
+      } catch (error) {
+        console.error('Error in financial metrics query:', error)
+        // Return default metrics on any error
+        return {
+          totalRevenue: 0,
+          monthlyRevenue: 0,
+          averageRevenuePerUser: 0,
+          churnRate: 0,
+          subscriptions: {
+            total: 0,
+            active: 0,
+            cancelled: 0,
+            expired: 0
+          },
+          revenueGrowth: 0,
+          refunds: 0
+        } as FinancialMetrics
+      }
     },
-    refetchInterval: 60000 // Refresh every minute
+    refetchInterval: 60000, // Refresh every minute
+    retry: false // Don't retry on errors, just return default values
   })
 
   // Mock revenue data for charts
