@@ -34,17 +34,17 @@ import { supabase } from "@/lib/supabase"
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns"
 
 interface UserSegment {
-  free: number
-  trial: number
-  premium: number
-  expired_trial: number
+  free: number // New signups (last 7 days)
+  trial: number // Active trial users (within 2 weeks)
+  premium: number // Paid premium users
+  expired_trial: number // Trial expired, need upgrade
 }
 
 interface ConversionMetrics {
-  free_to_trial: number
-  trial_to_premium: number
-  trial_to_churn: number
-  overall_conversion: number
+  free_to_trial: number // New signup rate
+  trial_to_premium: number // Trial to premium conversion
+  trial_to_churn: number // Trial expiration rate
+  overall_conversion: number // Overall conversion rate
 }
 
 interface FinancialMetrics {
@@ -147,43 +147,58 @@ export function AdminFinancialOverview() {
         const lastMonth = subMonths(now, 1)
         const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 
-        // Enhanced User Segmentation
-        const freeUsers = allPlans?.filter(plan => plan.plan_type === 'free').length || 0
+        // Enhanced User Segmentation - Corrected Business Model
+        // Users get 2-week trial by default, then must upgrade to premium
+        const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
         
-        // Trial users: premium plans created within last 30 days without payment
+        // Active Trial Users: free plan users within their 2-week trial period
         const trialUsers = allPlans?.filter(plan => {
-          if (plan.plan_type !== 'premium') return false
+          if (plan.plan_type !== 'free') return false
           const createdAt = new Date(plan.created_at)
-          const isRecent = createdAt >= thirtyDaysAgo
-          const hasNotPaid = !plan.amount_paid || plan.amount_paid === 0
-          return isRecent && hasNotPaid && !plan.cancelled_at && (!plan.expires_at || new Date(plan.expires_at) > now)
+          const withinTrialPeriod = createdAt >= fourteenDaysAgo
+          return withinTrialPeriod
         }).length || 0
         
-        // Premium users: paid premium plans that are active
+        // Premium Users: users who upgraded to premium (paid plans)
         const premiumUsers = allPlans?.filter(plan => {
-          if (plan.plan_type !== 'premium') return false
-          const hasPaid = plan.amount_paid && plan.amount_paid > 0
-          const isActive = !plan.cancelled_at && (!plan.expires_at || new Date(plan.expires_at) > now)
-          return hasPaid && isActive
+          return plan.plan_type === 'premium' && !plan.cancelled_at && (!plan.expires_at || new Date(plan.expires_at) > now)
         }).length || 0
         
-        // Expired trial users: premium plans that expired without payment (now likely on free)
+        // Expired Trial Users: free plan users whose 2-week trial has ended
         const expiredTrialUsers = allPlans?.filter(plan => {
-          if (plan.plan_type !== 'premium') return false
-          const hasNotPaid = !plan.amount_paid || plan.amount_paid === 0
-          const isExpired = plan.expires_at && new Date(plan.expires_at) <= now
-          return hasNotPaid && isExpired
+          if (plan.plan_type !== 'free') return false
+          const createdAt = new Date(plan.created_at)
+          const trialExpired = createdAt < fourteenDaysAgo
+          return trialExpired
+        }).length || 0
+        
+        // New Signups: users who joined in the last 7 days
+        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+        const newSignups = allPlans?.filter(plan => {
+          const createdAt = new Date(plan.created_at)
+          return createdAt >= sevenDaysAgo
         }).length || 0
 
+        console.log('Segmentation Debug:', {
+          now: now.toISOString(),
+          fourteenDaysAgo: fourteenDaysAgo.toISOString(),
+          sevenDaysAgo: sevenDaysAgo.toISOString(),
+          userCreatedAt: allPlans?.[0]?.created_at,
+          newSignups,
+          trialUsers,
+          premiumUsers,
+          expiredTrialUsers
+        })
+
         // Conversion Metrics Calculation
-        const totalFreeToTrial = trialUsers + premiumUsers + expiredTrialUsers // Users who tried premium
-        const freeToTrialRate = freeUsers > 0 ? (totalFreeToTrial / (freeUsers + totalFreeToTrial)) * 100 : 0
+        const totalTrialUsers = trialUsers + expiredTrialUsers + premiumUsers // All users who had trials
+        const trialToPremiumRate = totalTrialUsers > 0 ? (premiumUsers / totalTrialUsers) * 100 : 0
         
-        const trialToPremiumRate = (trialUsers + expiredTrialUsers) > 0 ? (premiumUsers / (trialUsers + premiumUsers + expiredTrialUsers)) * 100 : 0
+        const trialToChurnRate = totalTrialUsers > 0 ? (expiredTrialUsers / totalTrialUsers) * 100 : 0
         
-        const trialToChurnRate = (trialUsers + premiumUsers + expiredTrialUsers) > 0 ? (expiredTrialUsers / (trialUsers + premiumUsers + expiredTrialUsers)) * 100 : 0
+        const overallConversionRate = totalTrialUsers > 0 ? (premiumUsers / totalTrialUsers) * 100 : 0
         
-        const overallConversionRate = (freeUsers + totalFreeToTrial) > 0 ? (premiumUsers / (freeUsers + totalFreeToTrial)) * 100 : 0
+        const newSignupRate = totalTrialUsers > 0 ? (newSignups / totalTrialUsers) * 100 : 0
         
         // Only count real premium subscriptions that haven't expired
         const activePremiumPlans = allPlans?.filter(plan => {
@@ -232,13 +247,13 @@ export function AdminFinancialOverview() {
             expired: expiredCount
           },
           userSegmentation: {
-            free: freeUsers,
-            trial: trialUsers,
-            premium: premiumUsers,
-            expired_trial: expiredTrialUsers
+            free: newSignups, // New signups within 7 days
+            trial: trialUsers, // Active trial users (within 2 weeks)
+            premium: premiumUsers, // Paid premium users
+            expired_trial: expiredTrialUsers // Trial expired, need to upgrade
           },
           conversionMetrics: {
-            free_to_trial: Math.round(freeToTrialRate * 10) / 10,
+            free_to_trial: Math.round(newSignupRate * 10) / 10, // New signup rate
             trial_to_premium: Math.round(trialToPremiumRate * 10) / 10,
             trial_to_churn: Math.round(trialToChurnRate * 10) / 10,
             overall_conversion: Math.round(overallConversionRate * 10) / 10
@@ -414,26 +429,26 @@ export function AdminFinancialOverview() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Free Users</CardTitle>
-              <Users className="h-4 w-4 text-gray-500" />
+              <CardTitle className="text-sm font-medium">New Signups</CardTitle>
+              <Users className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-600">{metrics.userSegmentation?.free || 0}</div>
+              <div className="text-2xl font-bold text-blue-600">{metrics.userSegmentation?.free || 0}</div>
               <p className="text-xs text-muted-foreground">
-                Exploring platform
+                Last 7 days
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Trial Users</CardTitle>
-              <TrendingUp className="h-4 w-4 text-blue-500" />
+              <CardTitle className="text-sm font-medium">Active Trials</CardTitle>
+              <TrendingUp className="h-4 w-4 text-orange-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{metrics.userSegmentation?.trial || 0}</div>
+              <div className="text-2xl font-bold text-orange-600">{metrics.userSegmentation?.trial || 0}</div>
               <p className="text-xs text-muted-foreground">
-                Testing premium features
+                Within 2-week trial
               </p>
             </CardContent>
           </Card>
@@ -459,7 +474,7 @@ export function AdminFinancialOverview() {
             <CardContent>
               <div className="text-2xl font-bold text-red-600">{metrics.userSegmentation?.expired_trial || 0}</div>
               <p className="text-xs text-muted-foreground">
-                Potential re-engagement
+                Trial expired - need upgrade
               </p>
             </CardContent>
           </Card>
@@ -469,13 +484,13 @@ export function AdminFinancialOverview() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Free to Trial</CardTitle>
+              <CardTitle className="text-sm font-medium">New Signup Rate</CardTitle>
               <TrendingUp className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-blue-600">{metrics.conversionMetrics?.free_to_trial || 0}%</div>
               <p className="text-xs text-muted-foreground">
-                Conversion rate
+                Weekly growth
               </p>
             </CardContent>
           </Card>
