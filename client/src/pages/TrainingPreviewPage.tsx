@@ -5,46 +5,87 @@ import { Progress } from "@/components/ui/progress"
 import { GraduationCap, Plus, Clock, Lock, ArrowRight, BookOpen, Video, Users } from "lucide-react"
 import { useLocation } from "wouter"
 
-const demoCourses = [
+// Real podcast episodes from the portal
+const demoEpisodes = [
   {
-    id: "demo-1",
-    title: "Cash Flow Management for SMEs",
-    description: "Practical strategies for managing cash flow in small businesses, including payment terms, supplier negotiations, and emergency planning.",
-    progress: 65,
-    duration: "2.5 hours",
-    lessons: 8,
-    level: "Beginner",
-    category: "Finance",
-    isBlurred: false
-  },
-  {
-    id: "demo-2",
-    title: "Local Marketing on a Budget",
-    description: "Cost-effective marketing strategies for South African small businesses, including social media, community engagement, and word-of-mouth tactics.",
-    progress: 40,
-    duration: "3 hours",
-    lessons: 10,
-    level: "Beginner",
-    category: "Marketing",
-    isBlurred: false
-  },
-  {
-    id: "demo-3",
-    title: "Hiring Your First Employees",
-    description: "Complete guide to hiring staff in South Africa, including labour law compliance, contracts, and building a positive team culture.",
-    progress: 85,
-    duration: "2 hours", 
-    lessons: 6,
+    id: "continue-1",
+    title: "Cash Flow Crisis Management",
+    description: "Practical steps when money gets tight and how to navigate financial challenges while keeping your business operational.",
+    duration: "15 min",
+    progress: 12,
+    series: "Finance",
+    episode: 1,
     level: "Intermediate",
-    category: "Leadership",
-    isBlurred: false
+    type: "Video"
+  },
+  {
+    id: "episode-1",
+    title: "The 15-Minute Business Model",
+    description: "Quick framework to validate your business idea and build a sustainable model that attracts customers and generates revenue from day one.",
+    duration: "15 min", 
+    progress: 0,
+    series: "Strategy",
+    episode: 1,
+    level: "Beginner",
+    type: "Audio"
+  },
+  {
+    id: "episode-2",
+    title: "Building Your First Sales Funnel",
+    description: "Step-by-step guide to creating a sales funnel that converts visitors into customers using practical, low-cost methods.",
+    duration: "16 min",
+    progress: 0,
+    series: "Marketing",
+    episode: 1,
+    level: "Beginner", 
+    type: "Audio"
+  },
+  {
+    id: "episode-3",
+    title: "Understanding Business Metrics",
+    description: "Key performance indicators every entrepreneur should track to make informed decisions and measure success.",
+    duration: "13 min",
+    progress: 0,
+    series: "Finance",
+    episode: 2,
+    level: "Beginner",
+    type: "Audio"
+  },
+  {
+    id: "episode-4",
+    title: "Effective Decision Making",
+    description: "Frameworks for making better business decisions faster, especially when facing uncertainty and limited information.",
+    duration: "14 min",
+    progress: 0,
+    series: "Leadership",
+    episode: 1,
+    level: "Intermediate",
+    type: "Audio"
+  },
+  {
+    id: "episode-5",
+    title: "Market Research That Actually Works",
+    description: "Practical methods to understand your market without expensive research firms or complex surveys.",
+    duration: "14 min",
+    progress: 0,
+    series: "Strategy",
+    episode: 2,
+    level: "Beginner",
+    type: "Audio"
   }
 ]
 
+const seriesColors = {
+  "Strategy": "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200",
+  "Marketing": "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200", 
+  "Finance": "bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200",
+  "Leadership": "bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200"
+}
+
 const levelColors = {
-  "Beginner": "bg-green-100 text-green-800",
-  "Intermediate": "bg-amber-100 text-amber-800",
-  "Advanced": "bg-red-100 text-red-800"
+  "Beginner": "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+  "Intermediate": "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200", 
+  "Advanced": "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
 }
 
 export function TrainingPreviewPage() {
@@ -68,40 +109,54 @@ export function TrainingPreviewPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Preview */}
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mb-8">
-          <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Course Library</CardTitle>
-              <BookOpen className="h-4 w-4 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">Business</div>
-              <p className="text-xs text-muted-foreground">Skills training</p>
+        {/* Continue Learning Section */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">Continue Learning</h2>
+          <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge className="text-xs">Episode 1</Badge>
+                    <Badge variant="outline" className="text-xs">Finance</Badge>
+                  </div>
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                    Cash Flow Crisis Management
+                  </h3>
+                  <p className="text-slate-600 dark:text-slate-300 text-sm mb-4">
+                    Practical steps when money gets tight and how to navigate financial challenges while keeping your business operational.
+                  </p>
+                  <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400 mb-3">
+                    <span>0:12 / 15:00</span>
+                    <span>1% complete</span>
+                  </div>
+                  <Progress value={1} className="mb-4" />
+                </div>
+                <Button 
+                  onClick={() => setLocation('/auth')}
+                  className="bg-orange-600 hover:bg-orange-700 text-white"
+                >
+                  Continue Watching
+                </Button>
+              </div>
             </CardContent>
           </Card>
+        </div>
 
-          <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Progress Tracking</CardTitle>
-              <Video className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">Monitor</div>
-              <p className="text-xs text-muted-foreground">Learning progress</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Categories</CardTitle>
-              <GraduationCap className="h-4 w-4 text-purple-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">Organized</div>
-              <p className="text-xs text-muted-foreground">By topic areas</p>
-            </CardContent>
-          </Card>
+        {/* Popular Series */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">Popular Series</h2>
+          <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
+            {['Strategy', 'Marketing', 'Finance', 'Leadership'].map((series) => (
+              <Card key={series} className="text-center p-4 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm hover:shadow-md transition-shadow cursor-pointer">
+                <div className={`w-12 h-12 rounded-full ${seriesColors[series as keyof typeof seriesColors]} flex items-center justify-center mx-auto mb-3`}>  
+                  <GraduationCap className="w-6 h-6" />
+                </div>
+                <h3 className="font-semibold text-sm mb-1">{series}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">4 episodes</p>
+              </Card>
+            ))}
+          </div>
         </div>
 
         {/* CTA Section */}
@@ -121,66 +176,59 @@ export function TrainingPreviewPage() {
           </div>
         </div>
 
-        {/* Courses Preview */}
+        {/* Featured Episodes */}
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Available Courses</h2>
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Featured Episodes</h2>
             <Button 
               onClick={() => setLocation('/auth')}
               className="bg-blue-600 hover:bg-blue-700"
             >
-              View All Courses
+              View All Episodes
             </Button>
           </div>
 
           <div className="grid gap-6 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
-            {demoCourses.map((course, index) => (
+            {demoEpisodes.slice(1).map((episode) => (
               <Card 
-                key={course.id}
+                key={episode.id}
                 className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm hover:shadow-lg transition-all"
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between mb-2">
-                    <Badge className={levelColors[course.level as keyof typeof levelColors]}>
-                      {course.level}
+                    <Badge className={levelColors[episode.level as keyof typeof levelColors]}>
+                      {episode.level}
                     </Badge>
-                    <Badge variant="outline">{course.category}</Badge>
+                    <Badge variant="outline" className={seriesColors[episode.series as keyof typeof seriesColors]}>
+                      {episode.series}
+                    </Badge>
                   </div>
-                  <CardTitle className="text-lg">{course.title}</CardTitle>
+                  <CardTitle className="text-lg">{episode.title}</CardTitle>
                   <CardDescription className="text-sm">
-                    {course.description}
+                    {episode.description}
                   </CardDescription>
                 </CardHeader>
                 
                 <CardContent className="pt-0">
                   <div className="space-y-4">
-                    {/* Progress */}
-                    <div>
-                      <div className="flex justify-between text-sm mb-2">
-                        <span className="text-slate-600 dark:text-slate-300">Progress</span>
-                        <span className="font-medium">{course.progress}%</span>
-                      </div>
-                      <Progress value={course.progress} className="h-2" />
-                    </div>
-                    
-                    {/* Course Info */}
+                    {/* Episode Info */}
                     <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
                       <div className="flex items-center gap-1">
                         <Clock className="w-4 h-4" />
-                        <span>{course.duration}</span>
+                        <span>{episode.duration}</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <BookOpen className="w-4 h-4" />
-                        <span>{course.lessons} lessons</span>
+                        {episode.type === 'Video' ? <Video className="w-4 h-4" /> : <BookOpen className="w-4 h-4" />}
+                        <span>{episode.type}</span>
                       </div>
                     </div>
 
                     <Button 
                       className="w-full"
-                      variant={course.progress > 0 ? "default" : "outline"}
+                      variant="outline"
                       onClick={() => setLocation('/auth')}
                     >
-                      {course.progress > 0 ? "Continue Learning" : "Start Course"}
+                      {episode.type === 'Video' ? 'Listen Now' : 'Listen Now'}
                     </Button>
                   </div>
                 </CardContent>
