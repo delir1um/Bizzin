@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button"
-import { Target, BookOpen, Calculator, Shield, PenTool, Headphones } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Target, BookOpen, Calculator, Shield, PenTool, Headphones, ArrowRight, Brain } from "lucide-react"
 import { useLocation } from "wouter"
 
 export function HomePage() {
@@ -66,6 +67,64 @@ export function HomePage() {
           </div>
         </div>
       </div>
+
+      {/* Business Health Preview - Matching Portal */}
+      <section className="py-24 bg-slate-50 dark:bg-slate-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Real Business Health Analytics</h2>
+            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">See exactly what your portal dashboard looks like</p>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-xl border border-slate-200 dark:border-slate-700">
+            <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+              {/* Business Health Score */}
+              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200 dark:border-blue-800">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg text-blue-900 dark:text-blue-100">Business Health</CardTitle>
+                    <div className="text-3xl font-bold text-blue-600">69</div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-3 mb-4">
+                    <div className="bg-blue-600 h-3 rounded-full" style={{width: '69%'}}></div>
+                  </div>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">Overall business health score</p>
+                </CardContent>
+              </Card>
+
+              {/* Burnout Risk */}
+              <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border border-green-200 dark:border-green-800">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg text-green-900 dark:text-green-100">Burnout Risk</CardTitle>
+                    <div className="text-3xl font-bold text-green-600">8%</div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="w-full bg-green-200 dark:bg-green-800 rounded-full h-3 mb-4">
+                    <div className="bg-green-600 h-3 rounded-full" style={{width: '8%'}}></div>
+                  </div>
+                  <p className="text-sm text-green-700 dark:text-green-300">Low risk - excellent work-life balance</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* AI Mood Detection */}
+            <div className="mt-8 text-center">
+              <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-6">
+                <div className="flex items-center justify-center gap-3 mb-2">
+                  <Brain className="w-6 h-6 text-purple-600" />
+                  <span className="text-sm text-purple-700 dark:text-purple-300">Current AI-Detected Mood</span>
+                </div>
+                <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">Analytical</div>
+                <p className="text-sm text-purple-600 dark:text-purple-400 mt-1">Focused on data-driven decision making</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Features Preview */}
       <section className="py-24 bg-white dark:bg-[#0B0A1D]">

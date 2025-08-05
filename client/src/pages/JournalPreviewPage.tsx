@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { BookOpen, Plus, Calendar, Lock, ArrowRight, PenTool, TrendingUp, Target } from "lucide-react"
+import { BookOpen, Plus, Calendar, Lock, ArrowRight, PenTool, TrendingUp, Target, Search, Brain } from "lucide-react"
 import { useLocation } from "wouter"
 
 const demoEntries = [
@@ -62,56 +62,73 @@ export function JournalPreviewPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Preview */}
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mb-8">
-          <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Write Entries</CardTitle>
-              <BookOpen className="h-4 w-4 text-purple-600" />
+        {/* Stats Preview - Matching Portal Design */}
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-3 mb-8">
+          <Card className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-orange-800 dark:text-orange-200">Day Streak</CardTitle>
+                <BookOpen className="h-4 w-4 text-orange-600" />
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">Document</div>
-              <p className="text-xs text-muted-foreground">Business insights</p>
+            <CardContent className="pt-0">
+              <div className="text-3xl font-bold text-orange-900 dark:text-orange-100">1</div>
+              <p className="text-xs text-orange-700 dark:text-orange-300 mt-1">Day Writing Streak</p>
+              <p className="text-xs text-orange-600 dark:text-orange-400">Activate: 30 day goal</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Search & Filter</CardTitle>
-              <Calendar className="h-4 w-4 text-green-600" />
+          <Card className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-green-800 dark:text-green-200">Growth Wins</CardTitle>
+                <TrendingUp className="h-4 w-4 text-green-600" />
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">Organized</div>
-              <p className="text-xs text-muted-foreground">Find entries easily</p>
+            <CardContent className="pt-0">
+              <div className="text-3xl font-bold text-green-900 dark:text-green-100">3</div>
+              <p className="text-xs text-green-700 dark:text-green-300 mt-1">Growth Wins</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Categorize</CardTitle>
-              <TrendingUp className="h-4 w-4 text-blue-600" />
+          <Card className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-blue-800 dark:text-blue-200">Dominant Mood</CardTitle>
+                <Brain className="h-4 w-4 text-blue-600" />
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">Tagged</div>
-              <p className="text-xs text-muted-foreground">Label and organize</p>
+            <CardContent className="pt-0">
+              <div className="text-lg font-bold text-blue-900 dark:text-blue-100">Analytical</div>
+              <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">Dominant Mood</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* CTA Section */}
-        <div className="text-center mb-8">
-          <div className="bg-gradient-to-r from-purple-600 to-blue-500 text-white p-6 rounded-lg mb-6">
-            <h2 className="text-2xl font-bold mb-2">Create Your AI-Enhanced Business Journal</h2>
-            <p className="text-purple-100 mb-4">Write entries with automatic sentiment analysis, mood tracking, and personalized reflection prompts. Free plan includes 10 entries per month.</p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button 
-                onClick={() => setLocation('/auth')}
-                className="bg-white text-purple-600 hover:bg-purple-50 font-medium"
-              >
-                Begin Journaling <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-
+        {/* Search and Today Section - Matching Portal */}
+        <div className="mb-8">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+              <input 
+                type="text" 
+                placeholder="Search your entries..." 
+                className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                disabled
+              />
             </div>
+          </div>
+          
+          <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-6 text-center">
+            <BookOpen className="w-12 h-12 text-orange-600 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Ready to capture today's business insights?</h3>
+            <p className="text-slate-600 dark:text-slate-300 mb-4">Start your day with reflection. What challenges will you tackle? What opportunities do you see? Document your entrepreneurial journey.</p>
+            <Button 
+              onClick={() => setLocation('/auth')}
+              className="bg-orange-600 hover:bg-orange-700 text-white"
+            >
+              Write Today's Entry
+            </Button>
           </div>
         </div>
 
