@@ -355,27 +355,27 @@ export default function AdminDashboardPage() {
       {/* Main Admin Tabs */}
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6">
-          <TabsTrigger value="overview" className="flex items-center gap-2">
+          <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-[#EA7A57] data-[state=active]:text-white">
             <BarChart3 className="w-4 h-4" />
             Overview
           </TabsTrigger>
-          <TabsTrigger value="users" className="flex items-center gap-2">
+          <TabsTrigger value="users" className="flex items-center gap-2 data-[state=active]:bg-[#EA7A57] data-[state=active]:text-white">
             <Users className="w-4 h-4" />
             Users
           </TabsTrigger>
-          <TabsTrigger value="signups" className="flex items-center gap-2">
+          <TabsTrigger value="signups" className="flex items-center gap-2 data-[state=active]:bg-[#EA7A57] data-[state=active]:text-white">
             <Mail className="w-4 h-4" />
             Early Signups
           </TabsTrigger>
-          <TabsTrigger value="content" className="flex items-center gap-2">
+          <TabsTrigger value="content" className="flex items-center gap-2 data-[state=active]:bg-[#EA7A57] data-[state=active]:text-white">
             <FileText className="w-4 h-4" />
             Content
           </TabsTrigger>
-          <TabsTrigger value="financial" className="flex items-center gap-2">
+          <TabsTrigger value="financial" className="flex items-center gap-2 data-[state=active]:bg-[#EA7A57] data-[state=active]:text-white">
             <DollarSign className="w-4 h-4" />
             Financial
           </TabsTrigger>
-          <TabsTrigger value="system" className="flex items-center gap-2">
+          <TabsTrigger value="system" className="flex items-center gap-2 data-[state=active]:bg-[#EA7A57] data-[state=active]:text-white">
             <Database className="w-4 h-4" />
             System
           </TabsTrigger>
