@@ -60,6 +60,8 @@ export default function AdminDashboardPage() {
     queryFn: async () => {
       if (!user) return false
       
+      console.log('Checking admin access for user:', user.id, user.email)
+      
       // First check if admin_users table exists and user is in it
       const { data: adminData, error: adminError } = await supabase
         .from('admin_users')
@@ -67,7 +69,12 @@ export default function AdminDashboardPage() {
         .eq('user_id', user.id)
         .single()
       
-      if (adminData?.is_admin) return true
+      console.log('Admin data result:', { adminData, adminError })
+      
+      if (adminData?.is_admin) {
+        console.log('User is admin via admin_users table')
+        return true
+      }
       
       // Fallback: check if user_profiles table exists with is_admin column
       const { data: profileData, error: profileError } = await supabase
@@ -76,7 +83,23 @@ export default function AdminDashboardPage() {
         .eq('user_id', user.id)
         .single()
       
-      return profileData?.is_admin === true
+      console.log('Profile data result:', { profileData, profileError })
+      
+      if (profileData?.is_admin === true) {
+        console.log('User is admin via user_profiles table')
+        return true
+      }
+      
+      // Fallback for debugging: check by email
+      const { data: adminByEmail, error: emailError } = await supabase
+        .from('admin_users')
+        .select('is_admin')
+        .eq('email', user.email)
+        .single()
+      
+      console.log('Admin by email result:', { adminByEmail, emailError })
+      
+      return adminByEmail?.is_admin === true
     },
     enabled: !!user
   })
