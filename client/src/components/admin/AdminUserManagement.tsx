@@ -87,13 +87,26 @@ export function AdminUserManagement() {
           supabase.from('documents').select('user_id, file_size').in('user_id', userIds)
         ])
 
+        console.log('Raw data fetched:', {
+          plans: plansData.data?.length || 0,
+          journal: journalData.data?.length || 0, 
+          goals: goalsData.data?.length || 0,
+          documents: documentsData.data?.length || 0
+        })
+
         const users: UserProfile[] = profileData.map((profile: any) => {
           const userPlan = plansData.data?.find(p => p.user_id === profile.user_id)
           const journalCount = journalData.data?.filter(j => j.user_id === profile.user_id).length || 0
-          const completedGoals = goalsData.data?.filter(g => g.user_id === profile.user_id && g.completed).length || 0
-          const storageUsed = documentsData.data
-            ?.filter(d => d.user_id === profile.user_id)
-            .reduce((sum: number, doc: any) => sum + (doc.file_size || 0), 0) || 0
+          const userGoals = goalsData.data?.filter(g => g.user_id === profile.user_id) || []
+          const completedGoals = userGoals.filter(g => g.completed === true).length
+          const userDocs = documentsData.data?.filter(d => d.user_id === profile.user_id) || []
+          const storageUsed = userDocs.reduce((sum: number, doc: any) => sum + (doc.file_size || 0), 0)
+          
+          console.log(`User ${profile.email} stats:`, {
+            journal: journalCount,
+            goals: { total: userGoals.length, completed: completedGoals },
+            docs: { count: userDocs.length, storage: storageUsed }
+          })
 
           return {
             user_id: profile.user_id,
@@ -114,32 +127,30 @@ export function AdminUserManagement() {
           }
         })
 
-        return users
+        // Apply filters
+        let filteredUsers: UserProfile[] = users
+        if (searchTerm) {
+          filteredUsers = users.filter((user: UserProfile) => 
+            user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.business_name?.toLowerCase().includes(searchTerm.toLowerCase())
+          )
+        }
+
+        if (planFilter !== 'all') {
+          filteredUsers = filteredUsers.filter((user: UserProfile) => user.plan_type === planFilter)
+        }
+
+        if (statusFilter !== 'all') {
+          filteredUsers = filteredUsers.filter((user: UserProfile) => user.plan_status === statusFilter)
+        }
+
+        console.log(`Returning ${filteredUsers.length} users from ${users.length} total`)
+        return filteredUsers
       } catch (error) {
         console.error('Error fetching users:', error)
         return []
       }
-
-      // Apply filters
-      let filteredUsers: UserProfile[] = users
-      if (searchTerm) {
-        filteredUsers = users.filter((user: UserProfile) => 
-          user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.business_name?.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      }
-
-      if (planFilter !== 'all') {
-        filteredUsers = filteredUsers.filter((user: UserProfile) => user.plan_type === planFilter)
-      }
-
-      if (statusFilter !== 'all') {
-        filteredUsers = filteredUsers.filter((user: UserProfile) => user.plan_status === statusFilter)
-      }
-
-      console.log(`Returning ${filteredUsers.length} users`)
-      return filteredUsers
     },
     refetchInterval: 60000 // Refresh every minute
   })
