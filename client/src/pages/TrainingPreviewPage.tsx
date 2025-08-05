@@ -99,16 +99,106 @@ export function TrainingPreviewPage() {
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
               <GraduationCap className="w-8 h-8 text-blue-600" />
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Learning Analytics Platform</h1>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Business Podcast</h1>
             </div>
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Professional development tracking with completion analytics, streak monitoring, progress insights, and intelligent learning recommendations
+              15-minute business insights to grow your entrepreneurial mindset
             </p>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Stats Cards */}
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mb-8">
+          <Card className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-blue-100 dark:bg-blue-800 p-2 rounded">
+                  <BookOpen className="h-4 w-4 text-blue-600" />
+                </div>
+                <div>
+                  <div className="text-lg font-bold text-blue-900 dark:text-blue-100">24</div>
+                  <div className="text-sm text-blue-700 dark:text-blue-300">Episodes Available</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-green-100 dark:bg-green-800 p-2 rounded">
+                  <Users className="h-4 w-4 text-green-600" />
+                </div>
+                <div>
+                  <div className="text-lg font-bold text-green-900 dark:text-green-100">3</div>
+                  <div className="text-sm text-green-700 dark:text-green-300">Episodes Completed</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-purple-100 dark:bg-purple-800 p-2 rounded">
+                  <Clock className="h-4 w-4 text-purple-600" />
+                </div>
+                <div>
+                  <div className="text-lg font-bold text-purple-900 dark:text-purple-100">2.5h</div>
+                  <div className="text-sm text-purple-700 dark:text-purple-300">Learning Time</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-orange-100 dark:bg-orange-800 p-2 rounded">
+                  <GraduationCap className="h-4 w-4 text-orange-600" />
+                </div>
+                <div>
+                  <div className="text-lg font-bold text-orange-900 dark:text-orange-100">7 days</div>
+                  <div className="text-sm text-orange-700 dark:text-orange-300">Learning Streak</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* CTA Section - Matching Portal Style */}
+        <div className="text-center mb-8">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-lg mb-6">
+            <h2 className="text-2xl font-bold mb-2">Start Your Business Learning Journey</h2>
+            <p className="text-blue-100 mb-4">15-minute business insights to accelerate your entrepreneurial growth</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button 
+                onClick={() => setLocation('/auth')}
+                className="bg-white text-blue-600 hover:bg-blue-50 font-medium"
+              >
+                Start Learning <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        </div>
+        {/* Popular Series - Top Content Section */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">Popular Series</h2>
+          <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
+            {['Strategy', 'Marketing', 'Finance', 'Leadership'].map((series) => (
+              <Card key={series} className="text-center p-4 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm hover:shadow-md transition-shadow cursor-pointer">
+                <div className={`w-12 h-12 rounded-full ${seriesColors[series as keyof typeof seriesColors]} flex items-center justify-center mx-auto mb-3`}>  
+                  <GraduationCap className="w-6 h-6" />
+                </div>
+                <h3 className="font-semibold text-sm mb-1">{series}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">4 episodes</p>
+              </Card>
+            ))}
+          </div>
+        </div>
+
         {/* Continue Learning Section */}
         <div className="mb-8">
           <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">Continue Learning</h2>
@@ -117,7 +207,7 @@ export function TrainingPreviewPage() {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <Badge className="text-xs">Episode 1</Badge>
+                    <Badge className="bg-orange-100 text-orange-800 text-xs">Episode 1</Badge>
                     <Badge variant="outline" className="text-xs">Finance</Badge>
                   </div>
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
@@ -141,39 +231,6 @@ export function TrainingPreviewPage() {
               </div>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Popular Series */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">Popular Series</h2>
-          <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-            {['Strategy', 'Marketing', 'Finance', 'Leadership'].map((series) => (
-              <Card key={series} className="text-center p-4 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm hover:shadow-md transition-shadow cursor-pointer">
-                <div className={`w-12 h-12 rounded-full ${seriesColors[series as keyof typeof seriesColors]} flex items-center justify-center mx-auto mb-3`}>  
-                  <GraduationCap className="w-6 h-6" />
-                </div>
-                <h3 className="font-semibold text-sm mb-1">{series}</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">4 episodes</p>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        {/* CTA Section */}
-        <div className="text-center mb-8">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-lg mb-6">
-            <h2 className="text-2xl font-bold mb-2">Learn Business Skills</h2>
-            <p className="text-blue-100 mb-4">Access our professionally created courses from industry experts</p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button 
-                onClick={() => setLocation('/auth')}
-                className="bg-white text-blue-600 hover:bg-blue-50 font-medium"
-              >
-                Start Learning <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-
-            </div>
-          </div>
         </div>
 
         {/* Featured Episodes */}
