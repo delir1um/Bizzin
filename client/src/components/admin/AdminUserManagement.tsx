@@ -53,72 +53,89 @@ export function AdminUserManagement() {
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null)
 
   // Fetch users from whatever tables exist
-  const { data: users, isLoading, refetch } = useQuery({
+  const { data: users, isLoading, refetch } = useQuery<UserProfile[]>({
     queryKey: ['admin-users', searchTerm, planFilter, statusFilter],
-    queryFn: async () => {
+    queryFn: async (): Promise<UserProfile[]> => {
       console.log('Fetching users for admin dashboard...')
       
-      // Start with at least the current admin user
-      let users = [
-        {
-          user_id: '9502ea97-1adb-4115-ba05-1b6b1b5fa721',
-          email: 'anton@cloudfusion.co.za',
-          first_name: 'Anton',
-          last_name: 'Jooste',
-          full_name: 'Anton Jooste',
-          business_name: 'CloudFusion',
-          plan_type: 'premium' as const,
-          plan_status: 'active' as const,
-          created_at: new Date().toISOString(),
-          last_login: new Date().toISOString(),
-          is_active: true,
-          total_journal_entries: 0,
-          completed_goals: 0,
-          storage_used: 0,
-          last_activity: new Date().toISOString()
-        }
-      ]
-
-      // Try to get more users from user_profiles if it exists
       try {
+        // Get user profiles with real usage data
         const { data: profileData, error: profileError } = await supabase
           .from('user_profiles')
           .select('*')
           .order('created_at', { ascending: false })
 
-        console.log('User profiles result:', { count: profileData?.length, error: profileError })
-        
-        if (profileData && !profileError && profileData.length > 0) {
-          users = profileData.map((user: any) => ({
-            user_id: user.user_id,
-            email: user.email,
-            first_name: user.first_name || user.full_name?.split(' ')[0] || '',
-            last_name: user.last_name || user.full_name?.split(' ').slice(1).join(' ') || '',
-            full_name: user.full_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email?.split('@')[0] || '',
-            business_name: user.business_name || 'Not specified',
-            plan_type: 'free',
-            plan_status: 'active',
-            created_at: user.created_at,
-            last_login: user.last_login,
-            is_active: user.is_active ?? true,
-            total_journal_entries: 0,
-            completed_goals: 0,
-            storage_used: 0,
-            last_activity: user.last_login || user.created_at
-          }))
+        if (profileError) {
+          console.error('Error fetching user profiles:', profileError)
+          return []
         }
+
+        if (!profileData || profileData.length === 0) {
+          console.log('No user profiles found')
+          return []
+        }
+
+        console.log('User profiles result:', { count: profileData.length, error: null })
+
+        // Get real usage statistics for each user
+        const userIds = profileData.map(p => p.user_id)
+        
+        const [plansData, journalData, goalsData, documentsData] = await Promise.all([
+          supabase.from('user_plans').select('user_id, plan_type, plan_status').in('user_id', userIds),
+          supabase.from('journal_entries').select('user_id').in('user_id', userIds),
+          supabase.from('goals').select('user_id, completed').in('user_id', userIds),
+          supabase.from('documents').select('user_id, file_size').in('user_id', userIds)
+        ])
+
+        const users: UserProfile[] = profileData.map((profile: any) => {
+          const userPlan = plansData.data?.find(p => p.user_id === profile.user_id)
+          const journalCount = journalData.data?.filter(j => j.user_id === profile.user_id).length || 0
+          const completedGoals = goalsData.data?.filter(g => g.user_id === profile.user_id && g.completed).length || 0
+          const storageUsed = documentsData.data
+            ?.filter(d => d.user_id === profile.user_id)
+            .reduce((sum: number, doc: any) => sum + (doc.file_size || 0), 0) || 0
+
+          return {
+            user_id: profile.user_id,
+            email: profile.email || 'Unknown',
+            first_name: profile.first_name || '',
+            last_name: profile.last_name || '',
+            full_name: profile.full_name || `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.email || 'Unknown',
+            business_name: profile.business_name || '',
+            plan_type: (userPlan?.plan_type as 'free' | 'premium') || 'free',
+            plan_status: (userPlan?.plan_status as 'active' | 'cancelled' | 'expired') || 'active',
+            created_at: profile.created_at,
+            last_login: profile.last_login,
+            is_active: profile.is_active ?? true,
+            total_journal_entries: journalCount,
+            completed_goals: completedGoals,
+            storage_used: storageUsed,
+            last_activity: profile.updated_at || profile.created_at
+          }
+        })
+
+        return users
       } catch (error) {
-        console.log('Could not fetch user_profiles:', error)
+        console.error('Error fetching users:', error)
+        return []
       }
 
       // Apply filters
-      let filteredUsers = users
+      let filteredUsers: UserProfile[] = users
       if (searchTerm) {
-        filteredUsers = users.filter(user => 
+        filteredUsers = users.filter((user: UserProfile) => 
           user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           user.business_name?.toLowerCase().includes(searchTerm.toLowerCase())
         )
+      }
+
+      if (planFilter !== 'all') {
+        filteredUsers = filteredUsers.filter((user: UserProfile) => user.plan_type === planFilter)
+      }
+
+      if (statusFilter !== 'all') {
+        filteredUsers = filteredUsers.filter((user: UserProfile) => user.plan_status === statusFilter)
       }
 
       console.log(`Returning ${filteredUsers.length} users`)
@@ -132,7 +149,7 @@ export function AdminUserManagement() {
 
     const csvContent = [
       ['Email', 'Name', 'Business', 'Plan', 'Status', 'Created', 'Last Login', 'Journal Entries', 'Goals', 'Storage (MB)'].join(','),
-      ...users.map(user => [
+      ...users.map((user: UserProfile) => [
         user.email,
         user.full_name || `${user.first_name} ${user.last_name}`,
         user.business_name || '',
@@ -227,7 +244,7 @@ export function AdminUserManagement() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {users?.map((user) => (
+                  {users?.map((user: UserProfile) => (
                     <TableRow key={user.user_id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
@@ -590,7 +607,7 @@ function UserDetailView({ user }: { user: UserProfile }) {
                         if (error) throw error
                         
                         alert('Profile updated successfully!')
-                        refetch() // Refresh the user list
+                        refetch()
                       }
                     } catch (error) {
                       console.error('Error updating profile:', error)
@@ -659,40 +676,6 @@ function UserDetailView({ user }: { user: UserProfile }) {
               <div className="border-t pt-3 mt-3">
                 <Button 
                   variant="outline" 
-                  className="w-full justify-start text-blue-600 hover:text-blue-700"
-                  onClick={async () => {
-                    if (user.plan_type === 'premium') {
-                      alert(`${user.first_name || user.email} is already on the Premium plan.`)
-                    } else {
-                      if (confirm(`Upgrade ${user.first_name || user.email} to Premium plan?\n\nThis will give them access to:\n• Unlimited journal entries\n• Advanced analytics\n• Priority support\n• 10GB storage\n\nConfirm upgrade?`)) {
-                        try {
-                          const { error } = await supabase
-                            .from('user_plans')
-                            .update({ 
-                              plan_type: 'premium',
-                              plan_status: 'active',
-                              updated_at: new Date().toISOString()
-                            })
-                            .eq('user_id', user.user_id)
-                          
-                          if (error) throw error
-                          
-                          alert(`✅ ${user.first_name || user.email} has been upgraded to Premium!`)
-                          refetch() // Refresh the user list
-                        } catch (error) {
-                          console.error('Error upgrading user:', error)
-                          alert('Failed to upgrade user. Please try again.')
-                        }
-                      }
-                    }
-                  }}
-                >
-                  <Crown className="w-4 h-4 mr-2" />
-                  {user.plan_type === 'premium' ? 'Already Premium' : 'Upgrade to Premium'}
-                </Button>
-                
-                <Button 
-                  variant="outline" 
                   className="w-full justify-start text-orange-600 hover:text-orange-700 mt-2"
                   onClick={async () => {
                     if (confirm(`Reset ${user.first_name || user.email}'s password?\n\nThis will:\n• Send a password reset email to their address\n• Allow them to create a new password\n• Invalidate their current session\n\nConfirm password reset?`)) {
@@ -736,7 +719,7 @@ function UserDetailView({ user }: { user: UserProfile }) {
                         if (error) throw error
                         
                         alert(`✅ ${user.first_name || user.email} has been ${actionPast}!`)
-                        refetch() // Refresh the user list
+                        refetch()
                       } catch (error) {
                         console.error(`Error ${action}ing user:`, error)
                         alert(`Failed to ${action} user. Please try again.`)
