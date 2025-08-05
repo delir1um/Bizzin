@@ -55,6 +55,36 @@ const demoGoals = [
     priority: "medium",
     category: "Team",
     deadline: "2025-10-15"
+  },
+  {
+    id: "demo-6",
+    title: "Launch MVP for SME Market",
+    description: "Successfully launched minimum viable product targeting South African small businesses. Included core features: invoicing, client management, and basic reporting for local market needs.",
+    progress: 100,
+    status: "completed",
+    priority: "high",
+    category: "Product",
+    deadline: "2025-03-31"
+  },
+  {
+    id: "demo-7",
+    title: "Achieve R500K Revenue Milestone",
+    description: "Reached first major revenue milestone of R500,000 through consistent client acquisition and premium service offerings across Gauteng province.",
+    progress: 100,
+    status: "completed",
+    priority: "high",
+    category: "Revenue",
+    deadline: "2025-06-30"
+  },
+  {
+    id: "demo-8",
+    title: "Complete BBBEE Certification",
+    description: "Successfully obtained Level 4 BBBEE certification to enhance competitiveness in South African enterprise market and government tenders.",
+    progress: 100,
+    status: "completed",
+    priority: "medium",
+    category: "Compliance",
+    deadline: "2025-05-15"
   }
 ]
 
@@ -101,7 +131,7 @@ export function GoalsPreviewPage() {
                   <Target className="h-4 w-4 text-orange-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">5</div>
+                  <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">8</div>
                   <div className="text-sm text-orange-700 dark:text-orange-300">Total Goals</div>
                 </div>
               </div>
@@ -115,7 +145,7 @@ export function GoalsPreviewPage() {
                   <CheckCircle className="h-4 w-4 text-green-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-green-900 dark:text-green-100">0</div>
+                  <div className="text-2xl font-bold text-green-900 dark:text-green-100">3</div>
                   <div className="text-sm text-green-700 dark:text-green-300">Completed</div>
                 </div>
               </div>
@@ -143,7 +173,7 @@ export function GoalsPreviewPage() {
                   <TrendingUp className="h-4 w-4 text-purple-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">0%</div>
+                  <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">38%</div>
                   <div className="text-sm text-purple-700 dark:text-purple-300">Success Rate</div>
                 </div>
               </div>
@@ -181,18 +211,18 @@ export function GoalsPreviewPage() {
           {/* Filter Tags */}
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Filters:</span>
-            <Badge variant="outline" className="text-xs">Status: All Goals (5)</Badge>
+            <Badge variant="outline" className="text-xs">Status: All Goals (8)</Badge>
             <Badge variant="outline" className="text-xs">Active (5)</Badge>
-            <Badge variant="outline" className="text-xs">Completed (0)</Badge>
+            <Badge variant="outline" className="text-xs">Completed (3)</Badge>
             <Badge variant="outline" className="text-xs">At Risk (0)</Badge>
-            <Badge variant="outline" className="text-xs">Priority: All Priorities (5)</Badge>
-            <Badge variant="outline" className="text-xs">High (2)</Badge>
-            <Badge variant="outline" className="text-xs">Medium (3)</Badge>
+            <Badge variant="outline" className="text-xs">Priority: All Priorities (8)</Badge>
+            <Badge variant="outline" className="text-xs">High (4)</Badge>
+            <Badge variant="outline" className="text-xs">Medium (4)</Badge>
             <Badge variant="outline" className="text-xs">Low (0)</Badge>
           </div>
           
           <div className="text-sm text-slate-600 dark:text-slate-300">
-            Showing 1-5 of 5 goals &nbsp;&nbsp;&nbsp;&nbsp; Page 1 of 1
+            Showing 1-7 of 8 goals &nbsp;&nbsp;&nbsp;&nbsp; Page 1 of 1
           </div>
         </div>
 
@@ -209,7 +239,7 @@ export function GoalsPreviewPage() {
 
           {/* Goals Display - Show Multiple SA Business Examples */}
           <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-            {demoGoals.slice(0, 4).map((goal, index) => (
+            {demoGoals.slice(0, 7).map((goal, index) => (
               <Card 
                 key={goal.id}
                 className={`${priorityColors[goal.priority as keyof typeof priorityColors]} border-l-4 bg-white dark:bg-slate-800`}
