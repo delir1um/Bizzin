@@ -22,13 +22,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!error && data.session) {
         setSession(data.session)
         setUser(data.session.user)
+        
+        // Update last_login for existing session (user already logged in)
+        try {
+          await supabase
+            .from('user_profiles')
+            .update({ 
+              last_login: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            })
+            .eq('user_id', data.session.user.id)
+        } catch (error) {
+          console.log('Could not update last_login for existing session:', error)
+        }
       }
       setLoading(false)
     }
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
+      
+      // Update last_login when user signs in
+      if (event === 'SIGNED_IN' && session?.user) {
+        try {
+          await supabase
+            .from('user_profiles')
+            .update({ 
+              last_login: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            })
+            .eq('user_id', session.user.id)
+        } catch (error) {
+          console.log('Could not update last_login:', error)
+        }
+      }
     })
 
     getSession()
