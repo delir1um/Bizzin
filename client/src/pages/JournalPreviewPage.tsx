@@ -20,38 +20,42 @@ const weekEntries = [
   {
     id: "week-1",
     title: "Major Client Win: Standard Bank Partnership",
-    content: "Incredible news! We just secured Standard Bank as our largest enterprise client. After months of presentations and negotiations, they've chosen our platform to digitize their SME onboarding process across all South African branches. This R2.5M contract validates everything we've built...",
+    content: "Incredible news! We just secured Standard Bank as our largest enterprise client. After months of presentations and negotiations, they've chosen our platform to digitize their SME onboarding process across all South African branches. This R2.5M contract validates everything we've built and opens doors to other major financial institutions.",
     date: "Aug 4, 2025",
     category: "Achievement",
     emoji: "🏆",
-    isBlurred: true
+    mood: "High Energy",
+    isBlurred: false
   },
   {
     id: "week-2",
     title: "Team Milestone: 50 Employees",
-    content: "Today we welcomed our 50th team member - Thabo, a brilliant AI engineer from Wits University. From our humble beginnings in a Sandton co-working space to now having offices in Johannesburg, Cape Town, and Durban. The energy in our teams is incredible and we're building something truly special for South African businesses...",
+    content: "Today we welcomed our 50th team member - Thabo, a brilliant AI engineer from Wits University. From our humble beginnings in a Sandton co-working space to now having offices in Johannesburg, Cape Town, and Durban. The energy in our teams is incredible and we're building something truly special for South African businesses.",
     date: "Aug 3, 2025",
     category: "Team",
     emoji: "🎉",
-    isBlurred: true
+    mood: "High Energy",
+    isBlurred: false
   },
   {
     id: "week-3",
     title: "Revenue Breakthrough: R10M ARR",
-    content: "We've officially crossed R10 million in Annual Recurring Revenue! What started as a side project to help local businesses manage their operations has grown into something that's genuinely transforming how South African companies work. Our client retention rate is at 94% and the testimonials keep pouring in...",
+    content: "We've officially crossed R10 million in Annual Recurring Revenue! What started as a side project to help local businesses manage their operations has grown into something that's genuinely transforming how South African companies work. Our client retention rate is at 94% and the testimonials keep pouring in.",
     date: "Aug 2, 2025",
     category: "Finance",
     emoji: "💰",
-    isBlurred: true
+    mood: "High Energy",
+    isBlurred: false
   },
   {
     id: "week-4",
     title: "Product Launch Success: Mobile App",
-    content: "The mobile app launch exceeded all expectations! Over 5,000 downloads in the first week, with an average rating of 4.8 stars on Google Play Store. South African business owners are loving the ability to manage their operations on-the-go. The feedback has been overwhelmingly positive, especially the offline functionality for areas with poor connectivity...",
+    content: "The mobile app launch exceeded all expectations! Over 5,000 downloads in the first week, with an average rating of 4.8 stars on Google Play Store. South African business owners are loving the ability to manage their operations on-the-go. The feedback has been overwhelmingly positive, especially the offline functionality for areas with poor connectivity.",
     date: "Aug 1, 2025",
     category: "Product",
     emoji: "🚀",
-    isBlurred: true
+    mood: "High Energy",
+    isBlurred: false
   }
 ]
 
@@ -192,24 +196,9 @@ export function JournalPreviewPage() {
             <Badge variant="secondary" className="text-xs">4 entries</Badge>
           </div>
 
-          {/* Week Entries - Blurred */}
-          {weekEntries.slice(0, 2).map((entry) => (
-            <Card key={entry.id} className="relative bg-white dark:bg-slate-800 opacity-60">
-              <div className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10 flex items-center justify-center">
-                <div className="text-center">
-                  <PenTool className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                    Sign up to start journaling
-                  </p>
-                  <Button 
-                    size="sm" 
-                    className="mt-2 bg-purple-600 hover:bg-purple-700"
-                    onClick={() => setLocation('/auth')}
-                  >
-                    Start Writing
-                  </Button>
-                </div>
-              </div>
+          {/* Week Entries - Full Examples */}
+          {weekEntries.map((entry) => (
+            <Card key={entry.id} className="bg-white dark:bg-slate-800 hover:shadow-md transition-shadow">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <div className="text-2xl">{entry.emoji}</div>
@@ -218,10 +207,18 @@ export function JournalPreviewPage() {
                     <div className="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400 mb-2">
                       <span>{entry.date}</span>
                       <Badge variant="outline" className="text-xs">{entry.category}</Badge>
+                      <span>🔥 {entry.mood}</span>
                     </div>
-                    <p className="text-slate-600 dark:text-slate-300 text-sm line-clamp-2">
+                    <p className="text-slate-600 dark:text-slate-300 text-sm">
                       {entry.content}
                     </p>
+                    <Button 
+                      variant="link" 
+                      className="p-0 h-auto text-orange-600 hover:text-orange-700 text-sm mt-2"
+                      onClick={() => setLocation('/auth')}
+                    >
+                      Read more...
+                    </Button>
                   </div>
                 </div>
               </CardContent>
