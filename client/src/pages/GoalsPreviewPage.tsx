@@ -75,55 +75,54 @@ export function GoalsPreviewPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Preview */}
+        {/* Stats Preview - Matching Portal Layout */}
         <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mb-8">
           <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Track Goals</CardTitle>
-              <Target className="h-4 w-4 text-orange-600" />
+              <CardTitle className="text-sm font-medium">Active Goals</CardTitle>
+              <Target className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">Organized</div>
-              <p className="text-xs text-muted-foreground">Set and prioritize</p>
+              <div className="text-2xl font-bold">5</div>
+              <p className="text-xs text-muted-foreground">In progress</p>
             </CardContent>
           </Card>
 
           <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Progress</CardTitle>
-              <TrendingUp className="h-4 w-4 text-green-600" />
+              <CardTitle className="text-sm font-medium">Completed</CardTitle>
+              <CheckCircle className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">Visual</div>
-              <p className="text-xs text-muted-foreground">Track completion</p>
+              <div className="text-2xl font-bold text-green-600">12</div>
+              <p className="text-xs text-muted-foreground">This year</p>
             </CardContent>
           </Card>
 
           <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Filter & Sort</CardTitle>
-              <CheckCircle className="h-4 w-4 text-blue-600" />
+              <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
+              <TrendingUp className="h-4 w-4 text-orange-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">Flexible</div>
-              <p className="text-xs text-muted-foreground">Find what matters</p>
+              <div className="text-2xl font-bold text-orange-600">87%</div>
+              <p className="text-xs text-muted-foreground">Overall</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* CTA Section */}
+        {/* CTA Section - Matching Portal Style */}
         <div className="text-center mb-8">
           <div className="bg-gradient-to-r from-orange-600 to-red-500 text-white p-6 rounded-lg mb-6">
-            <h2 className="text-2xl font-bold mb-2">Start Goal Tracking Today</h2>
-            <p className="text-orange-100 mb-4">Create and manage your own business objectives with our goal tracking system</p>
+            <h2 className="text-2xl font-bold mb-2">Set and Track Your Business Goals</h2>
+            <p className="text-orange-100 mb-4">Create objectives with progress tracking, priority levels, and deadline management</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button 
                 onClick={() => setLocation('/auth')}
                 className="bg-white text-orange-600 hover:bg-orange-50 font-medium"
               >
-                Start Free Trial <ArrowRight className="w-4 h-4 ml-2" />
+                Start Goal Tracking <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
-
             </div>
           </div>
         </div>
@@ -137,7 +136,7 @@ export function GoalsPreviewPage() {
               className="bg-orange-600 hover:bg-orange-700"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Create Your First Goal
+              Add Goal
             </Button>
           </div>
 
