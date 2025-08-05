@@ -9,7 +9,7 @@ export function HomePage() {
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         {/* Background Pattern */}
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-red-50 dark:bg-background"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-red-50 dark:bg-[#0B0A1D]"></div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
           <div className="text-center">
@@ -68,7 +68,7 @@ export function HomePage() {
       </div>
 
       {/* Features Preview */}
-      <section className="py-24 bg-white dark:bg-card">
+      <section className="py-24 bg-white dark:bg-[#0B0A1D]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Complete Business Management Platform</h2>

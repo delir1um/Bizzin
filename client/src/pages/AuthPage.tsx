@@ -108,7 +108,7 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-200px)] px-4 bg-gradient-to-br from-orange-50 to-amber-50 dark:bg-background">
+    <div className="flex items-center justify-center min-h-[calc(100vh-200px)] px-4 bg-gradient-to-br from-orange-50 to-amber-50 dark:bg-[#0B0A1D]">
       <div className="w-full max-w-[420px]">
         {/* Logo and Welcome */}
         <div className="text-center mb-8">

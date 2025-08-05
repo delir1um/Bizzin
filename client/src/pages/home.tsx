@@ -7,7 +7,7 @@ export function Home() {
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         {/* Background Pattern */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-sky-50 dark:from-slate-900 dark:to-slate-800"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-sky-50 dark:bg-[#0B0A1D]"></div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
           <div className="text-center">
@@ -54,7 +54,7 @@ export function Home() {
       </div>
 
       {/* Features Preview */}
-      <section className="py-24 bg-white dark:bg-slate-800">
+      <section className="py-24 bg-white dark:bg-[#0B0A1D]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Everything you need to succeed</h2>
@@ -63,7 +63,7 @@ export function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Feature 1 */}
-            <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-800 p-8 rounded-xl border border-slate-200 dark:border-slate-700">
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mb-6">
                 <ClipboardList className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
@@ -72,7 +72,7 @@ export function Home() {
             </div>
 
             {/* Feature 2 */}
-            <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-800 p-8 rounded-xl border border-slate-200 dark:border-slate-700">
               <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mb-6">
                 <BookOpen className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
@@ -81,7 +81,7 @@ export function Home() {
             </div>
 
             {/* Feature 3 */}
-            <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-800 p-8 rounded-xl border border-slate-200 dark:border-slate-700">
               <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mb-6">
                 <TrendingUp className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
