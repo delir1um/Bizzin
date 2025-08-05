@@ -15,7 +15,8 @@ import {
   Building,
   Calendar,
   Filter,
-  Send
+  Send,
+  Trash2
 } from "lucide-react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { supabase } from "@/lib/supabase"
@@ -70,8 +71,8 @@ export function AdminEarlySignups() {
   })
 
   // Get unique business types and sizes for filters
-  const businessTypes = [...new Set(signups?.map(s => s.business_type) || [])]
-  const businessSizes = [...new Set(signups?.map(s => s.business_size) || [])]
+  const businessTypes = Array.from(new Set(signups?.map(s => s.business_type) || []))
+  const businessSizes = Array.from(new Set(signups?.map(s => s.business_size) || []))
 
   // Calculate stats
   const stats = signups ? {
@@ -132,7 +133,7 @@ export function AdminEarlySignups() {
       const { error } = await supabase
         .from('early_signups')
         .update({ is_notified: true })
-        .in('id', [...selectedSignups])
+        .in('id', Array.from(selectedSignups))
 
       if (error) throw error
 
@@ -143,6 +144,51 @@ export function AdminEarlySignups() {
       console.log(`Would send notification emails to ${selectedSignups.size} users`)
     } catch (error) {
       console.error('Error updating notification status:', error)
+    }
+  }
+
+  const handleDeleteSignup = async (signupId: string, email: string) => {
+    if (!confirm(`Are you sure you want to delete the early signup for ${email}? This action cannot be undone.`)) {
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('early_signups')
+        .delete()
+        .eq('id', signupId)
+
+      if (error) throw error
+
+      refetch()
+      console.log(`Deleted early signup: ${email}`)
+    } catch (error) {
+      console.error('Error deleting signup:', error)
+      alert('Failed to delete signup. Please try again.')
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedSignups.size === 0) return
+
+    if (!confirm(`Are you sure you want to delete ${selectedSignups.size} early signups? This action cannot be undone.`)) {
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('early_signups')
+        .delete()
+        .in('id', Array.from(selectedSignups))
+
+      if (error) throw error
+
+      refetch()
+      setSelectedSignups(new Set())
+      console.log(`Deleted ${selectedSignups.size} early signups`)
+    } catch (error) {
+      console.error('Error deleting signups:', error)
+      alert('Failed to delete signups. Please try again.')
     }
   }
 
@@ -256,6 +302,15 @@ export function AdminEarlySignups() {
                 <Send className="w-4 h-4 mr-2" />
                 Notify Selected ({selectedSignups.size})
               </Button>
+
+              <Button 
+                onClick={handleBulkDelete} 
+                disabled={selectedSignups.size === 0}
+                variant="destructive"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Selected ({selectedSignups.size})
+              </Button>
               
               <Button onClick={handleExportSignups} variant="outline">
                 <Download className="w-4 h-4 mr-2" />
@@ -290,6 +345,7 @@ export function AdminEarlySignups() {
                     <TableHead>Signup Date</TableHead>
                     <TableHead>Source</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead className="w-20">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -337,6 +393,17 @@ export function AdminEarlySignups() {
                         <Badge variant={signup.is_notified ? 'default' : 'secondary'}>
                           {signup.is_notified ? 'Contacted' : 'Pending'}
                         </Badge>
+                      </TableCell>
+
+                      <TableCell>
+                        <Button
+                          onClick={() => handleDeleteSignup(signup.id, signup.email)}
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 text-red-600 hover:text-red-900 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
