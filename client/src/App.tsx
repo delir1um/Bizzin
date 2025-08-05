@@ -25,7 +25,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute"
 import { PreviewOrProtected } from "@/components/PreviewOrProtected"
 import { queryClient } from "@/lib/queryClient"
 import { DashboardPage } from "@/pages/DashboardPage"
-import { ReferralsPage } from "@/pages/ReferralsPage"
+
 import { useEffect } from "react"
 
 // Component to handle root route logic
@@ -70,7 +70,7 @@ function App() {
                 <Route path="/auth" component={AuthPage} />
                 <Route path="/profile" component={() => <ProtectedRoute><ProfilePage /></ProtectedRoute>} />
                 <Route path="/dashboard" component={() => <ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-                <Route path="/referrals" component={() => <ProtectedRoute><ReferralsPage /></ProtectedRoute>} />
+
                 <Route path="/journal" component={() => <PreviewOrProtected protectedComponent={JournalPage} previewComponent={JournalPreviewPage} />} />
                 <Route path="/goals" component={() => <PreviewOrProtected protectedComponent={GoalsPage} previewComponent={GoalsPreviewPage} />} />
                 <Route path="/training" component={() => <PreviewOrProtected protectedComponent={PodcastPage} previewComponent={TrainingPreviewPage} />} />

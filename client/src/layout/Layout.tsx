@@ -36,7 +36,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { path: "/training", label: "Podcast" },
     { path: "/bizbuilder", label: "BizBuilder Tools" },
     { path: "/docsafe", label: "DocSafe" },
-    ...(user ? [{ path: "/referrals", label: "Referrals" }] : []),
   ]
 
   return (
