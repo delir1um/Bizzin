@@ -67,8 +67,8 @@ export function AdminUserManagement() {
           last_name: 'Jooste',
           full_name: 'Anton Jooste',
           business_name: 'CloudFusion',
-          plan_type: 'premium',
-          plan_status: 'active',
+          plan_type: 'premium' as const,
+          plan_status: 'active' as const,
           created_at: new Date().toISOString(),
           last_login: new Date().toISOString(),
           is_active: true,
@@ -450,12 +450,96 @@ function UserDetailView({ user }: { user: UserProfile }) {
       </TabsContent>
       
       <TabsContent value="billing">
-        <Card>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Current Plan</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <label className="text-sm font-medium">Plan Type</label>
+                <div className="flex items-center gap-2 mt-1">
+                  <Badge variant={user.plan_type === 'premium' ? 'default' : 'secondary'}>
+                    {user.plan_type === 'premium' && <Crown className="w-3 h-3 mr-1" />}
+                    {user.plan_type}
+                  </Badge>
+                  <span className="text-sm text-muted-foreground">
+                    {user.plan_type === 'premium' ? 'R299/month' : 'Free trial'}
+                  </span>
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Status</label>
+                <div className="mt-1">
+                  <Badge variant={
+                    user.plan_status === 'active' ? 'default' : 
+                    user.plan_status === 'cancelled' ? 'secondary' : 'destructive'
+                  }>
+                    {user.plan_status}
+                  </Badge>
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Billing Cycle</label>
+                <p className="text-sm text-muted-foreground">
+                  {user.plan_type === 'premium' ? 'Monthly (Auto-renew)' : 'Trial period'}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Usage & Limits</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <label className="text-sm font-medium">Journal Entries</label>
+                <p className="text-sm text-muted-foreground">
+                  {user.total_journal_entries} / {user.plan_type === 'premium' ? 'Unlimited' : '10 per month'}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Storage Used</label>
+                <p className="text-sm text-muted-foreground">
+                  {Math.round(user.storage_used / (1024 * 1024))}MB / {user.plan_type === 'premium' ? '10GB' : '50MB'}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium">AI Analysis</label>
+                <p className="text-sm text-muted-foreground">
+                  {user.plan_type === 'premium' ? 'Unlimited requests' : '20 per month'}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="mt-4">
           <CardHeader>
-            <CardTitle>Billing Information</CardTitle>
+            <CardTitle>Payment History</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">Billing details would be displayed here in production.</p>
+            <div className="space-y-2">
+              {user.plan_type === 'premium' ? (
+                <div className="flex justify-between items-center p-3 border rounded">
+                  <div>
+                    <div className="font-medium">Premium Subscription - Monthly</div>
+                    <div className="text-sm text-muted-foreground">
+                      {format(new Date(user.created_at), 'MMM d, yyyy')}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-medium">R299.00</div>
+                    <Badge variant="default">Paid</Badge>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-4 text-muted-foreground">
+                  No payment history - currently on free trial
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       </TabsContent>
@@ -466,18 +550,74 @@ function UserDetailView({ user }: { user: UserProfile }) {
             <CardTitle>Administrative Actions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Button variant="outline" className="w-full justify-start">
-              <Mail className="w-4 h-4 mr-2" />
-              Send Email
-            </Button>
-            <Button variant="outline" className="w-full justify-start">
-              <Edit className="w-4 h-4 mr-2" />
-              Edit Profile
-            </Button>
-            <Button variant="outline" className="w-full justify-start">
-              <Activity className="w-4 h-4 mr-2" />
-              View Activity Log
-            </Button>
+            <div className="grid gap-3">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => {
+                  const subject = `Regarding Your ${user.business_name ? user.business_name + ' ' : ''}Bizzin Account`
+                  const body = `Hi ${user.first_name || user.email},\n\nI hope this message finds you well.\n\nBest regards,\nThe Bizzin Team`
+                  window.open(`mailto:${user.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`)
+                }}
+              >
+                <Mail className="w-4 h-4 mr-2" />
+                Send Email
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => {
+                  alert(`Edit profile functionality would open a form to modify:\n\n• Name: ${user.full_name}\n• Business: ${user.business_name || 'Not provided'}\n• Plan: ${user.plan_type} (${user.plan_status})\n\nThis would be implemented with a full form component in production.`)
+                }}
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Edit Profile
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => {
+                  alert(`Activity Log for ${user.email}:\n\n• Account created: ${format(new Date(user.created_at), 'MMM d, yyyy')}\n• Last login: ${user.last_login ? format(new Date(user.last_login), 'MMM d, yyyy') : 'Never'}\n• Journal entries: ${user.total_journal_entries}\n• Goals completed: ${user.completed_goals}\n• Storage used: ${Math.round(user.storage_used / (1024 * 1024))}MB\n\nDetailed activity logs would be fetched from the database in production.`)
+                }}
+              >
+                <Activity className="w-4 h-4 mr-2" />
+                View Activity Log
+              </Button>
+
+              <div className="border-t pt-3 mt-3">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start text-blue-600 hover:text-blue-700"
+                  onClick={() => {
+                    if (user.plan_type === 'premium') {
+                      alert(`${user.first_name || user.email} is already on the Premium plan.`)
+                    } else {
+                      if (confirm(`Upgrade ${user.first_name || user.email} to Premium plan?\n\nThis will give them access to:\n• Unlimited journal entries\n• Advanced analytics\n• Priority support\n• 10GB storage`)) {
+                        alert('Premium upgrade functionality would be implemented here in production.')
+                      }
+                    }
+                  }}
+                >
+                  <Crown className="w-4 h-4 mr-2" />
+                  {user.plan_type === 'premium' ? 'Already Premium' : 'Upgrade to Premium'}
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start text-orange-600 hover:text-orange-700 mt-2"
+                  onClick={() => {
+                    if (confirm(`Reset ${user.first_name || user.email}'s password?\n\nThis will:\n• Generate a new temporary password\n• Send reset instructions to their email\n• Require them to change password on next login`)) {
+                      alert('Password reset functionality would be implemented here in production.')
+                    }
+                  }}
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Reset Password
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </TabsContent>
