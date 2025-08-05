@@ -81,10 +81,10 @@ export function AdminUserManagement() {
         const userIds = profileData.map(p => p.user_id)
         
         const [plansData, journalData, goalsData, documentsData] = await Promise.all([
-          supabase.from('user_plans').select('user_id, plan_type, plan_status').in('user_id', userIds),
+          supabase.from('user_plans').select('user_id, plan_type').in('user_id', userIds),
           supabase.from('journal_entries').select('user_id').in('user_id', userIds),
-          supabase.from('goals').select('user_id, completed, title').in('user_id', userIds),
-          supabase.from('documents').select('user_id, file_size, filename').in('user_id', userIds)
+          supabase.from('goals').select('user_id, status, title').in('user_id', userIds),
+          supabase.from('documents').select('user_id, file_size, name').in('user_id', userIds)
         ])
 
         console.log('Detailed query results:', {
@@ -109,7 +109,7 @@ export function AdminUserManagement() {
           const userPlan = plansData.data?.find(p => p.user_id === profile.user_id)
           const journalCount = journalData.data?.filter(j => j.user_id === profile.user_id).length || 0
           const userGoals = goalsData.data?.filter(g => g.user_id === profile.user_id) || []
-          const completedGoals = userGoals.filter(g => g.completed === true).length
+          const completedGoals = userGoals.filter(g => g.status === 'completed').length
           const userDocs = documentsData.data?.filter(d => d.user_id === profile.user_id) || []
           const storageUsed = userDocs.reduce((sum: number, doc: any) => sum + (doc.file_size || 0), 0)
           
@@ -127,7 +127,7 @@ export function AdminUserManagement() {
             full_name: profile.full_name || `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.email || 'Unknown',
             business_name: profile.business_name || '',
             plan_type: (userPlan?.plan_type as 'free' | 'premium') || 'free',
-            plan_status: (userPlan?.plan_status as 'active' | 'cancelled' | 'expired') || 'active',
+            plan_status: 'active' as 'active' | 'cancelled' | 'expired',
             created_at: profile.created_at,
             last_login: profile.last_login,
             is_active: profile.is_active ?? true,
