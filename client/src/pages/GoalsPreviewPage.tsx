@@ -8,58 +8,53 @@ import { useLocation } from "wouter"
 const demoGoals = [
   {
     id: "demo-1",
-    title: "Scale to $2M ARR",
-    description: "Achieve $2 million Annual Recurring Revenue through enterprise client acquisition and premium subscription growth. Focus on Fortune 500 companies and mid-market segments with our AI-powered business intelligence platform.",
+    title: "Reach R2M Annual Revenue",
+    description: "Achieve R2 million Annual Recurring Revenue through expanding our consulting services across Johannesburg, Cape Town, and Durban. Focus on medium-sized South African businesses needing digital transformation.",
     progress: 68,
     status: "in_progress",
     priority: "high",
     category: "Revenue",
-    deadline: "2025-12-31",
-    isBlurred: false
+    deadline: "2025-12-31"
   },
   {
     id: "demo-2", 
-    title: "Launch Enterprise AI Suite",
-    description: "Deploy advanced AI analytics suite with predictive business modeling, automated insight generation, and custom dashboard creation for enterprise clients. Target 15+ Fortune 500 pilot customers.",
+    title: "Launch Mobile App Platform",
+    description: "Deploy mobile-first business management app for South African SMEs. Include features for invoicing, inventory tracking, and customer management. Target 500+ local business downloads.",
     progress: 45,
     status: "in_progress",
     priority: "high",
     category: "Product",
-    deadline: "2025-09-15",
-    isBlurred: true
+    deadline: "2025-09-15"
   },
   {
     id: "demo-3",
-    title: "Expand to European Markets",
-    description: "Establish operations in London, Berlin, and Amsterdam with localized product offerings, GDPR compliance, and multilingual support. Target €500K revenue in first year.",
+    title: "Expand to Western Cape",
+    description: "Open Cape Town office and establish partnerships with local business networks. Target R500K revenue from Western Cape clients in first year through on-ground presence.",
     progress: 32,
     status: "in_progress",
     priority: "medium", 
     category: "Expansion",
-    deadline: "2025-11-01",
-    isBlurred: true
+    deadline: "2025-11-01"
   },
   {
     id: "demo-4",
-    title: "Microsoft Partnership Deal",
-    description: "Secure strategic partnership with Microsoft for integrated business intelligence solutions. Establish co-marketing agreements, technical integrations, and Azure marketplace presence.",
+    title: "Partnership with Absa Business",
+    description: "Secure strategic partnership with Absa Business Banking for integrated financial solutions. Establish co-marketing agreements and API integrations for seamless banking services.",
     progress: 85,
     status: "in_progress",
     priority: "high",
     category: "Partnerships",
-    deadline: "2025-08-30",
-    isBlurred: true
+    deadline: "2025-08-30"
   },
   {
     id: "demo-5",
-    title: "IPO Readiness Program",
-    description: "Implement enterprise-grade compliance, financial reporting systems, and governance structures to achieve IPO readiness by Q2 2026. Target $50M+ ARR threshold.",
-    progress: 15,
+    title: "Hire 10 Local Developers",
+    description: "Build world-class development team by hiring 10 talented South African developers. Focus on graduates from Wits, UCT, and Stellenbosch with strong technical foundations.",
+    progress: 25,
     status: "in_progress",
     priority: "medium",
-    category: "Corporate",
-    deadline: "2026-06-30",
-    isBlurred: true
+    category: "Team",
+    deadline: "2025-10-15"
   }
 ]
 
@@ -106,7 +101,7 @@ export function GoalsPreviewPage() {
                   <Target className="h-4 w-4 text-orange-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">1</div>
+                  <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">5</div>
                   <div className="text-sm text-orange-700 dark:text-orange-300">Total Goals</div>
                 </div>
               </div>
@@ -134,7 +129,7 @@ export function GoalsPreviewPage() {
                   <Clock className="h-4 w-4 text-blue-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">1</div>
+                  <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">5</div>
                   <div className="text-sm text-blue-700 dark:text-blue-300">In Progress</div>
                 </div>
               </div>
@@ -186,18 +181,18 @@ export function GoalsPreviewPage() {
           {/* Filter Tags */}
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Filters:</span>
-            <Badge variant="outline" className="text-xs">Status: All Goals (1)</Badge>
-            <Badge variant="outline" className="text-xs">Active (1)</Badge>
+            <Badge variant="outline" className="text-xs">Status: All Goals (5)</Badge>
+            <Badge variant="outline" className="text-xs">Active (5)</Badge>
             <Badge variant="outline" className="text-xs">Completed (0)</Badge>
             <Badge variant="outline" className="text-xs">At Risk (0)</Badge>
-            <Badge variant="outline" className="text-xs">Priority: All Priorities (1)</Badge>
-            <Badge variant="outline" className="text-xs">High (0)</Badge>
-            <Badge variant="outline" className="text-xs">Medium (1)</Badge>
+            <Badge variant="outline" className="text-xs">Priority: All Priorities (5)</Badge>
+            <Badge variant="outline" className="text-xs">High (2)</Badge>
+            <Badge variant="outline" className="text-xs">Medium (3)</Badge>
             <Badge variant="outline" className="text-xs">Low (0)</Badge>
           </div>
           
           <div className="text-sm text-slate-600 dark:text-slate-300">
-            Showing 1-1 of 1 goals &nbsp;&nbsp;&nbsp;&nbsp; Page 1 of 1
+            Showing 1-5 of 5 goals &nbsp;&nbsp;&nbsp;&nbsp; Page 1 of 1
           </div>
         </div>
 
@@ -212,101 +207,71 @@ export function GoalsPreviewPage() {
             </Button>
           </div>
 
-          {/* Main Goal Display - Portal Style Single Card */}
+          {/* Goals Display - Show Multiple SA Business Examples */}
           <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-            {/* Main visible goal */}
-            <Card className={`${priorityColors[demoGoals[0].priority as keyof typeof priorityColors]} border-l-4 bg-white dark:bg-slate-800`}>
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <CardTitle className="text-lg">{demoGoals[0].title}</CardTitle>
-                    <CardDescription className="text-sm mt-1 line-clamp-2">
-                      {demoGoals[0].description}
-                    </CardDescription>
-                  </div>
-                  <Badge className={statusConfig[demoGoals[0].status as keyof typeof statusConfig].className}>
-                    {statusConfig[demoGoals[0].status as keyof typeof statusConfig].label}
-                  </Badge>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="pt-0">
-                <div className="space-y-3">
-                  {/* Progress */}
-                  <div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span className="text-slate-600 dark:text-slate-300">Progress</span>
-                      <span className="font-medium">{demoGoals[0].progress}%</span>
+            {demoGoals.slice(0, 4).map((goal, index) => (
+              <Card 
+                key={goal.id}
+                className={`${priorityColors[goal.priority as keyof typeof priorityColors]} border-l-4 bg-white dark:bg-slate-800`}
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-lg">{goal.title}</CardTitle>
+                      <CardDescription className="text-sm mt-1 line-clamp-2">
+                        {goal.description}
+                      </CardDescription>
                     </div>
-                    <Progress value={demoGoals[0].progress} className="h-2" />
+                    <Badge className={statusConfig[goal.status as keyof typeof statusConfig].className}>
+                      {statusConfig[goal.status as keyof typeof statusConfig].label}
+                    </Badge>
                   </div>
-                  
-                  {/* Metadata */}
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-4">
-                      <Badge variant="outline" className="capitalize">{demoGoals[0].priority}</Badge>
-                      <Badge variant="secondary">{demoGoals[0].category}</Badge>
+                </CardHeader>
+                
+                <CardContent className="pt-0">
+                  <div className="space-y-3">
+                    {/* Progress */}
+                    <div>
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className="text-slate-600 dark:text-slate-300">Progress</span>
+                        <span className="font-medium">{goal.progress}%</span>
+                      </div>
+                      <Progress value={goal.progress} className="h-2" />
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-slate-500 dark:text-slate-400">📅 14 days remaining</span>
-                      <span className="text-green-600">✓ On track</span>
+                    
+                    {/* Metadata */}
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-4">
+                        <Badge variant="outline" className="capitalize">{goal.priority}</Badge>
+                        <Badge variant="secondary">{goal.category}</Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-slate-500 dark:text-slate-400">
+                          📅 Due {new Date(goal.deadline).toLocaleDateString('en-ZA')}
+                        </span>
+                        {goal.progress > 50 && (
+                          <span className="text-green-600">✓ On track</span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Locked/Blurred goal preview */}
-            <Card className="relative bg-white dark:bg-slate-800 opacity-60">
-              <div className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10 flex items-center justify-center">
-                <div className="text-center">
-                  <Lock className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                    Sign up to see all goals
-                  </p>
-                  <Button 
-                    size="sm" 
-                    className="mt-2 bg-orange-600 hover:bg-orange-700"
-                    onClick={() => setLocation('/auth')}
-                  >
-                    Unlock Now
-                  </Button>
-                </div>
-              </div>
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <CardTitle className="text-lg">Launch Enterprise AI Suite</CardTitle>
-                    <CardDescription className="text-sm mt-1">
-                      Deploy advanced AI analytics suite with predictive business modeling...
-                    </CardDescription>
-                  </div>
-                  <Badge className="bg-orange-100 text-orange-800">In Progress</Badge>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="pt-0">
-                <div className="space-y-3">
-                  <div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span className="text-slate-600 dark:text-slate-300">Progress</span>
-                      <span className="font-medium">75%</span>
-                    </div>
-                    <Progress value={75} className="h-2" />
-                  </div>
-                  
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-4">
-                      <Badge variant="outline">High</Badge>
-                      <Badge variant="secondary">Product</Badge>
-                    </div>
-                    <span className="text-slate-500 dark:text-slate-400">
-                      Due 15/08/2025
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          
+          {/* Show More Goals Option */}
+          <div className="text-center mt-6">
+            <p className="text-slate-600 dark:text-slate-300 mb-4">
+              Plus 1 more goal - showing examples of what you could track with <em>Bizzin</em>
+            </p>
+            <Button 
+              onClick={() => setLocation('/auth')}
+              variant="outline"
+              className="border-orange-600 text-orange-600 hover:bg-orange-50"
+            >
+              Start Creating Your Own Goals
+            </Button>
           </div>
         </div>
 
