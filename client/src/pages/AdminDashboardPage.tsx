@@ -33,6 +33,7 @@ import { AdminEarlySignups } from "@/components/admin/AdminEarlySignups"
 import { AdminContentManagement } from "@/components/admin/AdminContentManagement"
 import { AdminSystemHealth } from "@/components/admin/AdminSystemHealth"
 import { AdminFinancialOverview } from "@/components/admin/AdminFinancialOverview"
+import { useAdminCheck } from "@/hooks/useAdminCheck"
 
 interface AdminStats {
   totalUsers: number
@@ -54,49 +55,8 @@ export default function AdminDashboardPage() {
   const [realtimeStats, setRealtimeStats] = useState<AdminStats | null>(null)
   const queryClient = useQueryClient()
 
-  // Check if user is admin - simplified approach for your specific email
-  const { data: isAdmin, isLoading: adminLoading } = useQuery({
-    queryKey: ['admin-check', user?.id],
-    queryFn: async () => {
-      if (!user) return false
-      
-      console.log('Checking admin access for user:', user.id, user.email)
-      
-      // Direct admin check for anton@cloudfusion.co.za
-      if (user.email === 'anton@cloudfusion.co.za') {
-        console.log('User is admin: hardcoded admin email')
-        return true
-      }
-      
-      // Also check user ID directly (from logs: 9502ea97-1adb-4115-ba05-1b6b1b5fa721)
-      if (user.id === '9502ea97-1adb-4115-ba05-1b6b1b5fa721') {
-        console.log('User is admin: hardcoded admin user ID')
-        return true
-      }
-      
-      // Try to check admin_users table without RLS issues
-      try {
-        const { data: adminData, error: adminError } = await supabase
-          .from('admin_users')
-          .select('is_admin')
-          .eq('user_id', user.id)
-          .maybeSingle()
-        
-        console.log('Admin data result:', { adminData, adminError })
-        
-        if (adminData?.is_admin) {
-          console.log('User is admin via admin_users table')
-          return true
-        }
-      } catch (error) {
-        console.log('Admin table check failed:', error)
-      }
-      
-      console.log('User is not admin')
-      return false
-    },
-    enabled: !!user
-  })
+  // Use the reusable admin check hook
+  const { data: isAdmin, isLoading: adminLoading } = useAdminCheck()
 
   // Fetch admin statistics with better error handling
   const { data: stats, isLoading: statsLoading } = useQuery({

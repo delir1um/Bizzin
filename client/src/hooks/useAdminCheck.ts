@@ -12,19 +12,7 @@ export function useAdminCheck() {
       
       console.log('Checking admin access for user:', user.id, user.email);
       
-      // Direct admin check for anton@cloudfusion.co.za
-      if (user.email === 'anton@cloudfusion.co.za') {
-        console.log('User is admin: hardcoded admin email');
-        return true;
-      }
-      
-      // Also check user ID directly
-      if (user.id === '9502ea97-1adb-4115-ba05-1b6b1b5fa721') {
-        console.log('User is admin: hardcoded admin user ID');
-        return true;
-      }
-      
-      // Try to check admin_users table
+      // Check admin_users table first
       try {
         const { data: adminData, error: adminError } = await supabase
           .from('admin_users')
@@ -49,6 +37,8 @@ export function useAdminCheck() {
           .select('is_admin')
           .eq('user_id', user.id)
           .maybeSingle();
+        
+        console.log('Profile data result:', { profileData, profileError });
         
         if (profileData?.is_admin) {
           console.log('User is admin via user_profiles table');
