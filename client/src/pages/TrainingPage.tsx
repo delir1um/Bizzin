@@ -18,6 +18,7 @@ export function PodcastPage() {
   const [selectedEpisode, setSelectedEpisode] = useState<Episode | null>(null)
   const [showEpisodeModal, setShowEpisodeModal] = useState(false)
   const [showPlayer, setShowPlayer] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
   
   const { stats, recentEpisodes, currentlyListening, metrics, isLoading } = usePodcastDashboard()
   const { data: dbEpisodes, isLoading: episodesLoading, error: episodesError } = usePodcastEpisodes()
@@ -41,6 +42,14 @@ export function PodcastPage() {
     keyTakeaways: ep.key_takeaways,
     difficulty: ep.difficulty
   })) || []
+
+  // Filter episodes based on search query
+  const filteredEpisodes = episodes.filter(episode =>
+    searchQuery === '' || 
+    episode.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    episode.series.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    episode.description.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
 
 
@@ -104,13 +113,7 @@ export function PodcastPage() {
     )
   ]
 
-  const secondaryActions = [{
-    label: 'Browse All Episodes',
-    icon: <Search className="w-4 h-4 mr-2" />,
-    onClick: () => console.log('Browse episodes'),
-    variant: 'outline' as const,
-    className: 'border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-950/20'
-  }]
+  const secondaryActions: any[] = []
 
   return (
     <StandardPageLayout
@@ -126,10 +129,12 @@ export function PodcastPage() {
     >
       {/* Search Bar - Now positioned after stats cards */}
       <div className="mb-8">
-        <div className="relative">
+        <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
           <Input
             placeholder="Search episodes by title or series..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700"
           />
         </div>
@@ -270,7 +275,9 @@ export function PodcastPage() {
 
       {/* Featured Episodes */}
       <div>
-        <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">Featured Episodes</h2>
+        <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">
+          {searchQuery ? `Search Results (${filteredEpisodes.length} episodes)` : 'Featured Episodes'}
+        </h2>
         {episodesLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
@@ -290,9 +297,17 @@ export function PodcastPage() {
               </Card>
             ))}
           </div>
+        ) : filteredEpisodes.length === 0 ? (
+          <div className="text-center py-12">
+            <Search className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">No episodes found</h3>
+            <p className="text-slate-600 dark:text-slate-400">
+              Try adjusting your search terms or browse our series above.
+            </p>
+          </div>
         ) : (
           <AnimatedGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" stagger={0.15}>
-            {episodes.slice(0, 6).map((episode, index) => (
+            {filteredEpisodes.slice(0, 6).map((episode, index) => (
               <AnimatedItem key={episode.id}>
                 <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
                   <CardHeader>
