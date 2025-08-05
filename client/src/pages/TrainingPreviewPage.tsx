@@ -8,36 +8,36 @@ import { useLocation } from "wouter"
 const demoCourses = [
   {
     id: "demo-1",
-    title: "Startup Fundamentals",
-    description: "Learn the essential skills every entrepreneur needs to build a successful startup from the ground up.",
+    title: "Cash Flow Management for SMEs",
+    description: "Practical strategies for managing cash flow in small businesses, including payment terms, supplier negotiations, and emergency planning.",
     progress: 65,
-    duration: "4.5 hours",
-    lessons: 12,
+    duration: "2.5 hours",
+    lessons: 8,
     level: "Beginner",
-    category: "Entrepreneurship",
+    category: "Finance",
     isBlurred: false
   },
   {
     id: "demo-2",
-    title: "Growth Marketing Strategies",
-    description: "Master proven marketing tactics to scale your business and acquire customers cost-effectively.",
-    progress: 30,
-    duration: "6 hours",
-    lessons: 18,
-    level: "Intermediate",
+    title: "Local Marketing on a Budget",
+    description: "Cost-effective marketing strategies for South African small businesses, including social media, community engagement, and word-of-mouth tactics.",
+    progress: 40,
+    duration: "3 hours",
+    lessons: 10,
+    level: "Beginner",
     category: "Marketing",
-    isBlurred: true
+    isBlurred: false
   },
   {
     id: "demo-3",
-    title: "Financial Planning for Startups",
-    description: "Understand cash flow, fundraising, and financial management for early-stage companies.",
-    progress: 0,
-    duration: "5.5 hours", 
-    lessons: 15,
+    title: "Hiring Your First Employees",
+    description: "Complete guide to hiring staff in South Africa, including labour law compliance, contracts, and building a positive team culture.",
+    progress: 85,
+    duration: "2 hours", 
+    lessons: 6,
     level: "Intermediate",
-    category: "Finance",
-    isBlurred: true
+    category: "Leadership",
+    isBlurred: false
   }
 ]
 
@@ -137,26 +137,8 @@ export function TrainingPreviewPage() {
             {demoCourses.map((course, index) => (
               <Card 
                 key={course.id}
-                className={`relative overflow-hidden bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm hover:shadow-lg transition-all ${course.isBlurred ? 'opacity-60' : ''}`}
+                className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm hover:shadow-lg transition-all"
               >
-                {course.isBlurred && (
-                  <div className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10 flex items-center justify-center">
-                    <div className="text-center">
-                      <Lock className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                        Sign up to access course
-                      </p>
-                      <Button 
-                        size="sm" 
-                        className="mt-2 bg-blue-600 hover:bg-blue-700"
-                        onClick={() => setLocation('/auth')}
-                      >
-                        Unlock Now
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between mb-2">
                     <Badge className={levelColors[course.level as keyof typeof levelColors]}>
