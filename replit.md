@@ -9,11 +9,15 @@ Bizzin is a modern SaaS platform designed for entrepreneurs to plan, journal, an
 - Use `shadcn/ui` components where possible
 - Do not reference any `/api` or `server/` folder
 - Use Supabase client-side SDK for authentication, CRUD, and file uploads
+- Maintain consistent branding with custom #0B0A1D background color across all pages
+- Use Inter font over Orbitron for better SaaS readability
+- All instances of "Bizzin" brand name must appear in italics
+- Standardize logo sizing to 40px height across all components
 
 ## System Architecture
 The application is built with React 18 and TypeScript, using Tailwind CSS and shadcn/ui for a consistent and modern UI/UX. Routing is managed by React Router DOM, and Vite serves as the build tool. The core architectural decision is a frontend-only approach, relying entirely on Supabase for backend services, including Row-Level Security for data access control and Supabase Storage for document uploads.
 
-**UI/UX Decisions:** The platform adopts a clean, modern aesthetic with a primary brand color of orange (#EA7A57), complemented by multi-colored data visualizations. Consistent design patterns are applied across all pages, featuring standardized headers, sub-headings, colored stats cards with gradient backgrounds and hover animations, and unified search/filter components. Interactive charts (recharts-based) are integrated for data visualization, and celebration animations are used for goal completion. Dark mode is fully supported with consistent styling.
+**UI/UX Decisions:** The platform adopts a clean, modern aesthetic with a primary brand color of orange (#EA7A57), complemented by multi-colored data visualizations. Consistent design patterns are applied across all pages, featuring standardized headers, sub-headings, colored stats cards with gradient backgrounds and hover animations, and unified search/filter components. Interactive charts (recharts-based) are integrated for data visualization, and celebration animations are used for goal completion. Dark mode is fully supported with consistent #0B0A1D background color across all pages, components, and marketing materials. All "Bizzin" brand text appears in italics for elegant typography, and logos are standardized to 40px height throughout the platform.
 
 **Technical Implementations & Feature Specifications:**
 - **Authentication:** User sign-in/sign-up at `/auth` with a redesigned gradient background and improved UX.
@@ -43,3 +47,11 @@ The application is built with React 18 and TypeScript, using Tailwind CSS and sh
 - **react-paystack:** For Paystack payment gateway integration (for ZAR currency).
 - **Hugging Face Inference API:** For advanced business sentiment analysis.
 - **Cloudflare R2:** For cost-effective video hosting and streaming.
+
+## Recent Feature Updates (August 2025)
+- **Consistent Brand Identity:** Implemented uniform #0B0A1D background color across all portal and marketing pages
+- **Typography Enhancement:** Made all instances of "Bizzin" brand name italic throughout the platform
+- **Logo Standardization:** Unified all logo instances to 40px height for consistent visual hierarchy
+- **Marketing Page Alignment:** Updated all public-facing pages (Home, Journal, Goals, Podcast, BizBuilder Tools, DocSafe) to match portal design consistency
+- **Authentication Experience:** Enhanced auth page styling with consistent background and improved branding
+- **Dashboard Personalization:** Made username italic in welcome message with cleaner presentation (removed exclamation mark)
