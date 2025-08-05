@@ -20,9 +20,8 @@ import { supabase } from "@/lib/supabase"
 interface SystemMetrics {
   database: {
     status: 'healthy' | 'warning' | 'critical'
-    connections: number
-    maxConnections: number
-    queryTime: number
+    isConnected: boolean
+    lastChecked: string
   }
   storage: {
     used: number
@@ -30,14 +29,14 @@ interface SystemMetrics {
     percentage: number
   }
   users: {
-    activeNow: number
+    totalUsers: number
     activeLast24h: number
-    totalSessions: number
+    activeLast7d: number
   }
-  performance: {
-    avgResponseTime: number
-    errorRate: number
-    uptime: number
+  content: {
+    journalEntries: number
+    documents: number
+    completedGoals: number
   }
 }
 
@@ -46,45 +45,95 @@ export function AdminSystemHealth() {
   const { data: metrics, isLoading, refetch } = useQuery({
     queryKey: ['admin-system-health'],
     queryFn: async () => {
-      // In production, these would come from monitoring services
-      // For now, we'll calculate basic metrics from Supabase data
+      console.log('Fetching real system health metrics...')
       
-      const [
-        userCount,
-        documentsData,
-        recentActivity
-      ] = await Promise.all([
-        supabase.from('user_profiles').select('id', { count: 'exact' }),
-        supabase.from('documents').select('file_size'),
-        supabase.from('user_profiles').select('last_login').gte('last_login', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-      ])
+      // Test database connection and get basic metrics
+      const startTime = Date.now()
+      let isConnected = false
+      let dbStatus: 'healthy' | 'warning' | 'critical' = 'critical'
+      
+      try {
+        const [
+          usersData,
+          documentsData,
+          journalData,
+          goalsData
+        ] = await Promise.all([
+          supabase.from('user_profiles').select('id, created_at, updated_at'),
+          supabase.from('documents').select('file_size'),
+          supabase.from('journal_entries').select('id'),
+          supabase.from('goals').select('status')
+        ])
 
-      const totalStorage = documentsData.data?.reduce((sum, doc) => sum + (doc.file_size || 0), 0) || 0
-      const storageLimit = 50 * 1024 * 1024 * 1024 // 50GB in bytes
+        isConnected = true
+        const queryTime = Date.now() - startTime
+        dbStatus = queryTime < 1000 ? 'healthy' : queryTime < 3000 ? 'warning' : 'critical'
 
-      return {
-        database: {
-          status: 'healthy' as const,
-          connections: 12,
-          maxConnections: 100,
-          queryTime: 45
-        },
-        storage: {
-          used: totalStorage,
-          limit: storageLimit,
-          percentage: (totalStorage / storageLimit) * 100
-        },
-        users: {
-          activeNow: Math.floor(Math.random() * 50) + 10, // Mock active users
-          activeLast24h: recentActivity.data?.length || 0,
-          totalSessions: (userCount.count || 0) * 3 // Estimated sessions
-        },
-        performance: {
-          avgResponseTime: 120 + Math.floor(Math.random() * 50),
-          errorRate: 0.1 + Math.random() * 0.4,
-          uptime: 99.9
-        }
-      } as SystemMetrics
+        // Calculate real storage usage
+        const totalStorage = documentsData.data?.reduce((sum, doc) => sum + (doc.file_size || 0), 0) || 0
+        const storageLimit = 10 * 1024 * 1024 * 1024 // 10GB limit
+
+        // Calculate active users based on recent activity
+        const now = new Date()
+        const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+        const last7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+        
+        const activeLast24h = usersData.data?.filter(user => 
+          new Date(user.updated_at || user.created_at) > last24h
+        ).length || 0
+        
+        const activeLast7d = usersData.data?.filter(user => 
+          new Date(user.updated_at || user.created_at) > last7d
+        ).length || 0
+
+        return {
+          database: {
+            status: dbStatus,
+            isConnected,
+            lastChecked: new Date().toISOString()
+          },
+          storage: {
+            used: totalStorage,
+            limit: storageLimit,
+            percentage: (totalStorage / storageLimit) * 100
+          },
+          users: {
+            totalUsers: usersData.data?.length || 0,
+            activeLast24h,
+            activeLast7d
+          },
+          content: {
+            journalEntries: journalData.data?.length || 0,
+            documents: documentsData.data?.length || 0,
+            completedGoals: goalsData.data?.filter(goal => goal.status === 'completed').length || 0
+          }
+        } as SystemMetrics
+        
+      } catch (error) {
+        console.error('Database connection test failed:', error)
+        return {
+          database: {
+            status: 'critical' as const,
+            isConnected: false,
+            lastChecked: new Date().toISOString()
+          },
+          storage: {
+            used: 0,
+            limit: 10 * 1024 * 1024 * 1024,
+            percentage: 0
+          },
+          users: {
+            totalUsers: 0,
+            activeLast24h: 0,
+            activeLast7d: 0
+          },
+          content: {
+            journalEntries: 0,
+            documents: 0,
+            completedGoals: 0
+          }
+        } as SystemMetrics
+      }
     },
     refetchInterval: 30000 // Refresh every 30 seconds
   })
@@ -144,7 +193,7 @@ export function AdminSystemHealth() {
         {/* Database Health */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Database</CardTitle>
+            <CardTitle className="text-sm font-medium">Database Connection</CardTitle>
             <Database className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -152,22 +201,16 @@ export function AdminSystemHealth() {
               <div className="text-2xl font-bold">
                 {getStatusIcon(metrics.database.status)}
               </div>
-              <Badge variant={metrics.database.status === 'healthy' ? 'default' : 'destructive'}>
-                {metrics.database.status}
+              <Badge variant={
+                metrics.database.status === 'healthy' ? 'default' : 
+                metrics.database.status === 'warning' ? 'secondary' : 'destructive'
+              }>
+                {metrics.database.status.toUpperCase()}
               </Badge>
             </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Connections</span>
-                <span>{metrics.database.connections}/{metrics.database.maxConnections}</span>
-              </div>
-              <Progress 
-                value={(metrics.database.connections / metrics.database.maxConnections) * 100} 
-                className="h-2" 
-              />
-              <div className="text-xs text-muted-foreground">
-                Avg query time: {metrics.database.queryTime}ms
-              </div>
+            <div className="space-y-1 text-xs text-muted-foreground">
+              <div>Status: {metrics.database.isConnected ? 'Connected' : 'Disconnected'}</div>
+              <div>Last check: {new Date(metrics.database.lastChecked).toLocaleTimeString()}</div>
             </div>
           </CardContent>
         </Card>
@@ -175,7 +218,7 @@ export function AdminSystemHealth() {
         {/* Storage Usage */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Storage</CardTitle>
+            <CardTitle className="text-sm font-medium">Storage Usage</CardTitle>
             <HardDrive className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -184,44 +227,44 @@ export function AdminSystemHealth() {
             </div>
             <Progress value={metrics.storage.percentage} className="h-2 mb-2" />
             <div className="space-y-1 text-xs text-muted-foreground">
-              <div>Used: {(metrics.storage.used / (1024 * 1024 * 1024)).toFixed(2)}GB</div>
+              <div>Used: {(metrics.storage.used / (1024 * 1024)).toFixed(1)}MB</div>
               <div>Limit: {(metrics.storage.limit / (1024 * 1024 * 1024)).toFixed(0)}GB</div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Active Users */}
+        {/* User Activity */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
+            <CardTitle className="text-sm font-medium">User Activity</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold mb-2">
-              {metrics.users.activeNow}
+              {metrics.users.totalUsers}
             </div>
             <div className="space-y-1 text-xs text-muted-foreground">
-              <div>Now online: {metrics.users.activeNow}</div>
-              <div>Last 24h: {metrics.users.activeLast24h}</div>
-              <div>Total sessions: {metrics.users.totalSessions}</div>
+              <div>Total users: {metrics.users.totalUsers}</div>
+              <div>Active (24h): {metrics.users.activeLast24h}</div>
+              <div>Active (7d): {metrics.users.activeLast7d}</div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Performance */}
+        {/* Content Statistics */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Performance</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Platform Content</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold mb-2">
-              {metrics.performance.uptime}%
+              {(metrics.content?.journalEntries || 0) + (metrics.content?.documents || 0) + (metrics.content?.completedGoals || 0)}
             </div>
             <div className="space-y-1 text-xs text-muted-foreground">
-              <div>Uptime: {metrics.performance.uptime}%</div>
-              <div>Response: {metrics.performance.avgResponseTime}ms</div>
-              <div>Error rate: {metrics.performance.errorRate.toFixed(2)}%</div>
+              <div>Journal entries: {metrics.content?.journalEntries || 0}</div>
+              <div>Documents: {metrics.content?.documents || 0}</div>
+              <div>Completed goals: {metrics.content?.completedGoals || 0}</div>
             </div>
           </CardContent>
         </Card>
@@ -234,7 +277,7 @@ export function AdminSystemHealth() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Database className="w-5 h-5" />
-              Database Status
+              Database Connection Details
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -250,22 +293,20 @@ export function AdminSystemHealth() {
             
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Active Connections</span>
-                <span>{metrics.database.connections}</span>
+                <span>Connected</span>
+                <span>{metrics.database.isConnected ? 'Yes' : 'No'}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span>Max Connections</span>
-                <span>{metrics.database.maxConnections}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Average Query Time</span>
-                <span>{metrics.database.queryTime}ms</span>
+                <span>Last Check</span>
+                <span>{new Date(metrics.database.lastChecked).toLocaleTimeString()}</span>
               </div>
             </div>
 
             <div className="pt-2 border-t">
               <div className="text-sm text-muted-foreground">
-                Database is running smoothly. All connections are within normal limits.
+                {metrics.database.isConnected 
+                  ? "Database connection is active and responding normally." 
+                  : "Database connection issues detected."}
               </div>
             </div>
           </CardContent>

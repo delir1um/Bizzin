@@ -77,7 +77,7 @@ export default function AdminDashboardPage() {
         podcastViews: 0,
         documentUploads: 0,
         storageUsed: 0,
-        systemHealth: 'healthy' as const
+        systemHealth: 'healthy' as 'healthy' | 'warning' | 'critical'
       }
 
       try {
