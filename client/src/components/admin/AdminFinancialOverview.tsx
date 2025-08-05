@@ -64,15 +64,15 @@ export function AdminFinancialOverview() {
       console.log('Fetching financial metrics...')
       
       try {
-        // Fetch subscription data
+        // First check what columns actually exist in user_plans
         const { data: subscriptions, error: subsError } = await supabase
           .from('user_plans')
-          .select('plan_type, plan_status, created_at, updated_at')
+          .select('*')
+          .limit(1)
 
-        // Handle the case where user_plans table doesn't exist or is empty
         if (subsError) {
           console.log('Error fetching user_plans:', subsError)
-          // If table doesn't exist, return default financial metrics
+          // Return empty metrics - no dummy data
           return {
             totalRevenue: 0,
             monthlyRevenue: 0,
@@ -89,48 +89,80 @@ export function AdminFinancialOverview() {
           } as FinancialMetrics
         }
 
-        console.log('User plans data:', subscriptions)
+        // Get all user plans
+        const { data: allPlans, error: plansError } = await supabase
+          .from('user_plans')
+          .select('*')
+
+        if (plansError) {
+          console.log('Error fetching all user_plans:', plansError)
+          return {
+            totalRevenue: 0,
+            monthlyRevenue: 0,
+            averageRevenuePerUser: 0,
+            churnRate: 0,
+            subscriptions: {
+              total: 0,
+              active: 0,
+              cancelled: 0,
+              expired: 0
+            },
+            revenueGrowth: 0,
+            refunds: 0
+          } as FinancialMetrics
+        }
+
+        console.log('All user plans data:', allPlans)
 
         const now = new Date()
         const lastMonth = subMonths(now, 1)
         
-        const activeSubscriptions = subscriptions?.filter(s => s.plan_status === 'active') || []
-        const paidSubscriptions = activeSubscriptions.filter(s => s.plan_type === 'premium')
-        
-        // Calculate revenue (assuming R199/month for premium)
-        const monthlyRevenue = paidSubscriptions.length * 199
-        const totalRevenue = monthlyRevenue * 6 // Assuming 6 months average
-        
-        // Calculate growth
-        const lastMonthSubs = subscriptions?.filter(s => 
-          new Date(s.created_at) >= startOfMonth(lastMonth) && 
-          new Date(s.created_at) <= endOfMonth(lastMonth)
+        // Only count real premium subscriptions that haven't expired
+        const activePremiumPlans = allPlans?.filter(plan => {
+          if (plan.plan_type !== 'premium') return false
+          if (plan.expires_at && new Date(plan.expires_at) < now) return false
+          if (plan.cancelled_at) return false
+          return true
+        }) || []
+
+        // Calculate real revenue based on actual payments
+        const monthlyRevenue = activePremiumPlans.reduce((total, plan) => {
+          return total + (plan.amount_paid || 0)
+        }, 0)
+
+        // Calculate total revenue from all completed payments
+        const totalRevenue = allPlans?.reduce((total, plan) => {
+          return total + (plan.amount_paid || 0)
+        }, 0) || 0
+
+        // Calculate actual subscription counts
+        const activeCount = allPlans?.filter(plan => {
+          if (plan.expires_at && new Date(plan.expires_at) < now) return false
+          if (plan.cancelled_at) return false
+          return true
+        }).length || 0
+
+        const cancelledCount = allPlans?.filter(plan => plan.cancelled_at).length || 0
+        const expiredCount = allPlans?.filter(plan => 
+          plan.expires_at && new Date(plan.expires_at) < now
         ).length || 0
-        
-        const thisMonthSubs = subscriptions?.filter(s => 
-          new Date(s.created_at) >= startOfMonth(now) && 
-          new Date(s.created_at) <= endOfMonth(now)
-        ).length || 0
-        
-        const revenueGrowth = lastMonthSubs > 0 ? 
-          ((thisMonthSubs - lastMonthSubs) / lastMonthSubs) * 100 : 0
 
         const result = {
           totalRevenue,
           monthlyRevenue,
-          averageRevenuePerUser: paidSubscriptions.length > 0 ? monthlyRevenue / paidSubscriptions.length : 0,
-          churnRate: 2.5, // Mock churn rate
+          averageRevenuePerUser: activePremiumPlans.length > 0 ? monthlyRevenue / activePremiumPlans.length : 0,
+          churnRate: 0, // Calculate real churn rate from data
           subscriptions: {
-            total: subscriptions?.length || 0,
-            active: activeSubscriptions.length,
-            cancelled: subscriptions?.filter(s => s.plan_status === 'cancelled').length || 0,
-            expired: subscriptions?.filter(s => s.plan_status === 'expired').length || 0
+            total: allPlans?.length || 0,
+            active: activeCount,
+            cancelled: cancelledCount,
+            expired: expiredCount
           },
-          revenueGrowth,
-          refunds: 0 // Mock refunds
+          revenueGrowth: 0, // Calculate real growth from historical data
+          refunds: 0 // No dummy data
         } as FinancialMetrics
 
-        console.log('Calculated financial metrics:', result)
+        console.log('Calculated financial metrics from real data:', result)
         return result
       } catch (error) {
         console.error('Error in financial metrics query:', error)
@@ -171,33 +203,39 @@ export function AdminFinancialOverview() {
     { name: 'Expired', value: metrics.subscriptions.expired, color: '#EF4444' }
   ] : []
 
-  // Mock recent transactions
-  const recentTransactions: RecentTransaction[] = [
-    {
-      id: '1',
-      user_email: 'john@example.com',
-      amount: 199,
-      plan_type: 'premium',
-      status: 'completed',
-      created_at: new Date().toISOString()
+  // Fetch real transactions from user_plans
+  const { data: recentTransactions } = useQuery({
+    queryKey: ['admin-recent-transactions'],
+    queryFn: async () => {
+      const { data: plans, error } = await supabase
+        .from('user_plans')
+        .select(`
+          id,
+          amount_paid,
+          plan_type,
+          created_at,
+          user_profiles!inner(email)
+        `)
+        .not('amount_paid', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(10)
+
+      if (error) {
+        console.log('Error fetching transactions:', error)
+        return []
+      }
+
+      return plans?.map(plan => ({
+        id: plan.id,
+        user_email: plan.user_profiles?.email || 'Unknown',
+        amount: plan.amount_paid || 0,
+        plan_type: plan.plan_type,
+        status: 'completed' as const,
+        created_at: plan.created_at
+      })) || []
     },
-    {
-      id: '2',
-      user_email: 'sarah@business.co.za',
-      amount: 199,
-      plan_type: 'premium',
-      status: 'completed',
-      created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
-    },
-    {
-      id: '3',
-      user_email: 'mike@startup.com',
-      amount: 199,
-      plan_type: 'premium',
-      status: 'failed',
-      created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()
-    }
-  ]
+    enabled: !!metrics // Only fetch if main metrics loaded
+  })
 
   const handleExportFinancials = () => {
     const csvContent = [
@@ -312,7 +350,7 @@ export function AdminFinancialOverview() {
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.churnRate}%</div>
+            <div className="text-2xl font-bold">0%</div>
             <p className="text-xs text-muted-foreground">
               Monthly churn rate
             </p>
@@ -438,32 +476,37 @@ export function AdminFinancialOverview() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {recentTransactions.map((transaction) => (
-                  <TableRow key={transaction.id}>
-                    <TableCell>
-                      <div className="font-medium">{transaction.user_email}</div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium">R{transaction.amount}</div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{transaction.plan_type}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={
-                        transaction.status === 'completed' ? 'default' :
-                        transaction.status === 'failed' ? 'destructive' : 'secondary'
-                      }>
-                        {transaction.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        {format(new Date(transaction.created_at), 'MMM d, yyyy HH:mm')}
-                      </div>
+                {recentTransactions && recentTransactions.length > 0 ? (
+                  recentTransactions.map((transaction) => (
+                    <TableRow key={transaction.id}>
+                      <TableCell>
+                        <div className="font-medium">{transaction.user_email}</div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-medium">R{transaction.amount}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{transaction.plan_type}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="default">
+                          {transaction.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">
+                          {format(new Date(transaction.created_at), 'MMM d, yyyy HH:mm')}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      No transactions found
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </div>
