@@ -299,6 +299,16 @@ export default function PreLaunchPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Hidden Admin Login Link */}
+        <div className="text-center mt-8">
+          <a 
+            href="/admin-login" 
+            className="text-xs text-slate-500 hover:text-slate-400 transition-colors opacity-50 hover:opacity-100"
+          >
+            Admin Login
+          </a>
+        </div>
       </div>
     </div>
   );

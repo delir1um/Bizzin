@@ -94,6 +94,7 @@ function App() {
               <Layout>
                 <Route path="/" component={() => <MainRouter />} />
                 <Route path="/auth" component={AuthPageWrapper} />
+                <Route path="/admin-login" component={AuthPage} />
                 <Route path="/profile" component={() => <ProtectedRoute><ProfilePage /></ProtectedRoute>} />
                 <Route path="/dashboard" component={() => <ProtectedRoute><DashboardPage /></ProtectedRoute>} />
 
