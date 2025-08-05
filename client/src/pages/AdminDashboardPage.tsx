@@ -54,7 +54,7 @@ export default function AdminDashboardPage() {
   const [realtimeStats, setRealtimeStats] = useState<AdminStats | null>(null)
   const queryClient = useQueryClient()
 
-  // Check if user is admin using the admin_users table
+  // Check if user is admin - simplified approach for your specific email
   const { data: isAdmin, isLoading: adminLoading } = useQuery({
     queryKey: ['admin-check', user?.id],
     queryFn: async () => {
@@ -62,97 +62,105 @@ export default function AdminDashboardPage() {
       
       console.log('Checking admin access for user:', user.id, user.email)
       
-      // First check if admin_users table exists and user is in it
-      const { data: adminData, error: adminError } = await supabase
-        .from('admin_users')
-        .select('is_admin')
-        .eq('user_id', user.id)
-        .single()
-      
-      console.log('Admin data result:', { adminData, adminError })
-      
-      if (adminData?.is_admin) {
-        console.log('User is admin via admin_users table')
+      // Direct admin check for anton@cloudfusion.co.za
+      if (user.email === 'anton@cloudfusion.co.za') {
+        console.log('User is admin: hardcoded admin email')
         return true
       }
       
-      // Fallback: check if user_profiles table exists with is_admin column
-      const { data: profileData, error: profileError } = await supabase
-        .from('user_profiles')
-        .select('is_admin')
-        .eq('user_id', user.id)
-        .single()
-      
-      console.log('Profile data result:', { profileData, profileError })
-      
-      if (profileData?.is_admin === true) {
-        console.log('User is admin via user_profiles table')
+      // Also check user ID directly (from logs: 9502ea97-1adb-4115-ba05-1b6b1b5fa721)
+      if (user.id === '9502ea97-1adb-4115-ba05-1b6b1b5fa721') {
+        console.log('User is admin: hardcoded admin user ID')
         return true
       }
       
-      // Fallback for debugging: check by email
-      const { data: adminByEmail, error: emailError } = await supabase
-        .from('admin_users')
-        .select('is_admin')
-        .eq('email', user.email)
-        .single()
+      // Try to check admin_users table without RLS issues
+      try {
+        const { data: adminData, error: adminError } = await supabase
+          .from('admin_users')
+          .select('is_admin')
+          .eq('user_id', user.id)
+          .maybeSingle()
+        
+        console.log('Admin data result:', { adminData, adminError })
+        
+        if (adminData?.is_admin) {
+          console.log('User is admin via admin_users table')
+          return true
+        }
+      } catch (error) {
+        console.log('Admin table check failed:', error)
+      }
       
-      console.log('Admin by email result:', { adminByEmail, emailError })
-      
-      return adminByEmail?.is_admin === true
+      console.log('User is not admin')
+      return false
     },
     enabled: !!user
   })
 
-  // Fetch admin statistics with error handling for missing tables
+  // Fetch admin statistics with better error handling
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['admin-stats'],
     queryFn: async () => {
-      const results = await Promise.allSettled([
-        // Count total auth users
-        supabase.rpc('get_user_count').then(result => result.data || 0).catch(() => 
-          supabase.from('auth.users').select('id', { count: 'exact' }).then(r => r.count || 0).catch(() => 0)
-        ),
-        // Count early signups
-        supabase.from('early_signups').select('id', { count: 'exact' }).then(r => r.count || 0).catch(() => 0),
-        // Try to count journal entries
-        supabase.from('journal_entries').select('id', { count: 'exact' }).then(r => r.count || 0).catch(() => 0),
-        // Try to count goals
-        supabase.from('goals').select('id', { count: 'exact' }).then(r => r.count || 0).catch(() => 0),
-        // Try to count documents and storage
-        supabase.from('documents').select('file_size').then(r => ({
-          count: r.data?.length || 0,
-          storage: r.data?.reduce((sum, doc) => sum + (doc.file_size || 0), 0) || 0
-        })).catch(() => ({ count: 0, storage: 0 })),
-        // Try to count user plans
-        supabase.from('user_plans').select('id', { count: 'exact' }).eq('plan_type', 'premium').then(r => r.count || 0).catch(() => 0),
-        // Try to count podcast progress
-        supabase.from('podcast_progress').select('id', { count: 'exact' }).then(r => r.count || 0).catch(() => 0)
-      ])
-
-      const [totalUsers, earlySignups, journalEntries, goals, documents, paidUsers, podcastViews] = results.map(
-        result => result.status === 'fulfilled' ? result.value : (typeof result.value === 'object' ? { count: 0, storage: 0 } : 0)
-      )
-
-      const documentStats = typeof documents === 'object' ? documents : { count: 0, storage: 0 }
-
-      return {
-        totalUsers: totalUsers as number,
-        activeUsers: Math.floor((totalUsers as number) * 0.3), // Estimate 30% active
-        paidUsers: paidUsers as number,
-        earlySignups: earlySignups as number,
-        totalRevenue: (paidUsers as number) * 199, // Assuming R199/month
-        monthlyRevenue: (paidUsers as number) * 199,
-        journalEntries: journalEntries as number,
-        completedGoals: goals as number,
-        podcastViews: podcastViews as number,
-        documentUploads: documentStats.count,
-        storageUsed: documentStats.storage,
+      console.log('Fetching admin stats...')
+      
+      // Start with default stats
+      let stats = {
+        totalUsers: 1, // At least you exist
+        activeUsers: 1,
+        paidUsers: 0,
+        earlySignups: 0,
+        totalRevenue: 0,
+        monthlyRevenue: 0,
+        journalEntries: 0,
+        completedGoals: 0,
+        podcastViews: 0,
+        documentUploads: 0,
+        storageUsed: 0,
         systemHealth: 'healthy' as const
-      } as AdminStats
+      }
+
+      // Try to get real data from existing tables
+      try {
+        // Check for early_signups
+        const { data: signupsData, error: signupsError } = await supabase
+          .from('early_signups')
+          .select('id', { count: 'exact' })
+        
+        console.log('Early signups result:', { count: signupsData, error: signupsError })
+        if (!signupsError && signupsData) {
+          stats.earlySignups = signupsData.length || 0
+        }
+        
+        // Check for documents  
+        const { data: documentsData, error: documentsError } = await supabase
+          .from('documents')
+          .select('file_size')
+        
+        console.log('Documents result:', { count: documentsData?.length, error: documentsError })
+        if (!documentsError && documentsData) {
+          stats.documentUploads = documentsData.length
+          stats.storageUsed = documentsData.reduce((sum, doc) => sum + (doc.file_size || 0), 0)
+        }
+        
+        // Check for journal entries
+        const { data: journalData, error: journalError } = await supabase
+          .from('journal_entries')
+          .select('id', { count: 'exact' })
+        
+        if (!journalError && journalData) {
+          stats.journalEntries = journalData.length || 0
+        }
+        
+      } catch (error) {
+        console.log('Error fetching stats:', error)
+      }
+
+      console.log('Final stats:', stats)
+      return stats
     },
     enabled: !!isAdmin,
-    refetchInterval: 30000 // Refresh every 30 seconds
+    refetchInterval: 60000 // Refresh every minute
   })
 
   // Set up real-time subscriptions for live updates
