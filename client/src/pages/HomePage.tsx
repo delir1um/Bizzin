@@ -2,11 +2,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Target, BookOpen, Calculator, Shield, PenTool, Headphones, ArrowRight, Brain } from "lucide-react"
 import { useLocation } from "wouter"
+import { PreLaunchWrapper } from "@/components/PreLaunchWrapper"
 
 export function HomePage() {
   const [, setLocation] = useLocation()
   return (
-    <main className="flex-1">
+    <PreLaunchWrapper>
+      <main className="flex-1">
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         {/* Background Pattern */}
@@ -324,6 +326,7 @@ export function HomePage() {
           </div>
         </div>
       </section>
-    </main>
+      </main>
+    </PreLaunchWrapper>
   )
 }

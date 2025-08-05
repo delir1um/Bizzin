@@ -58,6 +58,17 @@ export const userPlans = pgTable("user_plans", {
   updated_at: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Platform Settings Table - global platform configuration
+export const platformSettings = pgTable("platform_settings", {
+  id: uuid("id").primaryKey(),
+  pre_launch_mode: boolean("pre_launch_mode").default(false).notNull(),
+  launch_message: text("launch_message").default("We're putting the finishing touches on Bizzin! Sign up to be notified when we launch."),
+  maintenance_mode: boolean("maintenance_mode").default(false).notNull(),
+  maintenance_message: text("maintenance_message").default("We're currently performing maintenance. Please check back soon."),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Early Signups Table - pre-launch leads
 export const earlySignups = pgTable("early_signups", {
   id: uuid("id").primaryKey(),

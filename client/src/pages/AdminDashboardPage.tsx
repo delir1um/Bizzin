@@ -33,6 +33,7 @@ import { AdminEarlySignups } from "@/components/admin/AdminEarlySignups"
 import { AdminContentManagement } from "@/components/admin/AdminContentManagement"
 import { AdminSystemHealth } from "@/components/admin/AdminSystemHealth"
 import { AdminFinancialOverview } from "@/components/admin/AdminFinancialOverview"
+import { PreLaunchToggle } from "@/components/admin/PreLaunchToggle"
 import { useAdminCheck } from "@/hooks/useAdminCheck"
 
 interface AdminStats {
@@ -283,6 +284,9 @@ export default function AdminDashboardPage() {
           Comprehensive platform management and analytics
         </p>
       </div>
+
+      {/* Pre-Launch Toggle */}
+      <PreLaunchToggle />
 
       {/* Key Metrics Overview */}
       {currentStats && (
