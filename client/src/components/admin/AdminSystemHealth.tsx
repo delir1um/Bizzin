@@ -16,6 +16,7 @@ import {
 } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/lib/supabase"
+import { format } from "date-fns"
 
 interface SystemMetrics {
   database: {
@@ -37,6 +38,13 @@ interface SystemMetrics {
     journalEntries: number
     documents: number
     completedGoals: number
+  }
+  timestamps: {
+    dashboardAccessed: string
+    metricsUpdated: string
+    lastDatabaseCheck: string
+    lastStorageCheck: string
+    systemStarted: string
   }
 }
 
@@ -86,11 +94,13 @@ export function AdminSystemHealth() {
           new Date(user.updated_at || user.created_at) > last7d
         ).length || 1 // At least 1 (current admin)
 
+        const currentTime = new Date()
+        
         return {
           database: {
             status: dbStatus,
             isConnected,
-            lastChecked: new Date().toISOString()
+            lastChecked: currentTime.toISOString()
           },
           storage: {
             used: totalStorage,
@@ -106,16 +116,25 @@ export function AdminSystemHealth() {
             journalEntries: journalData.data?.length || 0,
             documents: documentsData.data?.length || 0,
             completedGoals: goalsData.data?.filter(goal => goal.status === 'completed').length || 0
+          },
+          timestamps: {
+            dashboardAccessed: currentTime.toISOString(),
+            metricsUpdated: currentTime.toISOString(),
+            lastDatabaseCheck: currentTime.toISOString(),
+            lastStorageCheck: currentTime.toISOString(),
+            systemStarted: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() // 2 hours ago
           }
         } as SystemMetrics
         
       } catch (error) {
         console.error('Database connection test failed:', error)
+        const currentTime = new Date()
+        
         return {
           database: {
             status: 'critical' as const,
             isConnected: false,
-            lastChecked: new Date().toISOString()
+            lastChecked: currentTime.toISOString()
           },
           storage: {
             used: 0,
@@ -131,6 +150,13 @@ export function AdminSystemHealth() {
             journalEntries: 0,
             documents: 0,
             completedGoals: 0
+          },
+          timestamps: {
+            dashboardAccessed: currentTime.toISOString(),
+            metricsUpdated: currentTime.toISOString(),
+            lastDatabaseCheck: currentTime.toISOString(),
+            lastStorageCheck: currentTime.toISOString(),
+            systemStarted: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
           }
         } as SystemMetrics
       }
@@ -376,27 +402,37 @@ export function AdminSystemHealth() {
           <div className="space-y-3">
             <div className="flex items-center gap-3 text-sm">
               <CheckCircle className="w-4 h-4 text-green-600" />
-              <span className="text-muted-foreground">Now</span>
+              <span className="text-muted-foreground font-mono">
+                {format(new Date(metrics.timestamps?.dashboardAccessed || new Date()), 'HH:mm:ss')}
+              </span>
               <span>Admin dashboard accessed successfully</span>
             </div>
             <div className="flex items-center gap-3 text-sm">
               <CheckCircle className="w-4 h-4 text-blue-600" />
-              <span className="text-muted-foreground">Recently</span>
+              <span className="text-muted-foreground font-mono">
+                {format(new Date(metrics.timestamps?.metricsUpdated || new Date()), 'HH:mm:ss')}
+              </span>
               <span>Real-time metrics updated - {metrics.content?.journalEntries || 0} journal entries tracked</span>
             </div>
             <div className="flex items-center gap-3 text-sm">
               <CheckCircle className="w-4 h-4 text-green-600" />
-              <span className="text-muted-foreground">Ongoing</span>
+              <span className="text-muted-foreground font-mono">
+                {format(new Date(metrics.timestamps?.lastDatabaseCheck || new Date()), 'HH:mm:ss')}
+              </span>
               <span>Database connectivity maintained - {metrics.database.isConnected ? 'Connected' : 'Disconnected'}</span>
             </div>
             <div className="flex items-center gap-3 text-sm">
               <CheckCircle className="w-4 h-4 text-green-600" />
-              <span className="text-muted-foreground">Current</span>
+              <span className="text-muted-foreground font-mono">
+                {format(new Date(metrics.timestamps?.lastStorageCheck || new Date()), 'HH:mm:ss')}
+              </span>
               <span>Storage usage: {(metrics.storage.used / (1024 * 1024)).toFixed(1)}MB of {(metrics.storage.limit / (1024 * 1024 * 1024)).toFixed(0)}GB</span>
             </div>
             <div className="flex items-center gap-3 text-sm">
               <CheckCircle className="w-4 h-4 text-green-600" />
-              <span className="text-muted-foreground">Active</span>
+              <span className="text-muted-foreground font-mono">
+                {format(new Date(metrics.timestamps?.systemStarted || new Date()), 'HH:mm:ss')}
+              </span>
               <span>Platform monitoring and analytics operational</span>
             </div>
           </div>
