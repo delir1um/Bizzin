@@ -26,6 +26,7 @@ import { PreviewOrProtected } from "@/components/PreviewOrProtected"
 import { queryClient } from "@/lib/queryClient"
 import { DashboardPage } from "@/pages/DashboardPage"
 import PreLaunchPage from "@/pages/PreLaunchPage"
+import AdminDashboardPage from "@/pages/AdminDashboardPage"
 import { useEffect } from "react"
 
 // Component to handle root route logic
@@ -89,6 +90,7 @@ function App() {
                   </Route>
                   <Route path="/bizbuilder" component={() => <ProtectedRoute><BizBuilderToolsPage /></ProtectedRoute>} />
                   <Route path="/docsafe" component={() => <ProtectedRoute><DocSafePage /></ProtectedRoute>} />
+                  <Route path="/admin" component={() => <ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
                   <Route path="/admin/videos" component={() => <ProtectedRoute><AdminVideoPage /></ProtectedRoute>} />
                   <Route path="/privacy" component={PrivacyPage} />
                 </>
@@ -108,6 +110,7 @@ function App() {
                   </Route>
                   <Route path="/bizbuilder" component={() => <PreviewOrProtected protectedComponent={BizBuilderToolsPage} previewComponent={BizBuilderToolsPreviewPage} />} />
                   <Route path="/docsafe" component={() => <PreviewOrProtected protectedComponent={DocSafePage} previewComponent={DocSafePreviewPage} />} />
+                  <Route path="/admin" component={() => <ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
                   <Route path="/admin/videos" component={() => <ProtectedRoute><AdminVideoPage /></ProtectedRoute>} />
                   <Route path="/privacy" component={PrivacyPage} />
                 </Layout>
