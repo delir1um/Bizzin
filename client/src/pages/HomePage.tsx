@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Target, BookOpen, Calculator, Shield, PenTool, Headphones, ArrowRight, Brain } from "lucide-react"
+import { Target, BookOpen, Calculator, Shield, PenTool, Headphones, ArrowRight, Brain, Users } from "lucide-react"
 import { useLocation } from "wouter"
 import { PreLaunchWrapper } from "@/components/PreLaunchWrapper"
 
@@ -208,45 +208,18 @@ export function HomePage() {
             <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">Try <span className="italic">Bizzin</span> free for 14 days. Then just R299/month — cancel anytime.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* 14-Day Free Trial */}
-            <div className="bg-white dark:bg-slate-800 p-8 rounded-xl border border-slate-200 dark:border-slate-700">
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">14-Day Free Trial</h3>
-              <p className="text-slate-600 dark:text-slate-300 mb-6">Try all features for 14 days</p>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-center text-slate-700 dark:text-slate-300">
-                  <Target className="w-5 h-5 text-green-500 mr-3" />
-                  Basic goal tracking & analytics
-                </li>
-                <li className="flex items-center text-slate-700 dark:text-slate-300">
-                  <PenTool className="w-5 h-5 text-green-500 mr-3" />
-                  10 AI-analyzed entries per month
-                </li>
-                <li className="flex items-center text-slate-700 dark:text-slate-300">
-                  <BookOpen className="w-5 h-5 text-green-500 mr-3" />
-                  Core business calculators
-                </li>
-                <li className="flex items-center text-slate-700 dark:text-slate-300">
-                  <Shield className="w-5 h-5 text-green-500 mr-3" />
-                  50MB secure document storage
-                </li>
-              </ul>
-              <Button 
-                onClick={() => setLocation('/auth')}
-                variant="outline" 
-                className="w-full"
-              >
-                Start My 14-Day Free Trial
-              </Button>
-            </div>
-
-            {/* Paid Subscription */}
+          <div className="max-w-2xl mx-auto">
+            {/* Single Pricing Card */}
             <div className="bg-orange-50 dark:bg-orange-900/20 p-8 rounded-xl border-2 border-orange-200 dark:border-orange-800 relative">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <span className="bg-orange-600 text-white px-4 py-2 rounded-full text-sm font-medium">Popular</span>
+                <span className="bg-orange-600 text-white px-4 py-2 rounded-full text-sm font-medium">14-Day Free Trial</span>
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Bizzin Premium</h3>
-              <p className="text-slate-600 dark:text-slate-300 mb-6">Everything included after your 14‑day free trial</p>
+              
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Start Your Free Trial</h3>
+                <p className="text-slate-600 dark:text-slate-300">Full access to everything for 14 days, then R299/month</p>
+              </div>
+
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center text-slate-700 dark:text-slate-300">
                   <Target className="w-5 h-5 text-orange-500 mr-3" />
@@ -257,11 +230,15 @@ export function HomePage() {
                   Unlimited AI analysis & business insights
                 </li>
                 <li className="flex items-center text-slate-700 dark:text-slate-300">
-                  <BookOpen className="w-5 h-5 text-orange-500 mr-3" />
+                  <Calculator className="w-5 h-5 text-orange-500 mr-3" />
                   Premium financial calculators + CSV export
                 </li>
                 <li className="flex items-center text-slate-700 dark:text-slate-300">
-                  <Calculator className="w-5 h-5 text-orange-500 mr-3" />
+                  <Headphones className="w-5 h-5 text-orange-500 mr-3" />
+                  Business learning modules & progress tracking
+                </li>
+                <li className="flex items-center text-slate-700 dark:text-slate-300">
+                  <Users className="w-5 h-5 text-orange-500 mr-3" />
                   Referral program - earn free subscription days
                 </li>
                 <li className="flex items-center text-slate-700 dark:text-slate-300">
@@ -269,12 +246,17 @@ export function HomePage() {
                   10GB professional document storage
                 </li>
               </ul>
+              
               <Button 
                 onClick={() => setLocation('/auth')}
-                className="w-full bg-orange-600 hover:bg-orange-700"
+                className="w-full bg-orange-600 hover:bg-orange-700 text-lg py-3"
               >
-                Start Free Trial → R299/month
+                Start My 14-Day Free Trial
               </Button>
+              
+              <p className="text-xs text-slate-500 dark:text-slate-400 text-center mt-3">
+                Cancel anytime during your trial. No commitment required.
+              </p>
             </div>
           </div>
         </div>
