@@ -1,0 +1,61 @@
+{
+  "options": { "caseInsensitive": true, "trimAndNormalizeWhitespace": true },
+  "replacements": [
+    {
+      "find": "Choose Your Plan",
+      "replace": "Simple Pricing"
+    },
+    {
+      "find": "Start free, upgrade when you're ready to grow",
+      "replace": "Try Bizzin free for 14 days. Then just R299/month — cancel anytime."
+    },
+    {
+      "find": "Start My Free Trial",
+      "replace": "Start My 14-Day Free Trial"
+    },
+    {
+      "find": "Discover All Features",
+      "replace": "Explore All Features"
+    },
+    {
+      "find": "See How It Works",
+      "replace": "See How It Works"
+    },
+    {
+      "find": "Start Earning My Free Days",
+      "replace": "Start Earning My Free Days"
+    },
+    {
+      "find": "Everything You Need to Plan, Learn, Track, and Grow Your Business",
+      "replace": "Run Your Entire Business from One Simple Platform"
+    },
+    {
+      "find": "From goal tracking to financial planning, training, analytics, and secure document storage — Bizzin brings all your essential business tools together in one place.",
+      "replace": "Bizzin combines goal tracking, financial planning, learning tools, analytics, and secure document storage — so you can focus on growing, not juggling apps."
+    },
+    {
+      "find": "Run your business with confidence: track goals and journals, analyse performance, plan your finances, learn with bite-size modules, and manage documents securely — all in Bizzin.",
+      "replace": "Set clear goals, track results, learn new skills, manage finances, and store important files — all in one platform built for business owners."
+    },
+    {
+      "find": "AI-Powered Business Intelligence Suite",
+      "replace": "Your Complete Business Growth Toolkit"
+    },
+    {
+      "find": "Automatically detect moods, analyse trends, and generate AI-powered business insights from your journal entries.",
+      "replace": "Detect moods, analyse trends, and uncover actionable insights from your journal entries."
+    },
+    {
+      "find": "Professional referral program with real rewards",
+      "replace": "A simple referral programme with rewards that save you money"
+    },
+    {
+      "find": "Paid Subscription",
+      "replace": "Bizzin Premium"
+    },
+    {
+      "find": "Unlock full access to every feature and insight our platform offers",
+      "replace": "Everything included after your 14‑day free trial"
+    }
+  ]
+}

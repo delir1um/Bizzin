@@ -18,17 +18,17 @@ export function HomePage() {
           <div className="text-center">
             {/* Main Heading */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-white tracking-tight">
-              Everything You Need to Plan, Learn, Track, and Grow Your Business
+              Run Your Entire Business from One Simple Platform
             </h1>
             
             {/* Subtitle */}
             <p className="mt-6 text-xl sm:text-2xl text-slate-600 dark:text-slate-300 max-w-4xl mx-auto leading-relaxed">
-              From goal tracking to financial planning, training, analytics, and secure document storage — <span className="text-orange-600 italic">Bizzin</span> brings all your essential business tools together in one place.
+              <span className="text-orange-600 italic">Bizzin</span> combines goal tracking, financial planning, learning tools, analytics, and secure document storage — so you can focus on growing, not juggling apps.
             </p>
             
             {/* Description */}
             <p className="mt-6 text-lg text-slate-500 dark:text-slate-400 max-w-3xl mx-auto">
-              Run your business with confidence: track goals and journals, analyse performance, plan your finances, learn with bite-size modules, and manage documents securely — all in <span className="italic">Bizzin</span>.
+              Set clear goals, track results, learn new skills, manage finances, and store important files — all in one platform built for business owners.
             </p>
 
             {/* CTA Buttons */}
@@ -37,14 +37,14 @@ export function HomePage() {
                 onClick={() => setLocation('/auth')}
                 className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 text-lg font-medium transition-colors shadow-lg hover:shadow-xl"
               >
-                Start My Free Trial
+                Start My 14-Day Free Trial
               </Button>
               <Button 
                 variant="outline" 
                 onClick={() => setLocation('/goals')}
                 className="w-full sm:w-auto border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-8 py-4 text-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
               >
-                Discover All Features
+                Explore All Features
               </Button>
             </div>
 
@@ -158,7 +158,7 @@ export function HomePage() {
                 <PenTool className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">AI Business Intelligence</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Detect moods, analyse trends, and generate smart business insights from your journal entries.</p>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">Detect moods, analyse trends, and uncover actionable insights from your journal entries.</p>
             </div>
 
             {/* Podcast */}
@@ -204,8 +204,8 @@ export function HomePage() {
       <section className="py-24 bg-slate-50 dark:bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Choose Your Plan</h2>
-            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">Start free, upgrade when you're ready to grow</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Simple Pricing</h2>
+            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">Try <span className="italic">Bizzin</span> free for 14 days. Then just R299/month — cancel anytime.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -236,7 +236,7 @@ export function HomePage() {
                 variant="outline" 
                 className="w-full"
               >
-                Get Started Now — It's Free
+                Start My 14-Day Free Trial
               </Button>
             </div>
 
@@ -245,8 +245,8 @@ export function HomePage() {
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                 <span className="bg-orange-600 text-white px-4 py-2 rounded-full text-sm font-medium">Popular</span>
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Paid Subscription</h3>
-              <p className="text-slate-600 dark:text-slate-300 mb-6">Unlock full access to every feature and insight our platform offers</p>
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Bizzin Premium</h3>
+              <p className="text-slate-600 dark:text-slate-300 mb-6">Everything included after your 14‑day free trial</p>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center text-slate-700 dark:text-slate-300">
                   <Target className="w-5 h-5 text-orange-500 mr-3" />
@@ -273,7 +273,7 @@ export function HomePage() {
                 onClick={() => setLocation('/auth')}
                 className="w-full bg-orange-600 hover:bg-orange-700"
               >
-                Start My Premium Trial
+                Start My 14-Day Free Trial
               </Button>
             </div>
           </div>
@@ -285,7 +285,7 @@ export function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Earn Free Subscription Days</h2>
-            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">A simple referral program with rewards that save you money</p>
+            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">A simple referral programme with rewards that save you money</p>
           </div>
 
           <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-xl border border-slate-200 dark:border-slate-700 max-w-4xl mx-auto">
