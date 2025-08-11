@@ -243,7 +243,7 @@ export function HomePage() {
                 </li>
                 <li className="flex items-center text-slate-700 dark:text-slate-300">
                   <Shield className="w-5 h-5 text-orange-500 mr-3" />
-                  10GB professional document storage
+                  Professional document storage & management
                 </li>
               </ul>
               
