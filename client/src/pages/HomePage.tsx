@@ -6,6 +6,14 @@ import { PreLaunchWrapper } from "@/components/PreLaunchWrapper"
 
 export function HomePage() {
   const [, setLocation] = useLocation()
+  
+  const scrollToFeatures = () => {
+    const featuresSection = document.getElementById('features-section')
+    if (featuresSection) {
+      featuresSection.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+  
   return (
     <PreLaunchWrapper>
       <main className="flex-1">
@@ -44,7 +52,7 @@ export function HomePage() {
               </Button>
               <Button 
                 variant="outline" 
-                onClick={() => setLocation('/goals')}
+                onClick={scrollToFeatures}
                 className="w-full sm:w-auto border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-8 py-4 text-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
               >
                 Explore All Features
@@ -132,7 +140,7 @@ export function HomePage() {
       </section>
 
       {/* Features Preview */}
-      <section className="py-24 bg-white dark:bg-[#0B0A1D]">
+      <section id="features-section" className="py-24 bg-white dark:bg-[#0B0A1D]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Everything You Need to Grow — Built In</h2>
