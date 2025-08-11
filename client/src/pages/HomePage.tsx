@@ -148,18 +148,6 @@ export function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-            {/* Goals */}
-            <div 
-              className="bg-gradient-to-br from-orange-500 to-red-600 p-6 rounded-xl hover:shadow-xl transition-all duration-300 cursor-pointer text-white"
-              onClick={() => setLocation('/goals')}
-            >
-              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-6">
-                <Target className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-3">Advanced Goal Analytics</h3>
-              <p className="text-white/80 text-sm">Professional goal tracking with progress analytics, priority filtering, status monitoring, and intelligent business insights</p>
-            </div>
-
             {/* Journal */}
             <div 
               className="bg-gradient-to-br from-purple-600 to-blue-600 p-6 rounded-xl hover:shadow-xl transition-all duration-300 cursor-pointer text-white"
@@ -170,6 +158,18 @@ export function HomePage() {
               </div>
               <h3 className="text-lg font-semibold text-white mb-3">AI Business Intelligence Journal</h3>
               <p className="text-white/80 text-sm">Automatic mood detection, business health analytics, trend analysis, and AI-powered insights from your daily entries</p>
+            </div>
+
+            {/* Goals */}
+            <div 
+              className="bg-gradient-to-br from-orange-500 to-red-600 p-6 rounded-xl hover:shadow-xl transition-all duration-300 cursor-pointer text-white"
+              onClick={() => setLocation('/goals')}
+            >
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-6">
+                <Target className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-3">Advanced Goal Analytics</h3>
+              <p className="text-white/80 text-sm">Professional goal tracking with progress analytics, priority filtering, status monitoring, and intelligent business insights</p>
             </div>
 
             {/* Podcast */}
