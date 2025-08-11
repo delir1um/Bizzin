@@ -17,8 +17,11 @@ export function HomePage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
           <div className="text-center">
             {/* Main Heading */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-white tracking-tight">
-              Plan, Learn, Track & Grow — All in One Platform
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-white tracking-tight leading-tight">
+              <span className="block">Plan, Learn, Track & Grow</span>
+              <span className="block bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mt-2">
+                All in One Platform
+              </span>
             </h1>
             
             {/* Subtitle */}
