@@ -23,12 +23,12 @@ export function HomePage() {
             
             {/* Subtitle */}
             <p className="mt-6 text-xl sm:text-2xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed">
-              Professional Business Analytics & Growth Intelligence Platform
+              Your Complete Platform for Smarter Business Decisions & Sustainable Growth
             </p>
             
             {/* Description */}
             <p className="mt-6 text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
-              Make data-driven business decisions with comprehensive analytics, AI-powered insights, professional financial tools, and intelligent document management.
+              Make smarter, faster business decisions with AI-powered analytics, professional financial tools, and intelligent document management — all in one platform.
             </p>
 
             {/* CTA Buttons */}
@@ -37,14 +37,14 @@ export function HomePage() {
                 onClick={() => setLocation('/auth')}
                 className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 text-lg font-medium transition-colors shadow-lg hover:shadow-xl"
               >
-                Start Free Trial
+                Start My Free Trial
               </Button>
               <Button 
                 variant="outline" 
                 onClick={() => setLocation('/goals')}
                 className="w-full sm:w-auto border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-8 py-4 text-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
               >
-                Explore Features
+                Discover All Features
               </Button>
             </div>
 
@@ -75,7 +75,7 @@ export function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Real Business Health Analytics</h2>
-            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">See exactly what your portal dashboard looks like</p>
+            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">See instantly how your business is performing</p>
           </div>
 
           <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-xl border border-slate-200 dark:border-slate-700">
@@ -158,7 +158,7 @@ export function HomePage() {
                 <PenTool className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">AI Business Intelligence</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Automatic mood detection, trend analysis, and AI-powered business insights from your entries.</p>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">Automatically detect moods, analyse trends, and generate AI-powered business insights from your journal entries.</p>
             </div>
 
             {/* Podcast */}
@@ -236,7 +236,7 @@ export function HomePage() {
                 variant="outline" 
                 className="w-full"
               >
-                Get Started Free
+                Get Started Now — It's Free
               </Button>
             </div>
 
@@ -246,7 +246,7 @@ export function HomePage() {
                 <span className="bg-orange-600 text-white px-4 py-2 rounded-full text-sm font-medium">Popular</span>
               </div>
               <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Paid Subscription</h3>
-              <p className="text-slate-600 dark:text-slate-300 mb-6">Full access to all platform features</p>
+              <p className="text-slate-600 dark:text-slate-300 mb-6">Unlock full access to every feature and insight our platform offers</p>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center text-slate-700 dark:text-slate-300">
                   <Target className="w-5 h-5 text-orange-500 mr-3" />
@@ -273,7 +273,7 @@ export function HomePage() {
                 onClick={() => setLocation('/auth')}
                 className="w-full bg-orange-600 hover:bg-orange-700"
               >
-                Start Free Trial
+                Start My Premium Trial
               </Button>
             </div>
           </div>
@@ -285,7 +285,7 @@ export function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Earn Free Subscription Days</h2>
-            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">Professional referral program with real rewards</p>
+            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">A simple referral program with rewards that save you money</p>
           </div>
 
           <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-xl border border-slate-200 dark:border-slate-700 max-w-4xl mx-auto">
@@ -320,7 +320,7 @@ export function HomePage() {
                 onClick={() => setLocation('/auth')}
                 className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 text-lg font-medium"
               >
-                Start Earning Free Days
+                Start Earning My Free Days
               </Button>
             </div>
           </div>
