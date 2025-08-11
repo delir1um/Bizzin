@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Target, BookOpen, Calculator, Shield, PenTool, Headphones, ArrowRight, Brain, Users, LayoutDashboard } from "lucide-react"
+import { Target, BookOpen, Calculator, Shield, PenTool, Headphones, ArrowRight, Brain, Users, LayoutDashboard, TrendingUp, Flame, BarChart3 } from "lucide-react"
 import { useLocation } from "wouter"
 import { PreLaunchWrapper } from "@/components/PreLaunchWrapper"
 
@@ -143,8 +143,8 @@ export function HomePage() {
       <section id="features-section" className="py-24 bg-white dark:bg-[#0B0A1D]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Everything You Need to Grow — Built In</h2>
-            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">Plan, measure, and improve every part of your business with these core modules:</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Comprehensive Business Intelligence Platform</h2>
+            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">Advanced AI-powered analytics, professional tools, and intelligent automation — everything built in:</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -156,8 +156,13 @@ export function HomePage() {
               <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center mb-6">
                 <LayoutDashboard className="w-6 h-6 text-slate-600 dark:text-slate-400" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Business Intelligence Dashboard</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Comprehensive business health metrics, motivational insights, burnout monitoring, and real-time analytics in one central hub</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">AI Business Intelligence Dashboard</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">
+                <strong>• Business Health Radar:</strong> Multi-dimensional health scoring<br/>
+                <strong>• Burnout Risk Analysis:</strong> Stress pattern detection<br/>
+                <strong>• Growth Momentum:</strong> Progress trend analytics<br/>
+                <strong>• Recovery Resilience:</strong> Performance bounce-back tracking
+              </p>
             </div>
 
             {/* Journal */}
@@ -168,8 +173,13 @@ export function HomePage() {
               <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mb-6">
                 <BookOpen className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">AI Business Intelligence Journal</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Automatic mood detection, business health analytics, trend analysis, and AI-powered insights from your daily entries</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">AI-Powered Business Journal</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">
+                <strong>• Automatic Sentiment Analysis:</strong> AI mood detection<br/>
+                <strong>• Business Health Insights:</strong> Trend identification<br/>
+                <strong>• Writing Streak Tracking:</strong> Consistency metrics<br/>
+                <strong>• Smart Categorization:</strong> Intelligent entry organization
+              </p>
             </div>
 
             {/* Goals */}
@@ -180,8 +190,13 @@ export function HomePage() {
               <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mb-6">
                 <Target className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Advanced Goal Analytics</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Professional goal tracking with progress analytics, priority filtering, status monitoring, and intelligent business insights</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Intelligent Goal Management</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">
+                <strong>• Progress Analytics:</strong> Visual completion tracking<br/>
+                <strong>• Deadline Intelligence:</strong> Overdue & upcoming alerts<br/>
+                <strong>• Priority Filtering:</strong> Strategic focus management<br/>
+                <strong>• Achievement Celebrations:</strong> Automated milestone recognition
+              </p>
             </div>
 
             {/* Podcast */}
@@ -192,8 +207,13 @@ export function HomePage() {
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mb-6">
                 <Headphones className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Business Podcast</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">15-minute business insights to grow your entrepreneurial mindset</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Learning Analytics Platform</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">
+                <strong>• Progress Tracking:</strong> Episode completion analytics<br/>
+                <strong>• Learning Streaks:</strong> Consistency measurement<br/>
+                <strong>• Adaptive Player:</strong> Audio/video optimization<br/>
+                <strong>• Knowledge Retention:</strong> Learning effectiveness metrics
+              </p>
             </div>
 
             {/* BizBuilder Tools */}
@@ -204,8 +224,13 @@ export function HomePage() {
               <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mb-6">
                 <Calculator className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Professional Financial Suite</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Enterprise-grade calculators with CSV export, real-time calculations, advanced financial modeling, and professional business analysis tools</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Advanced Financial Analytics</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">
+                <strong>• Enterprise Calculators:</strong> Professional modeling tools<br/>
+                <strong>• CSV Export:</strong> Data portability & analysis<br/>
+                <strong>• Real-time Updates:</strong> Dynamic calculation engine<br/>
+                <strong>• Financial Intelligence:</strong> Business decision support
+              </p>
             </div>
 
             {/* DocSafe */}
@@ -216,8 +241,55 @@ export function HomePage() {
               <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mb-6">
                 <Shield className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Intelligent Document Hub</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Smart categorization, advanced search, multi-format viewer, professional document management, and secure cloud storage with intelligent organization</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Smart Document Intelligence</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">
+                <strong>• Auto-Categorization:</strong> AI-powered file organization<br/>
+                <strong>• Advanced Search:</strong> Content & metadata indexing<br/>
+                <strong>• Multi-Format Viewer:</strong> Universal file support<br/>
+                <strong>• Storage Analytics:</strong> Usage monitoring & optimization
+              </p>
+            </div>
+          </div>
+
+          {/* Additional Intelligence Features */}
+          <div className="mt-16 pt-12 border-t border-slate-200 dark:border-slate-700">
+            <div className="text-center mb-12">
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Advanced Intelligence Features</h3>
+              <p className="text-slate-600 dark:text-slate-300">Powerful automation and analytics working behind the scenes</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="text-center p-4">
+                <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <TrendingUp className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                </div>
+                <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Referral Analytics</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Earn free days with intelligent referral tracking and automatic activation</p>
+              </div>
+              
+              <div className="text-center p-4">
+                <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Flame className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Streak Intelligence</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Writing and learning streaks with pattern analysis and motivation triggers</p>
+              </div>
+              
+              <div className="text-center p-4">
+                <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Brain className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                </div>
+                <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Sentiment Trends</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Long-term mood analysis with business correlation insights and alerts</p>
+              </div>
+              
+              <div className="text-center p-4">
+                <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <BarChart3 className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                </div>
+                <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Usage Analytics</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Platform engagement metrics with productivity insights and optimization tips</p>
+              </div>
             </div>
           </div>
         </div>
