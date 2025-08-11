@@ -175,7 +175,7 @@ export function HomePage() {
             {/* Podcast */}
             <div 
               className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-xl hover:shadow-xl transition-all duration-300 cursor-pointer text-white"
-              onClick={() => setLocation('/podcast')}
+              onClick={() => setLocation('/training')}
             >
               <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-6">
                 <Headphones className="w-6 h-6 text-white" />
