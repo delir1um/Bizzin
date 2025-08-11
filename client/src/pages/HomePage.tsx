@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Target, BookOpen, Calculator, Shield, PenTool, Headphones, ArrowRight, Brain, Users } from "lucide-react"
+import { Target, BookOpen, Calculator, Shield, PenTool, Headphones, ArrowRight, Brain, Users, LayoutDashboard } from "lucide-react"
 import { useLocation } from "wouter"
 import { PreLaunchWrapper } from "@/components/PreLaunchWrapper"
 
@@ -147,7 +147,19 @@ export function HomePage() {
             <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">Plan, measure, and improve every part of your business with these core modules:</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Dashboard */}
+            <div 
+              className="bg-gradient-to-br from-slate-700 to-slate-900 p-6 rounded-xl hover:shadow-xl transition-all duration-300 cursor-pointer text-white"
+              onClick={() => setLocation('/dashboard')}
+            >
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-6">
+                <LayoutDashboard className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-3">Business Intelligence Dashboard</h3>
+              <p className="text-white/80 text-sm">Comprehensive business health metrics, motivational insights, burnout monitoring, and real-time analytics in one central hub</p>
+            </div>
+
             {/* Journal */}
             <div 
               className="bg-gradient-to-br from-purple-600 to-blue-600 p-6 rounded-xl hover:shadow-xl transition-all duration-300 cursor-pointer text-white"
