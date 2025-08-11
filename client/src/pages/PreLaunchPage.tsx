@@ -89,46 +89,46 @@ export default function PreLaunchPage() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-[#0B0A1D] flex items-center justify-center p-4">
-        <div className="max-w-md w-full space-y-6 text-center">
-          <div className="space-y-4">
-            <div className="w-16 h-16 mx-auto bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-              <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-100 dark:bg-[#0B0A1D] flex items-center justify-center py-12 px-4">
+        <div className="max-w-md w-full space-y-8 text-center">
+          <div className="space-y-6">
+            <div className="w-20 h-20 mx-auto bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+              <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />
             </div>
             
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold text-white">
+            <div className="space-y-3">
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
                 You're on the list! 🎉
               </h1>
-              <p className="text-slate-300 text-lg">
-                Welcome to the exclusive early access for <em className="text-orange-400">Bizzin</em>
+              <p className="text-slate-700 dark:text-slate-300 text-lg">
+                Welcome to the exclusive early access for <em className="text-orange-600 dark:text-orange-400">Bizzin</em>
               </p>
             </div>
           </div>
 
-          <Card className="bg-slate-800/50 border-slate-700">
+          <Card className="bg-white/80 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 backdrop-blur-sm">
             <CardContent className="p-6 space-y-4">
               <div className="flex items-center gap-3">
-                <Mail className="w-5 h-5 text-orange-400" />
-                <span className="text-white font-medium">What happens next?</span>
+                <Mail className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                <span className="text-slate-900 dark:text-white font-medium">What happens next?</span>
               </div>
               
               <div className="space-y-3 text-left">
                 <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
-                  <span className="text-slate-300 text-sm">
+                  <div className="w-2 h-2 bg-orange-600 dark:bg-orange-400 rounded-full"></div>
+                  <span className="text-slate-700 dark:text-slate-300 text-sm">
                     You'll receive launch updates via email
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
-                  <span className="text-slate-300 text-sm">
+                  <div className="w-2 h-2 bg-orange-600 dark:bg-orange-400 rounded-full"></div>
+                  <span className="text-slate-700 dark:text-slate-300 text-sm">
                     Get exclusive early access when we launch
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
-                  <span className="text-slate-300 text-sm">
+                  <div className="w-2 h-2 bg-orange-600 dark:bg-orange-400 rounded-full"></div>
+                  <span className="text-slate-700 dark:text-slate-300 text-sm">
                     Special launch discount for early supporters
                   </span>
                 </div>
@@ -136,18 +136,17 @@ export default function PreLaunchPage() {
             </CardContent>
           </Card>
 
-          <div className="space-y-4">
-            <p className="text-slate-400 text-sm">
-              Thank you for believing in <em className="text-orange-400">Bizzin</em>! 
+          <div className="space-y-6">
+            <p className="text-slate-600 dark:text-slate-400 text-sm">
+              Thank you for believing in <em className="text-orange-600 dark:text-orange-400">Bizzin</em>! 
               We can't wait to help you grow your business.
             </p>
             
             <Button 
               onClick={() => window.location.href = '/'}
-              variant="outline"
-              className="border-slate-700 text-slate-300 hover:bg-slate-800"
+              className="w-full bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 font-medium transition-colors shadow-lg hover:shadow-xl"
             >
-              Back to Home
+              ← Return to Homepage
             </Button>
           </div>
         </div>
