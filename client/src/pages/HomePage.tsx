@@ -18,12 +18,12 @@ export function HomePage() {
           <div className="text-center">
             {/* Main Heading */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-white tracking-tight">
-              Run Your Entire Business from One Simple Platform
+              Plan, Learn, Track & Grow — All in One Platform
             </h1>
             
             {/* Subtitle */}
             <p className="mt-6 text-xl sm:text-2xl text-slate-600 dark:text-slate-300 max-w-4xl mx-auto leading-relaxed">
-              <span className="text-orange-600 italic">Bizzin</span> combines goal tracking, financial planning, learning tools, analytics, and secure document storage — so you can focus on growing, not juggling apps.
+              <span className="text-orange-600 italic">Bizzin</span> combines goal tracking, financial planning, learning tools, analytics, and secure document storage — so you can focus on growing your business.
             </p>
             
             {/* Description */}
