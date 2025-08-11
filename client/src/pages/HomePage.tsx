@@ -157,7 +157,7 @@ export function HomePage() {
                 <Target className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Advanced Goal Analytics</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Professional goal tracking with progress analytics, priority filtering, and intelligent insights.</p>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">Professional goal tracking with progress analytics, priority filtering, status monitoring, and intelligent business insights</p>
             </div>
 
             {/* Journal */}
@@ -166,22 +166,22 @@ export function HomePage() {
               onClick={() => setLocation('/journal')}
             >
               <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mb-6">
-                <PenTool className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                <BookOpen className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Journal & Insights</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Reflect daily; detect moods and trends to learn what's working.</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">AI Business Intelligence Journal</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">Automatic mood detection, business health analytics, trend analysis, and AI-powered insights from your daily entries</p>
             </div>
 
             {/* Podcast */}
             <div 
               className="bg-slate-50 dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => setLocation('/training')}
+              onClick={() => setLocation('/podcast')}
             >
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mb-6">
                 <Headphones className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Learning & Progress</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Professional development tracking with completion analytics, streak monitoring, and progress insights.</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Business Podcast</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">15-minute business insights to grow your entrepreneurial mindset</p>
             </div>
 
             {/* BizBuilder Tools */}
@@ -189,11 +189,11 @@ export function HomePage() {
               className="bg-slate-50 dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow cursor-pointer"
               onClick={() => setLocation('/bizbuilder')}
             >
-              <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900 rounded-lg flex items-center justify-center mb-6">
-                <Calculator className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mb-6">
+                <Calculator className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Financial Planning Suite</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Enterprise-grade calculators with CSV export, real-time calculations, and advanced financial modeling.</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Professional Financial Suite</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">Enterprise-grade calculators with CSV export, real-time calculations, advanced financial modeling, and professional business analysis tools</p>
             </div>
 
             {/* DocSafe */}
@@ -201,11 +201,11 @@ export function HomePage() {
               className="bg-slate-50 dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow cursor-pointer"
               onClick={() => setLocation('/docsafe')}
             >
-              <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900 rounded-lg flex items-center justify-center mb-6">
-                <Shield className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+              <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mb-6">
+                <Shield className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Secure Document Hub</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Smart categorization, advanced search, multi-format viewer, and professional document management.</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Intelligent Document Hub</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">Smart categorization, advanced search, multi-format viewer, professional document management, and secure cloud storage with intelligent organization</p>
             </div>
           </div>
         </div>
