@@ -150,7 +150,7 @@ export function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Dashboard */}
             <div 
-              className="bg-gradient-to-br from-slate-700 to-slate-900 p-6 rounded-xl hover:shadow-xl transition-all duration-300 cursor-pointer text-white"
+              className="bg-gradient-to-br from-indigo-600 to-purple-700 p-6 rounded-xl hover:shadow-xl transition-all duration-300 cursor-pointer text-white"
               onClick={() => setLocation('/dashboard')}
             >
               <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-6">
