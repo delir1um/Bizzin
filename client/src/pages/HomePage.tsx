@@ -209,10 +209,10 @@ export function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Free Tier */}
+            {/* 14-Day Free Trial */}
             <div className="bg-white dark:bg-slate-800 p-8 rounded-xl border border-slate-200 dark:border-slate-700">
               <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">14-Day Free Trial</h3>
-              <p className="text-slate-600 dark:text-slate-300 mb-6">Get started with basic features</p>
+              <p className="text-slate-600 dark:text-slate-300 mb-6">Try all features for 14 days</p>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center text-slate-700 dark:text-slate-300">
                   <Target className="w-5 h-5 text-green-500 mr-3" />
