@@ -18,17 +18,17 @@ export function HomePage() {
           <div className="text-center">
             {/* Main Heading */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-white tracking-tight">
-              AI-Powered Business Intelligence for <span className="text-orange-600 italic">Bizzin</span>
+              Everything You Need to Plan, Learn, Track, and Grow Your Business
             </h1>
             
             {/* Subtitle */}
-            <p className="mt-6 text-xl sm:text-2xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed">
-              Your Complete Platform for Smarter Business Decisions & Sustainable Growth
+            <p className="mt-6 text-xl sm:text-2xl text-slate-600 dark:text-slate-300 max-w-4xl mx-auto leading-relaxed">
+              From goal tracking to financial planning, training, analytics, and secure document storage — <span className="text-orange-600 italic">Bizzin</span> brings all your essential business tools together in one place.
             </p>
             
             {/* Description */}
-            <p className="mt-6 text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
-              Make smarter, faster business decisions with AI-powered analytics, professional financial tools, and intelligent document management — all in one platform.
+            <p className="mt-6 text-lg text-slate-500 dark:text-slate-400 max-w-3xl mx-auto">
+              Run your business with confidence: track goals and journals, analyse performance, plan your finances, learn with bite-size modules, and manage documents securely — all in <span className="italic">Bizzin</span>.
             </p>
 
             {/* CTA Buttons */}
@@ -132,7 +132,7 @@ export function HomePage() {
       <section className="py-24 bg-white dark:bg-[#0B0A1D]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">AI-Powered Business Intelligence Suite</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Your Complete Business Growth Toolkit</h2>
             <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">Professional analytics, intelligent insights, and enterprise-grade tools for growing businesses</p>
           </div>
 
@@ -158,7 +158,7 @@ export function HomePage() {
                 <PenTool className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">AI Business Intelligence</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Automatically detect moods, analyse trends, and generate AI-powered business insights from your journal entries.</p>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">Detect moods, analyse trends, and generate smart business insights from your journal entries.</p>
             </div>
 
             {/* Podcast */}
