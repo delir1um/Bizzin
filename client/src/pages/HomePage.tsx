@@ -273,7 +273,7 @@ export function HomePage() {
                 onClick={() => setLocation('/auth')}
                 className="w-full bg-orange-600 hover:bg-orange-700"
               >
-                Start My 14-Day Free Trial
+                Start Free Trial → R299/month
               </Button>
             </div>
           </div>
