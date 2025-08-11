@@ -282,10 +282,6 @@ export default function PreLaunchPage() {
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
-                AI-powered business intelligence and insights
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
                 Smart journaling with sentiment analysis
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -294,15 +290,19 @@ export default function PreLaunchPage() {
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
-                Professional financial calculators and business tools
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
                 Business podcast platform with learning analytics
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                Professional financial calculators and business tools
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
                 Professional document management
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                AI-powered business intelligence and insights
               </div>
             </div>
           </CardContent>
