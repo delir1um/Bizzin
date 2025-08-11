@@ -129,7 +129,7 @@ export default function PreLaunchPage() {
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-orange-600 dark:bg-orange-400 rounded-full"></div>
                   <span className="text-slate-700 dark:text-slate-300 text-sm">
-                    Special launch discount for early supporters
+                    Special launch incentive for early supporters
                   </span>
                 </div>
               </div>
