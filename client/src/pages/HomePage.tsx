@@ -74,8 +74,8 @@ export function HomePage() {
       <section className="py-24 bg-slate-50 dark:bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Real Business Health Analytics</h2>
-            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">See instantly how your business is performing</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Know Exactly How You're Tracking</h2>
+            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">See a live view of your goals, burnout risk, and performance trends — make decisions with confidence.</p>
           </div>
 
           <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-xl border border-slate-200 dark:border-slate-700">
@@ -132,8 +132,8 @@ export function HomePage() {
       <section className="py-24 bg-white dark:bg-[#0B0A1D]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Your Complete Business Growth Toolkit</h2>
-            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">Professional analytics, intelligent insights, and enterprise-grade tools for growing businesses</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Everything You Need to Grow — Built In</h2>
+            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">Plan, measure, and improve every part of your business with these core modules:</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
@@ -157,8 +157,8 @@ export function HomePage() {
               <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mb-6">
                 <PenTool className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">AI Business Intelligence</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Detect moods, analyse trends, and uncover actionable insights from your journal entries.</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Journal & Insights</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">Reflect daily; detect moods and trends to learn what's working.</p>
             </div>
 
             {/* Podcast */}
@@ -169,7 +169,7 @@ export function HomePage() {
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mb-6">
                 <Headphones className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Learning Analytics</h3>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Learning & Progress</h3>
               <p className="text-slate-600 dark:text-slate-300 text-sm">Professional development tracking with completion analytics, streak monitoring, and progress insights.</p>
             </div>
 
@@ -181,7 +181,7 @@ export function HomePage() {
               <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900 rounded-lg flex items-center justify-center mb-6">
                 <Calculator className="w-6 h-6 text-amber-600 dark:text-amber-400" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Professional Financial Suite</h3>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Financial Planning Suite</h3>
               <p className="text-slate-600 dark:text-slate-300 text-sm">Enterprise-grade calculators with CSV export, real-time calculations, and advanced financial modeling.</p>
             </div>
 
@@ -193,7 +193,7 @@ export function HomePage() {
               <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900 rounded-lg flex items-center justify-center mb-6">
                 <Shield className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Intelligent Document Hub</h3>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Secure Document Hub</h3>
               <p className="text-slate-600 dark:text-slate-300 text-sm">Smart categorization, advanced search, multi-format viewer, and professional document management.</p>
             </div>
           </div>
@@ -204,14 +204,14 @@ export function HomePage() {
       <section className="py-24 bg-slate-50 dark:bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Simple Pricing</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Simple Pricing. Powerful Value.</h2>
             <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">Try <span className="italic">Bizzin</span> free for 14 days. Then just R299/month — cancel anytime.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Free Tier */}
             <div className="bg-white dark:bg-slate-800 p-8 rounded-xl border border-slate-200 dark:border-slate-700">
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Free Tier</h3>
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">14-Day Free Trial</h3>
               <p className="text-slate-600 dark:text-slate-300 mb-6">Get started with basic features</p>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center text-slate-700 dark:text-slate-300">

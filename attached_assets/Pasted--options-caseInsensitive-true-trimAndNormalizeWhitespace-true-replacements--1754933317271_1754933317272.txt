@@ -1,0 +1,43 @@
+{
+  "options": { "caseInsensitive": true, "trimAndNormalizeWhitespace": true },
+  "replacements": [
+    { "find": "AI-Powered Business Intelligence for Bizzin", "replace": "Plan, Learn, Track & Grow — All in One Platform" },
+    { "find": "Your Complete Platform for Smarter Business Decisions & Sustainable Growth", "replace": "Bizzin combines goal tracking, performance analytics, financial tools, learning modules, and secure document storage — so you can focus on growing your business." },
+    { "find": "Make smarter, faster business decisions with AI-powered analytics, professional financial tools, and intelligent document management — all in one platform.", "replace": "Say goodbye to scattered tools. Set clear goals, track progress, plan finances, learn new skills, and keep important documents safe — all in one easy platform." },
+
+    { "find": "Know Exactly How Your Business is Performing", "replace": "Know Exactly How You’re Tracking" },
+    { "find": "See instantly how your business is performing", "replace": "See a live view of your goals, burnout risk, and performance trends — make decisions with confidence." },
+
+    { "find": "Your Complete Business Growth Toolkit", "replace": "Everything You Need to Grow — Built In" },
+    { "find": "Bizzin’s complete business growth toolkit gives you the power to plan, measure, and improve every area of your business in one place.", "replace": "Plan, measure, and improve every part of your business with these core modules:" },
+
+    { "find": "AI Business Intelligence", "replace": "Journal & Insights" },
+    { "find": "Automatically detect moods, analyse trends, and generate AI-powered business insights from your journal entries.", "replace": "Reflect daily; detect moods and trends to learn what’s working." },
+    { "find": "Learning & Progress Analytics", "replace": "Learning & Progress" },
+    { "find": "Professional Financial Planning Suite", "replace": "Financial Planning Suite" },
+    { "find": "Intelligent Document Hub", "replace": "Secure Document Hub" },
+
+    { "find": "Built for Business Owners Who Want Real Results", "replace": "Built for Business Owners Who Want Real Results" },
+    { "find": "Designed to save you hours each week", "replace": "Replace multiple tools and save hours each week" },
+    { "find": "Helps you spot risks before they become problems", "replace": "Spot risks and opportunities earlier" },
+    { "find": "Keeps your business organised and future-ready", "replace": "Keep everything organised and easy to access" },
+
+    { "find": "Choose Your Plan", "replace": "Simple Pricing. Powerful Value." },
+    { "find": "Start free, upgrade when you're ready to grow", "replace": "Try Bizzin free for 14 days. Then just R299/month — cancel anytime." },
+    { "find": "Free Tier", "replace": "" },
+    { "find": "Paid Subscription", "replace": "Bizzin Premium" },
+    { "find": "Full access to all platform features", "replace": "Everything included after your 14‑day free trial" },
+    { "find": "R299 / month", "replace": "R299 / month" },
+
+    { "find": "Professional referral program with real rewards", "replace": "A simple referral programme with rewards that save you money" },
+
+    { "find": "One Platform. Unlimited Potential.", "replace": "Focus Your Energy on Growth" },
+    { "find": "Get started free today and see how easy it can be to manage and grow your business in one place.", "replace": "Start your 14‑day free trial and see how simple it can be to plan, learn, track, and grow — all in one place." },
+
+    { "find": "Start Free Trial", "replace": "Start My 14-Day Free Trial" },
+    { "find": "Get Started Now — It’s Free", "replace": "Start My 14-Day Free Trial" },
+    { "find": "Start My Premium Trial", "replace": "Start My 14-Day Free Trial" },
+    { "find": "Discover All Features", "replace": "Explore All Features" },
+    { "find": "See How It Works", "replace": "See How It Works" }
+  ]
+}
