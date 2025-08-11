@@ -294,6 +294,10 @@ export default function PreLaunchPage() {
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                Professional financial calculators and business tools
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
                 Professional document management
               </div>
             </div>
