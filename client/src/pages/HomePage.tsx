@@ -150,62 +150,62 @@ export function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
             {/* Goals */}
             <div 
-              className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 p-6 rounded-xl border border-orange-200 dark:border-orange-700 hover:shadow-lg transition-all duration-300 cursor-pointer"
+              className="bg-gradient-to-br from-orange-500 to-red-600 p-6 rounded-xl hover:shadow-xl transition-all duration-300 cursor-pointer text-white"
               onClick={() => setLocation('/goals')}
             >
-              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mb-6">
-                <Target className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-6">
+                <Target className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Advanced Goal Analytics</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Professional goal tracking with progress analytics, priority filtering, status monitoring, and intelligent business insights</p>
+              <h3 className="text-lg font-semibold text-white mb-3">Advanced Goal Analytics</h3>
+              <p className="text-white/80 text-sm">Professional goal tracking with progress analytics, priority filtering, status monitoring, and intelligent business insights</p>
             </div>
 
             {/* Journal */}
             <div 
-              className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-6 rounded-xl border border-purple-200 dark:border-purple-700 hover:shadow-lg transition-all duration-300 cursor-pointer"
+              className="bg-gradient-to-br from-purple-600 to-blue-600 p-6 rounded-xl hover:shadow-xl transition-all duration-300 cursor-pointer text-white"
               onClick={() => setLocation('/journal')}
             >
-              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mb-6">
-                <BookOpen className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-6">
+                <BookOpen className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">AI Business Intelligence Journal</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Automatic mood detection, business health analytics, trend analysis, and AI-powered insights from your daily entries</p>
+              <h3 className="text-lg font-semibold text-white mb-3">AI Business Intelligence Journal</h3>
+              <p className="text-white/80 text-sm">Automatic mood detection, business health analytics, trend analysis, and AI-powered insights from your daily entries</p>
             </div>
 
             {/* Podcast */}
             <div 
-              className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-6 rounded-xl border border-blue-200 dark:border-blue-700 hover:shadow-lg transition-all duration-300 cursor-pointer"
+              className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-xl hover:shadow-xl transition-all duration-300 cursor-pointer text-white"
               onClick={() => setLocation('/podcast')}
             >
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mb-6">
-                <Headphones className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-6">
+                <Headphones className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Business Podcast</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">15-minute business insights to grow your entrepreneurial mindset</p>
+              <h3 className="text-lg font-semibold text-white mb-3">Business Podcast</h3>
+              <p className="text-white/80 text-sm">15-minute business insights to grow your entrepreneurial mindset</p>
             </div>
 
             {/* BizBuilder Tools */}
             <div 
-              className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 p-6 rounded-xl border border-orange-200 dark:border-orange-700 hover:shadow-lg transition-all duration-300 cursor-pointer"
+              className="bg-gradient-to-br from-orange-600 to-red-600 p-6 rounded-xl hover:shadow-xl transition-all duration-300 cursor-pointer text-white"
               onClick={() => setLocation('/bizbuilder')}
             >
-              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mb-6">
-                <Calculator className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-6">
+                <Calculator className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Professional Financial Suite</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Enterprise-grade calculators with CSV export, real-time calculations, advanced financial modeling, and professional business analysis tools</p>
+              <h3 className="text-lg font-semibold text-white mb-3">Professional Financial Suite</h3>
+              <p className="text-white/80 text-sm">Enterprise-grade calculators with CSV export, real-time calculations, advanced financial modeling, and professional business analysis tools</p>
             </div>
 
             {/* DocSafe */}
             <div 
-              className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-6 rounded-xl border border-green-200 dark:border-green-700 hover:shadow-lg transition-all duration-300 cursor-pointer"
+              className="bg-gradient-to-br from-green-600 to-teal-600 p-6 rounded-xl hover:shadow-xl transition-all duration-300 cursor-pointer text-white"
               onClick={() => setLocation('/docsafe')}
             >
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mb-6">
-                <Shield className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-6">
+                <Shield className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Intelligent Document Hub</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">Smart categorization, advanced search, multi-format viewer, professional document management, and secure cloud storage with intelligent organization</p>
+              <h3 className="text-lg font-semibold text-white mb-3">Intelligent Document Hub</h3>
+              <p className="text-white/80 text-sm">Smart categorization, advanced search, multi-format viewer, professional document management, and secure cloud storage with intelligent organization</p>
             </div>
           </div>
         </div>
