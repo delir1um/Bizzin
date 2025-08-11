@@ -34,12 +34,12 @@ export function HomePage() {
             
             {/* Subtitle */}
             <p className="mt-6 text-xl sm:text-2xl text-slate-600 dark:text-slate-300 max-w-4xl mx-auto leading-relaxed">
-              <span className="text-orange-600 italic">Bizzin</span> combines goal tracking, financial planning, learning tools, analytics, and secure document storage — so you can focus on growing your business.
+              <span className="text-orange-600 italic">Bizzin</span> combines AI-powered business analytics, goal tracking, financial tools, learning content, and secure document storage — everything you need to grow your business.
             </p>
             
             {/* Description */}
             <p className="mt-6 text-lg text-slate-500 dark:text-slate-400 max-w-3xl mx-auto">
-              Set clear goals, track results, learn new skills, manage finances, and store important files — all in one platform built for business owners.
+              Track your business health with AI insights, manage goals with smart analytics, access professional financial tools, learn from business content, and secure your important documents.
             </p>
 
             {/* CTA Buttons */}
@@ -207,12 +207,12 @@ export function HomePage() {
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mb-6">
                 <Headphones className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Learning Analytics Platform</h3>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Business Podcast Platform</h3>
               <p className="text-slate-600 dark:text-slate-300 text-sm">
                 <strong>• Progress Tracking:</strong> Episode completion analytics<br/>
                 <strong>• Learning Streaks:</strong> Consistency measurement<br/>
-                <strong>• Adaptive Player:</strong> Audio/video optimization<br/>
-                <strong>• Knowledge Retention:</strong> Learning effectiveness metrics
+                <strong>• Professional Player:</strong> Custom video/audio controls<br/>
+                <strong>• Cloudflare Streaming:</strong> Optimized content delivery
               </p>
             </div>
 
@@ -224,12 +224,12 @@ export function HomePage() {
               <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mb-6">
                 <Calculator className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Advanced Financial Analytics</h3>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Professional Financial Suite</h3>
               <p className="text-slate-600 dark:text-slate-300 text-sm">
-                <strong>• Enterprise Calculators:</strong> Professional modeling tools<br/>
-                <strong>• CSV Export:</strong> Data portability & analysis<br/>
-                <strong>• Real-time Updates:</strong> Dynamic calculation engine<br/>
-                <strong>• Financial Intelligence:</strong> Business decision support
+                <strong>• Business Calculators:</strong> Break-even, ROI, cash flow tools<br/>
+                <strong>• CSV Export:</strong> Download calculations for analysis<br/>
+                <strong>• Real-time Updates:</strong> Dynamic calculation results<br/>
+                <strong>• Professional Reports:</strong> Export-ready business analysis
               </p>
             </div>
 
@@ -263,8 +263,8 @@ export function HomePage() {
                 <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900 rounded-lg flex items-center justify-center mx-auto mb-3">
                   <TrendingUp className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                 </div>
-                <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Referral Analytics</h4>
-                <p className="text-sm text-slate-600 dark:text-slate-300">Earn free days with intelligent referral tracking and automatic activation</p>
+                <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Referral Program</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Earn 10 days free subscription per successful referral with automatic tracking</p>
               </div>
               
               <div className="text-center p-4">
@@ -287,8 +287,8 @@ export function HomePage() {
                 <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mx-auto mb-3">
                   <BarChart3 className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                 </div>
-                <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Usage Analytics</h4>
-                <p className="text-sm text-slate-600 dark:text-slate-300">Platform engagement metrics with productivity insights and optimization tips</p>
+                <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Platform Insights</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Dashboard metrics showing your business health trends and platform usage</p>
               </div>
             </div>
           </div>
