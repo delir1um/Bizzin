@@ -23,17 +23,6 @@ export function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-br from-orange-50 via-white to-red-50 dark:bg-[#0B0A1D]"></div>
         <div className="absolute inset-0 bg-gradient-to-r from-orange-100/30 via-transparent to-red-100/30 dark:from-orange-900/10 dark:to-red-900/10"></div>
         
-        {/* Geometric Pattern Overlay */}
-        <div className="absolute inset-0 opacity-10 dark:opacity-5">
-          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <defs>
-              <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                <path d="M 10 0 L 0 0 0 10" fill="none" stroke="currentColor" strokeWidth="0.5"/>
-              </pattern>
-            </defs>
-            <rect width="100" height="100" fill="url(#grid)" className="text-orange-400"/>
-          </svg>
-        </div>
         
         {/* Floating Elements */}
         <div className="absolute top-20 left-10 w-16 h-16 bg-gradient-to-br from-orange-200 to-orange-300 rounded-full opacity-20 blur-sm animate-pulse"></div>
