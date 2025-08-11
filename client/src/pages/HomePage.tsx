@@ -150,7 +150,7 @@ export function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Dashboard */}
             <div 
-              className="bg-gradient-to-br from-slate-600 to-gray-700 p-6 rounded-xl hover:shadow-xl transition-all duration-300 cursor-pointer text-white"
+              className="bg-gradient-to-br from-violet-600 to-indigo-600 p-6 rounded-xl hover:shadow-xl transition-all duration-300 cursor-pointer text-white"
               onClick={() => setLocation('/dashboard')}
             >
               <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-6">
@@ -174,7 +174,7 @@ export function HomePage() {
 
             {/* Goals */}
             <div 
-              className="bg-gradient-to-br from-orange-500 to-orange-600 p-6 rounded-xl hover:shadow-xl transition-all duration-300 cursor-pointer text-white"
+              className="bg-gradient-to-br from-orange-500 to-red-600 p-6 rounded-xl hover:shadow-xl transition-all duration-300 cursor-pointer text-white"
               onClick={() => setLocation('/goals')}
             >
               <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-6">
@@ -186,7 +186,7 @@ export function HomePage() {
 
             {/* Podcast */}
             <div 
-              className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl hover:shadow-xl transition-all duration-300 cursor-pointer text-white"
+              className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-xl hover:shadow-xl transition-all duration-300 cursor-pointer text-white"
               onClick={() => setLocation('/training')}
             >
               <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-6">
@@ -198,7 +198,7 @@ export function HomePage() {
 
             {/* BizBuilder Tools */}
             <div 
-              className="bg-gradient-to-br from-amber-500 to-yellow-600 p-6 rounded-xl hover:shadow-xl transition-all duration-300 cursor-pointer text-white"
+              className="bg-gradient-to-br from-orange-600 to-red-600 p-6 rounded-xl hover:shadow-xl transition-all duration-300 cursor-pointer text-white"
               onClick={() => setLocation('/bizbuilder')}
             >
               <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-6">
@@ -210,7 +210,7 @@ export function HomePage() {
 
             {/* DocSafe */}
             <div 
-              className="bg-gradient-to-br from-emerald-500 to-green-600 p-6 rounded-xl hover:shadow-xl transition-all duration-300 cursor-pointer text-white"
+              className="bg-gradient-to-br from-green-600 to-teal-600 p-6 rounded-xl hover:shadow-xl transition-all duration-300 cursor-pointer text-white"
               onClick={() => setLocation('/docsafe')}
             >
               <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-6">
