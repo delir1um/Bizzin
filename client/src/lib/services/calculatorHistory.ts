@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase"
-import type { CalculatorHistory, CreateCalculatorHistory, UpdateCalculatorHistory } from "../../../shared/schema"
+import type { CalculatorHistory, CreateCalculatorHistory, UpdateCalculatorHistory } from "../../../../shared/schema"
 
 export class CalculatorHistoryService {
   /**

@@ -14,7 +14,7 @@ import { supabase } from "@/lib/supabase"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
 import { motion, AnimatePresence } from "framer-motion"
-import type { CalculatorHistory } from "../../../shared/schema"
+import type { CalculatorHistory } from "../../../../shared/schema"
 
 interface CalculationHistoryProps {
   calculatorType: 'cash_flow' | 'break_even' | 'business_budget'
