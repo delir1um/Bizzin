@@ -160,8 +160,8 @@ export function HomePage() {
               className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900/20 dark:to-slate-800/20 p-6 rounded-xl border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col"
               onClick={() => setLocation('/dashboard')}
             >
-              <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center mb-6">
-                <LayoutDashboard className="w-6 h-6 text-slate-600 dark:text-slate-400" />
+              <div className="w-12 h-12 bg-gradient-to-br from-slate-600 to-slate-700 rounded-lg flex items-center justify-center mb-6">
+                <LayoutDashboard className="w-6 h-6 text-white" />
               </div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">AI Business Intelligence Dashboard</h3>
               <p className="text-slate-600 dark:text-slate-300 text-sm">
