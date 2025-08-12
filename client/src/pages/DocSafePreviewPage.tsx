@@ -67,7 +67,7 @@ export function DocSafePreviewPage() {
                 <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Intelligent Document Hub</h1>
               </div>
               <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-                Professional document vault for business owners - securely store contracts, legal documents, financial reports, business plans, and compliance materials with smart categorization, powerful search, and organized access to your critical business information.
+                Secure vault for business documents - store contracts, legal files, reports, and compliance materials with smart organization and powerful search.
               </p>
             </div>
           </FadeInUp>
