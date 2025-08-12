@@ -203,7 +203,7 @@ export function BizBuilderToolsPreviewPage() {
         </FadeInUp>
 
         {/* Professional Features */}
-        <FadeInUp delay={0.8}>
+        <FadeInUp delay={0.3}>
           <div className="mt-12">
           <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">Professional Business Analysis</h2>
           <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
@@ -235,7 +235,7 @@ export function BizBuilderToolsPreviewPage() {
         </FadeInUp>
 
         {/* Final CTA */}
-        <FadeInUp delay={0.6}>
+        <FadeInUp delay={0.4}>
           <div className="mt-12 text-center">
             <Button 
               size="lg"
