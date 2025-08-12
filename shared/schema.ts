@@ -232,6 +232,36 @@ export const updatePlatformSettingsSchema = z.object({
   maintenance_message: z.string().optional(),
 });
 
+// Calculator History Table - store saved calculations
+export type CalculatorHistory = {
+  id: string;
+  user_id: string;
+  calculator_type: string; // 'cash_flow', 'break_even', 'business_budget'
+  calculation_name: string;
+  calculation_data: Record<string, any>; // JSON data with inputs and results
+  notes?: string;
+  tags?: string[];
+  created_at: string;
+  updated_at: string;
+};
+
+// Zod schemas for validation
+export const createCalculatorHistorySchema = z.object({
+  user_id: z.string().uuid(),
+  calculator_type: z.enum(['cash_flow', 'break_even', 'business_budget']),
+  calculation_name: z.string().min(1).max(100),
+  calculation_data: z.record(z.any()),
+  notes: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+});
+
+export const updateCalculatorHistorySchema = z.object({
+  calculation_name: z.string().min(1).max(100).optional(),
+  calculation_data: z.record(z.any()).optional(),
+  notes: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+});
+
 // Type inference from schemas
 export type CreateUserProfile = z.infer<typeof createUserProfileSchema>;
 export type CreateJournalEntry = z.infer<typeof createJournalEntrySchema>;
@@ -239,3 +269,5 @@ export type CreateGoal = z.infer<typeof createGoalSchema>;
 export type CreateDocument = z.infer<typeof createDocumentSchema>;
 export type CreateEarlySignup = z.infer<typeof createEarlySignupSchema>;
 export type UpdatePlatformSettings = z.infer<typeof updatePlatformSettingsSchema>;
+export type CreateCalculatorHistory = z.infer<typeof createCalculatorHistorySchema>;
+export type UpdateCalculatorHistory = z.infer<typeof updateCalculatorHistorySchema>;

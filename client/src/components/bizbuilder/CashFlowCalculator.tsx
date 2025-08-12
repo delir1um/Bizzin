@@ -7,8 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-import { X, Download, TrendingUp, TrendingDown, DollarSign, AlertTriangle, Calendar, Plus } from "lucide-react"
+import { X, Download, TrendingUp, TrendingDown, DollarSign, AlertTriangle, Calendar, Plus, History } from "lucide-react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from "recharts"
+import { CalculationHistory } from "@/components/calculators/CalculationHistory"
 
 interface CashFlowData {
   startingCash: number
@@ -319,6 +320,11 @@ export default function CashFlowCalculator({ onClose }: { onClose: () => void })
     setActiveTab('setup')
   }
 
+  const loadCalculation = (data: Record<string, any>) => {
+    setCashFlowData(data as CashFlowData)
+    setActiveTab('setup')
+  }
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-slate-900 rounded-lg shadow-xl w-full max-w-7xl h-[90vh] flex flex-col">
@@ -338,11 +344,12 @@ export default function CashFlowCalculator({ onClose }: { onClose: () => void })
           {/* Left Panel - Input */}
           <div className="lg:w-1/2 border-r border-slate-200 dark:border-slate-700 p-6 overflow-y-auto">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="setup">Setup</TabsTrigger>
                 <TabsTrigger value="inflows">Inflows</TabsTrigger>
                 <TabsTrigger value="outflows">Outflows</TabsTrigger>
                 <TabsTrigger value="notes">Notes</TabsTrigger>
+                <TabsTrigger value="history">History</TabsTrigger>
               </TabsList>
 
               <TabsContent value="setup" className="space-y-4">
@@ -664,6 +671,14 @@ export default function CashFlowCalculator({ onClose }: { onClose: () => void })
                     />
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              <TabsContent value="history" className="space-y-4">
+                <CalculationHistory
+                  calculatorType="cash_flow"
+                  currentData={cashFlowData}
+                  onLoadCalculation={loadCalculation}
+                />
               </TabsContent>
             </Tabs>
           </div>

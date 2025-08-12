@@ -17,7 +17,7 @@ The application is built with React 18 and TypeScript, using Vite as the build t
 The system uses Supabase Auth for authentication with a user_profiles table that extends the auth.users table. User sessions are managed through React context with automatic token refresh. Admin access is controlled through either an admin_users table or is_admin column in user_profiles, with comprehensive role-based access control throughout the application.
 
 ### Database Design
-The application uses Supabase PostgreSQL database with a comprehensive schema including user_profiles, journal_entries, goals, documents, podcast_episodes, user_plans, user_podcast_progress, and admin tables. Row-Level Security (RLS) policies ensure data isolation and proper access control. All database operations are performed client-side using the Supabase SDK.
+The application uses Supabase PostgreSQL database with a comprehensive schema including user_profiles, journal_entries, goals, documents, podcast_episodes, user_plans, user_podcast_progress, calculator_history, and admin tables. Row-Level Security (RLS) policies ensure data isolation and proper access control. All database operations are performed client-side using the Supabase SDK.
 
 ### AI-Powered Features
 The platform implements a hybrid AI architecture for sentiment analysis using both Hugging Face inference API as primary and local analysis as fallback. The AI system includes comprehensive training data (500+ business journal scenarios), user feedback learning, and business-specific mood detection with contextual insights generation.
@@ -25,8 +25,8 @@ The platform implements a hybrid AI architecture for sentiment analysis using bo
 ### Data Architecture Decisions
 All data access is centralized through the @/lib/supabase module using the Supabase client-side SDK. The system maintains proper table relationships with foreign keys and implements real-time subscriptions for live updates. File uploads are handled through Supabase Storage with proper security policies.
 
-### Freemium Business Model
-The platform implements a comprehensive plan system with usage tracking differentiating free vs. premium features. Free users have limited access to basic features while premium users get full platform access. Usage limits are enforced through the usePlans hook and PlansService.
+### Business Model & Calculator Features  
+The platform operates on a freemium model with a 14-day free trial followed by R199/month premium subscription. The BizBuilder Tools include professional financial calculators (Cash Flow Projection, Break-Even Analysis, Business Budget, Loan Amortisation) with calculation history functionality. Users can save, load, and manage their calculation scenarios for strategic planning and decision-making.
 
 ### Component Architecture
 The application uses a highly modular component structure with reusable UI components from shadcn/ui. Custom business logic is separated into services (PlansService, PodcastService) and hooks (usePlans, useAdminCheck, usePodcastProgress). The layout uses a consistent header/navigation system with theme support.
