@@ -110,22 +110,25 @@ export function GoalsPreviewPage() {
       {/* Header Section */}
       <div className="bg-white/80 dark:bg-[#0B0A1D]/80 backdrop-blur-sm border-b border-orange-200 dark:border-slate-700 min-h-[200px] flex items-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <Target className="w-8 h-8 text-orange-600" />
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Advanced Goal Analytics</h1>
+          <FadeInUp>
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <Target className="w-8 h-8 text-orange-600" />
+                <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Advanced Goal Analytics</h1>
+              </div>
+              <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+                Professional goal tracking with progress analytics, priority filtering, status monitoring, and intelligent business insights
+              </p>
             </div>
-            <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Professional goal tracking with progress analytics, priority filtering, status monitoring, and intelligent business insights
-            </p>
-          </div>
+          </FadeInUp>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Preview - Exact Portal Match */}
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-4 mb-6">
-          <Card className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
+        <FadeInUp delay={0.2}>
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-4 mb-6">
+            <Card className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="bg-gradient-to-br from-orange-600 to-red-500 p-2 rounded">
@@ -180,26 +183,30 @@ export function GoalsPreviewPage() {
               </div>
             </CardContent>
           </Card>
-        </div>
+          </div>
+        </FadeInUp>
 
         {/* CTA Section - Matching Portal Style */}
-        <div className="text-center mb-8">
-          <div className="bg-gradient-to-r from-orange-600 to-red-500 text-white p-6 rounded-lg mb-6">
-            <h2 className="text-2xl font-bold mb-2">Set and Track Your Business Goals</h2>
-            <p className="text-orange-100 mb-4">Create objectives with progress tracking, priority levels, and deadline management</p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button 
-                onClick={() => setLocation('/auth')}
-                className="bg-white text-orange-600 hover:bg-orange-50 font-medium"
-              >
-                Start Goal Tracking <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+        <FadeInUp delay={0.4}>
+          <div className="text-center mb-8">
+            <div className="bg-gradient-to-r from-orange-600 to-red-500 text-white p-6 rounded-lg mb-6">
+              <h2 className="text-2xl font-bold mb-2">Set and Track Your Business Goals</h2>
+              <p className="text-orange-100 mb-4">Create objectives with progress tracking, priority levels, and deadline management</p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button 
+                  onClick={() => setLocation('/auth')}
+                  className="bg-white text-orange-600 hover:bg-orange-50 font-medium"
+                >
+                  Start Goal Tracking <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
+        </FadeInUp>
 
         {/* Search and Filters - Portal Style */}
-        <div className="mb-6 space-y-4">
+        <FadeInUp delay={0.6}>
+          <div className="mb-6 space-y-4">
           <div className="relative">
             <input 
               type="text" 
@@ -225,10 +232,12 @@ export function GoalsPreviewPage() {
           <div className="text-sm text-slate-600 dark:text-slate-300">
             Showing 1-7 of 8 goals &nbsp;&nbsp;&nbsp;&nbsp; Page 1 of 1
           </div>
-        </div>
+          </div>
+        </FadeInUp>
 
         {/* Goals Preview */}
-        <div className="space-y-4">
+        <FadeInUp delay={0.8}>
+          <div className="space-y-4">
           <div className="flex items-center justify-between">
             <Button 
               onClick={() => setLocation('/auth')}
@@ -304,11 +313,13 @@ export function GoalsPreviewPage() {
               Start Creating Your Own Goals
             </Button>
           </div>
-        </div>
+          </div>
+        </FadeInUp>
 
         {/* Features Highlight */}
-        <div className="mt-12 grid gap-6 grid-cols-1 md:grid-cols-3">
-          <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
+        <FadeInUp delay={1.0}>
+          <div className="mt-12 grid gap-6 grid-cols-1 md:grid-cols-3">
+            <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
             <Target className="w-12 h-12 text-orange-600 mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Goal Management</h3>
             <p className="text-sm text-slate-600 dark:text-slate-300">
@@ -331,11 +342,13 @@ export function GoalsPreviewPage() {
               Filter by status, priority, search, and sort to stay organized
             </p>
           </div>
-        </div>
+          </div>
+        </FadeInUp>
 
         {/* Final CTA */}
-        <div className="mt-12 text-center">
-          <Button 
+        <FadeInUp delay={1.2}>
+          <div className="mt-12 text-center">
+            <Button 
             size="lg"
             onClick={() => setLocation('/auth')}
             className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 text-lg"
@@ -346,7 +359,8 @@ export function GoalsPreviewPage() {
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
             Free trial • No credit card required
           </p>
-        </div>
+          </div>
+        </FadeInUp>
       </div>
     </div>
   )

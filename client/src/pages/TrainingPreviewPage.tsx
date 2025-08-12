@@ -97,21 +97,24 @@ export function TrainingPreviewPage() {
       {/* Header Section */}
       <div className="bg-white/80 dark:bg-[#0B0A1D]/80 backdrop-blur-sm border-b border-blue-200 dark:border-slate-700 min-h-[200px] flex items-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <GraduationCap className="w-8 h-8 text-blue-600" />
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Business Podcast</h1>
+          <FadeInUp>
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <GraduationCap className="w-8 h-8 text-blue-600" />
+                <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Business Podcast</h1>
+              </div>
+              <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+                15-minute business insights to grow your entrepreneurial mindset
+              </p>
             </div>
-            <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              15-minute business insights to grow your entrepreneurial mindset
-            </p>
-          </div>
+          </FadeInUp>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        <FadeInUp delay={0.2}>
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mb-8">
           <Card className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -167,43 +170,50 @@ export function TrainingPreviewPage() {
               </div>
             </CardContent>
           </Card>
-        </div>
+          </div>
+        </FadeInUp>
 
         {/* CTA Section - Matching Portal Style */}
-        <div className="text-center mb-8">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-lg mb-6">
-            <h2 className="text-2xl font-bold mb-2">Start Your Business Learning Journey</h2>
-            <p className="text-blue-100 mb-4">15-minute business insights to accelerate your entrepreneurial growth</p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button 
-                onClick={() => setLocation('/auth')}
-                className="bg-white text-blue-600 hover:bg-blue-50 font-medium"
-              >
-                Start Learning <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+        <FadeInUp delay={0.4}>
+          <div className="text-center mb-8">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-lg mb-6">
+              <h2 className="text-2xl font-bold mb-2">Start Your Business Learning Journey</h2>
+              <p className="text-blue-100 mb-4">15-minute business insights to accelerate your entrepreneurial growth</p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button 
+                  onClick={() => setLocation('/auth')}
+                  className="bg-white text-blue-600 hover:bg-blue-50 font-medium"
+                >
+                  Start Learning <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
+        </FadeInUp>
+        
         {/* Popular Series - Top Content Section */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">Popular Series</h2>
-          <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-            {['Strategy', 'Marketing', 'Finance', 'Leadership'].map((series) => (
-              <Card key={series} className="text-center p-4 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col">
-                <div className={`w-12 h-12 rounded-full ${seriesColors[series as keyof typeof seriesColors]} flex items-center justify-center mx-auto mb-3`}>  
-                  <GraduationCap className="w-6 h-6" />
-                </div>
-                <h3 className="font-semibold text-sm mb-1">{series}</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">4 episodes</p>
-              </Card>
-            ))}
+        <FadeInUp delay={0.6}>
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">Popular Series</h2>
+            <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
+              {['Strategy', 'Marketing', 'Finance', 'Leadership'].map((series) => (
+                <Card key={series} className="text-center p-4 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col">
+                  <div className={`w-12 h-12 rounded-full ${seriesColors[series as keyof typeof seriesColors]} flex items-center justify-center mx-auto mb-3`}>  
+                    <GraduationCap className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-semibold text-sm mb-1">{series}</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">4 episodes</p>
+                </Card>
+              ))}
+            </div>
           </div>
-        </div>
+        </FadeInUp>
 
         {/* Continue Learning Section */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">Continue Learning</h2>
-          <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+        <FadeInUp delay={0.8}>
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">Continue Learning</h2>
+            <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
@@ -293,11 +303,13 @@ export function TrainingPreviewPage() {
               </Card>
             ))}
           </div>
-        </div>
+          </div>
+        </FadeInUp>
 
         {/* Features Highlight */}
-        <div className="mt-12 grid gap-6 grid-cols-1 md:grid-cols-3">
-          <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
+        <FadeInUp delay={1.0}>
+          <div className="mt-12 grid gap-6 grid-cols-1 md:grid-cols-3">
+            <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
             <Video className="w-12 h-12 text-blue-600 mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Business Training</h3>
             <p className="text-sm text-slate-600 dark:text-slate-300">
@@ -320,11 +332,13 @@ export function TrainingPreviewPage() {
               Monitor your learning progress and completed courses
             </p>
           </div>
-        </div>
+          </div>
+        </FadeInUp>
 
         {/* Final CTA */}
-        <div className="mt-12 text-center">
-          <Button 
+        <FadeInUp delay={1.2}>
+          <div className="mt-12 text-center">
+            <Button 
             size="lg"
             onClick={() => setLocation('/auth')}
             className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg"
@@ -335,7 +349,8 @@ export function TrainingPreviewPage() {
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
             Free trial • No credit card required
           </p>
-        </div>
+          </div>
+        </FadeInUp>
       </div>
     </div>
   )
