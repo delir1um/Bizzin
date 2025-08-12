@@ -65,6 +65,5 @@ app.use((req, res, next) => {
   server.listen(port, "0.0.0.0", () => {
     log(`serving on port ${port}`);
     console.log(`Server is running on http://0.0.0.0:${port}`);
-    console.log(`Preview should be available at: ${process.env.REPLIT_DOMAINS || 'localhost:5000'}`);
   });
 })();
