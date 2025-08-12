@@ -10,8 +10,6 @@ export function useAdminCheck() {
     queryFn: async () => {
       if (!user) return false;
       
-      console.log('Checking admin access for user:', user.id, user.email);
-      
       // Check admin_users table first
       try {
         const { data: adminData, error: adminError } = await supabase
@@ -20,14 +18,11 @@ export function useAdminCheck() {
           .eq('user_id', user.id)
           .maybeSingle();
         
-        console.log('Admin data result:', { adminData, adminError });
-        
         if (adminData?.is_admin) {
-          console.log('User is admin via admin_users table');
           return true;
         }
       } catch (error) {
-        console.log('Admin table check failed:', error);
+        // Admin table check failed, try backup
       }
       
       // Check user_profiles table as backup
@@ -38,17 +33,12 @@ export function useAdminCheck() {
           .eq('user_id', user.id)
           .maybeSingle();
         
-        console.log('Profile data result:', { profileData, profileError });
-        
         if (profileData?.is_admin) {
-          console.log('User is admin via user_profiles table');
           return true;
         }
       } catch (error) {
-        console.log('Profile table check failed:', error);
+        // Profile table check failed
       }
-      
-      console.log('User is not admin');
       return false;
     },
     enabled: !!user,

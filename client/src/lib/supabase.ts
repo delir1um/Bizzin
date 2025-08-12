@@ -8,7 +8,7 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error('Supabase configuration is missing. Please check your environment variables.')
 }
 
-console.log('Initializing Supabase client with URL:', supabaseUrl.substring(0, 30) + '...')
+// Supabase client initialized
 
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {

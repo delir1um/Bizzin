@@ -1,4 +1,4 @@
-# Bizzin: Compressed Replit AI Project Config
+# Bizzin: Comprehensive Project Documentation
 
 ## Overview
 Bizzin is a modern SaaS platform designed for entrepreneurs to plan, journal, and track business goals. It's a frontend-only React application leveraging Supabase for authentication, database management, and file storage. The project's vision is to provide a comprehensive, intuitive tool that empowers entrepreneurs through structured goal setting, reflective journaling, and insightful tracking, ultimately boosting business success and personal growth. Key capabilities include a public landing page, protected user-specific pages for journaling, goals, training, biz-building tools, and document management, alongside user authentication and role-based access for freemium and premium features.
@@ -82,7 +82,7 @@ The application is built with React 18 and TypeScript, using Tailwind CSS and sh
 - **Project Structure Cleanup (August 5, 2025):** Comprehensive cleanup removing 300+ development screenshots and 50+ redundant SQL/setup files while preserving all functionality:
   - Removed all CleanShot development screenshots (kept only logos and essential assets)
   - Eliminated duplicate database setup files, migration scripts, and outdated utilities
-  - Removed excessive documentation files (consolidated into replit.md)
+  - Removed excessive documentation files (consolidated into project.md)
   - Maintained working admin system (database-manager.ts, admin-user-manager.ts) and core functionality
   - Reduced root directory from 100+ files to 18 essential files for better maintainability
 - **Database Architecture Cleanup (August 5, 2025):** Permanently resolved Supabase connection by:
@@ -91,3 +91,4 @@ The application is built with React 18 and TypeScript, using Tailwind CSS and sh
   - Ensuring all database operations use Supabase client with proper secrets (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY)
   - Created platform_settings table using supabase.rpc('exec_sql') for admin control
   - Confirmed Pre-Launch Toggle works without errors with real-time database switching
+- **Development Platform References Cleanup (August 12, 2025):** Removed visible references to development platform to maintain professional appearance while preserving all functionality

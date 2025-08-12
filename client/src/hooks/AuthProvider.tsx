@@ -31,8 +31,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             updated_at: new Date().toISOString()
           })
           .eq('user_id', data.session.user.id)
-          .then(() => console.log('Updated last_login'))
-          .catch(error => console.log('Could not update last_login:', error))
+          .then(() => {
+            // Login time updated
+          })
+          .catch((error: any) => {
+            // Could not update login time
+          })
       }
       setLoading(false)
     }
@@ -50,8 +54,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             updated_at: new Date().toISOString()
           })
           .eq('user_id', session.user.id)
-          .then(() => console.log('Updated last_login on sign in'))
-          .catch(error => console.log('Could not update last_login:', error))
+          .then(() => {
+            // Login time updated on sign in
+          })
+          .catch((error: any) => {
+            // Could not update login time
+          })
       }
     })
 
