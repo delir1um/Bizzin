@@ -235,7 +235,7 @@ export function BizBuilderToolsPreviewPage() {
         </FadeInUp>
 
         {/* Final CTA */}
-        <FadeInUp delay={1.0}>
+        <FadeInUp delay={0.6}>
           <div className="mt-12 text-center">
             <Button 
               size="lg"

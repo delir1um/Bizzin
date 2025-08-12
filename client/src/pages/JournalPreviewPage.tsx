@@ -208,7 +208,7 @@ export function JournalPreviewPage() {
 
           {/* Week Entries - Full Examples */}
           {weekEntries.map((entry, index) => (
-            <FadeInUp key={entry.id} delay={1.0 + (index * 0.1)}>
+            <FadeInUp key={entry.id} delay={0.4 + (index * 0.1)}>
               <Card className="bg-white dark:bg-slate-800 hover:shadow-md transition-shadow h-full flex flex-col">
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
@@ -259,7 +259,7 @@ export function JournalPreviewPage() {
         </FadeInUp>
 
         {/* Features Highlight */}
-        <FadeInUp delay={1.5}>
+        <FadeInUp delay={0.6}>
           <div className="mt-12 grid gap-6 grid-cols-1 md:grid-cols-3">
           <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
             <Brain className="w-12 h-12 text-purple-600 mx-auto mb-4" />

@@ -224,7 +224,7 @@ export function DocSafePreviewPage() {
         </FadeInUp>
 
         {/* Features Highlight */}
-        <FadeInUp delay={0.8}>
+        <FadeInUp delay={0.6}>
           <div className="mt-12 grid gap-6 grid-cols-1 md:grid-cols-3">
             <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
             <Shield className="w-12 h-12 text-emerald-600 mx-auto mb-4" />

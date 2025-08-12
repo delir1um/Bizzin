@@ -236,7 +236,7 @@ export function GoalsPreviewPage() {
         </FadeInUp>
 
         {/* Goals Preview */}
-        <FadeInUp delay={0.8}>
+        <FadeInUp delay={0.6}>
           <div className="space-y-4">
           <div className="flex items-center justify-between">
             <Button 
@@ -317,7 +317,7 @@ export function GoalsPreviewPage() {
         </FadeInUp>
 
         {/* Features Highlight */}
-        <FadeInUp delay={1.0}>
+        <FadeInUp delay={0.7}>
           <div className="mt-12 grid gap-6 grid-cols-1 md:grid-cols-3">
             <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
             <Target className="w-12 h-12 text-orange-600 mx-auto mb-4" />
@@ -346,7 +346,7 @@ export function GoalsPreviewPage() {
         </FadeInUp>
 
         {/* Final CTA */}
-        <FadeInUp delay={1.2}>
+        <FadeInUp delay={0.8}>
           <div className="mt-12 text-center">
             <Button 
             size="lg"
