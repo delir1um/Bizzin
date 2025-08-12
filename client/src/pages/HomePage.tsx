@@ -265,7 +265,7 @@ export function HomePage() {
                 </div>
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Professional Financial Suite</h3>
                 <p className="text-slate-600 dark:text-slate-300 text-sm">
-                  <strong>• Business Calculators:</strong> Break-even, ROI, cash flow tools<br/>
+                  <strong>• Business Calculators:</strong> Break-even, cash flow, budget planning, loan amortisation<br/>
                   <strong>• CSV Export:</strong> Download calculations for analysis<br/>
                   <strong>• Real-time Updates:</strong> Dynamic calculation results<br/>
                   <strong>• Professional Reports:</strong> Export-ready business analysis
