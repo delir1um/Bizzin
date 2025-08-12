@@ -23,8 +23,8 @@ export interface PaystackResponse {
 }
 
 export class PaystackService {
-  private static readonly PREMIUM_MONTHLY_PRICE = 9999 // ZAR 99.99 in cents
-  private static readonly PREMIUM_ANNUAL_PRICE = 99999 // ZAR 999.99 in cents (2 months free)
+  private static readonly PREMIUM_MONTHLY_PRICE = 19900 // ZAR 199.00 in cents
+  private static readonly PREMIUM_ANNUAL_PRICE = 199000 // ZAR 1990.00 in cents (2 months free)
   
   // Paystack test public key - safe to use in frontend
   private static readonly PUBLIC_KEY = 'pk_test_2c4bb010982237f93c2b7c50894bd8e52f18bb6e'

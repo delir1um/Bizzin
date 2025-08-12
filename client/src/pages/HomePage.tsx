@@ -344,7 +344,7 @@ export function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Simple Pricing. Powerful Value.</h2>
-            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">Try <span className="italic">Bizzin</span> free for 14 days. Then just R299/month — cancel anytime.</p>
+            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">Try <span className="italic">Bizzin</span> free for 14 days. Then just R199/month — cancel anytime.</p>
           </div>
 
           <div className="max-w-2xl mx-auto">
@@ -356,7 +356,7 @@ export function HomePage() {
               
               <div className="text-center mb-6">
                 <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Start Your Free Trial</h3>
-                <p className="text-slate-600 dark:text-slate-300">Full access to everything for 14 days, then R299/month</p>
+                <p className="text-slate-600 dark:text-slate-300">Full access to everything for 14 days, then R199/month</p>
               </div>
 
               <ul className="space-y-3 mb-8">
