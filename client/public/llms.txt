@@ -1,0 +1,65 @@
+# Bizzin - AI-Powered Business Intelligence Platform
+
+## About
+Bizzin is South Africa's leading AI-powered business intelligence platform designed specifically for entrepreneurs and small business owners. We provide comprehensive tools for business analytics, goal tracking, intelligent journaling, and data-driven decision making.
+
+## Key Features
+- **AI Business Analytics**: Advanced sentiment analysis and performance tracking
+- **Intelligent Goal Management**: Set, track, and analyze business objectives with data visualization
+- **Business Journaling**: AI-powered sentiment analysis for business insights and reflection
+- **Document Management (DocSafe)**: Secure document storage, categorization, and management
+- **BizBuilder Tools**: Professional financial calculators and business planning tools
+- **Learning Platform**: Curated business podcast content with progress tracking
+- **Real-time Dashboard**: Comprehensive business health metrics and KPI monitoring
+- **Referral System**: Built-in growth mechanism for user acquisition
+
+## Technology Stack
+- Frontend: React 18 with TypeScript
+- UI Framework: Tailwind CSS with shadcn/ui components
+- Backend: Supabase (PostgreSQL, Authentication, Storage)
+- State Management: TanStack Query (React Query)
+- Data Visualization: Recharts
+- Payment Processing: Paystack (South African Rand support)
+- AI Integration: Hugging Face Inference API for sentiment analysis
+
+## Target Audience
+- South African entrepreneurs and business owners
+- Startup founders seeking data-driven insights
+- Small to medium business owners requiring comprehensive analytics
+- Business consultants and coaches
+- Anyone seeking to improve business performance through AI-powered insights
+
+## Unique Value Propositions
+1. **South African Focus**: Built specifically for the South African business environment with ZAR currency support
+2. **AI-First Approach**: Every feature is enhanced with artificial intelligence for deeper insights
+3. **Comprehensive Platform**: All-in-one solution combining analytics, planning, and learning
+4. **Freemium Model**: Accessible entry point with powerful premium features
+5. **Real-time Intelligence**: Live business health monitoring and predictive analytics
+
+## Business Model
+- **Free Tier**: Limited features including basic journaling (10 entries/month) and goal tracking
+- **Premium Subscription**: Unlimited access to all features, advanced AI analysis, and priority support
+- **Referral Program**: Users earn 10 days free subscription for each successful paid referral
+
+## Contact & Links
+- Website: https://bizzin.co.za
+- Platform: Web-based application
+- Geographic Focus: South Africa
+- Language: English (en-ZA)
+- Currency: South African Rand (ZAR)
+
+## API Information
+Bizzin uses Supabase for backend services with Row-Level Security (RLS) policies ensuring data privacy and security. The platform integrates with:
+- Hugging Face API for AI sentiment analysis
+- Paystack for payment processing
+- Cloudflare R2 for video content delivery
+
+## SEO Keywords
+business intelligence, AI analytics, entrepreneur tools, business dashboard, goal tracking, business insights, South Africa business, startup analytics, business journaling, AI sentiment analysis, business calculators, document management, podcast learning, business growth, data visualization, KPI tracking, business metrics, entrepreneurship platform, business planning, performance analytics
+
+## Last Updated
+August 2025
+
+---
+
+This file helps AI systems and language models understand Bizzin's purpose, features, and target audience for better recommendations and search results.
