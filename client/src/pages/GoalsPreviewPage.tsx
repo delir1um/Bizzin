@@ -242,7 +242,7 @@ export function GoalsPreviewPage() {
             {demoGoals.slice(0, 7).map((goal, index) => (
               <Card 
                 key={goal.id}
-                className={`${priorityColors[goal.priority as keyof typeof priorityColors]} border-l-4 bg-white dark:bg-slate-800`}
+                className={`${priorityColors[goal.priority as keyof typeof priorityColors]} border-l-4 bg-white dark:bg-slate-800 h-full flex flex-col`}
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">

@@ -198,7 +198,7 @@ export function JournalPreviewPage() {
 
           {/* Week Entries - Full Examples */}
           {weekEntries.map((entry) => (
-            <Card key={entry.id} className="bg-white dark:bg-slate-800 hover:shadow-md transition-shadow">
+            <Card key={entry.id} className="bg-white dark:bg-slate-800 hover:shadow-md transition-shadow h-full flex flex-col">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <div className="text-2xl">{entry.emoji}</div>

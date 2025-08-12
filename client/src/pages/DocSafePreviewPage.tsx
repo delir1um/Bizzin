@@ -142,7 +142,7 @@ export function DocSafePreviewPage() {
             {demoDocuments.map((doc, index) => (
               <Card 
                 key={doc.id}
-                className={`relative overflow-hidden bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm hover:shadow-lg transition-all ${doc.isBlurred ? 'opacity-60' : ''}`}
+                className={`relative overflow-hidden bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm hover:shadow-lg transition-all h-full flex flex-col ${doc.isBlurred ? 'opacity-60' : ''}`}
               >
                 {doc.isBlurred && (
                   <div className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10 flex items-center justify-center">

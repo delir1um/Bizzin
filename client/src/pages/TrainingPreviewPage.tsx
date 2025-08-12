@@ -188,7 +188,7 @@ export function TrainingPreviewPage() {
           <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">Popular Series</h2>
           <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
             {['Strategy', 'Marketing', 'Finance', 'Leadership'].map((series) => (
-              <Card key={series} className="text-center p-4 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm hover:shadow-md transition-shadow cursor-pointer">
+              <Card key={series} className="text-center p-4 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col">
                 <div className={`w-12 h-12 rounded-full ${seriesColors[series as keyof typeof seriesColors]} flex items-center justify-center mx-auto mb-3`}>  
                   <GraduationCap className="w-6 h-6" />
                 </div>
@@ -249,7 +249,7 @@ export function TrainingPreviewPage() {
             {demoEpisodes.slice(1).map((episode) => (
               <Card 
                 key={episode.id}
-                className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm hover:shadow-lg transition-all"
+                className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm hover:shadow-lg transition-all h-full flex flex-col"
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between mb-2">

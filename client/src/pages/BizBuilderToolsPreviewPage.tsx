@@ -156,7 +156,7 @@ export function BizBuilderToolsPreviewPage() {
               return (
                 <Card 
                   key={tool.id}
-                  className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm hover:shadow-lg transition-all"
+                  className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm hover:shadow-lg transition-all h-full flex flex-col"
                 >
                   <CardHeader className="pb-3">
                     <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mb-3">
