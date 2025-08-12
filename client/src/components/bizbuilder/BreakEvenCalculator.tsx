@@ -8,9 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-import { X, Download, Calculator, TrendingUp, DollarSign, Target, AlertTriangle } from "lucide-react"
+import { X, Download, Calculator, TrendingUp, DollarSign, Target, AlertTriangle, History } from "lucide-react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts"
 import { useBusinessName } from "@/hooks/useUserProfile"
+import { CalculationHistory } from "@/components/calculators/CalculationHistory"
 
 interface BreakEvenData {
   productName: string
@@ -239,6 +240,11 @@ export default function BreakEvenCalculator({ onClose }: { onClose: () => void }
     localStorage.removeItem('breakEvenCalculator')
   }
 
+  const loadCalculation = (data: Record<string, any>) => {
+    setBreakEvenData(data as BreakEvenData)
+    setActiveTab('setup')
+  }
+
   // Chart colors
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658', '#FF7C7C']
 
@@ -265,9 +271,10 @@ export default function BreakEvenCalculator({ onClose }: { onClose: () => void }
           {/* Left Panel - Setup */}
           <div className="lg:w-1/2 p-6 overflow-y-auto border-r border-slate-200 dark:border-slate-700">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="setup">Basic Setup</TabsTrigger>
                 <TabsTrigger value="costs">Fixed Costs</TabsTrigger>
+                <TabsTrigger value="history">History</TabsTrigger>
               </TabsList>
 
               <TabsContent value="setup" className="space-y-4">
@@ -444,6 +451,14 @@ export default function BreakEvenCalculator({ onClose }: { onClose: () => void }
                     </div>
                   </Card>
                 )}
+              </TabsContent>
+
+              <TabsContent value="history" className="space-y-4">
+                <CalculationHistory
+                  calculatorType="break_even"
+                  currentData={breakEvenData}
+                  onLoadCalculation={loadCalculation}
+                />
               </TabsContent>
             </Tabs>
           </div>

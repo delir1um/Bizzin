@@ -9,8 +9,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-import { X, Plus, Download, Save, Calculator, TrendingUp, TrendingDown, DollarSign, PieChart } from "lucide-react"
+import { X, Plus, Download, Save, Calculator, TrendingUp, TrendingDown, DollarSign, PieChart, History } from "lucide-react"
 import { PieChart as RechartsPieChart, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Pie } from "recharts"
+import { CalculationHistory } from "@/components/calculators/CalculationHistory"
 
 interface IncomeItem {
   id: string
@@ -289,6 +290,11 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
     localStorage.removeItem('businessBudgetCalculator')
   }
 
+  const loadCalculation = (data: Record<string, any>) => {
+    setBudgetData(data as BudgetData)
+    setActiveTab('income')
+  }
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <div className="bg-white dark:bg-slate-900 rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
@@ -334,9 +340,10 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="income">Income</TabsTrigger>
                 <TabsTrigger value="expenses">Expenses</TabsTrigger>
+                <TabsTrigger value="history">History</TabsTrigger>
               </TabsList>
 
               <TabsContent value="income" className="space-y-4">
@@ -566,6 +573,14 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
                     </Card>
                   ))}
                 </div>
+              </TabsContent>
+
+              <TabsContent value="history" className="space-y-4">
+                <CalculationHistory
+                  calculatorType="business_budget"
+                  currentData={budgetData}
+                  onLoadCalculation={loadCalculation}
+                />
               </TabsContent>
             </Tabs>
           </div>
