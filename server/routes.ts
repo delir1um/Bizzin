@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import seoRoutes from "./routes/seo";
 
 // Hugging Face models for sentiment analysis
 const HF_MODELS = {
@@ -289,6 +290,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       })
     }
   })
+
+  // Mount SEO routes
+  app.use('/api/seo', seoRoutes);
+  
+  // Dynamic llms.txt route
+  app.get('/llms.txt', async (req, res) => {
+    // Redirect to the dynamic API route
+    try {
+      const response = await fetch(`${req.protocol}://${req.get('host')}/api/seo/llms.txt`);
+      const content = await response.text();
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      res.send(content);
+    } catch (error) {
+      console.error('Error serving dynamic llms.txt:', error);
+      // Fallback to basic content if API is unavailable
+      const fallbackContent = `# Bizzin - AI-Powered Business Intelligence Platform
+      
+## About
+Bizzin is South Africa's leading AI-powered business intelligence platform designed specifically for entrepreneurs and small business owners.
+
+## Last Updated
+${new Date().toISOString().split('T')[0]}`;
+      
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.send(fallbackContent);
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
