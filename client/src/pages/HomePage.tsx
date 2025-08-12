@@ -282,12 +282,12 @@ export function HomePage() {
                 <div className="w-12 h-12 bg-gradient-to-br from-emerald-600 to-teal-500 rounded-lg flex items-center justify-center mb-6">
                   <Shield className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Smart Document Intelligence</h3>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Business Document Vault</h3>
                 <p className="text-slate-600 dark:text-slate-300 text-sm">
-                  <strong>• Auto-Categorization:</strong> AI-powered file organization<br/>
-                  <strong>• Advanced Search:</strong> Content & metadata indexing<br/>
-                  <strong>• Multi-Format Viewer:</strong> Universal file support<br/>
-                  <strong>• Storage Analytics:</strong> Usage monitoring & optimization
+                  <strong>• Secure Business Storage:</strong> Contracts, reports, legal documents<br/>
+                  <strong>• Smart Organization:</strong> Auto-categorized by document type<br/>
+                  <strong>• Instant Access:</strong> Powerful search across all files<br/>
+                  <strong>• Professional Management:</strong> Critical business information at your fingertips
                 </p>
               </div>
             </FadeInUp>
