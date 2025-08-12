@@ -1,0 +1,41 @@
+Console.js:61 Detailed R2 upload error: TypeError: readableStream.getReader is not a function
+    at getAwsChunkedEncodingStream (chunk-7XCJOBOG.js?v=3d0f9fb5:1219:33)
+    at @aws-sdk_client-s3.js?v=3d0f9fb5:1000:21
+Mt.forEach.n.<computed>	@	Console.js:61
+uploadVideo	@	cloudflareR2Service.ts:79
+await in uploadVideo		
+uploadEpisodeVideo	@	podcastService.ts:65
+handleUpload	@	VideoUploadModal.tsx:86
+Console.js:61 Error name: TypeError
+Mt.forEach.n.<computed>	@	Console.js:61
+uploadVideo	@	cloudflareR2Service.ts:80
+await in uploadVideo		
+uploadEpisodeVideo	@	podcastService.ts:65
+handleUpload	@	VideoUploadModal.tsx:86
+Console.js:61 Error message: readableStream.getReader is not a function
+Mt.forEach.n.<computed>	@	Console.js:61
+uploadVideo	@	cloudflareR2Service.ts:81
+await in uploadVideo		
+uploadEpisodeVideo	@	podcastService.ts:65
+handleUpload	@	VideoUploadModal.tsx:86
+Console.js:61 Error stack: TypeError: readableStream.getReader is not a function
+    at getAwsChunkedEncodingStream (https://b4a595c1-5278-4619-92c1-c13562ecc1a6-00-28rr7dv01069q.worf.repl.co/…ner/workspace/node_modules/.vite/deps/chunk-7XCJOBOG.js?v=3d0f9fb5:1219:33)
+    at https://b4a595c1-5278-4619-92c1-c13562ecc1a6-00-28rr7dv01069q.worf.repl.co/…workspace/node_modules/.vite/deps/@aws-sdk_client-s3.js?v=3d0f9fb5:1000:21
+Mt.forEach.n.<computed>	@	Console.js:61
+uploadVideo	@	cloudflareR2Service.ts:82
+await in uploadVideo		
+uploadEpisodeVideo	@	podcastService.ts:65
+handleUpload	@	VideoUploadModal.tsx:86
+Console.js:61 Error uploading episode video: Error: R2 Upload failed: readableStream.getReader is not a function
+    at CloudflareR2Service.uploadVideo (cloudflareR2Service.ts:88:13)
+    at async PodcastService.uploadEpisodeVideo (podcastService.ts:65:24)
+    at async handleUpload (VideoUploadModal.tsx:86:7)
+Mt.forEach.n.<computed>	@	Console.js:61
+uploadEpisodeVideo	@	podcastService.ts:86
+await in uploadEpisodeVideo		
+handleUpload	@	VideoUploadModal.tsx:86
+Console.js:61 Upload error: Error: Failed to upload episode video
+    at PodcastService.uploadEpisodeVideo (podcastService.ts:87:13)
+    at async handleUpload (VideoUploadModal.tsx:86:7)
+Mt.forEach.n.<computed>	@	Console.js:61
+handleUpload	@	VideoUploadModal.tsx:105

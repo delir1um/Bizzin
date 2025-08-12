@@ -1,0 +1,97 @@
+Here’s the **extended Replit AI Agent instruction** including stronger, action-oriented button text so it updates everything in one go.
+
+---
+
+**Task for Replit AI Agent:**
+Update the homepage copy to make it more persuasive, benefits-focused, and natural while keeping the structure, headings, and layout exactly the same.
+Also update button text to use stronger action verbs for better click-through rates.
+
+---
+
+### Hero Section
+
+**Headline:**
+`AI-Powered Business Intelligence for Bizzin` *(Keep as is)*
+
+**Subheadline:**
+Change from:
+`Professional Business Analytics & Growth Intelligence Platform`
+To:
+`Your Complete Platform for Smarter Business Decisions & Sustainable Growth`
+
+**Intro Paragraph:**
+Change from:
+`Make data-driven business decisions with comprehensive analytics, AI-powered insights, professional financial tools, and intelligent document management.`
+To:
+`Make smarter, faster business decisions with AI-powered analytics, professional financial tools, and intelligent document management — all in one platform.`
+
+**Button Text:**
+
+* Change `Start Free Trial` to `Start My Free Trial`
+* Change `Explore Features` to `Discover All Features`
+
+---
+
+### Real Business Health Analytics Section
+
+**Subtext under heading:**
+Change from:
+`See exactly what your portal dashboard looks like`
+To:
+`See instantly how your business is performing`
+
+---
+
+### AI-Powered Business Intelligence Suite Section
+
+**Advanced Goal Analytics:** *(Keep as is)*
+
+**AI Business Intelligence:**
+Change from:
+`Automatic mood detection, trend analysis, and AI-powered business insights from your entries.`
+To:
+`Automatically detect moods, analyse trends, and generate AI-powered business insights from your journal entries.`
+
+**Learning Analytics, Professional Financial Suite, Intelligent Document Hub:** *(Keep as is)*
+
+---
+
+### Choose Your Plan Section
+
+**Subtext under heading:**
+`Start free, upgrade when you’re ready to grow` *(Keep as is)*
+
+**Paid Subscription first bullet:**
+Change from:
+`Full access to all platform features`
+To:
+`Unlock full access to every feature and insight our platform offers`
+
+**Button Text:**
+
+* Free Tier: Change `Get Started Free` to `Get Started Now — It’s Free`
+* Paid Subscription: Change `Start Free Trial` to `Start My Premium Trial`
+
+---
+
+### Earn Free Subscription Days Section
+
+**Heading:** *(Keep as is)*
+
+**Subtext under heading:**
+Change from:
+`Professional referral program with real rewards`
+To:
+`A simple referral program with rewards that save you money`
+
+**Button Text:**
+
+* Change `Start Earning Free Days` to `Start Earning My Free Days`
+
+---
+
+If you give this to the Replit AI Agent, it will know exactly which texts to replace and where.
+
+---
+
+If you want, I can also prepare a **version of these instructions directly in a JSON-like structure** so your AI Agent can parse them as a batch replace operation without any extra interpretation. That would make execution even faster.
