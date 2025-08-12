@@ -74,36 +74,42 @@ export function DocSafePreviewPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Preview */}
         <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mb-8">
-          <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Document Storage</CardTitle>
-              <FileText className="h-4 w-4 text-emerald-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">Upload</div>
-              <p className="text-xs text-muted-foreground">Store files</p>
+          <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 border border-emerald-200 dark:border-emerald-700">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-lg flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div className="text-sm text-emerald-700 dark:text-emerald-300">Document Storage</div>
+              </div>
+              <div className="text-3xl font-bold text-slate-900 dark:text-white">Upload</div>
+              <p className="text-sm text-emerald-600 dark:text-emerald-400">Store files</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Organization</CardTitle>
-              <Shield className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">Folders</div>
-              <p className="text-xs text-muted-foreground">Categorize docs</p>
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border border-green-200 dark:border-green-700">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                  <Shield className="w-5 h-5 text-green-600 dark:text-green-400" />
+                </div>
+                <div className="text-sm text-green-700 dark:text-green-300">Organization</div>
+              </div>
+              <div className="text-3xl font-bold text-green-600">Folders</div>
+              <p className="text-sm text-green-600 dark:text-green-400">Categorize docs</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Find Files</CardTitle>
-              <Search className="h-4 w-4 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">Search</div>
-              <p className="text-xs text-muted-foreground">Filter and find</p>
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200 dark:border-blue-700">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                  <Search className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div className="text-sm text-blue-700 dark:text-blue-300">Find Files</div>
+              </div>
+              <div className="text-3xl font-bold text-slate-900 dark:text-white">Search</div>
+              <p className="text-sm text-blue-600 dark:text-blue-400">Filter and find</p>
             </CardContent>
           </Card>
         </div>
