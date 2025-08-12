@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Target, BookOpen, Calculator, Shield, PenTool, Headphones, ArrowRight, Brain, Users, LayoutDashboard, TrendingUp, Flame, BarChart3 } from "lucide-react"
 import { useLocation } from "wouter"
 import { PreLaunchWrapper } from "@/components/PreLaunchWrapper"
+import { FadeInUp, FadeInLeft, FadeInRight, StaggerContainer } from "@/components/animations/ScrollReveal"
 
 export function HomePage() {
   const [, setLocation] = useLocation()
@@ -32,58 +33,68 @@ export function HomePage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
           <div className="text-center">
             {/* Main Heading */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-white tracking-tight leading-tight">
-              <span className="block">Plan, Learn, Track & Grow</span>
-              <span className="block bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mt-2">
-                All in One Platform
-              </span>
-            </h1>
+            <FadeInUp>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-white tracking-tight leading-tight">
+                <span className="block">Plan, Learn, Track & Grow</span>
+                <span className="block bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mt-2">
+                  All in One Platform
+                </span>
+              </h1>
+            </FadeInUp>
             
             {/* Subtitle */}
-            <p className="mt-6 text-xl sm:text-2xl text-slate-600 dark:text-slate-300 max-w-4xl mx-auto leading-relaxed">
-              <span className="text-orange-600 italic">Bizzin</span> combines AI-powered business analytics, goal tracking, financial tools, learning content, and secure document storage — everything you need to grow your business.
-            </p>
+            <FadeInUp delay={0.2}>
+              <p className="mt-6 text-xl sm:text-2xl text-slate-600 dark:text-slate-300 max-w-4xl mx-auto leading-relaxed">
+                <span className="text-orange-600 italic">Bizzin</span> combines AI-powered business analytics, goal tracking, financial tools, learning content, and secure document storage — everything you need to grow your business.
+              </p>
+            </FadeInUp>
             
             {/* Description */}
-            <p className="mt-6 text-lg text-slate-500 dark:text-slate-400 max-w-3xl mx-auto">
-              Track your business health with AI insights, manage goals with smart analytics, access professional financial tools, learn from business content, and secure your important documents.
-            </p>
+            <FadeInUp delay={0.4}>
+              <p className="mt-6 text-lg text-slate-500 dark:text-slate-400 max-w-3xl mx-auto">
+                Track your business health with AI insights, manage goals with smart analytics, access professional financial tools, learn from business content, and secure your important documents.
+              </p>
+            </FadeInUp>
 
             {/* CTA Buttons */}
-            <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button 
-                onClick={() => setLocation('/auth')}
-                className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 text-lg font-medium transition-colors shadow-lg hover:shadow-xl"
-              >
-                Start My 14-Day Free Trial
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={scrollToFeatures}
-                className="w-full sm:w-auto border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-8 py-4 text-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-              >
-                Explore All Features
-              </Button>
-            </div>
+            <FadeInUp delay={0.6}>
+              <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <Button 
+                  onClick={() => setLocation('/auth')}
+                  className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 text-lg font-medium transition-colors shadow-lg hover:shadow-xl"
+                >
+                  Start My 14-Day Free Trial
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={scrollToFeatures}
+                  className="w-full sm:w-auto border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-8 py-4 text-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                >
+                  Explore All Features
+                </Button>
+              </div>
+            </FadeInUp>
 
             {/* Value Proposition */}
-            <div className="mt-16">
-              <p className="text-sm text-slate-500 dark:text-slate-400 mb-8">Everything you need to plan, track, and grow your business</p>
-              <div className="flex justify-center items-center space-x-8 text-slate-400 dark:text-slate-500">
-                <div className="flex items-center gap-2">
-                  <Target className="w-4 h-4" />
-                  <span className="text-sm">Goal Tracking</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <PenTool className="w-4 h-4" />
-                  <span className="text-sm">Business Journal</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Calculator className="w-4 h-4" />
-                  <span className="text-sm">Business Tools</span>
+            <FadeInUp delay={0.8}>
+              <div className="mt-16">
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-8">Everything you need to plan, track, and grow your business</p>
+                <div className="flex justify-center items-center space-x-8 text-slate-400 dark:text-slate-500">
+                  <div className="flex items-center gap-2">
+                    <Target className="w-4 h-4" />
+                    <span className="text-sm">Goal Tracking</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <PenTool className="w-4 h-4" />
+                    <span className="text-sm">Business Journal</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calculator className="w-4 h-4" />
+                    <span className="text-sm">Business Tools</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            </FadeInUp>
           </div>
         </div>
       </div>
@@ -91,179 +102,204 @@ export function HomePage() {
       {/* Business Health Preview - Matching Portal */}
       <section className="py-24 bg-slate-50 dark:bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Know Exactly How You're Tracking</h2>
-            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">See a live view of your goals, burnout risk, and performance trends — make decisions with confidence.</p>
-          </div>
+          <FadeInUp>
+            <div className="text-center mb-16">
+              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Know Exactly How You're Tracking</h2>
+              <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">See a live view of your goals, burnout risk, and performance trends — make decisions with confidence.</p>
+            </div>
+          </FadeInUp>
 
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-xl border border-slate-200 dark:border-slate-700">
+          <FadeInUp delay={0.2}>
+            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-xl border border-slate-200 dark:border-slate-700">
             <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
               {/* Business Health Score */}
-              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200 dark:border-blue-800">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg text-blue-900 dark:text-blue-100">Business Health</CardTitle>
-                    <div className="text-3xl font-bold text-blue-600">69</div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-3 mb-4">
-                    <div className="bg-blue-600 h-3 rounded-full" style={{width: '69%'}}></div>
-                  </div>
-                  <p className="text-sm text-blue-700 dark:text-blue-300">Overall business health score</p>
-                </CardContent>
-              </Card>
+              <FadeInLeft delay={0.1}>
+                <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200 dark:border-blue-800">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg text-blue-900 dark:text-blue-100">Business Health</CardTitle>
+                      <div className="text-3xl font-bold text-blue-600">69</div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-3 mb-4">
+                      <div className="bg-blue-600 h-3 rounded-full" style={{width: '69%'}}></div>
+                    </div>
+                    <p className="text-sm text-blue-700 dark:text-blue-300">Overall business health score</p>
+                  </CardContent>
+                </Card>
+              </FadeInLeft>
 
               {/* Burnout Risk */}
-              <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border border-green-200 dark:border-green-800">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg text-green-900 dark:text-green-100">Burnout Risk</CardTitle>
-                    <div className="text-3xl font-bold text-green-600">8%</div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="w-full bg-green-200 dark:bg-green-800 rounded-full h-3 mb-4">
-                    <div className="bg-green-600 h-3 rounded-full" style={{width: '8%'}}></div>
-                  </div>
-                  <p className="text-sm text-green-700 dark:text-green-300">Low risk - excellent work-life balance</p>
-                </CardContent>
-              </Card>
+              <FadeInRight delay={0.1}>
+                <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border border-green-200 dark:border-green-800">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg text-green-900 dark:text-green-100">Burnout Risk</CardTitle>
+                      <div className="text-3xl font-bold text-green-600">8%</div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="w-full bg-green-200 dark:bg-green-800 rounded-full h-3 mb-4">
+                      <div className="bg-green-600 h-3 rounded-full" style={{width: '8%'}}></div>
+                    </div>
+                    <p className="text-sm text-green-700 dark:text-green-300">Low risk - excellent work-life balance</p>
+                  </CardContent>
+                </Card>
+              </FadeInRight>
             </div>
 
             {/* AI Mood Detection */}
-            <div className="mt-8 text-center">
-              <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-6">
-                <div className="flex items-center justify-center gap-3 mb-2">
-                  <Brain className="w-6 h-6 text-purple-600" />
-                  <span className="text-sm text-purple-700 dark:text-purple-300">Current AI-Detected Mood</span>
+            <FadeInUp delay={0.3}>
+              <div className="mt-8 text-center">
+                <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-6">
+                  <div className="flex items-center justify-center gap-3 mb-2">
+                    <Brain className="w-6 h-6 text-purple-600" />
+                    <span className="text-sm text-purple-700 dark:text-purple-300">Current AI-Detected Mood</span>
+                  </div>
+                  <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">Analytical</div>
+                  <p className="text-sm text-purple-600 dark:text-purple-400 mt-1">Focused on data-driven decision making</p>
                 </div>
-                <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">Analytical</div>
-                <p className="text-sm text-purple-600 dark:text-purple-400 mt-1">Focused on data-driven decision making</p>
               </div>
-            </div>
+            </FadeInUp>
           </div>
+        </FadeInUp>
         </div>
       </section>
 
       {/* Features Preview */}
       <section id="features-section" className="py-24 bg-white dark:bg-[#0B0A1D]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Comprehensive Business Intelligence Platform</h2>
-            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">Advanced AI-powered analytics, professional tools, and intelligent automation — everything built in:</p>
-          </div>
+          <FadeInUp>
+            <div className="text-center mb-16">
+              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Comprehensive Business Intelligence Platform</h2>
+              <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">Advanced AI-powered analytics, professional tools, and intelligent automation — everything built in:</p>
+            </div>
+          </FadeInUp>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Dashboard */}
-            <div 
-              className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900/20 dark:to-slate-800/20 p-6 rounded-xl border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col"
-              onClick={() => setLocation('/dashboard')}
-            >
+            <FadeInUp delay={0.1}>
+              <div 
+                className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900/20 dark:to-slate-800/20 p-6 rounded-xl border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col"
+                onClick={() => setLocation('/dashboard')}
+              >
               <div className="w-12 h-12 bg-gradient-to-br from-slate-600 to-slate-700 rounded-lg flex items-center justify-center mb-6">
                 <LayoutDashboard className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">AI Business Intelligence Dashboard</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">
-                <strong>• Business Health Radar:</strong> Multi-dimensional health scoring<br/>
-                <strong>• Burnout Risk Analysis:</strong> Stress pattern detection<br/>
-                <strong>• Growth Momentum:</strong> Progress trend analytics<br/>
-                <strong>• Recovery Resilience:</strong> Performance bounce-back tracking
-              </p>
-            </div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">AI Business Intelligence Dashboard</h3>
+                <p className="text-slate-600 dark:text-slate-300 text-sm">
+                  <strong>• Business Health Radar:</strong> Multi-dimensional health scoring<br/>
+                  <strong>• Burnout Risk Analysis:</strong> Stress pattern detection<br/>
+                  <strong>• Growth Momentum:</strong> Progress trend analytics<br/>
+                  <strong>• Recovery Resilience:</strong> Performance bounce-back tracking
+                </p>
+              </div>
+            </FadeInUp>
 
             {/* Journal */}
-            <div 
-              className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-6 rounded-xl border border-purple-200 dark:border-purple-700 hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col"
-              onClick={() => setLocation('/journal')}
-            >
+            <FadeInUp delay={0.2}>
+              <div 
+                className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-6 rounded-xl border border-purple-200 dark:border-purple-700 hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col"
+                onClick={() => setLocation('/journal')}
+              >
               <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-blue-500 rounded-lg flex items-center justify-center mb-6">
                 <BookOpen className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">AI-Powered Business Journal</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">
-                <strong>• Automatic Sentiment Analysis:</strong> AI mood detection<br/>
-                <strong>• Business Health Insights:</strong> Trend identification<br/>
-                <strong>• Writing Streak Tracking:</strong> Consistency metrics<br/>
-                <strong>• Smart Categorization:</strong> Intelligent entry organization
-              </p>
-            </div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">AI-Powered Business Journal</h3>
+                <p className="text-slate-600 dark:text-slate-300 text-sm">
+                  <strong>• Automatic Sentiment Analysis:</strong> AI mood detection<br/>
+                  <strong>• Business Health Insights:</strong> Trend identification<br/>
+                  <strong>• Writing Streak Tracking:</strong> Consistency metrics<br/>
+                  <strong>• Smart Categorization:</strong> Intelligent entry organization
+                </p>
+              </div>
+            </FadeInUp>
 
             {/* Goals */}
-            <div 
-              className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 p-6 rounded-xl border border-orange-200 dark:border-orange-700 hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col"
-              onClick={() => setLocation('/goals')}
-            >
+            <FadeInUp delay={0.3}>
+              <div 
+                className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 p-6 rounded-xl border border-orange-200 dark:border-orange-700 hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col"
+                onClick={() => setLocation('/goals')}
+              >
               <div className="w-12 h-12 bg-gradient-to-br from-orange-600 to-red-500 rounded-lg flex items-center justify-center mb-6">
                 <Target className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Intelligent Goal Management</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">
-                <strong>• Progress Analytics:</strong> Visual completion tracking<br/>
-                <strong>• Deadline Intelligence:</strong> Overdue & upcoming alerts<br/>
-                <strong>• Priority Filtering:</strong> Strategic focus management<br/>
-                <strong>• Achievement Celebrations:</strong> Automated milestone recognition
-              </p>
-            </div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Intelligent Goal Management</h3>
+                <p className="text-slate-600 dark:text-slate-300 text-sm">
+                  <strong>• Progress Analytics:</strong> Visual completion tracking<br/>
+                  <strong>• Deadline Intelligence:</strong> Overdue & upcoming alerts<br/>
+                  <strong>• Priority Filtering:</strong> Strategic focus management<br/>
+                  <strong>• Achievement Celebrations:</strong> Automated milestone recognition
+                </p>
+              </div>
+            </FadeInUp>
 
             {/* Podcast */}
-            <div 
-              className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-6 rounded-xl border border-blue-200 dark:border-blue-700 hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col"
-              onClick={() => setLocation('/training')}
-            >
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-500 rounded-lg flex items-center justify-center mb-6">
-                <Headphones className="w-6 h-6 text-white" />
+            <FadeInUp delay={0.4}>
+              <div 
+                className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-6 rounded-xl border border-blue-200 dark:border-blue-700 hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col"
+                onClick={() => setLocation('/training')}
+              >
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-500 rounded-lg flex items-center justify-center mb-6">
+                  <Headphones className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Business Podcast Platform</h3>
+                <p className="text-slate-600 dark:text-slate-300 text-sm">
+                  <strong>• Progress Tracking:</strong> Episode completion analytics<br/>
+                  <strong>• Learning Streaks:</strong> Consistency measurement<br/>
+                  <strong>• Professional Player:</strong> Custom video/audio controls<br/>
+                  <strong>• Cloudflare Streaming:</strong> Optimized content delivery
+                </p>
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Business Podcast Platform</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">
-                <strong>• Progress Tracking:</strong> Episode completion analytics<br/>
-                <strong>• Learning Streaks:</strong> Consistency measurement<br/>
-                <strong>• Professional Player:</strong> Custom video/audio controls<br/>
-                <strong>• Cloudflare Streaming:</strong> Optimized content delivery
-              </p>
-            </div>
+            </FadeInUp>
 
             {/* BizBuilder Tools */}
-            <div 
-              className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 p-6 rounded-xl border border-orange-200 dark:border-orange-700 hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col"
-              onClick={() => setLocation('/bizbuilder')}
-            >
-              <div className="w-12 h-12 bg-gradient-to-br from-orange-600 to-amber-500 rounded-lg flex items-center justify-center mb-6">
-                <Calculator className="w-6 h-6 text-white" />
+            <FadeInUp delay={0.5}>
+              <div 
+                className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 p-6 rounded-xl border border-orange-200 dark:border-orange-700 hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col"
+                onClick={() => setLocation('/bizbuilder')}
+              >
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-600 to-amber-500 rounded-lg flex items-center justify-center mb-6">
+                  <Calculator className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Professional Financial Suite</h3>
+                <p className="text-slate-600 dark:text-slate-300 text-sm">
+                  <strong>• Business Calculators:</strong> Break-even, ROI, cash flow tools<br/>
+                  <strong>• CSV Export:</strong> Download calculations for analysis<br/>
+                  <strong>• Real-time Updates:</strong> Dynamic calculation results<br/>
+                  <strong>• Professional Reports:</strong> Export-ready business analysis
+                </p>
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Professional Financial Suite</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">
-                <strong>• Business Calculators:</strong> Break-even, ROI, cash flow tools<br/>
-                <strong>• CSV Export:</strong> Download calculations for analysis<br/>
-                <strong>• Real-time Updates:</strong> Dynamic calculation results<br/>
-                <strong>• Professional Reports:</strong> Export-ready business analysis
-              </p>
-            </div>
+            </FadeInUp>
 
             {/* DocSafe */}
-            <div 
-              className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-6 rounded-xl border border-green-200 dark:border-green-700 hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col"
-              onClick={() => setLocation('/docsafe')}
-            >
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-600 to-teal-500 rounded-lg flex items-center justify-center mb-6">
-                <Shield className="w-6 h-6 text-white" />
+            <FadeInUp delay={0.6}>
+              <div 
+                className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-6 rounded-xl border border-green-200 dark:border-green-700 hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col"
+                onClick={() => setLocation('/docsafe')}
+              >
+                <div className="w-12 h-12 bg-gradient-to-br from-emerald-600 to-teal-500 rounded-lg flex items-center justify-center mb-6">
+                  <Shield className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Smart Document Intelligence</h3>
+                <p className="text-slate-600 dark:text-slate-300 text-sm">
+                  <strong>• Auto-Categorization:</strong> AI-powered file organization<br/>
+                  <strong>• Advanced Search:</strong> Content & metadata indexing<br/>
+                  <strong>• Multi-Format Viewer:</strong> Universal file support<br/>
+                  <strong>• Storage Analytics:</strong> Usage monitoring & optimization
+                </p>
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Smart Document Intelligence</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">
-                <strong>• Auto-Categorization:</strong> AI-powered file organization<br/>
-                <strong>• Advanced Search:</strong> Content & metadata indexing<br/>
-                <strong>• Multi-Format Viewer:</strong> Universal file support<br/>
-                <strong>• Storage Analytics:</strong> Usage monitoring & optimization
-              </p>
-            </div>
+            </FadeInUp>
           </div>
 
           {/* Additional Intelligence Features */}
-          <div className="mt-16 pt-12 border-t border-slate-200 dark:border-slate-700">
-            <div className="text-center mb-12">
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Advanced Intelligence Features</h3>
-              <p className="text-slate-600 dark:text-slate-300">Powerful automation and analytics working behind the scenes</p>
-            </div>
+          <FadeInUp delay={0.8}>
+            <div className="mt-16 pt-12 border-t border-slate-200 dark:border-slate-700">
+              <div className="text-center mb-12">
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Advanced Intelligence Features</h3>
+                <p className="text-slate-600 dark:text-slate-300">Powerful automation and analytics working behind the scenes</p>
+              </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="text-center p-4">
@@ -298,7 +334,8 @@ export function HomePage() {
                 <p className="text-sm text-slate-600 dark:text-slate-300">Dashboard metrics showing your business health trends and platform usage</p>
               </div>
             </div>
-          </div>
+            </div>
+          </FadeInUp>
         </div>
       </section>
 

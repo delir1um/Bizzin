@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { GraduationCap, Plus, Clock, Lock, ArrowRight, BookOpen, Video, Users } from "lucide-react"
 import { useLocation } from "wouter"
+import { FadeInUp, FadeInLeft, FadeInRight } from "@/components/animations/ScrollReveal"
 
 // Real podcast episodes from the portal
 const demoEpisodes = [

@@ -1,0 +1,146 @@
+                  <TrendingUp className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                </div>
+                <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Referral Program</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Earn 10 days free subscription per successful referral with automatic tracking</p>
+              </div>
+              
+              <div className="text-center p-4">
+                <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Flame className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Streak Intelligence</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Writing and learning streaks with pattern analysis and motivation triggers</p>
+              </div>
+              
+              <div className="text-center p-4">
+                <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Brain className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                </div>
+                <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Sentiment Trends</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Long-term mood analysis with business correlation insights and alerts</p>
+              </div>
+              
+              <div className="text-center p-4">
+                <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <BarChart3 className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                </div>
+                <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Platform Insights</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Dashboard metrics showing your business health trends and platform usage</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Subscription Tiers */}
+      <section className="py-24 bg-slate-50 dark:bg-slate-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Simple Pricing. Powerful Value.</h2>
+            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">Try <span className="italic">Bizzin</span> free for 14 days. Then just R299/month — cancel anytime.</p>
+          </div>
+
+          <div className="max-w-2xl mx-auto">
+            {/* Single Pricing Card */}
+            <div className="bg-orange-50 dark:bg-orange-900/20 p-8 rounded-xl border-2 border-orange-200 dark:border-orange-800 relative">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <span className="bg-orange-600 text-white px-4 py-2 rounded-full text-sm font-medium">14-Day Free Trial</span>
+              </div>
+              
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Start Your Free Trial</h3>
+                <p className="text-slate-600 dark:text-slate-300">Full access to everything for 14 days, then R299/month</p>
+              </div>
+
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center text-slate-700 dark:text-slate-300">
+                  <Target className="w-5 h-5 text-orange-500 mr-3" />
+                  Advanced goal analytics & health metrics
+                </li>
+                <li className="flex items-center text-slate-700 dark:text-slate-300">
+                  <PenTool className="w-5 h-5 text-orange-500 mr-3" />
+                  Unlimited AI analysis & business insights
+                </li>
+                <li className="flex items-center text-slate-700 dark:text-slate-300">
+                  <Calculator className="w-5 h-5 text-orange-500 mr-3" />
+                  Premium financial calculators + CSV export
+                </li>
+                <li className="flex items-center text-slate-700 dark:text-slate-300">
+                  <Headphones className="w-5 h-5 text-orange-500 mr-3" />
+                  Business learning modules & progress tracking
+                </li>
+                <li className="flex items-center text-slate-700 dark:text-slate-300">
+                  <Users className="w-5 h-5 text-orange-500 mr-3" />
+                  Referral program - earn free subscription days
+                </li>
+                <li className="flex items-center text-slate-700 dark:text-slate-300">
+                  <Shield className="w-5 h-5 text-orange-500 mr-3" />
+                  Professional document storage & management
+                </li>
+              </ul>
+              
+              <Button 
+                onClick={() => setLocation('/auth')}
+                className="w-full bg-orange-600 hover:bg-orange-700 text-lg py-3"
+              >
+                Start My 14-Day Free Trial
+              </Button>
+              
+              <p className="text-xs text-slate-500 dark:text-slate-400 text-center mt-3">
+                Cancel anytime during your trial. No commitment required.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Referral Program Section */}
+      <section className="py-24 bg-gradient-to-r from-orange-50 to-red-50 dark:bg-gradient-to-r dark:from-[#0B0A1D] dark:to-slate-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Earn Free Subscription Days</h2>
+            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">A simple referral programme with rewards that save you money</p>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-xl border border-slate-200 dark:border-slate-700 max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+              <div>
+                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">1</span>
+                </div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Share Your Link</h3>
+                <p className="text-slate-600 dark:text-slate-300 text-sm">Get your unique referral code and share with business contacts</p>
+              </div>
+              
+              <div>
+                <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-green-600 dark:text-green-400">2</span>
+                </div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Friend Subscribes</h3>
+                <p className="text-slate-600 dark:text-slate-300 text-sm">They sign up and subscribe to any paid plan</p>
+              </div>
+              
+              <div>
+                <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-orange-600 dark:text-orange-400">10</span>
+                </div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">You Get Rewarded</h3>
+                <p className="text-slate-600 dark:text-slate-300 text-sm">Earn 10 days free subscription for each active referral</p>
+              </div>
+            </div>
+            
+            <div className="mt-8 text-center">
+              <Button 
+                onClick={() => setLocation('/auth')}
+                className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 text-lg font-medium"
+              >
+                Start Earning My Free Days
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+      </main>
+    </PreLaunchWrapper>
+  )
+}

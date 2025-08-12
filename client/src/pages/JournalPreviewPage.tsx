@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { BookOpen, Plus, Calendar, Lock, ArrowRight, PenTool, TrendingUp, Target, Search, Brain, Flame } from "lucide-react"
 import { useLocation } from "wouter"
+import { FadeInUp, FadeInLeft, FadeInRight } from "@/components/animations/ScrollReveal"
 
 // Portal-matching entries
 const todayEntry = {
@@ -67,21 +68,24 @@ export function JournalPreviewPage() {
       {/* Header Section */}
       <div className="bg-white/80 dark:bg-[#0B0A1D]/80 backdrop-blur-sm border-b border-purple-200 dark:border-slate-700 min-h-[200px] flex items-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <BookOpen className="w-8 h-8 text-purple-600" />
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">AI Business Intelligence Journal</h1>
-            </div>
-            <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+          <FadeInUp>
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <BookOpen className="w-8 h-8 text-purple-600" />
+                <h1 className="text-3xl font-bold text-slate-900 dark:text-white">AI Business Intelligence Journal</h1>
+              </div>
+              <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
               Automatic mood detection, business health analytics, trend analysis, and AI-powered insights from your daily entries
             </p>
-          </div>
+            </div>
+          </FadeInUp>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Preview - Exact Portal Match */}
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mb-6">
+        <FadeInUp delay={0.2}>
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mb-6">
           <Card className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -123,10 +127,12 @@ export function JournalPreviewPage() {
               </div>
             </CardContent>
           </Card>
-        </div>
+          </div>
+        </FadeInUp>
 
         {/* CTA Section - Matching Portal Style */}
-        <div className="text-center mb-8">
+        <FadeInUp delay={0.4}>
+          <div className="text-center mb-8">
           <div className="bg-gradient-to-r from-purple-600 to-blue-500 text-white p-6 rounded-lg mb-6">
             <h2 className="text-2xl font-bold mb-2">Start Your Business Intelligence Journal</h2>
             <p className="text-purple-100 mb-4">Document your entrepreneurial journey with AI-powered mood detection and business insights</p>
@@ -139,10 +145,12 @@ export function JournalPreviewPage() {
               </Button>
             </div>
           </div>
-        </div>
+          </div>
+        </FadeInUp>
 
         {/* Search Bar - Portal Style */}
-        <div className="mb-6">
+        <FadeInUp delay={0.6}>
+          <div className="mb-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
             <input 
@@ -152,18 +160,20 @@ export function JournalPreviewPage() {
               disabled
             />
           </div>
-        </div>
+          </div>
+        </FadeInUp>
 
         {/* Today Section - Exact Portal Match */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-1 h-6 bg-orange-500 rounded"></div>
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Today</h2>
-            <Badge variant="secondary" className="text-xs">1 entries</Badge>
-          </div>
+        <FadeInUp delay={0.8}>
+          <div className="space-y-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-1 h-6 bg-orange-500 rounded"></div>
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Today</h2>
+              <Badge variant="secondary" className="text-xs">1 entries</Badge>
+            </div>
 
-          {/* Today's Entry - Larger and More Prominent */}
-          <Card className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow border-l-4 border-l-orange-500">
+            {/* Today's Entry - Larger and More Prominent */}
+            <Card className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow border-l-4 border-l-orange-500">
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
                 <div className="text-3xl">{todayEntry.emoji}</div>
@@ -197,32 +207,34 @@ export function JournalPreviewPage() {
           </div>
 
           {/* Week Entries - Full Examples */}
-          {weekEntries.map((entry) => (
-            <Card key={entry.id} className="bg-white dark:bg-slate-800 hover:shadow-md transition-shadow h-full flex flex-col">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className="text-2xl">{entry.emoji}</div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-slate-900 dark:text-white mb-1">{entry.title}</h3>
-                    <div className="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400 mb-2">
-                      <span>{entry.date}</span>
-                      <Badge variant="outline" className="text-xs">{entry.category}</Badge>
-                      <span>🔥 {entry.mood}</span>
+          {weekEntries.map((entry, index) => (
+            <FadeInUp key={entry.id} delay={1.0 + (index * 0.1)}>
+              <Card className="bg-white dark:bg-slate-800 hover:shadow-md transition-shadow h-full flex flex-col">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="text-2xl">{entry.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-slate-900 dark:text-white mb-1">{entry.title}</h3>
+                      <div className="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400 mb-2">
+                        <span>{entry.date}</span>
+                        <Badge variant="outline" className="text-xs">{entry.category}</Badge>
+                        <span>🔥 {entry.mood}</span>
+                      </div>
+                      <p className="text-slate-600 dark:text-slate-300 text-sm">
+                        {entry.content}
+                      </p>
+                      <Button 
+                        variant="link" 
+                        className="p-0 h-auto text-orange-600 hover:text-orange-700 text-sm mt-2"
+                        onClick={() => setLocation('/auth')}
+                      >
+                        Read more...
+                      </Button>
                     </div>
-                    <p className="text-slate-600 dark:text-slate-300 text-sm">
-                      {entry.content}
-                    </p>
-                    <Button 
-                      variant="link" 
-                      className="p-0 h-auto text-orange-600 hover:text-orange-700 text-sm mt-2"
-                      onClick={() => setLocation('/auth')}
-                    >
-                      Read more...
-                    </Button>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </FadeInUp>
           ))}
 
           {/* More sections - collapsed */}
@@ -244,9 +256,11 @@ export function JournalPreviewPage() {
             </Button>
           </div>
         </div>
+        </FadeInUp>
 
         {/* Features Highlight */}
-        <div className="mt-12 grid gap-6 grid-cols-1 md:grid-cols-3">
+        <FadeInUp delay={1.5}>
+          <div className="mt-12 grid gap-6 grid-cols-1 md:grid-cols-3">
           <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
             <Brain className="w-12 h-12 text-purple-600 mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">AI Mood Detection</h3>
@@ -286,6 +300,7 @@ export function JournalPreviewPage() {
             Free trial • No credit card required
           </p>
         </div>
+        </FadeInUp>
       </div>
     </div>
   )
