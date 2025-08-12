@@ -177,8 +177,8 @@ export function HomePage() {
               className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-6 rounded-xl border border-purple-200 dark:border-purple-700 hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col"
               onClick={() => setLocation('/journal')}
             >
-              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mb-6">
-                <BookOpen className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-blue-500 rounded-lg flex items-center justify-center mb-6">
+                <BookOpen className="w-6 h-6 text-white" />
               </div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">AI-Powered Business Journal</h3>
               <p className="text-slate-600 dark:text-slate-300 text-sm">
@@ -194,8 +194,8 @@ export function HomePage() {
               className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 p-6 rounded-xl border border-orange-200 dark:border-orange-700 hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col"
               onClick={() => setLocation('/goals')}
             >
-              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mb-6">
-                <Target className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-600 to-red-500 rounded-lg flex items-center justify-center mb-6">
+                <Target className="w-6 h-6 text-white" />
               </div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Intelligent Goal Management</h3>
               <p className="text-slate-600 dark:text-slate-300 text-sm">
@@ -211,8 +211,8 @@ export function HomePage() {
               className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-6 rounded-xl border border-blue-200 dark:border-blue-700 hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col"
               onClick={() => setLocation('/training')}
             >
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mb-6">
-                <Headphones className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-500 rounded-lg flex items-center justify-center mb-6">
+                <Headphones className="w-6 h-6 text-white" />
               </div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Business Podcast Platform</h3>
               <p className="text-slate-600 dark:text-slate-300 text-sm">
@@ -228,8 +228,8 @@ export function HomePage() {
               className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 p-6 rounded-xl border border-orange-200 dark:border-orange-700 hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col"
               onClick={() => setLocation('/bizbuilder')}
             >
-              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mb-6">
-                <Calculator className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-600 to-amber-500 rounded-lg flex items-center justify-center mb-6">
+                <Calculator className="w-6 h-6 text-white" />
               </div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Professional Financial Suite</h3>
               <p className="text-slate-600 dark:text-slate-300 text-sm">
@@ -245,8 +245,8 @@ export function HomePage() {
               className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-6 rounded-xl border border-green-200 dark:border-green-700 hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col"
               onClick={() => setLocation('/docsafe')}
             >
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mb-6">
-                <Shield className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-600 to-teal-500 rounded-lg flex items-center justify-center mb-6">
+                <Shield className="w-6 h-6 text-white" />
               </div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Smart Document Intelligence</h3>
               <p className="text-slate-600 dark:text-slate-300 text-sm">
