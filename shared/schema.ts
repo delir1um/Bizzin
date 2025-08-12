@@ -236,7 +236,7 @@ export const updatePlatformSettingsSchema = z.object({
 export type CalculatorHistory = {
   id: string;
   user_id: string;
-  calculator_type: string; // 'cash_flow', 'break_even', 'business_budget'
+  calculator_type: string; // 'cash_flow', 'break_even', 'business_budget', 'loan_amortisation'
   calculation_name: string;
   calculation_data: Record<string, any>; // JSON data with inputs and results
   notes?: string;
@@ -248,7 +248,7 @@ export type CalculatorHistory = {
 // Zod schemas for validation
 export const createCalculatorHistorySchema = z.object({
   user_id: z.string().uuid(),
-  calculator_type: z.enum(['cash_flow', 'break_even', 'business_budget']),
+  calculator_type: z.enum(['cash_flow', 'break_even', 'business_budget', 'loan_amortisation']),
   calculation_name: z.string().min(1).max(100),
   calculation_data: z.record(z.any()),
   notes: z.string().optional(),

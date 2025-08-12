@@ -1,13 +1,15 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { X, CreditCard, Download, Calendar, DollarSign, Percent, Clock, Calculator } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { X, CreditCard, Download, Calendar, DollarSign, Percent, Clock, Calculator, History } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts"
+import { CalculationHistory } from "@/components/calculators/CalculationHistory"
 
 interface LoanAmortisationCalculatorProps {
   onClose: () => void
@@ -26,23 +28,77 @@ interface PaymentEntry {
   cumulativeInterest: number
 }
 
+interface LoanData {
+  loanAmount: string
+  annualInterestRate: string
+  loanTermYears: string
+  paymentsPerYear: string
+  startDate: string
+  extraPayment: string
+  lenderName: string
+  notes: string
+}
+
 export default function LoanAmortisationCalculator({ onClose }: LoanAmortisationCalculatorProps) {
-  // Form inputs
-  const [loanAmount, setLoanAmount] = useState<string>("200000")
-  const [annualInterestRate, setAnnualInterestRate] = useState<string>("7.5")
-  const [loanTermYears, setLoanTermYears] = useState<string>("6")
-  const [paymentsPerYear, setPaymentsPerYear] = useState<string>("12")
-  const [startDate, setStartDate] = useState<string>("2025-08-01")
-  const [extraPayment, setExtraPayment] = useState<string>("0")
-  const [lenderName, setLenderName] = useState<string>("")
+  const [activeTab, setActiveTab] = useState('setup')
+  
+  // Consolidated loan data state
+  const [loanData, setLoanData] = useState<LoanData>({
+    loanAmount: "200000",
+    annualInterestRate: "7.5", 
+    loanTermYears: "6",
+    paymentsPerYear: "12",
+    startDate: "2025-08-01",
+    extraPayment: "0",
+    lenderName: "",
+    notes: ""
+  })
+
+  // Load saved data from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('loanAmortisationCalculator')
+    if (saved) {
+      try {
+        setLoanData(JSON.parse(saved))
+      } catch (error) {
+        console.error('Error loading saved data:', error)
+      }
+    }
+  }, [])
+
+  // Save data to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('loanAmortisationCalculator', JSON.stringify(loanData))
+  }, [loanData])
+
+  // Reset function
+  const resetTool = () => {
+    setLoanData({
+      loanAmount: "200000",
+      annualInterestRate: "7.5", 
+      loanTermYears: "6",
+      paymentsPerYear: "12",
+      startDate: "2025-08-01",
+      extraPayment: "0",
+      lenderName: "",
+      notes: ""
+    })
+    localStorage.removeItem('loanAmortisationCalculator')
+  }
+
+  // Load calculation function
+  const loadCalculation = (data: Record<string, any>) => {
+    setLoanData(data as LoanData)
+    setActiveTab('setup')
+  }
 
   // Calculations
   const calculations = useMemo(() => {
-    const principal = parseFloat(loanAmount) || 0
-    const rate = (parseFloat(annualInterestRate) || 0) / 100
-    const years = parseFloat(loanTermYears) || 0
-    const paymentsYear = parseFloat(paymentsPerYear) || 12
-    const extra = parseFloat(extraPayment) || 0
+    const principal = parseFloat(loanData.loanAmount) || 0
+    const rate = (parseFloat(loanData.annualInterestRate) || 0) / 100
+    const years = parseFloat(loanData.loanTermYears) || 0
+    const paymentsYear = parseFloat(loanData.paymentsPerYear) || 12
+    const extra = parseFloat(loanData.extraPayment) || 0
     
     if (principal <= 0 || rate <= 0 || years <= 0 || paymentsYear <= 0) {
       return {
@@ -69,7 +125,7 @@ export default function LoanAmortisationCalculator({ onClose }: LoanAmortisation
     let remainingBalance = principal
     let cumulativeInterest = 0
     let actualPaymentCount = 0
-    const start = new Date(startDate)
+    const start = new Date(loanData.startDate)
 
     for (let i = 1; i <= totalPayments && remainingBalance > 0.01; i++) {
       const interestPayment = remainingBalance * monthlyRate
@@ -132,7 +188,7 @@ export default function LoanAmortisationCalculator({ onClose }: LoanAmortisation
       schedule,
       chartData
     }
-  }, [loanAmount, annualInterestRate, loanTermYears, paymentsPerYear, startDate, extraPayment])
+  }, [loanData.loanAmount, loanData.annualInterestRate, loanData.loanTermYears, loanData.paymentsPerYear, loanData.startDate, loanData.extraPayment])
 
   const handleExportCSV = () => {
     const headers = [
@@ -169,107 +225,157 @@ export default function LoanAmortisationCalculator({ onClose }: LoanAmortisation
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <CreditCard className="w-5 h-5 text-purple-600" />
-            Loan Amortisation Calculator
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="max-w-7xl max-h-[95vh] overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+              <CreditCard className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Loan Amortisation Calculator</h2>
+              <p className="text-sm text-slate-600 dark:text-slate-300">Compare loan options for equipment and expansion financing</p>
+            </div>
+          </div>
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Input Form */}
-          <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Loan Details</CardTitle>
-                <CardDescription>Enter your loan information</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="loanAmount">Loan Amount (R)</Label>
-                  <Input
-                    id="loanAmount"
-                    type="number"
-                    value={loanAmount}
-                    onChange={(e) => setLoanAmount(e.target.value)}
-                    placeholder="200000"
-                  />
-                </div>
+        <div className="flex flex-col lg:flex-row h-full max-h-[calc(90vh-80px)]">
+          {/* Left Panel - Setup */}
+          <div className="lg:w-1/2 p-6 overflow-y-auto border-r border-slate-200 dark:border-slate-700">
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="setup">Loan Setup</TabsTrigger>
+                <TabsTrigger value="notes">Notes</TabsTrigger>
+                <TabsTrigger value="history">History</TabsTrigger>
+              </TabsList>
 
-                <div>
-                  <Label htmlFor="interestRate">Annual Interest Rate (%)</Label>
-                  <Input
-                    id="interestRate"
-                    type="number"
-                    step="0.01"
-                    value={annualInterestRate}
-                    onChange={(e) => setAnnualInterestRate(e.target.value)}
-                    placeholder="7.5"
-                  />
-                </div>
+              <TabsContent value="setup" className="space-y-4">
+                {/* Loan Information */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">Loan Details</CardTitle>
+                    <CardDescription>Configure your loan parameters</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor="loanAmount">Loan Amount (R)</Label>
+                      <Input
+                        id="loanAmount"
+                        type="number"
+                        value={loanData.loanAmount}
+                        onChange={(e) => setLoanData(prev => ({ ...prev, loanAmount: e.target.value }))}
+                        placeholder="200000"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="interestRate">Annual Interest Rate (%)</Label>
+                      <Input
+                        id="interestRate"
+                        type="number"
+                        step="0.01"
+                        value={loanData.annualInterestRate}
+                        onChange={(e) => setLoanData(prev => ({ ...prev, annualInterestRate: e.target.value }))}
+                        placeholder="7.5"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="loanTerm">Loan Period (Years)</Label>
+                      <Input
+                        id="loanTerm"
+                        type="number"
+                        value={loanData.loanTermYears}
+                        onChange={(e) => setLoanData(prev => ({ ...prev, loanTermYears: e.target.value }))}
+                        placeholder="6"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="paymentsPerYear">Payments Per Year</Label>
+                      <Input
+                        id="paymentsPerYear"
+                        type="number"
+                        value={loanData.paymentsPerYear}
+                        onChange={(e) => setLoanData(prev => ({ ...prev, paymentsPerYear: e.target.value }))}
+                        placeholder="12"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="startDate">Start Date</Label>
+                      <Input
+                        id="startDate"
+                        type="date"
+                        value={loanData.startDate}
+                        onChange={(e) => setLoanData(prev => ({ ...prev, startDate: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="extraPayment">Optional Extra Payment (R)</Label>
+                      <Input
+                        id="extraPayment"
+                        type="number"
+                        value={loanData.extraPayment}
+                        onChange={(e) => setLoanData(prev => ({ ...prev, extraPayment: e.target.value }))}
+                        placeholder="0"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="lenderName">Lender Name (Optional)</Label>
+                      <Input
+                        id="lenderName"
+                        type="text"
+                        value={loanData.lenderName}
+                        onChange={(e) => setLoanData(prev => ({ ...prev, lenderName: e.target.value }))}
+                        placeholder="Bank Name"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
 
-                <div>
-                  <Label htmlFor="loanTerm">Loan Period (Years)</Label>
-                  <Input
-                    id="loanTerm"
-                    type="number"
-                    value={loanTermYears}
-                    onChange={(e) => setLoanTermYears(e.target.value)}
-                    placeholder="6"
-                  />
+                {/* Action Buttons */}
+                <div className="flex gap-2">
+                  <Button onClick={resetTool} variant="outline" size="sm" className="flex-1">
+                    Reset
+                  </Button>
+                  <Button onClick={handleExportCSV} variant="outline" size="sm" className="flex-1">
+                    <Download className="w-4 h-4 mr-2" />
+                    Export CSV
+                  </Button>
                 </div>
+              </TabsContent>
 
-                <div>
-                  <Label htmlFor="paymentsPerYear">Payments Per Year</Label>
-                  <Input
-                    id="paymentsPerYear"
-                    type="number"
-                    value={paymentsPerYear}
-                    onChange={(e) => setPaymentsPerYear(e.target.value)}
-                    placeholder="12"
-                  />
-                </div>
+              <TabsContent value="notes" className="space-y-4">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">Calculation Notes</CardTitle>
+                    <CardDescription>Add notes about this loan scenario</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <textarea
+                      className="w-full h-32 p-3 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white resize-none"
+                      placeholder="Add notes about this loan calculation, assumptions, or comparison notes..."
+                      value={loanData.notes}
+                      onChange={(e) => setLoanData(prev => ({ ...prev, notes: e.target.value }))}
+                    />
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-                <div>
-                  <Label htmlFor="startDate">Start Date</Label>
-                  <Input
-                    id="startDate"
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="extraPayment">Optional Extra Payment (R)</Label>
-                  <Input
-                    id="extraPayment"
-                    type="number"
-                    value={extraPayment}
-                    onChange={(e) => setExtraPayment(e.target.value)}
-                    placeholder="0"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="lenderName">Lender Name (Optional)</Label>
-                  <Input
-                    id="lenderName"
-                    type="text"
-                    value={lenderName}
-                    onChange={(e) => setLenderName(e.target.value)}
-                    placeholder="Bank Name"
-                  />
-                </div>
-              </CardContent>
-            </Card>
+              <TabsContent value="history" className="space-y-4">
+                <CalculationHistory
+                  calculatorType="loan_amortisation"
+                  currentData={loanData}
+                  onLoadCalculation={loadCalculation}
+                />
+              </TabsContent>
+            </Tabs>
           </div>
 
-          {/* Results Summary */}
-          <div className="lg:col-span-2 space-y-6">
+          {/* Right Panel - Results */}
+          <div className="lg:w-1/2 p-6 overflow-y-auto">
             {/* Summary Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 gap-4 mb-6">
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2">
@@ -319,7 +425,7 @@ export default function LoanAmortisationCalculator({ onClose }: LoanAmortisation
                     <div>
                       <p className="text-sm text-slate-600 dark:text-slate-300">Total Cost</p>
                       <p className="text-lg font-semibold text-slate-900 dark:text-white">
-                        R{(parseFloat(loanAmount) + calculations.totalInterest).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        R{(parseFloat(loanData.loanAmount) + calculations.totalInterest).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </p>
                     </div>
                   </div>
@@ -329,10 +435,10 @@ export default function LoanAmortisationCalculator({ onClose }: LoanAmortisation
 
             {/* Charts */}
             {calculations.chartData.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">Principal vs Interest</CardTitle>
+                    <CardTitle className="text-lg">Principal vs Interest Over Time</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="h-64">
@@ -370,65 +476,7 @@ export default function LoanAmortisationCalculator({ onClose }: LoanAmortisation
                 </Card>
               </div>
             )}
-
-            {/* Payment Schedule Table */}
-            {calculations.schedule.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-lg">Payment Schedule</CardTitle>
-                      <CardDescription>Detailed month-by-month breakdown</CardDescription>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={handleExportCSV}>
-                      <Download className="w-4 h-4 mr-2" />
-                      Export CSV
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="max-h-96 overflow-y-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-16">#</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Begin Balance</TableHead>
-                          <TableHead>Payment</TableHead>
-                          <TableHead>Extra</TableHead>
-                          <TableHead>Principal</TableHead>
-                          <TableHead>Interest</TableHead>
-                          <TableHead>End Balance</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {calculations.schedule.map((entry) => (
-                          <TableRow key={entry.paymentNumber}>
-                            <TableCell>{entry.paymentNumber}</TableCell>
-                            <TableCell>{entry.paymentDate.toLocaleDateString()}</TableCell>
-                            <TableCell>R{entry.beginningBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                            <TableCell>R{entry.scheduledPayment.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                            <TableCell>R{entry.extraPayment.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                            <TableCell>R{entry.principal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                            <TableCell>R{entry.interest.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                            <TableCell>R{entry.endingBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
           </div>
-        </div>
-
-        {/* Close Button */}
-        <div className="flex justify-end pt-4">
-          <Button variant="outline" onClick={onClose}>
-            <X className="w-4 h-4 mr-2" />
-            Close Calculator
-          </Button>
         </div>
       </DialogContent>
     </Dialog>

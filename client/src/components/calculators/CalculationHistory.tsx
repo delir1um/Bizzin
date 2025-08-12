@@ -17,14 +17,14 @@ import { motion, AnimatePresence } from "framer-motion"
 import type { CalculatorHistory } from "../../../../shared/schema"
 
 interface CalculationHistoryProps {
-  calculatorType: 'cash_flow' | 'break_even' | 'business_budget'
+  calculatorType: 'cash_flow' | 'break_even' | 'business_budget' | 'loan_amortisation'
   currentData: Record<string, any>
   onLoadCalculation: (data: Record<string, any>) => void
   className?: string
 }
 
 interface SaveCalculationDialogProps {
-  calculatorType: 'cash_flow' | 'break_even' | 'business_budget'
+  calculatorType: 'cash_flow' | 'break_even' | 'business_budget' | 'loan_amortisation'
   currentData: Record<string, any>
   isOpen: boolean
   onOpenChange: (open: boolean) => void
