@@ -7,6 +7,54 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-
+    <script>
+      // Remove development banner comprehensively
+      function removeDevelopmentBanner() {
+        // Remove various banner elements
+        const selectors = [
+          '[data-replit-banner]',
+          'iframe[src*="replit"]', 
+          '[id*="replit-banner"]',
+          '[class*="replit-banner"]',
+          '.replit-dev-banner',
+          '[data-testid*="replit"]'
+        ];
+        
+        selectors.forEach(selector => {
+          const elements = document.querySelectorAll(selector);
+          elements.forEach(el => el.remove());
+        });
+        
+        // Remove scripts
+        const scripts = document.querySelectorAll('script[src*="replit-dev-banner"]');
+        scripts.forEach(script => script.remove());
+      }
+      
+      // Run on page load
+      document.addEventListener('DOMContentLoaded', removeDevelopmentBanner);
+      
+      // Also run after a short delay to catch dynamically injected banners
+      setTimeout(removeDevelopmentBanner, 1000);
+      
+      // Monitor for new elements being added to the DOM
+      if (window.MutationObserver) {
+        const observer = new MutationObserver(function(mutations) {
+          let shouldCheck = false;
+          mutations.forEach(function(mutation) {
+            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+              shouldCheck = true;
+            }
+          });
+          if (shouldCheck) {
+            setTimeout(removeDevelopmentBanner, 100);
+          }
+        });
+        
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
+      }
+    </script>
   </body>
 </html>
