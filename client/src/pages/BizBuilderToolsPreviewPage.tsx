@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Calculator, TrendingUp, DollarSign, Calendar, BarChart3, CreditCard, PiggyBank, Percent, ArrowRight, Target } from "lucide-react"
+import { Calculator, TrendingUp, DollarSign, Calendar, BarChart3, CreditCard, PiggyBank, Percent, ArrowRight, Target, FileSpreadsheet } from "lucide-react"
 import { useLocation } from "wouter"
 
 // Actual BizBuilder tools from the portal
@@ -185,23 +185,31 @@ export function BizBuilderToolsPreviewPage() {
           </div>
         </div>
 
-        {/* Access Tiers */}
+        {/* Professional Features */}
         <div className="mt-12">
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">Calculator Access</h2>
-          <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">Professional Business Analysis</h2>
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
             <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
-              <DollarSign className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Free Tier</h3>
+              <Calculator className="w-12 h-12 text-orange-600 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Enterprise-Grade Calculations</h3>
               <p className="text-sm text-slate-600 dark:text-slate-300">
-                Limited calculations per month with basic export functionality
+                Professional financial modeling tools with real-time accuracy
               </p>
             </div>
             
             <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
-              <Target className="w-12 h-12 text-orange-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Paid Subscription</h3>
+              <FileSpreadsheet className="w-12 h-12 text-green-600 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Data Export & Analysis</h3>
               <p className="text-sm text-slate-600 dark:text-slate-300">
-                Unlimited calculations with advanced export and saving features
+                Export calculations to CSV for further analysis and reporting
+              </p>
+            </div>
+
+            <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
+              <TrendingUp className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Decision Support</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                Make informed business decisions with comprehensive financial insights
               </p>
             </div>
           </div>
