@@ -45,14 +45,14 @@ export function HomePage() {
             {/* Subtitle */}
             <FadeInUp delay={0.2}>
               <p className="mt-6 text-xl sm:text-2xl text-slate-600 dark:text-slate-300 max-w-4xl mx-auto leading-relaxed">
-                <span className="text-orange-600 italic">Bizzin</span> combines AI-powered business analytics, goal tracking, financial tools, learning content, and secure document storage — everything you need to grow your business.
+                <span className="text-orange-600 italic">Bizzin</span> combines AI-powered business analytics, goal tracking, financial tools, learning content, and secure document storage — everything you need to grow your business and develop your entrepreneurial edge.
               </p>
             </FadeInUp>
             
             {/* Description */}
             <FadeInUp delay={0.4}>
               <p className="mt-6 text-lg text-slate-500 dark:text-slate-400 max-w-3xl mx-auto">
-                Track your business health with AI insights, manage goals with smart analytics, access professional financial tools, learn from business content, and secure your important documents.
+                Build entrepreneurial excellence through AI-powered insights, strategic goal management, professional financial tools, curated learning content, and secure document organization. Develop the clarity and confidence every successful leader needs.
               </p>
             </FadeInUp>
 
@@ -104,8 +104,8 @@ export function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeInUp>
             <div className="text-center mb-16">
-              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Know Exactly How You're Tracking</h2>
-              <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">See a live view of your goals, burnout risk, and performance trends — make decisions with confidence.</p>
+              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Develop Your Strategic Advantage</h2>
+              <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">Master the insights and patterns that drive success. Build the entrepreneurial instincts that separate great leaders from good ones.</p>
             </div>
           </FadeInUp>
 
@@ -208,10 +208,10 @@ export function HomePage() {
               </div>
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">AI-Powered Business Journal</h3>
                 <p className="text-slate-600 dark:text-slate-300 text-sm">
-                  <strong>• Automatic Sentiment Analysis:</strong> AI mood detection<br/>
-                  <strong>• Business Health Insights:</strong> Trend identification<br/>
-                  <strong>• Writing Streak Tracking:</strong> Consistency metrics<br/>
-                  <strong>• Smart Categorization:</strong> Intelligent entry organization
+                  <strong>• Build Self-Awareness:</strong> Discover patterns that drive your success<br/>
+                  <strong>• Create Your Success Blueprint:</strong> Document decisions that deliver results<br/>
+                  <strong>• Develop Consistent Excellence:</strong> Track what works and multiply your wins<br/>
+                  <strong>• Master Strategic Thinking:</strong> Transform daily experiences into business wisdom
                 </p>
               </div>
             </FadeInUp>
@@ -227,10 +227,10 @@ export function HomePage() {
               </div>
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Intelligent Goal Management</h3>
                 <p className="text-slate-600 dark:text-slate-300 text-sm">
-                  <strong>• Progress Analytics:</strong> Visual completion tracking<br/>
-                  <strong>• Deadline Intelligence:</strong> Overdue & upcoming alerts<br/>
-                  <strong>• Priority Filtering:</strong> Strategic focus management<br/>
-                  <strong>• Achievement Celebrations:</strong> Automated milestone recognition
+                  <strong>• Master Strategic Focus:</strong> Develop the discipline that drives success<br/>
+                  <strong>• Build Achievement Habits:</strong> Track victories and learn from wins<br/>
+                  <strong>• Amplify Your Strengths:</strong> Identify and leverage what works best<br/>
+                  <strong>• Create Success Patterns:</strong> Turn goals into repeatable systems
                 </p>
               </div>
             </FadeInUp>
@@ -244,12 +244,12 @@ export function HomePage() {
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-500 rounded-lg flex items-center justify-center mb-6">
                   <Headphones className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Business Podcast Platform</h3>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Business Learning Platform</h3>
                 <p className="text-slate-600 dark:text-slate-300 text-sm">
-                  <strong>• Progress Tracking:</strong> Episode completion analytics<br/>
-                  <strong>• Learning Streaks:</strong> Consistency measurement<br/>
-                  <strong>• Professional Player:</strong> Custom video/audio controls<br/>
-                  <strong>• Cloudflare Streaming:</strong> Optimized content delivery
+                  <strong>• Unlock Your Potential:</strong> Access curated business wisdom<br/>
+                  <strong>• Build Learning Excellence:</strong> Develop consistent growth habits<br/>
+                  <strong>• Expand Your Capabilities:</strong> Master new entrepreneurial skills<br/>
+                  <strong>• Apply Strategic Insights:</strong> Transform knowledge into competitive advantage
                 </p>
               </div>
             </FadeInUp>
@@ -293,12 +293,12 @@ export function HomePage() {
             </FadeInUp>
           </div>
 
-          {/* Additional Intelligence Features */}
+          {/* Entrepreneurial Development Section */}
           <FadeInUp delay={0.8}>
             <div className="mt-16 pt-12 border-t border-slate-200 dark:border-slate-700">
               <div className="text-center mb-12">
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Advanced Intelligence Features</h3>
-                <p className="text-slate-600 dark:text-slate-300">Powerful automation and analytics working behind the scenes</p>
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Develop Your Entrepreneurial Excellence</h3>
+                <p className="text-slate-600 dark:text-slate-300">Build the mindset, skills, and strategic thinking that create lasting success</p>
               </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -306,32 +306,32 @@ export function HomePage() {
                 <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900 rounded-lg flex items-center justify-center mx-auto mb-3">
                   <TrendingUp className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                 </div>
-                <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Referral Program</h4>
-                <p className="text-sm text-slate-600 dark:text-slate-300">Earn 10 days free subscription per successful referral with automatic tracking</p>
+                <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Strategic Self-Awareness</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Discover the patterns and decision-making triggers that drive your greatest successes</p>
               </div>
               
               <div className="text-center p-4">
                 <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-lg flex items-center justify-center mx-auto mb-3">
                   <Flame className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                 </div>
-                <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Streak Intelligence</h4>
-                <p className="text-sm text-slate-600 dark:text-slate-300">Writing and learning streaks with pattern analysis and motivation triggers</p>
+                <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Excellence Habits</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Build consistent practices that compound over time into extraordinary results</p>
               </div>
               
               <div className="text-center p-4">
                 <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mx-auto mb-3">
                   <Brain className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 </div>
-                <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Sentiment Trends</h4>
-                <p className="text-sm text-slate-600 dark:text-slate-300">Long-term mood analysis with business correlation insights and alerts</p>
+                <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Leadership Insights</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Understand your entrepreneurial journey and develop the wisdom that guides great leaders</p>
               </div>
               
               <div className="text-center p-4">
                 <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mx-auto mb-3">
                   <BarChart3 className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                 </div>
-                <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Platform Insights</h4>
-                <p className="text-sm text-slate-600 dark:text-slate-300">Dashboard metrics showing your business health trends and platform usage</p>
+                <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Growth Analytics</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Track your development as both a business owner and strategic leader</p>
               </div>
             </div>
             </div>
