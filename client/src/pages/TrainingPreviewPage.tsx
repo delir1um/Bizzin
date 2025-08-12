@@ -114,8 +114,8 @@ export function TrainingPreviewPage() {
           <Card className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="bg-blue-100 dark:bg-blue-800 p-2 rounded">
-                  <BookOpen className="h-4 w-4 text-blue-600" />
+                <div className="bg-gradient-to-br from-blue-600 to-indigo-500 p-2 rounded">
+                  <BookOpen className="h-4 w-4 text-white" />
                 </div>
                 <div>
                   <div className="text-lg font-bold text-blue-900 dark:text-blue-100">24</div>
@@ -128,8 +128,8 @@ export function TrainingPreviewPage() {
           <Card className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="bg-green-100 dark:bg-green-800 p-2 rounded">
-                  <Users className="h-4 w-4 text-green-600" />
+                <div className="bg-gradient-to-br from-blue-600 to-indigo-500 p-2 rounded">
+                  <Users className="h-4 w-4 text-white" />
                 </div>
                 <div>
                   <div className="text-lg font-bold text-green-900 dark:text-green-100">3</div>
@@ -142,8 +142,8 @@ export function TrainingPreviewPage() {
           <Card className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="bg-purple-100 dark:bg-purple-800 p-2 rounded">
-                  <Clock className="h-4 w-4 text-purple-600" />
+                <div className="bg-gradient-to-br from-blue-600 to-indigo-500 p-2 rounded">
+                  <Clock className="h-4 w-4 text-white" />
                 </div>
                 <div>
                   <div className="text-lg font-bold text-purple-900 dark:text-purple-100">2.5h</div>
@@ -156,8 +156,8 @@ export function TrainingPreviewPage() {
           <Card className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="bg-orange-100 dark:bg-orange-800 p-2 rounded">
-                  <GraduationCap className="h-4 w-4 text-orange-600" />
+                <div className="bg-gradient-to-br from-blue-600 to-indigo-500 p-2 rounded">
+                  <GraduationCap className="h-4 w-4 text-white" />
                 </div>
                 <div>
                   <div className="text-lg font-bold text-orange-900 dark:text-orange-100">7 days</div>

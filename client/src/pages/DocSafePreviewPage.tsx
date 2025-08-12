@@ -77,8 +77,8 @@ export function DocSafePreviewPage() {
           <Card className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="bg-emerald-100 dark:bg-emerald-800 p-2 rounded">
-                  <FileText className="h-4 w-4 text-emerald-600" />
+                <div className="bg-gradient-to-br from-emerald-600 to-teal-500 p-2 rounded">
+                  <FileText className="h-4 w-4 text-white" />
                 </div>
                 <div>
                   <div className="text-lg font-bold text-emerald-900 dark:text-emerald-100">Upload</div>
@@ -91,8 +91,8 @@ export function DocSafePreviewPage() {
           <Card className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="bg-green-100 dark:bg-green-800 p-2 rounded">
-                  <Shield className="h-4 w-4 text-green-600" />
+                <div className="bg-gradient-to-br from-emerald-600 to-teal-500 p-2 rounded">
+                  <Shield className="h-4 w-4 text-white" />
                 </div>
                 <div>
                   <div className="text-lg font-bold text-green-900 dark:text-green-100">Folders</div>
@@ -105,8 +105,8 @@ export function DocSafePreviewPage() {
           <Card className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="bg-blue-100 dark:bg-blue-800 p-2 rounded">
-                  <Search className="h-4 w-4 text-blue-600" />
+                <div className="bg-gradient-to-br from-emerald-600 to-teal-500 p-2 rounded">
+                  <Search className="h-4 w-4 text-white" />
                 </div>
                 <div>
                   <div className="text-lg font-bold text-blue-900 dark:text-blue-100">Search</div>

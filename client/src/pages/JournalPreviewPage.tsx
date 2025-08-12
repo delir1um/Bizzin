@@ -85,8 +85,8 @@ export function JournalPreviewPage() {
           <Card className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="bg-orange-100 dark:bg-orange-800 p-2 rounded">
-                  <Calendar className="h-4 w-4 text-orange-600" />
+                <div className="bg-gradient-to-br from-purple-600 to-blue-500 p-2 rounded">
+                  <Calendar className="h-4 w-4 text-white" />
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">2</div>
@@ -99,8 +99,8 @@ export function JournalPreviewPage() {
           <Card className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="bg-green-100 dark:bg-green-800 p-2 rounded">
-                  <TrendingUp className="h-4 w-4 text-green-600" />
+                <div className="bg-gradient-to-br from-purple-600 to-blue-500 p-2 rounded">
+                  <TrendingUp className="h-4 w-4 text-white" />
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-green-900 dark:text-green-100">3</div>
@@ -113,8 +113,8 @@ export function JournalPreviewPage() {
           <Card className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="bg-blue-100 dark:bg-blue-800 p-2 rounded">
-                  <Brain className="h-4 w-4 text-blue-600" />
+                <div className="bg-gradient-to-br from-purple-600 to-blue-500 p-2 rounded">
+                  <Brain className="h-4 w-4 text-white" />
                 </div>
                 <div>
                   <div className="text-lg font-bold text-blue-900 dark:text-blue-100">Analytical</div>
