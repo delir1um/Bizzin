@@ -88,41 +88,35 @@ export function BizBuilderToolsPreviewPage() {
         {/* Stats Preview */}
         <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mb-8">
           <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border border-orange-200 dark:border-orange-700">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
-                  <Calculator className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                </div>
+            <CardContent className="p-6 text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Calculator className="w-4 h-4 text-orange-600" />
                 <div className="text-sm text-orange-700 dark:text-orange-300">Business Tools</div>
               </div>
-              <div className="text-3xl font-bold text-slate-900 dark:text-white">6</div>
-              <p className="text-sm text-orange-600 dark:text-orange-400">Professional calculators</p>
+              <div className="text-2xl font-bold text-slate-900 dark:text-white">6</div>
+              <p className="text-xs text-orange-600 dark:text-orange-400">Professional calculators</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border border-green-200 dark:border-green-700">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
-                  <BarChart3 className="w-5 h-5 text-green-600 dark:text-green-400" />
-                </div>
+            <CardContent className="p-6 text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <BarChart3 className="w-4 h-4 text-green-600" />
                 <div className="text-sm text-green-700 dark:text-green-300">Categories</div>
               </div>
-              <div className="text-3xl font-bold text-green-600">Tiered</div>
-              <p className="text-sm text-green-600 dark:text-green-400">Access levels</p>
+              <div className="text-2xl font-bold text-green-600">Tiered</div>
+              <p className="text-xs text-green-600 dark:text-green-400">Access levels</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200 dark:border-blue-700">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-                  <Target className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                </div>
+            <CardContent className="p-6 text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Target className="w-4 h-4 text-blue-600" />
                 <div className="text-sm text-blue-700 dark:text-blue-300">Easy to Use</div>
               </div>
-              <div className="text-3xl font-bold text-slate-900 dark:text-white">Simple</div>
-              <p className="text-sm text-blue-600 dark:text-blue-400">User-friendly interface</p>
+              <div className="text-2xl font-bold text-slate-900 dark:text-white">Simple</div>
+              <p className="text-xs text-blue-600 dark:text-blue-400">User-friendly interface</p>
             </CardContent>
           </Card>
         </div>
