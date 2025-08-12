@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Calculator, TrendingUp, DollarSign, Calendar, BarChart3, CreditCard, PiggyBank, Percent, ArrowRight, Target, FileSpreadsheet } from "lucide-react"
 import { useLocation } from "wouter"
+import { FadeInUp, FadeInLeft, FadeInRight } from "@/components/animations/ScrollReveal"
 
 // Actual BizBuilder tools from the portal
 const demoTools = [
@@ -72,21 +73,24 @@ export function BizBuilderToolsPreviewPage() {
       {/* Header Section */}
       <div className="bg-white/80 dark:bg-[#0B0A1D]/80 backdrop-blur-sm border-b border-orange-200 dark:border-slate-700 min-h-[200px] flex items-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <Calculator className="w-8 h-8 text-orange-600" />
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Professional Financial Suite</h1>
+          <FadeInUp>
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <Calculator className="w-8 h-8 text-orange-600" />
+                <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Professional Financial Suite</h1>
+              </div>
+              <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+                Enterprise-grade calculators with CSV export, real-time calculations, advanced financial modeling, and professional business analysis tools
+              </p>
             </div>
-            <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Enterprise-grade calculators with CSV export, real-time calculations, advanced financial modeling, and professional business analysis tools
-            </p>
-          </div>
+          </FadeInUp>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Preview */}
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mb-8">
+        <FadeInUp delay={0.2}>
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mb-8">
           <Card className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -128,28 +132,31 @@ export function BizBuilderToolsPreviewPage() {
               </div>
             </CardContent>
           </Card>
-        </div>
+          </div>
+        </FadeInUp>
 
         {/* CTA Section */}
-        <div className="text-center mb-8">
-          <div className="bg-gradient-to-r from-orange-600 to-amber-600 text-white p-6 rounded-lg mb-6">
-            <h2 className="text-2xl font-bold mb-2">Use Our Business Planning Tools</h2>
-            <p className="text-orange-100 mb-4">Make informed decisions with our professionally built calculator suite</p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button 
-                onClick={() => setLocation('/auth')}
-                className="bg-white text-orange-600 hover:bg-orange-50 font-medium"
-              >
-                Start Using Tools <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-
+        <FadeInUp delay={0.4}>
+          <div className="text-center mb-8">
+            <div className="bg-gradient-to-r from-orange-600 to-amber-600 text-white p-6 rounded-lg mb-6">
+              <h2 className="text-2xl font-bold mb-2">Use Our Business Planning Tools</h2>
+              <p className="text-orange-100 mb-4">Make informed decisions with our professionally built calculator suite</p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button 
+                  onClick={() => setLocation('/auth')}
+                  className="bg-white text-orange-600 hover:bg-orange-50 font-medium"
+                >
+                  Start Using Tools <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
+        </FadeInUp>
 
         {/* Tools Preview */}
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
+        <FadeInUp delay={0.6}>
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Essential Business Tools</h2>
             <Button 
               onClick={() => setLocation('/auth')}
@@ -192,10 +199,12 @@ export function BizBuilderToolsPreviewPage() {
               )
             })}
           </div>
-        </div>
+          </div>
+        </FadeInUp>
 
         {/* Professional Features */}
-        <div className="mt-12">
+        <FadeInUp delay={0.8}>
+          <div className="mt-12">
           <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">Professional Business Analysis</h2>
           <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
             <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg">
@@ -222,22 +231,25 @@ export function BizBuilderToolsPreviewPage() {
               </p>
             </div>
           </div>
-        </div>
+          </div>
+        </FadeInUp>
 
         {/* Final CTA */}
-        <div className="mt-12 text-center">
-          <Button 
-            size="lg"
-            onClick={() => setLocation('/auth')}
-            className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 text-lg"
-          >
-            Access Business Tools Now
-            <ArrowRight className="w-5 h-5 ml-2" />
-          </Button>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
-            Free trial • No credit card required
-          </p>
-        </div>
+        <FadeInUp delay={1.0}>
+          <div className="mt-12 text-center">
+            <Button 
+              size="lg"
+              onClick={() => setLocation('/auth')}
+              className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 text-lg"
+            >
+              Access Business Tools Now
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+              Free trial • No credit card required
+            </p>
+          </div>
+        </FadeInUp>
       </div>
     </div>
   )
