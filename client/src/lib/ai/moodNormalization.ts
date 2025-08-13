@@ -230,3 +230,22 @@ export function getMoodColor(mood: string, polarity: MoodPolarity): string {
   
   return colorMap[mood] || polarityColors[polarity] || '#6B7280';
 }
+
+// Export missing functions required by enhanced AI system
+export function inferEnergy(text: string): Energy {
+  const t = text.toLowerCase();
+  const exclam = (t.match(/!/g) || []).length;
+  const ints = [...Intensifiers].reduce((a,k) => a + (t.includes(k) ? 1 : 0), 0);
+  const dams = [...Dampeners].reduce((a,k) => a + (t.includes(k) ? 1 : 0), 0);
+  const score = exclam * 0.6 + ints * 0.5 - dams * 0.4;
+  return score >= 0.8 ? 'high' : score <= -0.2 ? 'low' : 'medium';
+}
+
+export function normalizeMoodPolarity(mood: string): 'positive' | 'negative' | 'neutral' {
+  const normalized = normalizeMood(mood);
+  return normalized.polarity.toLowerCase() as 'positive' | 'negative' | 'neutral';
+}
+
+export function getMoodIntensity(text: string): 'high' | 'medium' | 'low' {
+  return inferEnergy(text);
+}

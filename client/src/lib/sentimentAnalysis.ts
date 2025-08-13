@@ -289,3 +289,62 @@ export function getMoodEmoji(mood: string): string {
   
   return emojiMap[mood] || emojiMap[mood.toLowerCase()] || emojiMap.neutral;
 }
+
+// Training data for enhanced AI system (specification compliant)
+export const BUSINESS_JOURNAL_TRAINING_DATA = [
+  {
+    id: "GROWTH_001",
+    version: 1,
+    text: "We hired three new developers this week and they're already contributing to the codebase",
+    expected_category: "Growth" as const,
+    expected_mood: "optimistic",
+    expected_energy: "high" as const,
+    confidence_range: [80, 90] as [number, number],
+    business_context: "Team expansion and hiring success",
+    source: "handwritten" as const
+  },
+  {
+    id: "CHALLENGE_001", 
+    version: 1,
+    text: "Cash flow is tight this month and we need to delay some payments",
+    expected_category: "Challenge" as const,
+    expected_mood: "worried",
+    expected_energy: "low" as const,
+    confidence_range: [85, 95] as [number, number],
+    business_context: "Financial constraints and cash flow management",
+    source: "handwritten" as const
+  },
+  {
+    id: "ACHIEVEMENT_001",
+    version: 1, 
+    text: "Successfully launched our new product feature and customer feedback has been overwhelmingly positive",
+    expected_category: "Achievement" as const,
+    expected_mood: "excited",
+    expected_energy: "high" as const,
+    confidence_range: [90, 95] as [number, number],
+    business_context: "Product launch success and customer satisfaction",
+    source: "handwritten" as const
+  },
+  {
+    id: "PLANNING_001",
+    version: 1,
+    text: "Working on our strategic roadmap for next quarter and evaluating different growth opportunities",
+    expected_category: "Planning" as const,
+    expected_mood: "thoughtful",
+    expected_energy: "medium" as const,
+    confidence_range: [75, 85] as [number, number],
+    business_context: "Strategic planning and opportunity assessment",
+    source: "handwritten" as const
+  },
+  {
+    id: "LEARNING_001",
+    version: 1,
+    text: "Discovered some valuable insights from customer interviews that will shape our product development",
+    expected_category: "Learning" as const,
+    expected_mood: "curious",
+    expected_energy: "medium" as const,
+    confidence_range: [80, 90] as [number, number],
+    business_context: "Customer research and product insights",
+    source: "handwritten" as const
+  }
+];

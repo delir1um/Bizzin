@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import { analyzeJournalEntry } from '@/lib/ai'
+import { analyzeJournalEntry, initializeEnhancedAI } from '@/lib/ai'
 import type { JournalEntry } from '@/types/journal'
 
 export class AIMigrationService {
@@ -19,6 +19,11 @@ export class AIMigrationService {
     const results = { success: 0, failed: 0, total: 0 }
     
     try {
+      // Initialize the enhanced AI system first
+      const initialized = initializeEnhancedAI()
+      if (!initialized) {
+        console.warn('Enhanced AI system initialization failed, continuing with basic functionality')
+      }
       // Get all user entries from Supabase directly
       const { data: entries, error } = await supabase
         .from('journal_entries')
@@ -53,10 +58,16 @@ export class AIMigrationService {
                 energy: aiAnalysis.energy,
                 mood_polarity: aiAnalysis.mood_polarity,
                 emotions: [aiAnalysis.primary_mood],
-                insights: [`Enhanced AI v2.0 - Confidence: ${aiAnalysis.confidence}%`],
+                insights: [
+                  `This entry reflects ${aiAnalysis.mood_polarity.toLowerCase()} business momentum and ${aiAnalysis.energy} energy`,
+                  `AI analysis shows ${aiAnalysis.confidence >= 80 ? 'high' : aiAnalysis.confidence >= 60 ? 'medium' : 'low'} confidence in mood and category detection`,
+                  `Business pattern recognition applied (${aiAnalysis.rules_matched?.length || 0} rules matched)`
+                ],
                 business_category: aiAnalysis.business_category,
                 rules_matched: aiAnalysis.rules_matched || [],
-                user_learned: aiAnalysis.user_learned
+                user_learned: aiAnalysis.user_learned,
+                similarity_score: aiAnalysis.similarity_score,
+                contrast_penalty: aiAnalysis.contrast_penalty
               }
               
               // Update the entry with new enhanced AI analysis
