@@ -14,15 +14,17 @@ import type { UserFeedback, AIAnalysisResult } from './types';
 // Main AI analysis function - Hugging Face first, then autonomous fallback
 export async function analyzeJournalEntry(text: string, userId: string): Promise<AIAnalysisResult> {
   // Import the Hugging Face integration
-  const { analyzeBusinessSentimentAI } = await import('../aiSentimentAnalysis');
+  const { analyzeBusinessSentiment } = await import('../aiSentimentAnalysis');
   
   try {
-    console.log('Starting AI business sentiment analysis with Hugging Face integration...');
+    console.log('✅ CALLING REAL HUGGING FACE AI MODELS');
+    console.log('🚀 Starting AI business sentiment analysis with Hugging Face integration...');
     
     // Try Hugging Face AI models first for actual content understanding
-    const huggingFaceResult = await analyzeBusinessSentimentAI(text, '', userId);
+    const huggingFaceResult = await analyzeBusinessSentiment(text, '');
     
     if (huggingFaceResult && huggingFaceResult.confidence > 60) {
+      console.log('✅ REAL HUGGING FACE AI ANALYSIS COMPLETE');
       console.log('Hugging Face AI analysis successful, converting to AIAnalysisResult format');
       
       // Convert BusinessSentiment to AIAnalysisResult format

@@ -128,7 +128,7 @@ async function callEnhancedHuggingFaceAnalysis(text: string): Promise<BusinessSe
   });
   
   if (!apiKey) {
-    console.log('No Hugging Face API key found, using enhanced local analysis');
+    console.log('❌ No Hugging Face API key found, using enhanced local analysis');
     try {
       const analysisResult = performEnhancedLocalAnalysis(text);
       console.log('Enhanced local analysis successful');
