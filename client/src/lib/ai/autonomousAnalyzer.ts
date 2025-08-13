@@ -352,7 +352,7 @@ function ruleFirstPass(text: string): {
   
   for (const rule of SpecificationRules) {
     if (rule.test(t)) {
-      console.log(`Autonomous AI: Rule matched - ${rule.id}`);
+      console.log(`Autonomous AI: Rule matched - ${rule.id} for text: "${text.substring(0, 100)}..."`);
       return {
         rule,
         category: rule.category,
