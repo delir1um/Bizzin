@@ -249,7 +249,7 @@ export function JournalPage() {
     setShowWriteModal(true)
   }
 
-  // Handle adding sample entries - clears existing and generates 5 random entries each time
+  // Handle adding sample entries - clears existing and generates 10 random entries distributed over 3 months
   const handleAddSamples = async () => {
     if (!user?.id) return
     
@@ -265,6 +265,18 @@ export function JournalPage() {
         variant: "destructive"
       })
       return
+    }
+    
+    // Helper function to generate random date within the last 3 months
+    const getRandomDateWithin3Months = () => {
+      const now = new Date()
+      const threeMonthsAgo = new Date()
+      threeMonthsAgo.setMonth(now.getMonth() - 3)
+      
+      const timeDiff = now.getTime() - threeMonthsAgo.getTime()
+      const randomTime = Math.random() * timeDiff
+      
+      return new Date(threeMonthsAgo.getTime() + randomTime)
     }
     
     const businessScenarios = [
@@ -331,16 +343,20 @@ export function JournalPage() {
     ]
     
     try {
-      // Select 5 random entries
+      // Select 10 random entries
       const shuffled = businessScenarios.sort(() => 0.5 - Math.random())
-      const selectedEntries = shuffled.slice(0, 5)
+      const selectedEntries = shuffled.slice(0, 10)
       
       let added = 0
       for (const entry of selectedEntries) {
-        // Only pass title and content - let AI analyze mood, category, and insights
+        // Generate random date within the last 3 months
+        const randomDate = getRandomDateWithin3Months()
+        
+        // Only pass title, content, and entry_date - let AI analyze mood, category, and insights
         const textOnlyEntry = {
           title: entry.title,
-          content: entry.content
+          content: entry.content,
+          entry_date: randomDate.toISOString()
         }
         await JournalService.createEntry(textOnlyEntry)
         added++
@@ -351,7 +367,7 @@ export function JournalPage() {
       
       toast({
         title: "Random Samples Added!",
-        description: `${added} diverse business scenarios created for AI analysis testing.`,
+        description: `${added} diverse business scenarios created with random dates over 3 months for AI analysis testing.`,
       })
     } catch (error) {
       toast({
