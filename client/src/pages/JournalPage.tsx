@@ -662,6 +662,32 @@ export function JournalPage() {
               </motion.div>
             )}
             
+            {/* Clear All Entries Button */}
+            <Button 
+              onClick={async () => {
+                try {
+                  await JournalService.clearAllEntries()
+                  queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
+                  toast({
+                    title: "Entries Cleared",
+                    description: "All journal entries have been removed.",
+                  })
+                } catch (error) {
+                  toast({
+                    title: "Error",
+                    description: "Failed to clear entries.",
+                    variant: "destructive"
+                  })
+                }
+              }}
+              variant="outline"
+              size="sm"
+              className="border-red-200 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-950/20"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Clear All
+            </Button>
+            
             {/* Add Random Sample Entries Button */}
             <Button 
               onClick={handleAddSamples}
