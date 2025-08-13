@@ -69,7 +69,7 @@ const businessEmotions = {
 // Business context patterns
 const businessContexts = {
   growth: ['scaling', 'expansion', 'growing', 'increase', 'revenue', 'customers', 'market', 'opportunity'],
-  challenge: ['problem', 'issue', 'difficulty', 'obstacle', 'setback', 'failure', 'mistake', 'error'],
+  challenge: ['problem', 'issue', 'difficulty', 'obstacle', 'setback', 'failure', 'mistake', 'error', 'worried', 'concern', 'trouble', 'crisis', 'funds', 'financial', 'cash flow', 'money'],
   achievement: ['success', 'win', 'accomplished', 'milestone', 'breakthrough', 'completed', 'achieved', 'goal'],
   planning: ['strategy', 'plan', 'roadmap', 'timeline', 'schedule', 'prepare', 'organize', 'structure'],
   reflection: ['learned', 'realize', 'understand', 'insight', 'feedback', 'review', 'analyze', 'think']
@@ -172,7 +172,11 @@ function generateBusinessInsights(primaryEmotion: string, category: string, emot
     lowerContentPreview: lowerContent.substring(0, 150),
     hasFunding: lowerContent.includes('funding'),
     hasInvestment: lowerContent.includes('investment'),
-    hasInvestor: lowerContent.includes('investor')
+    hasInvestor: lowerContent.includes('investor'),
+    hasFunds: lowerContent.includes('funds'),
+    hasCapital: lowerContent.includes('capital'),
+    hasMoney: lowerContent.includes('money'),
+    hasFinancial: lowerContent.includes('financial')
   });
   
 
@@ -181,9 +185,17 @@ function generateBusinessInsights(primaryEmotion: string, category: string, emot
   const categoryLower = category.toLowerCase();
   
   // Direct keyword-based content detection (regardless of category)
-  if (lowerContent.includes('funding') || lowerContent.includes('investment') || lowerContent.includes('investor')) {
+  if (lowerContent.includes('funding') || lowerContent.includes('investment') || lowerContent.includes('investor') || 
+      lowerContent.includes('funds') || lowerContent.includes('capital') || lowerContent.includes('money') || 
+      lowerContent.includes('cash flow') || lowerContent.includes('financial') || lowerContent.includes('budget') ||
+      lowerContent.includes('revenue') || lowerContent.includes('profit') || lowerContent.includes('costs') ||
+      lowerContent.includes('expenses') || lowerContent.includes('financing')) {
     if (lowerContent.includes('series a') || lowerContent.includes('seed') || lowerContent.includes('raise')) {
       insights.push("Fundraising is a full-time job that pauses building. Set clear timelines, prepare thoroughly, and get back to customers fast.");
+    } else if (lowerContent.includes('worried') || lowerContent.includes('concern') || lowerContent.includes('trouble') || lowerContent.includes('problem')) {
+      insights.push("Financial concerns are normal for entrepreneurs. Create a detailed cash flow forecast and identify your 3 most critical revenue drivers to focus on.");
+    } else if (lowerContent.includes('running out') || lowerContent.includes('low on') || lowerContent.includes('tight')) {
+      insights.push("Cash flow challenges require immediate action. List all receivables, extend payment terms with suppliers, and accelerate collections from customers.");
     } else {
       insights.push("Funding is fuel, not validation. Stay focused on unit economics and customer satisfaction - investors bet on execution, not ideas.");
     }
