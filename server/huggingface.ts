@@ -208,45 +208,72 @@ router.post('/analyze', async (req, res) => {
     const rawConfidence = Math.max(sentimentConfidence, emotionConfidence);
     const finalConfidence = Math.round(Math.min(95, Math.max(75, rawConfidence * 100)));
     
-    // Generate contextual business insights based on actual analysis
+    // Generate contextual insights based on content analysis
     const insights: string[] = [];
     
-    // Context-specific insights based on real AI analysis
-    if (category === 'achievement') {
-      if (primaryMood === 'excited') {
-        insights.push('Celebrate wins, then dissect them. Understanding why things work is more valuable than the success itself.');
-        insights.push('Achievements reveal patterns of success. Codify what worked so you can repeat and scale these victories.');
+    // Content-aware insight generation
+    const generateContextualInsights = (text: string, category: string, mood: string): string[] => {
+      const contextualInsights: string[] = [];
+      const lowerText = text.toLowerCase();
+      
+      if (category === 'challenge') {
+        if (lowerText.includes('database') || lowerText.includes('technical') || lowerText.includes('system')) {
+          contextualInsights.push('Technical failures expose infrastructure weaknesses. Build redundancy before you need it.');
+        } else if (lowerText.includes('employee') || lowerText.includes('staff') || lowerText.includes('team')) {
+          contextualInsights.push('Team challenges signal cultural or process gaps. Address root causes, not just symptoms.');
+        } else if (lowerText.includes('burnout') || lowerText.includes('exhausted') || lowerText.includes('overwhelming')) {
+          contextualInsights.push('Burnout is a leading indicator of unsustainable practices. Delegate or systematize before breaking.');
+        } else if (lowerText.includes('funding') || lowerText.includes('cash flow') || lowerText.includes('revenue')) {
+          contextualInsights.push('Financial pressure demands creative solutions. Focus on customer value and operational efficiency.');
+        } else {
+          contextualInsights.push('Every challenge contains market intelligence. Document what you learn for competitive advantage.');
+        }
+      } else if (category === 'growth') {
+        if (lowerText.includes('competitor') || lowerText.includes('funding')) {
+          contextualInsights.push('Market validation through competition is valuable. Study their moves, then differentiate yours.');
+        } else if (lowerText.includes('revenue') || lowerText.includes('sales') || lowerText.includes('clients')) {
+          contextualInsights.push('Revenue growth without operational scaling creates future bottlenecks. Plan for tomorrow today.');
+        } else if (lowerText.includes('team') || lowerText.includes('hiring')) {
+          contextualInsights.push('Growing teams require evolving leadership. Your role must change as the company scales.');
+        } else {
+          contextualInsights.push('Sustainable growth balances ambition with execution capacity. Monitor both metrics closely.');
+        }
+      } else if (category === 'achievement') {
+        if (lowerText.includes('signed') || lowerText.includes('deal') || lowerText.includes('contract')) {
+          contextualInsights.push('Major deals validate your value proposition. Analyze why this succeeded to replicate success.');
+        } else if (lowerText.includes('milestone') || lowerText.includes('goal') || lowerText.includes('target')) {
+          contextualInsights.push('Milestone achievements prove your strategic direction. Use this momentum to tackle bigger challenges.');
+        } else if (lowerText.includes('launch') || lowerText.includes('product') || lowerText.includes('feature')) {
+          contextualInsights.push('Product launches reveal market readiness. Customer response patterns guide future development.');
+        } else {
+          contextualInsights.push('Success patterns become your competitive moat. Document and systematize what worked.');
+        }
+      } else if (category === 'planning') {
+        if (lowerText.includes('strategy') || lowerText.includes('roadmap')) {
+          contextualInsights.push('Strategic plans need execution checkpoints. Build accountability into every major initiative.');
+        } else if (lowerText.includes('budget') || lowerText.includes('financial')) {
+          contextualInsights.push('Financial planning requires scenario modeling. Prepare for best case, worst case, and most likely.');
+        } else {
+          contextualInsights.push('Effective planning connects daily actions to long-term vision. Bridge the gap consistently.');
+        }
+      } else if (category === 'learning') {
+        if (lowerText.includes('feedback') || lowerText.includes('customer')) {
+          contextualInsights.push('Customer feedback is product direction data. Weight it by customer value and market size.');
+        } else if (lowerText.includes('mistake') || lowerText.includes('lesson')) {
+          contextualInsights.push('Expensive lessons become competitive advantages when properly internalized and shared.');
+        } else {
+          contextualInsights.push('Learning velocity determines business evolution speed. Apply insights immediately for maximum impact.');
+        }
       } else {
-        insights.push('Document this achievement\'s key factors for future replication and team learning.');
+        contextualInsights.push('Business intuition develops through pattern recognition. Track what works and what doesn\'t.');
       }
-    } else if (category === 'challenge') {
-      if (primaryMood === 'frustrated') {
-        insights.push('Frustration signals misaligned expectations. Reassess timelines and resource allocation for realistic planning.');
-        insights.push('Channel frustration into systematic problem-solving. What specific processes can prevent this issue?');
-      } else if (primaryMood === 'reflective') {
-        insights.push('Challenges reveal blind spots in planning. Use this insight to strengthen future decision-making processes.');
-      } else {
-        insights.push('Every setback contains strategic intelligence. Extract the lessons before moving to solutions.');
-      }
-    } else if (category === 'growth') {
-      if (primaryMood === 'excited') {
-        insights.push('Growth euphoria can mask operational gaps. Ensure systems can handle the increased scale.');
-        insights.push('Competitive pressure creates opportunity. Focus on unique differentiators while others chase funding.');
-      } else if (primaryMood === 'reflective' && energy === 'low') {
-        // This shouldn't happen anymore with improved logic, but fallback
-        insights.push('Growth pressures can lead to burnout. Sustainable scaling requires operational discipline and delegation.');
-      } else {
-        insights.push('Market dynamics are shifting. Use competitor intelligence to refine your strategic positioning.');
-      }
-    } else if (category === 'planning') {
-      insights.push('Strategic pivots require data, not intuition. Test assumptions before committing resources.');
-      insights.push('Big opportunities often hide execution traps. Model the resource requirements realistically.');
-    } else if (category === 'learning') {
-      insights.push('Customer feedback is product intelligence. Prioritize insights that reveal unmet needs over feature requests.');
-      insights.push('Market learning compounds. Document patterns to build institutional knowledge beyond individual insights.');
-    } else {
-      insights.push('Business reflection builds strategic muscle. Regular introspection prevents reactive decision-making.');
-    }
+      
+      return contextualInsights;
+    };
+    
+    // Generate 1-2 contextual insights
+    const contextualInsights = generateContextualInsights(text, category, primaryMood);
+    insights.push(...contextualInsights.slice(0, 2));
 
     const result = {
       primary_mood: primaryMood,
