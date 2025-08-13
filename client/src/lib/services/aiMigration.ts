@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { analyzeJournalEntry, initializeEnhancedAI } from '@/lib/ai'
 import type { JournalEntry } from '@/types/journal'
+import { getVersionDisplayText } from '@/lib/ai/version'
 
 export class AIMigrationService {
   private static readonly MIGRATION_VERSION_KEY = 'ai_migration_version'
@@ -255,7 +256,7 @@ export class AIMigrationService {
       energy: aiAnalysis.energy,
       mood_polarity: aiAnalysis.mood_polarity,
       emotions: [aiAnalysis.primary_mood],
-      insights: [`Enhanced AI v2.0 - Confidence: ${aiAnalysis.confidence}%`],
+      insights: [`${getVersionDisplayText()} - Confidence: ${aiAnalysis.confidence}%`],
       business_category: aiAnalysis.business_category,
       rules_matched: aiAnalysis.rules_matched || [],
       user_learned: aiAnalysis.user_learned

@@ -5,6 +5,7 @@ import { getMoodColor } from "@/lib/sentimentAnalysis"
 import { AIAnalysisIndicator } from "@/components/journal/AIAnalysisIndicator"
 import type { JournalEntry } from "@/types/journal"
 import { getEntryDisplayData } from "@/lib/journalDisplayUtils"
+import { getVersionDisplayFromSource } from "@/lib/ai/version"
 
 interface SentimentInsightsProps {
   entry: JournalEntry
@@ -129,7 +130,7 @@ export function SentimentInsights({ entry, className = "" }: SentimentInsightsPr
         <div className="flex items-center gap-2 pt-2 border-t border-orange-200/50">
           <Brain className="w-4 h-4 text-orange-600" />
           <span className="text-xs text-orange-600 font-medium">
-            Enhanced AI v2.0 • {sentiment.confidence || 0}% confidence
+            {getVersionDisplayFromSource((sentiment as any)?.analysis_source)} • {sentiment.confidence || 0}% confidence
           </span>
           {(sentiment as any).user_learned && (
             <Badge variant="outline" className="bg-purple-100 text-purple-700 border-purple-200 text-xs">
