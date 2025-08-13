@@ -165,6 +165,15 @@ router.post('/analyze', async (req, res) => {
     const lowerText = text.toLowerCase();
     let category = 'reflection';
     
+    // Planning patterns - check FIRST to catch business model changes
+    if (lowerText.includes('considering') || lowerText.includes('debating') || lowerText.includes('thinking about') ||
+        lowerText.includes('pivot') || lowerText.includes('freemium') || lowerText.includes('subscription model') || 
+        lowerText.includes('pricing') || lowerText.includes('business model') || lowerText.includes('plan') || 
+        lowerText.includes('strategy') || lowerText.includes('roadmap') || lowerText.includes('timeline') || 
+        lowerText.includes('future') || lowerText.includes('prepare') || lowerText.includes('government') || lowerText.includes('bid')) {
+      category = 'planning';
+    }
+    
     // Challenge patterns - check FIRST to catch resignations, problems, issues, departures, risks, burnout, work-life balance
     // BUT exclude positive launches/achievements even if they mention challenges
     if ((lowerText.includes('problem') || lowerText.includes('challenge') || lowerText.includes('difficult') ||
@@ -183,11 +192,13 @@ router.post('/analyze', async (req, res) => {
           lowerText.includes('positive') || lowerText.includes('response') || lowerText.includes('already')))) {
       category = 'challenge';
     }
-    // Achievement patterns - success, wins, completions
-    else if (lowerText.includes('contract') || lowerText.includes('deal') || lowerText.includes('signed') || 
+    // Achievement patterns - success, wins, completions (but not when considering/planning)
+    else if ((lowerText.includes('contract') || lowerText.includes('deal') || lowerText.includes('signed') || 
              lowerText.includes('closed') || lowerText.includes('won') || lowerText.includes('achieved') || 
              lowerText.includes('completed') || lowerText.includes('milestone') || lowerText.includes('breakthrough') ||
-             lowerText.includes('success') || lowerText.includes('record') || lowerText.includes('incredible')) {
+             lowerText.includes('success') || lowerText.includes('record') || lowerText.includes('incredible')) &&
+             // Don't classify as achievement if it's planning/considering context
+             !(lowerText.includes('considering') || lowerText.includes('debating') || lowerText.includes('thinking about'))) {
       category = 'achievement';
     }
     // Growth patterns - revenue, scaling, expansion, competition (but not when context is negative)
@@ -200,11 +211,12 @@ router.post('/analyze', async (req, res) => {
                (lowerText.includes('struggling') || lowerText.includes('pressure') || lowerText.includes('overwhelming')))) {
       category = 'growth';
     }
-    // Planning patterns - strategy, plans, future, pivots
+    // Planning patterns - strategy, plans, future, pivots (check this BEFORE achievement)
     else if (lowerText.includes('plan') || lowerText.includes('strategy') || lowerText.includes('roadmap') ||
              lowerText.includes('timeline') || lowerText.includes('future') || lowerText.includes('prepare') ||
-             lowerText.includes('pivot') || lowerText.includes('model') || lowerText.includes('considering') ||
-             lowerText.includes('government') || lowerText.includes('bid')) {
+             lowerText.includes('pivot') || lowerText.includes('considering') || lowerText.includes('debating') ||
+             lowerText.includes('freemium') || lowerText.includes('subscription model') || lowerText.includes('pricing') ||
+             lowerText.includes('business model') || lowerText.includes('government') || lowerText.includes('bid')) {
       category = 'planning';
     }
     // Learning patterns - feedback, insights, learned
@@ -266,10 +278,15 @@ router.post('/analyze', async (req, res) => {
           contextualInsights.push('Success patterns become your competitive moat. Document and systematize what worked.');
         }
       } else if (category === 'planning') {
-        if (lowerText.includes('strategy') || lowerText.includes('roadmap')) {
+        if (lowerText.includes('pivot') || lowerText.includes('business model') || lowerText.includes('freemium') || lowerText.includes('pricing')) {
+          contextualInsights.push('Business model pivots require careful customer research. Test assumptions before making major changes.');
+          contextualInsights.push('Pricing changes affect customer psychology. Study how similar companies navigated these transitions.');
+        } else if (lowerText.includes('strategy') || lowerText.includes('roadmap')) {
           contextualInsights.push('Strategic plans need execution checkpoints. Build accountability into every major initiative.');
         } else if (lowerText.includes('budget') || lowerText.includes('financial')) {
           contextualInsights.push('Financial planning requires scenario modeling. Prepare for best case, worst case, and most likely.');
+        } else if (lowerText.includes('considering') || lowerText.includes('debating')) {
+          contextualInsights.push('Strategic decisions require customer validation. Test assumptions with real users before committing resources.');
         } else {
           contextualInsights.push('Effective planning connects daily actions to long-term vision. Bridge the gap consistently.');
         }
