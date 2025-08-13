@@ -204,13 +204,51 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-6 p-6 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="space-y-0.5">
-        <h1 className="text-2xl font-bold tracking-tight">Profile Settings</h1>
-        <p className="text-muted-foreground">
-          Manage your account settings and profile information.
-        </p>
-      </div>
+      {/* Page Header - Exact Same Animation as Journal & Goals */}
+      <motion.div 
+        className="space-y-0.5"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
+          >
+            <motion.h1 
+              className="text-2xl font-bold tracking-tight"
+              whileHover={{ 
+                scale: 1.02,
+                transition: { duration: 0.2 }
+              }}
+            >
+              <motion.span
+                animate={{ 
+                  color: ["#1e293b", "#ea7a57", "#1e293b"],
+                }}
+                transition={{ 
+                  duration: 4, 
+                  repeat: Infinity, 
+                  ease: "easeInOut" 
+                }}
+                className="dark:animate-none dark:text-white"
+              >
+                Profile Settings
+              </motion.span>
+            </motion.h1>
+            <motion.p 
+              className="text-muted-foreground"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              Manage your account settings and profile information.
+            </motion.p>
+          </motion.div>
+        </div>
+      </motion.div>
 
       <Tabs defaultValue="profile" className="space-y-6">
         <TabsList className="grid w-full max-w-lg grid-cols-3">

@@ -116,17 +116,82 @@ export function PodcastPage() {
   const secondaryActions: any[] = []
 
   return (
-    <StandardPageLayout
-      title="Business Podcast"
-      subtitle="15-minute business insights to grow your entrepreneurial mindset"
-      secondaryActions={secondaryActions}
-      stats={statCards}
-      showSearch={false}
-      searchPlaceholder="Search episodes by title or series..."
-      searchValue=""
-      onSearchChange={() => {}}
-      showFilters={false}
-    >
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Page Header - Exact Same Animation as Journal & Goals */}
+      <motion.div 
+        className="mb-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
+          >
+            <motion.h1 
+              className="text-3xl font-bold text-slate-900 dark:text-white"
+              whileHover={{ 
+                scale: 1.02,
+                transition: { duration: 0.2 }
+              }}
+            >
+              <motion.span
+                animate={{ 
+                  color: ["#1e293b", "#ea7a57", "#1e293b"],
+                }}
+                transition={{ 
+                  duration: 4, 
+                  repeat: Infinity, 
+                  ease: "easeInOut" 
+                }}
+                className="dark:animate-none dark:text-white"
+              >
+                Business Podcast
+              </motion.span>
+            </motion.h1>
+            <motion.p 
+              className="mt-2 text-lg text-slate-600 dark:text-slate-300"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              15-minute business insights to grow your entrepreneurial mindset
+            </motion.p>
+          </motion.div>
+          
+          <motion.div 
+            className="mt-4 sm:mt-0"
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.4, ease: "backOut" }}
+          >
+            {/* Quick actions can be added here if needed */}
+          </motion.div>
+        </div>
+      </motion.div>
+
+      {/* Stats Cards - Animated */}
+      <motion.div 
+        className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+      >
+        {statCards.map((stat, index) => (
+          <motion.div
+            key={stat.id}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 + (index * 0.1), ease: "backOut" }}
+            whileHover={{ y: -4, transition: { duration: 0.2 } }}
+          >
+            {stat.card}
+          </motion.div>
+        ))}
+      </motion.div>
+
       {/* Search Bar - Now positioned after stats cards */}
       <div className="mb-8">
         <div className="relative max-w-md">
@@ -443,6 +508,6 @@ export function PodcastPage() {
           />
         )
       })()}
-    </StandardPageLayout>
+    </div>
   )
 }

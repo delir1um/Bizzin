@@ -94,31 +94,53 @@ export function BizBuilderToolsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Page Header */}
-      <div className="mb-8">
+      {/* Page Header - Exact Same Animation as Journal & Goals */}
+      <motion.div 
+        className="mb-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+      >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-          <div>
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
+          >
             <motion.h1 
               className="text-3xl font-bold text-slate-900 dark:text-white"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
+              whileHover={{ 
+                scale: 1.02,
+                transition: { duration: 0.2 }
+              }}
             >
-              Professional Financial Suite
+              <motion.span
+                animate={{ 
+                  color: ["#1e293b", "#ea7a57", "#1e293b"],
+                }}
+                transition={{ 
+                  duration: 4, 
+                  repeat: Infinity, 
+                  ease: "easeInOut" 
+                }}
+                className="dark:animate-none dark:text-white"
+              >
+                Professional Financial Suite
+              </motion.span>
             </motion.h1>
             <motion.p 
               className="mt-2 text-lg text-slate-600 dark:text-slate-300"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+              transition={{ duration: 0.6, delay: 0.3 }}
             >
               Complete business intelligence platform with professional calculators and analysis tools
             </motion.p>
             <motion.div 
               className="mt-4 flex flex-wrap gap-4 text-sm text-slate-500 dark:text-slate-400"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+              transition={{ duration: 0.6, delay: 0.4 }}
             >
               <div className="flex items-center">
                 <div className="w-3 h-3 bg-green-500 rounded-full mr-2 animate-pulse"></div>
@@ -133,12 +155,13 @@ export function BizBuilderToolsPage() {
                 <span>Investment Analysis - Interest calculations and growth projections</span>
               </div>
             </motion.div>
-          </div>
+          </motion.div>
+          
           <motion.div 
             className="mt-4 sm:mt-0"
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
+            transition={{ duration: 0.6, delay: 0.4, ease: "backOut" }}
           >
             <motion.div
               whileHover={{ scale: 1.02 }}
@@ -155,7 +178,7 @@ export function BizBuilderToolsPage() {
             </motion.div>
           </motion.div>
         </div>
-      </div>
+      </motion.div>
 
 
 
