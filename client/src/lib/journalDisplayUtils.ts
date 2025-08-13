@@ -26,6 +26,9 @@ export function getMoodEmoji(mood: string | null | undefined): string {
     'inspired': '✨',
     'motivated': '🚀',
     'analytical': '🧠',
+    'strategic': '📊',
+    'planning': '📋',
+    'growth': '📈',
     // Capitalized versions (from AI)
     'Optimistic': '😊',
     'Frustrated': '😤',
@@ -44,7 +47,16 @@ export function getMoodEmoji(mood: string | null | undefined): string {
     'Uncertain': '🤔',
     'Inspired': '✨',
     'Motivated': '🚀',
-    'Analytical': '🧠'
+    'Analytical': '🧠',
+    'Strategic': '📊',
+    'Planning': '📋',
+    'Growth': '📈'
+  }
+  
+  // Check if this entry is about strategic planning specifically
+  const lowerMood = mood.toLowerCase()
+  if (lowerMood.includes('strategic') || lowerMood.includes('planning')) {
+    return '📋'
   }
   
   return moodEmojis[mood] || moodEmojis[mood.toLowerCase()] || '📝'

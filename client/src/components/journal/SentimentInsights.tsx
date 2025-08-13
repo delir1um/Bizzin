@@ -41,6 +41,63 @@ export function SentimentInsights({ entry, className = "" }: SentimentInsightsPr
     }
   }
 
+  // Generate meaningful business insights based on the content
+  const generateBusinessInsights = () => {
+    const insights = []
+    const businessCategory = sentiment.business_category || displayData.category
+    const mood = displayData.mood
+    const energy = displayData.energy || sentiment.energy
+    const confidence = sentiment.confidence || 0
+
+    // Category-specific insights
+    if (businessCategory === 'growth' || businessCategory === 'Growth') {
+      insights.push("This entry reflects positive business momentum and expansion mindset.")
+    } else if (businessCategory === 'planning' || businessCategory === 'Planning') {
+      insights.push("Strategic thinking and forward planning are evident in this reflection.")
+    } else if (businessCategory === 'achievement' || businessCategory === 'Achievement') {
+      insights.push("Milestone achievement detected - great progress on business objectives.")
+    } else if (businessCategory === 'challenge' || businessCategory === 'Challenge') {
+      insights.push("Challenging situation identified - resilience and problem-solving focused.")
+    } else if (businessCategory === 'learning' || businessCategory === 'Learning') {
+      insights.push("Knowledge acquisition and business learning captured in this entry.")
+    } else if (businessCategory === 'research' || businessCategory === 'Research') {
+      insights.push("Data-driven analysis and market research insights documented.")
+    }
+
+    // Mood and energy combination insights
+    if (mood === 'Focused' && energy === 'high') {
+      insights.push("High-energy focus suggests productive execution phase.")
+    } else if (mood === 'Optimistic' && energy === 'high') {
+      insights.push("Strong positive outlook combined with high energy indicates peak performance.")
+    } else if (mood === 'Determined' && energy === 'medium') {
+      insights.push("Steady determination shows consistent progress toward goals.")
+    } else if (mood === 'Reflective' && energy === 'medium') {
+      insights.push("Thoughtful analysis period - good time for strategic decisions.")
+    }
+
+    // Confidence-based insights
+    if (confidence >= 85) {
+      insights.push("AI analysis shows high confidence in mood and category detection.")
+    } else if (confidence >= 70) {
+      insights.push("AI analysis indicates good confidence in emotional and business context.")
+    }
+
+    // Enhanced AI features indicators (safely access with optional chaining)
+    const rulesMatched = (sentiment as any).rules_matched
+    if (rulesMatched && rulesMatched.length > 0) {
+      insights.push(`Business pattern recognition applied (${rulesMatched.length} rules matched).`)
+    }
+    
+    const userLearned = (sentiment as any).user_learned
+    if (userLearned) {
+      insights.push("AI system has learned from your previous feedback on similar entries.")
+    }
+
+    return insights.length > 0 ? insights : ["Business context analyzed with enhanced AI system."]
+  }
+
+  const businessInsights = generateBusinessInsights()
+
   return (
     <Card className={`bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 ${className}`}>
       <CardContent className="p-4 space-y-4">
@@ -50,17 +107,31 @@ export function SentimentInsights({ entry, className = "" }: SentimentInsightsPr
           <span className="font-semibold text-sm">AI Business Insights</span>
         </div>
         
-        {/* Business Context */}
-        {sentiment.insights && sentiment.insights.length > 0 && (
-          <div>
-            <div className="text-sm text-gray-600 bg-white/60 rounded-lg p-3 border border-orange-200/50">
+        {/* Enhanced Business Insights */}
+        <div className="space-y-2">
+          {businessInsights.map((insight, index) => (
+            <div key={index} className="text-sm text-gray-600 bg-white/60 rounded-lg p-3 border border-orange-200/50">
               <div className="flex items-start gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-orange-500 mt-2 flex-shrink-0" />
-                <span className="leading-relaxed">{sentiment.insights[0]}</span>
+                <span className="leading-relaxed">{insight}</span>
               </div>
             </div>
-          </div>
-        )}
+          ))}
+        </div>
+
+        {/* AI Analysis Details */}
+        <div className="flex items-center gap-2 pt-2 border-t border-orange-200/50">
+          <Brain className="w-4 h-4 text-orange-600" />
+          <span className="text-xs text-orange-600 font-medium">
+            Enhanced AI v2.0 • {sentiment.confidence || 0}% confidence
+          </span>
+          {(sentiment as any).user_learned && (
+            <Badge variant="outline" className="bg-purple-100 text-purple-700 border-purple-200 text-xs">
+              <Sparkles className="w-3 h-3 mr-1" />
+              Learned
+            </Badge>
+          )}
+        </div>
       </CardContent>
     </Card>
   )

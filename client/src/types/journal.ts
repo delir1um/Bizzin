@@ -15,9 +15,12 @@ export type JournalEntry = {
     primary_mood: string
     confidence: number
     energy: string
+    mood_polarity?: string
     emotions: string[]
     insights: string[]
     business_category: string
+    rules_matched?: string[]
+    user_learned?: boolean
   }
 }
 
