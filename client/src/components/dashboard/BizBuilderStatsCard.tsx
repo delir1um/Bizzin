@@ -161,13 +161,22 @@ export function BizBuilderStatsCard({ onNavigate }: BizBuilderStatsCardProps) {
           </div>
 
           {/* Status Information */}
-          <div className="text-xs text-orange-600 dark:text-orange-400 text-center bg-orange-50 dark:bg-orange-950/30 p-2 rounded">
+          <div className="text-xs text-orange-600 dark:text-orange-400 text-center">
             {hasRecentActivity ? (
-              <>Last: {getCalculatorDisplayName(mostRecentCalc.calculator_type)} {getTimeSince(mostRecentCalc.created_at)}</>
+              <>
+                <FileSpreadsheet className="h-3 w-3 inline mr-1" />
+                Last: {getCalculatorDisplayName(mostRecentCalc.calculator_type)} {getTimeSince(mostRecentCalc.created_at)}
+              </>
             ) : hasCalculations ? (
-              <>Last calculation: {getTimeSince(mostRecentCalc.created_at)}</>
+              <>
+                <FileSpreadsheet className="h-3 w-3 inline mr-1" />
+                Last calculation: {getTimeSince(mostRecentCalc.created_at)}
+              </>
             ) : (
-              <>6 powerful calculators to plan and grow your business</>
+              <>
+                <FileSpreadsheet className="h-3 w-3 inline mr-1" />
+                6 powerful calculators to plan and grow your business
+              </>
             )}
           </div>
         </div>
