@@ -195,6 +195,8 @@ export const createGoalSchema = z.object({
   priority: z.enum(['low', 'medium', 'high']),
   target_value: z.number().positive().optional(),
   current_value: z.number().min(0).optional(),
+  target_value: z.number().positive().optional(),
+  current_value: z.number().min(0).optional(),
   unit: z.string().optional(),
   deadline: z.string(), // ISO date string
   status: z.enum(['not_started', 'in_progress', 'completed', 'on_hold', 'at_risk']),
