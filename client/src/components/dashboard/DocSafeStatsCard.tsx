@@ -37,13 +37,13 @@ export function DocSafeStatsCard({ storageStats, onNavigate }: DocSafeStatsCardP
     return `${(bytes / (1024 * 1024)).toFixed(0)} MB`
   }
   
-  // Determine storage status and color
+  // Determine storage status and color - Positive framing
   const getStorageStatus = (percentage: number, documentCount: number) => {
-    if (percentage >= 90) return { status: 'Nearly Full', color: 'text-red-600' }
-    if (percentage >= 70) return { status: 'High Usage', color: 'text-orange-600' }
-    if (percentage >= 40) return { status: 'Active', color: 'text-blue-600' }
-    if (documentCount > 0) return { status: 'Light Usage', color: 'text-green-600' }
-    return { status: 'Empty', color: 'text-gray-500' }
+    if (documentCount >= 20) return { status: 'Rich Collection', color: 'text-emerald-600' }
+    if (documentCount >= 10) return { status: 'Growing Library', color: 'text-blue-600' }
+    if (documentCount >= 5) return { status: 'Active Storage', color: 'text-purple-600' }
+    if (documentCount > 0) return { status: 'Getting Started', color: 'text-green-600' }
+    return { status: 'Ready to Store', color: 'text-gray-500' }
   }
   
   const storageInfo = getStorageStatus(stats.storage_percentage, stats.total_documents)
@@ -61,12 +61,9 @@ export function DocSafeStatsCard({ storageStats, onNavigate }: DocSafeStatsCardP
           <h3 className="font-semibold text-gray-900 dark:text-gray-100">DocSafe</h3>
         </div>
         <div className="flex items-center gap-2">
-          {stats.storage_percentage >= 80 && (
-            <Badge variant="destructive" className="bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300">
-              <Database className="h-3 w-3 mr-1" />
-              Low space
-            </Badge>
-          )}
+          <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 text-xs">
+            Secure Storage
+          </Badge>
           <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
             {stats.total_documents} docs
           </Badge>
@@ -77,39 +74,33 @@ export function DocSafeStatsCard({ storageStats, onNavigate }: DocSafeStatsCardP
         {/* Primary Metrics */}
         <div className="text-center space-y-1">
           <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-            {stats.storage_percentage}%
+            {stats.total_documents}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Storage Used</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">Documents Stored</div>
           <div className={`text-xs font-medium ${storageInfo.color}`}>
             {storageInfo.status}
           </div>
         </div>
         
-        {/* Progress Bar */}
+        {/* Organization Progress */}
         <div className="space-y-2">
           <div className="w-full bg-emerald-200/50 dark:bg-emerald-800/30 rounded-full h-3">
             <div 
-              className={`h-3 rounded-full transition-all duration-500 ${
-                stats.storage_percentage >= 90 
-                  ? 'bg-gradient-to-r from-red-400 to-red-500'
-                  : stats.storage_percentage >= 70
-                  ? 'bg-gradient-to-r from-orange-400 to-orange-500'
-                  : 'bg-gradient-to-r from-emerald-400 to-emerald-500'
-              }`}
-              style={{ width: `${Math.min(100, stats.storage_percentage)}%` }}
+              className="h-3 rounded-full transition-all duration-500 bg-gradient-to-r from-emerald-400 to-emerald-500"
+              style={{ width: `${Math.min(100, (stats.total_documents / 50) * 100)}%` }}
             />
           </div>
           <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-            <span>{formatStorageSize(stats.storage_used)}</span>
-            <span>{formatStorageLimit(stats.storage_limit)}</span>
+            <span>0 docs</span>
+            <span>Well organized</span>
           </div>
         </div>
         
         {/* Secondary Stats */}
         <div className="grid grid-cols-2 gap-3 text-sm">
           <div className="text-center">
-            <div className="font-semibold text-gray-900 dark:text-gray-100">{stats.total_documents}</div>
-            <div className="text-gray-600 dark:text-gray-400">Documents</div>
+            <div className="font-semibold text-gray-900 dark:text-gray-100">{formatStorageSize(stats.storage_used)}</div>
+            <div className="text-gray-600 dark:text-gray-400">Space Used</div>
           </div>
           <div className="text-center">
             <div className="font-semibold text-gray-900 dark:text-gray-100">{recentUploads}</div>
@@ -119,15 +110,15 @@ export function DocSafeStatsCard({ storageStats, onNavigate }: DocSafeStatsCardP
         
         {/* Storage Insight */}
         <div className="text-xs text-gray-600 dark:text-gray-400 text-center">
-          {stats.storage_percentage >= 90 ? (
+          {stats.total_documents >= 10 ? (
             <>
               <Database className="h-3 w-3 inline mr-1" />
-              Storage nearly full - consider cleanup
+              Your document library is well organized
             </>
           ) : stats.total_documents > 0 ? (
             <>
               <Upload className="h-3 w-3 inline mr-1" />
-              {formatStorageSize(stats.storage_limit - stats.storage_used)} space remaining
+              Keep building your secure collection
             </>
           ) : (
             <>

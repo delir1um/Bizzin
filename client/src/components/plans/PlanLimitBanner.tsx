@@ -69,64 +69,8 @@ export function PlanLimitBanner({ usageStatus, limitType, onUpgrade }: PlanLimit
   const isNearLimit = limitInfo.percentage >= 80
   const isAtLimit = limitInfo.percentage >= 100
 
-  if (limitInfo.percentage < 70) {
-    return null // Don't show banner until user is approaching limits
-  }
-
-  return (
-    <Alert className={`border-l-4 ${
-      isAtLimit 
-        ? 'border-red-500 bg-red-50 dark:bg-red-950/30' 
-        : isNearLimit 
-          ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/30'
-          : 'border-blue-500 bg-blue-50 dark:bg-blue-950/30'
-    }`}>
-      <div className="flex items-center gap-3">
-        {isAtLimit ? (
-          <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
-        ) : (
-          <Zap className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-        )}
-        
-        <div className="flex-1 space-y-2">
-          <AlertDescription className="font-medium">
-            {isAtLimit 
-              ? `${limitInfo.label} limit reached!`
-              : `Approaching ${limitInfo.label.toLowerCase()} limit`
-            }
-          </AlertDescription>
-          
-          <div className="flex items-center gap-3">
-            <Progress 
-              value={Math.min(limitInfo.percentage, 100)} 
-              className="flex-1 h-3 bg-slate-200 dark:bg-slate-700"
-            />
-            <span className="text-sm text-slate-600 dark:text-slate-300 min-w-0">
-              {formatValue(limitInfo.current, limitInfo.unit)} / {formatValue(limitInfo.limit, limitInfo.unit)} ({Math.round(limitInfo.percentage)}%)
-            </span>
-          </div>
-          
-          <p className="text-sm text-slate-600 dark:text-slate-300">
-            {isAtLimit 
-              ? `Upgrade to Premium for unlimited ${limitInfo.label.toLowerCase()}`
-              : `Upgrade to Premium before reaching your limit`
-            }
-          </p>
-        </div>
-
-        {onUpgrade && (
-          <Button 
-            onClick={onUpgrade}
-            size="sm"
-            className="bg-orange-600 hover:bg-orange-700 text-white"
-          >
-            <Crown className="w-4 h-4 mr-2" />
-            Upgrade
-          </Button>
-        )}
-      </div>
-    </Alert>
-  )
+  // Don't show limit banners for unified plan - focus on positive messaging instead
+  return null
 }
 
 function formatBytes(bytes: number): string {
