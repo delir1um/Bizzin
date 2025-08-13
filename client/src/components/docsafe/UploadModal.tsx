@@ -72,7 +72,7 @@ export function UploadModal({ isOpen, onClose, stats }: UploadModalProps) {
       setUploadProgress(100)
       queryClient.invalidateQueries({ queryKey: ['documents'] })
       queryClient.invalidateQueries({ queryKey: ['storage-stats'] })
-      queryClient.invalidateQueries({ queryKey: ['usage-status'] })
+      // queryClient.invalidateQueries({ queryKey: ['usage-status'] }) // Disabled to prevent HEAD requests
       toast({
         title: "Document uploaded",
         description: "Your document has been successfully uploaded.",

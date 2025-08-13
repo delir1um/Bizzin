@@ -60,7 +60,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
       // Invalidate usage stats to update the plan banner
       const { data: { user } } = await supabase.auth.getUser()
       if (user?.id) {
-        queryClient.invalidateQueries({ queryKey: ['usage-status', user.id] })
+        // queryClient.invalidateQueries({ queryKey: ['usage-status', user.id] }) // Disabled to prevent HEAD requests
       }
       
       toast({

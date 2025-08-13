@@ -23,7 +23,7 @@ export function PaystackUpgrade() {
       return success
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['usage-status'] })
+      // queryClient.invalidateQueries({ queryKey: ['usage-status'] }) // Disabled to prevent HEAD requests
       toast({
         title: "Welcome to Premium!",
         description: "Your account has been successfully upgraded. Enjoy unlimited access to all features.",

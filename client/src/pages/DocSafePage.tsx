@@ -87,7 +87,7 @@ export function DocSafePage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents'] })
       queryClient.invalidateQueries({ queryKey: ['storage-stats'] })
-      queryClient.invalidateQueries({ queryKey: ['usage-status'] }) // Refresh plan usage status
+      // queryClient.invalidateQueries({ queryKey: ['usage-status'] }) // Disabled to prevent HEAD requests
       setDocumentToDelete(null)
       
       // Force immediate refresh with a slight delay to ensure database is updated

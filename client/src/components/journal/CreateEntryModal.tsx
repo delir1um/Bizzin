@@ -84,7 +84,7 @@ export function CreateEntryModal({ isOpen, onClose, selectedDate, recentEntries 
     mutationFn: (entry: CreateJournalEntry) => JournalService.createEntry(entry),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
-      queryClient.invalidateQueries({ queryKey: ['usage-status'] })
+      // queryClient.invalidateQueries({ queryKey: ['usage-status'] }) // Disabled to prevent HEAD requests
       toast({
         title: "Entry created",
         description: "Your journal entry has been successfully created.",
