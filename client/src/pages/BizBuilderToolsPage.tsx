@@ -379,74 +379,32 @@ export function BizBuilderToolsPage() {
 
       {/* Business Budget Calculator */}
       {selectedTool === 'business-budget' && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.98 }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
-        >
-          <BusinessBudgetCalculator onClose={() => setSelectedTool(null)} />
-        </motion.div>
+        <BusinessBudgetCalculator onClose={() => setSelectedTool(null)} />
       )}
 
       {/* Cash Flow Projection Calculator */}
       {selectedTool === 'cash-flow' && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.98 }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
-        >
-          <CashFlowCalculator onClose={() => setSelectedTool(null)} />
-        </motion.div>
+        <CashFlowCalculator onClose={() => setSelectedTool(null)} />
       )}
 
       {/* Break-Even Calculator */}
       {selectedTool === 'break-even' && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.98 }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
-        >
-          <BreakEvenCalculator onClose={() => setSelectedTool(null)} />
-        </motion.div>
+        <BreakEvenCalculator onClose={() => setSelectedTool(null)} />
       )}
 
       {/* Loan Amortisation Calculator */}
       {selectedTool === 'loan-amortisation' && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.98 }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
-        >
-          <LoanAmortisationCalculator onClose={() => setSelectedTool(null)} />
-        </motion.div>
+        <LoanAmortisationCalculator onClose={() => setSelectedTool(null)} />
       )}
 
       {/* Compound Interest Calculator */}
       {selectedTool === 'compound-interest' && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.98 }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
-        >
-          <CompoundInterestCalculator onClose={() => setSelectedTool(null)} />
-        </motion.div>
+        <CompoundInterestCalculator onClose={() => setSelectedTool(null)} />
       )}
 
       {/* Simple Interest Calculator */}
       {selectedTool === 'simple-interest' && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.98 }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
-        >
-          <SimpleInterestCalculator onClose={() => setSelectedTool(null)} />
-        </motion.div>
+        <SimpleInterestCalculator onClose={() => setSelectedTool(null)} />
       )}
 
       {/* Tool Opening Animation */}
