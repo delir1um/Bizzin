@@ -297,30 +297,32 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-slate-900 rounded-xl w-full max-w-7xl h-full max-h-[95vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-700">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+      <div className="bg-white dark:bg-slate-900 rounded-xl w-full max-w-4xl min-h-screen sm:min-h-0 sm:max-h-[95vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-700 my-2 sm:my-4">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
-              <Calculator className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Business Budget Calculator</h2>
-              <p className="text-sm text-slate-600 dark:text-slate-300">Plan and track your business finances</p>
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
+          <div className="min-w-0 flex-1 pr-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Calculator className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 dark:text-orange-400" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">Budget Calculator</h2>
+                <p className="text-sm text-slate-600 dark:text-slate-300 hidden sm:block">Plan and track your business finances</p>
+              </div>
             </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <Button variant="ghost" size="sm" onClick={onClose} className="flex-shrink-0">
             <X className="w-4 h-4" />
           </Button>
         </div>
 
         <div className="flex flex-col lg:flex-row flex-1 overflow-hidden min-h-0">
-          {/* Left Panel - Input */}
-          <div className="lg:w-1/2 p-6 overflow-y-auto border-r border-slate-200 dark:border-slate-700">
+          {/* Input Panel */}
+          <div className="flex-1 lg:w-1/2 p-4 sm:p-6 overflow-y-auto lg:border-r border-slate-200 dark:border-slate-700">
             {/* Business Info */}
             <div className="mb-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div>
 
                 </div>
@@ -341,10 +343,10 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="income">Income</TabsTrigger>
-                <TabsTrigger value="expenses">Expenses</TabsTrigger>
-                <TabsTrigger value="history">History</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-3 h-auto p-1">
+                <TabsTrigger value="income" className="text-sm px-3 py-2">Income</TabsTrigger>
+                <TabsTrigger value="expenses" className="text-sm px-3 py-2">Expenses</TabsTrigger>
+                <TabsTrigger value="history" className="text-sm px-3 py-2">History</TabsTrigger>
               </TabsList>
 
               <TabsContent value="income" className="space-y-4">
@@ -353,7 +355,7 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
                     <CardTitle className="text-lg">Add Income Source</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <Label className={incomeValidationErrors.name ? 'text-red-600' : ''}>Income Name *</Label>
                         <Input

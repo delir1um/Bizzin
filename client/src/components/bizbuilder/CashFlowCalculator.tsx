@@ -327,30 +327,30 @@ export default function CashFlowCalculator({ onClose }: { onClose: () => void })
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-slate-900 rounded-xl w-full max-w-7xl h-full max-h-[95vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-700">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+      <div className="bg-white dark:bg-slate-900 rounded-xl w-full max-w-4xl min-h-screen sm:min-h-0 sm:max-h-[95vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-700 my-2 sm:my-4">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Cash Flow Projection Calculator</h2>
-            <p className="text-slate-600 dark:text-slate-300">Project your business cash flow and identify potential shortfalls</p>
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
+          <div className="min-w-0 flex-1 pr-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Cash Flow Calculator</h2>
+            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 hidden sm:block">Project your business cash flow and identify potential shortfalls</p>
           </div>
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <Button variant="ghost" size="sm" onClick={onClose} className="flex-shrink-0">
             <X className="w-4 h-4" />
           </Button>
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex overflow-hidden min-h-0">
-          {/* Left Panel - Input */}
-          <div className="lg:w-1/2 border-r border-slate-200 dark:border-slate-700 p-6 overflow-y-auto">
+        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
+          {/* Input Panel */}
+          <div className="flex-1 lg:w-1/2 lg:border-r border-slate-200 dark:border-slate-700 p-4 sm:p-6 overflow-y-auto">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="setup">Setup</TabsTrigger>
-                <TabsTrigger value="inflows">Inflows</TabsTrigger>
-                <TabsTrigger value="outflows">Outflows</TabsTrigger>
-                <TabsTrigger value="notes">Notes</TabsTrigger>
-                <TabsTrigger value="history">History</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1 h-auto p-1">
+                <TabsTrigger value="setup" className="text-xs sm:text-sm px-2 py-2">Setup</TabsTrigger>
+                <TabsTrigger value="inflows" className="text-xs sm:text-sm px-2 py-2">Inflows</TabsTrigger>
+                <TabsTrigger value="outflows" className="text-xs sm:text-sm px-2 py-2">Outflows</TabsTrigger>
+                <TabsTrigger value="notes" className="text-xs sm:text-sm px-2 py-2">Notes</TabsTrigger>
+                <TabsTrigger value="history" className="text-xs sm:text-sm px-2 py-2">History</TabsTrigger>
               </TabsList>
 
               <TabsContent value="setup" className="space-y-4">
@@ -402,7 +402,7 @@ export default function CashFlowCalculator({ onClose }: { onClose: () => void })
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <Label className={validationErrors.inflowName ? 'text-red-600' : ''}>Income Name *</Label>
                         <Input
@@ -568,7 +568,7 @@ export default function CashFlowCalculator({ onClose }: { onClose: () => void })
                         {validationErrors.outflowAmount && <p className="text-sm text-red-600 mt-1">Amount must be greater than 0</p>}
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <Label className={validationErrors.outflowCategory ? 'text-red-600' : ''}>Category *</Label>
                         <Select
@@ -684,12 +684,12 @@ export default function CashFlowCalculator({ onClose }: { onClose: () => void })
             </Tabs>
           </div>
 
-          {/* Right Panel - Results */}
-          <div className="lg:w-1/2 p-6 overflow-y-auto flex-shrink-0">
+          {/* Results Panel */}
+          <div className="flex-1 lg:w-1/2 p-4 sm:p-6 overflow-y-auto flex-shrink-0 border-t lg:border-t-0 border-slate-200 dark:border-slate-700">
             {/* Key Metrics */}
             {projection.length > 0 && (
               <>
-                <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                   <Card className="p-4 text-center bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20">
                     <TrendingUp className="w-8 h-8 text-green-600 mx-auto mb-2" />
                     <p className="text-2xl font-bold text-green-800 dark:text-green-200">
