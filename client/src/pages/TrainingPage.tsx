@@ -128,7 +128,7 @@ export function PodcastPage() {
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
+            transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
           >
             <motion.h1 
               className="text-3xl font-bold text-slate-900 dark:text-white"
@@ -155,7 +155,7 @@ export function PodcastPage() {
               className="mt-2 text-lg text-slate-600 dark:text-slate-300"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
             >
               15-minute business insights to grow your entrepreneurial mindset
             </motion.p>
@@ -165,7 +165,7 @@ export function PodcastPage() {
             className="mt-4 sm:mt-0"
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.4, ease: "backOut" }}
+            transition={{ duration: 0.6, delay: 0.3, ease: "backOut" }}
           >
             {/* Quick actions can be added here if needed */}
           </motion.div>
@@ -177,14 +177,14 @@ export function PodcastPage() {
         className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+        transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
       >
         {statCards.map((stat, index) => (
           <motion.div
             key={stat.id}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 + (index * 0.1), ease: "backOut" }}
+            transition={{ duration: 0.5, delay: 0.5 + (index * 0.1), ease: "backOut" }}
             whileHover={{ y: -4, transition: { duration: 0.2 } }}
           >
             <Card className="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-900 border-blue-200 dark:border-blue-800 hover:shadow-lg transition-all duration-300">
@@ -198,7 +198,7 @@ export function PodcastPage() {
                       className="text-2xl font-bold text-blue-900 dark:text-blue-100"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      transition={{ duration: 0.5, delay: 0.6 + (index * 0.1) }}
+                      transition={{ duration: 0.5, delay: 0.7 + (index * 0.1) }}
                     >
                       {stat.value}
                     </motion.div>
@@ -212,7 +212,12 @@ export function PodcastPage() {
       </motion.div>
 
       {/* Search Bar - Now positioned after stats cards */}
-      <div className="mb-8">
+      <motion.div 
+        className="mb-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.9 }}
+      >
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
           <Input
@@ -222,10 +227,15 @@ export function PodcastPage() {
             className="pl-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700"
           />
         </div>
-      </div>
+      </motion.div>
 
       {/* Podcast Series - Top Content Section */}
-      <div className="mb-8">
+      <motion.div 
+        className="mb-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 1.0 }}
+      >
         <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">Popular Series</h2>
         <AnimatedGrid className="grid grid-cols-2 md:grid-cols-4 gap-4" stagger={0.1}>
           <AnimatedItem>
@@ -352,11 +362,16 @@ export function PodcastPage() {
             </motion.div>
           </AnimatedItem>
         </AnimatedGrid>
-      </div>
+      </motion.div>
 
       {/* Continue Listening - show only if user has progress */}
       {currentlyListening && (
-        <div className="mb-8">
+        <motion.div 
+          className="mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 1.1 }}
+        >
           <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">Continue Learning</h2>
           <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
             <CardContent className="p-6">
@@ -418,11 +433,15 @@ export function PodcastPage() {
               </div>
             </CardContent>
           </Card>
-        </div>
+        </motion.div>
       )}
 
       {/* Featured Episodes */}
-      <div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 1.2 }}
+      >
         <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">
           {searchQuery ? `Search Results (${filteredEpisodes.length} episodes)` : 'Featured Episodes'}
         </h2>
@@ -576,7 +595,7 @@ export function PodcastPage() {
             ))}
           </AnimatedGrid>
         )}
-      </div>
+      </motion.div>
 
       {/* Episode Modal */}
       <EpisodeModal
