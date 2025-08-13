@@ -3,10 +3,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 import DynamicSEO from "@/components/DynamicSEO";
-import { interceptUserPlansRequests } from "@/lib/interceptNetworkRequests";
-
-// Install network interceptor to block problematic HEAD requests
-interceptUserPlansRequests();
+// Network interceptor no longer needed - user_plans table now exists
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

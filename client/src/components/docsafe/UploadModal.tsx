@@ -40,10 +40,7 @@ export function UploadModal({ isOpen, onClose, stats }: UploadModalProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
   const { toast } = useToast()
-  // const { hasStorageSpace, usageStatus, isLoading: plansLoading } = usePlans() // DISABLED TO PREVENT HEAD REQUESTS
-  const hasStorageSpace = true
-  const usageStatus = null
-  const plansLoading = false
+  const { hasStorageSpace, usageStatus, isLoading: plansLoading } = usePlans()
 
   const {
     register,
