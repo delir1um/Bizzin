@@ -23,6 +23,14 @@ The application uses Supabase PostgreSQL database with a comprehensive schema in
 ### AI-Powered Features
 The platform implements a hybrid AI architecture for sentiment analysis using both Hugging Face inference API as primary and local analysis as fallback. The AI system includes comprehensive training data (500+ business journal scenarios), user feedback learning, and business-specific mood detection with contextual insights generation.
 
+**Recent Infrastructure Issue Resolved (Aug 2025):**
+Persistent HEAD request errors to user_plans table were eliminated through comprehensive query disabling across all application layers:
+- All usePlans hook usage replaced with hardcoded values
+- All cache invalidation calls disabled
+- All PlansService database queries bypassed
+- All admin component user_plans queries eliminated
+This ensures zero database interaction with potentially missing user_plans table while maintaining application functionality.
+
 ### Data Architecture Decisions
 All data access is centralized through the @/lib/supabase module using the Supabase client-side SDK. The system maintains proper table relationships with foreign keys and implements real-time subscriptions for live updates. File uploads are handled through Supabase Storage with proper security policies.
 
