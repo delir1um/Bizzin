@@ -9,6 +9,14 @@ Bizzin is a modern SaaS platform designed for entrepreneurs to plan, journal, an
 Preferred communication style: Simple, everyday language.
 Animation preferences: Sequential top-to-bottom animations for clean, professional page loading experience. Elements should appear in logical order from header down through content sections.
 
+## Development Methodology
+
+**Reference File**: `DEVELOPMENT_METHODOLOGY.md`
+**Key Principle**: Always check development methodology guide before implementing new features
+**Approach**: 3-Phase process (Prove Core → Scale Solution → Add Resilience) with real data testing from day one
+**Success Pattern**: The "20 real journal entries" approach that led to flawless AI implementation
+**Challenge Protocol**: Question complexity and recommend simpler approaches before implementation
+
 ## System Architecture
 
 ### Frontend Architecture
