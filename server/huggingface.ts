@@ -60,47 +60,97 @@ router.post('/analyze', async (req, res) => {
     const topSentiment = sentimentData[0];
     const topEmotion = emotionData[0];
 
-    // Map sentiment to business mood
+    console.log('Processing Hugging Face results:', { topSentiment, topEmotion });
+
+    // Map sentiment to business mood with proper label handling
     let primaryMood = 'focused';
     let energy: 'high' | 'medium' | 'low' = 'medium';
     
-    if (topSentiment.label === 'LABEL_2' || topSentiment.label === 'POSITIVE') {
+    // Handle different sentiment label formats
+    const sentimentLabel = topSentiment.label;
+    const sentimentScore = topSentiment.score;
+    
+    if (sentimentLabel === 'LABEL_2' || sentimentLabel === 'POSITIVE' || sentimentLabel.includes('positive')) {
       primaryMood = 'optimistic';
       energy = 'high';
-    } else if (topSentiment.label === 'LABEL_0' || topSentiment.label === 'NEGATIVE') {
+    } else if (sentimentLabel === 'LABEL_0' || sentimentLabel === 'NEGATIVE' || sentimentLabel.includes('negative')) {
       primaryMood = 'frustrated';
       energy = 'low';
     }
 
-    // Enhance with emotion data
-    if (topEmotion.label === 'joy') primaryMood = 'excited';
-    else if (topEmotion.label === 'anger') primaryMood = 'frustrated';
-    else if (topEmotion.label === 'sadness') primaryMood = 'sad';
-    else if (topEmotion.label === 'fear') primaryMood = 'uncertain';
+    // Enhance with emotion data - check if emotion data exists and has valid content
+    if (topEmotion && topEmotion.label && topEmotion.score > 0.3) {
+      const emotionLabel = topEmotion.label.toLowerCase();
+      if (emotionLabel === 'joy') {
+        primaryMood = 'excited';
+        energy = 'high';
+      } else if (emotionLabel === 'anger') {
+        primaryMood = 'frustrated';
+        energy = 'low';
+      } else if (emotionLabel === 'sadness') {
+        primaryMood = 'sad';
+        energy = 'low';
+      } else if (emotionLabel === 'fear') {
+        primaryMood = 'uncertain';
+        energy = 'low';
+      }
+    }
 
-    // Determine business category based on content analysis
+    // Enhanced business category detection with better pattern matching
     const lowerText = text.toLowerCase();
     let category = 'reflection';
     
-    if (lowerText.includes('revenue') || lowerText.includes('growth') || lowerText.includes('expand')) {
-      category = 'growth';
-    } else if (lowerText.includes('problem') || lowerText.includes('challenge') || lowerText.includes('difficult')) {
-      category = 'challenge';
-    } else if (lowerText.includes('completed') || lowerText.includes('achieved') || lowerText.includes('success')) {
+    // Achievement patterns - contracts, deals, success
+    if (lowerText.includes('contract') || lowerText.includes('deal') || lowerText.includes('signed') || 
+        lowerText.includes('closed') || lowerText.includes('won') || lowerText.includes('achieved') || 
+        lowerText.includes('completed') || lowerText.includes('milestone') || lowerText.includes('breakthrough') ||
+        lowerText.includes('success') || lowerText.includes('record') || lowerText.includes('incredible')) {
       category = 'achievement';
-    } else if (lowerText.includes('plan') || lowerText.includes('strategy')) {
+    }
+    // Growth patterns - revenue, scaling, expansion
+    else if (lowerText.includes('revenue') || lowerText.includes('growth') || lowerText.includes('expand') ||
+             lowerText.includes('scaling') || lowerText.includes('clients') || lowerText.includes('customers') ||
+             lowerText.includes('funding') || lowerText.includes('investment') || lowerText.includes('series')) {
+      category = 'growth';
+    }
+    // Challenge patterns - problems, issues, outages
+    else if (lowerText.includes('problem') || lowerText.includes('challenge') || lowerText.includes('difficult') ||
+             lowerText.includes('down') || lowerText.includes('outage') || lowerText.includes('issue') ||
+             lowerText.includes('error') || lowerText.includes('failed') || lowerText.includes('quit') ||
+             lowerText.includes('resigned')) {
+      category = 'challenge';
+    }
+    // Planning patterns - strategy, plans, future
+    else if (lowerText.includes('plan') || lowerText.includes('strategy') || lowerText.includes('roadmap') ||
+             lowerText.includes('timeline') || lowerText.includes('future') || lowerText.includes('prepare')) {
       category = 'planning';
-    } else if (lowerText.includes('learned') || lowerText.includes('feedback')) {
+    }
+    // Learning patterns - feedback, insights, learned
+    else if (lowerText.includes('learned') || lowerText.includes('feedback') || lowerText.includes('insight') ||
+             lowerText.includes('understand') || lowerText.includes('realize') || lowerText.includes('suggestion')) {
       category = 'learning';
+    }
+
+    // Calculate confidence properly, handling cases where emotion might be missing
+    const sentimentConfidence = topSentiment.score || 0.5;
+    const emotionConfidence = (topEmotion && topEmotion.score) || 0.5;
+    const finalConfidence = Math.round(Math.max(sentimentConfidence, emotionConfidence) * 100);
+    
+    // Generate contextual business insights
+    const insights = [`Real AI analysis: ${primaryMood} sentiment in ${category} context - ${finalConfidence}% confidence`];
+    if (category === 'achievement' && energy === 'high') {
+      insights.push('Channel this success momentum into tackling bigger challenges while confidence is high');
+    } else if (category === 'challenge' && energy === 'low') {
+      insights.push('Challenges reveal areas for growth - document lessons learned for future problem-solving');
     }
 
     const result = {
       primary_mood: primaryMood,
-      confidence: Math.round((topSentiment.score + topEmotion.score) * 50), // Average and scale to 0-100
+      confidence: finalConfidence,
       energy,
       emotions: [primaryMood],
       business_category: category,
-      insights: [`AI-powered analysis: ${primaryMood} sentiment with ${energy} energy in ${category} context`],
+      insights,
       analysis_source: 'hugging-face-server'
     };
 
