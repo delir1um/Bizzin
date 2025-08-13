@@ -33,7 +33,6 @@ export async function analyzeJournalEntry(text: string, userId: string): Promise
         energy: huggingFaceResult.energy,
         mood_polarity: huggingFaceResult.energy === 'high' ? 'Positive' : 
                       huggingFaceResult.energy === 'low' ? 'Negative' : 'Neutral',
-        insights: huggingFaceResult.insights,
         emotions: huggingFaceResult.emotions || [huggingFaceResult.primary_mood],
         suggested_title: huggingFaceResult.suggested_title,
         rules_matched: [], // Hugging Face doesn't use rules

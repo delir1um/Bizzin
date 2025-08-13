@@ -117,11 +117,10 @@ const businessContexts = {
 
 // Enhanced Hugging Face API implementation for business sentiment analysis
 async function callEnhancedHuggingFaceAnalysis(text: string): Promise<BusinessSentiment | null> {
-  const apiKey = import.meta.env.VITE_HUGGING_FACE_API_KEY || process.env.HUGGING_FACE_API_KEY;
+  const apiKey = import.meta.env.VITE_HUGGING_FACE_API_KEY;
   
   console.log('Hugging Face API Key Check:', {
     viteKey: import.meta.env.VITE_HUGGING_FACE_API_KEY ? 'Available' : 'Not set',
-    processKey: process.env.HUGGING_FACE_API_KEY ? 'Available' : 'Not set',
     finalKey: apiKey ? 'Using key' : 'No key found'
   });
   
