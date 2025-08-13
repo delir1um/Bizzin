@@ -13,7 +13,7 @@ import { SimpleCreateEntryModal } from "@/components/journal/SimpleCreateEntryMo
 import { ViewEntryModal } from "@/components/journal/ViewEntryModal"
 import { EditEntryModal } from "@/components/journal/EditEntryModal"
 import { AIMigrationDialog } from "@/components/journal/AIMigrationDialog"
-import { AIMigrationService } from "@/lib/services/aiMigration"
+import { JournalService } from "@/lib/services/journal"
 import { motion, AnimatePresence } from "framer-motion"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getDisplayMoodEmoji, getEntryDisplayData } from "@/lib/journalDisplayUtils"
@@ -31,6 +31,7 @@ export function JournalPage() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
+  const [isReAnalyzing, setIsReAnalyzing] = useState(false)
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     thisWeek: false,  // Start collapsed by default
     thisMonth: false,
@@ -153,12 +154,7 @@ export function JournalPage() {
   }, [entries])
 
   // Check for migration needs when entries are loaded
-  useEffect(() => {
-    if (entries.length > 0 && AIMigrationService.needsMigration()) {
-      // Auto-show migration dialog if entries need updating
-      setShowMigrationDialog(true)
-    }
-  }, [entries])
+  // Auto-show re-analysis option for existing users with entries (removed auto-popup for better UX)
 
   // Filter entries based on search
   const filteredEntries = entries.filter((entry: JournalEntry) => {
@@ -251,6 +247,33 @@ export function JournalPage() {
   // Handle create entry
   const handleCreateEntry = () => {
     setShowWriteModal(true)
+  }
+
+  // Handle bulk re-analysis
+  const handleReAnalyzeEntries = async () => {
+    if (!user?.id) return
+    
+    setIsReAnalyzing(true)
+    try {
+      const result = await JournalService.reAnalyzeAllEntries()
+      
+      // Refresh data
+      queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
+      
+      toast({
+        title: "Re-analysis Complete",
+        description: `${result.updated} entries updated with enhanced AI v3.0. ${result.errors > 0 ? `${result.errors} errors occurred.` : 'All entries processed successfully!'}`,
+      })
+    } catch (error) {
+      console.error('Error re-analyzing entries:', error)
+      toast({
+        title: "Error",
+        description: "Failed to re-analyze entries. Please try again.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsReAnalyzing(false)
+    }
   }
 
 
@@ -453,25 +476,32 @@ export function JournalPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.3, ease: "backOut" }}
           >
-            {AIMigrationService.needsMigration() && entries.length > 0 && (
+            {entries.length > 0 && (
               <motion.div
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
                 transition={{ duration: 0.2 }}
               >
                 <Button 
-                  onClick={() => setShowMigrationDialog(true)}
+                  onClick={handleReAnalyzeEntries}
+                  disabled={isReAnalyzing}
                   variant="outline"
                   size="sm"
                   className="border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-950/20
-                    transition-all duration-300 hover:shadow-md relative overflow-hidden"
+                    transition-all duration-300 hover:shadow-md relative overflow-hidden disabled:opacity-50"
                 >
                   <motion.div
-                    animate={{ 
+                    animate={isReAnalyzing ? { 
+                      rotate: 360
+                    } : { 
                       scale: [1, 1.1, 1],
                       rotate: [0, 10, -10, 0]
                     }}
-                    transition={{ 
+                    transition={isReAnalyzing ? {
+                      duration: 1, 
+                      repeat: Infinity, 
+                      ease: "linear" 
+                    } : { 
                       duration: 2, 
                       repeat: Infinity, 
                       ease: "easeInOut" 
@@ -479,7 +509,7 @@ export function JournalPage() {
                   >
                     <Brain className="w-4 h-4 mr-2" />
                   </motion.div>
-                  Update AI Analysis
+                  {isReAnalyzing ? 'Re-analyzing...' : 'Update AI Analysis'}
                   
                   {/* Subtle pulse effect */}
                   <div className="absolute inset-0 bg-orange-500/10 rounded-md scale-0 group-hover:scale-100 transition-transform duration-300" />

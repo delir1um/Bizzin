@@ -273,4 +273,116 @@ export class JournalService {
       throw err
     }
   }
+
+  // Re-analyze all journal entries with latest AI logic
+  static async reAnalyzeAllEntries(): Promise<{
+    total: number
+    updated: number
+    errors: number
+    status: string
+  }> {
+    try {
+      // Check authentication
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        throw new Error('User not authenticated')
+      }
+
+      console.log('Starting bulk re-analysis for user:', user.id)
+
+      // Get all user entries
+      const { data: entries, error: fetchError } = await supabase
+        .from('journal_entries')
+        .select('id, content, title')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+
+      if (fetchError) {
+        throw new Error(`Failed to fetch entries: ${fetchError.message}`)
+      }
+
+      if (!entries || entries.length === 0) {
+        return {
+          total: 0,
+          updated: 0,
+          errors: 0,
+          status: 'No entries found to re-analyze'
+        }
+      }
+
+      let updated = 0
+      let errors = 0
+
+      console.log(`Re-analyzing ${entries.length} journal entries with enhanced AI v3.0...`)
+
+      // Process entries in batches to avoid overwhelming the system
+      const batchSize = 5
+      for (let i = 0; i < entries.length; i += batchSize) {
+        const batch = entries.slice(i, i + batchSize)
+        
+        const batchPromises = batch.map(async (entry) => {
+          try {
+            // Analyze with enhanced AI system
+            const aiAnalysis = await analyzeJournalEntry(entry.content, user.id)
+            
+            // Create updated sentiment data with enhanced insights
+            const sentimentData = {
+              primary_mood: aiAnalysis.primary_mood,
+              confidence: aiAnalysis.confidence,
+              energy: aiAnalysis.energy,
+              mood_polarity: aiAnalysis.mood_polarity,
+              emotions: [aiAnalysis.primary_mood],
+              insights: [`Enhanced AI v3.0 - Confidence: ${aiAnalysis.confidence}%`],
+              business_category: aiAnalysis.business_category,
+              rules_matched: aiAnalysis.rules_matched || [],
+              user_learned: aiAnalysis.user_learned || false
+            }
+
+            // Update entry with new analysis
+            const { error: updateError } = await supabase
+              .from('journal_entries')
+              .update({
+                sentiment_data: sentimentData,
+                mood: aiAnalysis.primary_mood
+              })
+              .eq('id', entry.id)
+              .eq('user_id', user.id)
+
+            if (updateError) {
+              console.error(`Failed to update entry ${entry.id}:`, updateError)
+              errors++
+            } else {
+              updated++
+              console.log(`✓ Re-analyzed entry ${entry.id}: ${aiAnalysis.business_category}/${aiAnalysis.primary_mood} (${aiAnalysis.confidence}%)`)
+            }
+          } catch (analysisError) {
+            console.error(`Error analyzing entry ${entry.id}:`, analysisError)
+            errors++
+          }
+        })
+
+        // Wait for batch to complete
+        await Promise.all(batchPromises)
+        
+        // Small delay between batches to be gentle on the system
+        if (i + batchSize < entries.length) {
+          await new Promise(resolve => setTimeout(resolve, 100))
+        }
+      }
+
+      const status = `Re-analysis complete: ${updated} entries updated, ${errors} errors`
+      console.log(status)
+
+      return {
+        total: entries.length,
+        updated,
+        errors,
+        status
+      }
+
+    } catch (err) {
+      console.error('Error in bulk re-analysis:', err)
+      throw err
+    }
+  }
 }

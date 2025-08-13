@@ -11,7 +11,7 @@ import {
   DialogTitle 
 } from '@/components/ui/dialog'
 import { Brain, Sparkles, CheckCircle, AlertCircle, Clock } from 'lucide-react'
-import { AIMigrationService } from '@/lib/services/aiMigration'
+import { JournalService } from '@/lib/services/journal'
 import type { JournalEntry } from '@/types/journal'
 
 interface AIMigrationDialogProps {
@@ -33,14 +33,14 @@ export function AIMigrationDialog({ isOpen, onClose, onComplete }: AIMigrationDi
     setResults({ success: 0, failed: 0, total: 0 })
 
     try {
-      const migrationResults = await AIMigrationService.migrateAllEntries(
-        (current, total, entry) => {
-          setProgress({ current, total })
-          setCurrentEntry(entry)
-        }
-      )
+      const migrationResults = await JournalService.reAnalyzeAllEntries()
       
-      setResults(migrationResults)
+      setResults({
+        success: migrationResults.updated,
+        failed: migrationResults.errors,
+        total: migrationResults.total
+      })
+      setProgress({ current: migrationResults.total, total: migrationResults.total })
       setMigrationState('complete')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Migration failed')
