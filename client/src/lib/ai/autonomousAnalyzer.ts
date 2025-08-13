@@ -366,13 +366,70 @@ function ruleFirstPass(text: string): {
   return null;
 }
 
-// Calibrated prediction with confidence shaping (specification section 7)
+// AI-First Analysis with Rule Validation (AI understanding prioritized)
 function calibratedPrediction(text: string, userId: string) {
-  const ruleResult = ruleFirstPass(text);
+  // Step 1: Get AI similarity match first (understanding-based)
   const matchResult = AutonomousTrainingSystem.getBestMatch(text);
   
-  // Fallback if neither rules nor similarity help
-  if (!ruleResult && !matchResult) {
+  // Step 2: Check if rules support or contradict the AI analysis
+  const ruleResult = ruleFirstPass(text);
+  
+  // Step 3: Prioritize AI understanding over simple pattern matching
+  let primaryAnalysis = null;
+  let confidence = 45;
+  let rationale = 'ai-understanding';
+  
+  if (matchResult && matchResult.similarity > 0.35) {
+    // Strong AI similarity match - use this as primary
+    primaryAnalysis = {
+      business_category: matchResult.example.expected_category,
+      primary_mood: matchResult.example.expected_mood,
+      energy: matchResult.example.expected_energy,
+      confidence: Math.round(matchResult.similarity * 100),
+      source: 'ai-similarity'
+    };
+    rationale = 'ai-understanding-high-confidence';
+    console.log(`AI Understanding: High confidence match (${(matchResult.similarity * 100).toFixed(1)}%) - Category: ${primaryAnalysis.business_category}`);
+  } 
+  else if (matchResult && matchResult.similarity > 0.22) {
+    // Medium AI similarity - validate with rules
+    if (ruleResult && ruleResult.category === matchResult.example.expected_category) {
+      // AI and rules agree - high confidence
+      primaryAnalysis = {
+        business_category: matchResult.example.expected_category,
+        primary_mood: matchResult.example.expected_mood,
+        energy: ruleResult.energy || matchResult.example.expected_energy,
+        confidence: Math.min(95, Math.round(matchResult.similarity * 100) + 20),
+        source: 'ai-rule-agreement'
+      };
+      rationale = 'ai-rule-agreement';
+      console.log(`AI + Rules Agreement: ${primaryAnalysis.business_category} (${primaryAnalysis.confidence}%)`);
+    } else {
+      // AI understanding without rule support - moderate confidence
+      primaryAnalysis = {
+        business_category: matchResult.example.expected_category,
+        primary_mood: matchResult.example.expected_mood,
+        energy: matchResult.example.expected_energy,
+        confidence: Math.round(matchResult.similarity * 100),
+        source: 'ai-understanding'
+      };
+      console.log(`AI Understanding: Medium confidence - ${primaryAnalysis.business_category} (${primaryAnalysis.confidence}%)`);
+    }
+  }
+  else if (ruleResult) {
+    // Only fall back to rules when AI analysis is weak
+    primaryAnalysis = {
+      business_category: ruleResult.category,
+      primary_mood: 'Thoughtful', // Will be refined later
+      energy: ruleResult.energy || 'medium',
+      confidence: 60 + (ruleResult.confidenceBoost || 10),
+      source: 'rule-fallback'
+    };
+    rationale = 'rule-fallback-weak-ai';
+    console.log(`Rule Fallback: ${primaryAnalysis.business_category} (weak AI similarity: ${matchResult ? (matchResult.similarity * 100).toFixed(1) : 0}%)`);
+  }
+  else {
+    // Final fallback
     return {
       business_category: 'Learning',
       primary_mood: 'Thoughtful',
@@ -381,68 +438,17 @@ function calibratedPrediction(text: string, userId: string) {
       rationale: 'fallback - no strong patterns detected'
     };
   }
-  
-  // Aggregate candidates with weighted voting
-  const candidates: Array<{cat: Category; score: number; source: string}> = [];
-  
-  if (matchResult) {
-    candidates.push({
-      cat: matchResult.example.expected_category,
-      score: matchResult.similarity,
-      source: 'similarity'
-    });
-  }
-  
-  if (ruleResult) {
-    candidates.push({
-      cat: ruleResult.category,
-      score: 0.95, // Rules get high weight but not perfect
-      source: 'rule'
-    });
-  }
-  
-  // Weighted voting by category
-  const byCat = new Map<Category, {totalScore: number; sources: string[]}>();
-  for (const c of candidates) {
-    const existing = byCat.get(c.cat) || {totalScore: 0, sources: []};
-    existing.totalScore += c.score;
-    existing.sources.push(c.source);
-    byCat.set(c.cat, existing);
-  }
-  
-  const entries = Array.from(byCat.entries());
-  const sorted = entries.sort((a, b) => b[1].totalScore - a[1].totalScore);
-  
-  const winningCategory = sorted[0][0];
-  const winningScore = sorted[0][1].totalScore;
-  const runnerUpScore = sorted[1]?.[1]?.totalScore || 0;
-  
-  // Base confidence from separation + rule/similarity strength
-  let confidence = 60 + Math.min(30, Math.round((winningScore - runnerUpScore) * 25));
-  
-  // Apply rule confidence boost
-  if (ruleResult) {
-    confidence += ruleResult.confidenceBoost;
-  }
-  
-  // Apply penalties
-  confidence -= Math.round(contrastPenalty(text) * 100);
-  if (text.length < 60) confidence -= 8;
-  
-  // Determine mood and energy
-  let primaryMood = 'Thoughtful';
-  let energy: Energy = 'medium';
-  
-  if (ruleResult?.energy) energy = ruleResult.energy;
-  else if (matchResult?.example) energy = matchResult.example.expected_energy;
-  else energy = inferEnergyAdvanced(text);
+
+  // Apply enhanced mood analysis if needed
+  let primaryMood = primaryAnalysis.primary_mood;
+  let energy: Energy = primaryAnalysis.energy as Energy;
   
   if (ruleResult?.moodPolarity) {
     // Map polarity + context to specific mood
     const polarity = ruleResult.moodPolarity;
     if (polarity === 'Positive' && energy === 'high') {
-      primaryMood = winningCategory === 'Growth' ? 'Excited' : 
-                   winningCategory === 'Achievement' ? 'Proud' : 'Confident';
+      primaryMood = primaryAnalysis.business_category === 'Growth' ? 'Excited' : 
+                   primaryAnalysis.business_category === 'Achievement' ? 'Proud' : 'Confident';
     } else if (polarity === 'Negative') {
       primaryMood = energy === 'low' ? 'Worried' : 'Frustrated';
     }
@@ -452,11 +458,11 @@ function calibratedPrediction(text: string, userId: string) {
   }
   
   return {
-    business_category: winningCategory,
+    business_category: primaryAnalysis.business_category,
     primary_mood: primaryMood,
     energy,
-    confidence: Math.max(40, Math.min(95, confidence)),
-    rationale: `${sorted[0][1].sources.join('+')} agreement`,
+    confidence: Math.max(40, Math.min(95, primaryAnalysis.confidence)),
+    rationale: rationale,
     rule_matched: ruleResult?.rule.id,
     similarity_score: matchResult?.similarity || 0
   };
