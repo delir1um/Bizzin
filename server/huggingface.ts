@@ -156,12 +156,25 @@ router.post('/analyze', async (req, res) => {
     const lowerText = text.toLowerCase();
     let category = 'reflection';
     
+    // Challenge patterns - check FIRST to catch resignations, problems, issues, departures, risks, burnout, work-life balance
+    if (lowerText.includes('problem') || lowerText.includes('challenge') || lowerText.includes('difficult') ||
+        lowerText.includes('down') || lowerText.includes('outage') || lowerText.includes('issue') ||
+        lowerText.includes('error') || lowerText.includes('failed') || lowerText.includes('quit') ||
+        lowerText.includes('resigned') || lowerText.includes('resignation') || lowerText.includes('burnout') ||
+        lowerText.includes('setback') || lowerText.includes('risk') || lowerText.includes('delays') ||
+        lowerText.includes('struggling') || lowerText.includes('work-life balance') || lowerText.includes('overwhelming') ||
+        lowerText.includes('exhausted') || lowerText.includes('70-hour') || lowerText.includes('barely sleeping') ||
+        lowerText.includes('cancelled') || lowerText.includes('missing family') || lowerText.includes('sustainable') ||
+        lowerText.includes('pressure') || lowerText.includes('stress') || lowerText.includes('overwhelm') ||
+        lowerText.includes('handed in her') || lowerText.includes('handed in his') || lowerText.includes('leaving') ||
+        lowerText.includes('departing') || lowerText.includes('losing her knowledge') || lowerText.includes('major setback')) {
+      category = 'challenge';
+    }
     // Achievement patterns - success, wins, completions
-    if (lowerText.includes('contract') || lowerText.includes('deal') || lowerText.includes('signed') || 
-        lowerText.includes('closed') || lowerText.includes('won') || lowerText.includes('achieved') || 
-        lowerText.includes('completed') || lowerText.includes('milestone') || lowerText.includes('breakthrough') ||
-        lowerText.includes('success') || lowerText.includes('record') || lowerText.includes('incredible') ||
-        lowerText.includes('google') || lowerText.includes('hired') || lowerText.includes('equity')) {
+    else if (lowerText.includes('contract') || lowerText.includes('deal') || lowerText.includes('signed') || 
+             lowerText.includes('closed') || lowerText.includes('won') || lowerText.includes('achieved') || 
+             lowerText.includes('completed') || lowerText.includes('milestone') || lowerText.includes('breakthrough') ||
+             lowerText.includes('success') || lowerText.includes('record') || lowerText.includes('incredible')) {
       category = 'achievement';
     }
     // Growth patterns - revenue, scaling, expansion, competition (but not when context is negative)
@@ -173,18 +186,6 @@ router.post('/analyze', async (req, res) => {
              !(primaryMood === 'reflective' && energy === 'low' && 
                (lowerText.includes('struggling') || lowerText.includes('pressure') || lowerText.includes('overwhelming')))) {
       category = 'growth';
-    }
-    // Challenge patterns - problems, issues, departures, risks, burnout, work-life balance
-    else if (lowerText.includes('problem') || lowerText.includes('challenge') || lowerText.includes('difficult') ||
-             lowerText.includes('down') || lowerText.includes('outage') || lowerText.includes('issue') ||
-             lowerText.includes('error') || lowerText.includes('failed') || lowerText.includes('quit') ||
-             lowerText.includes('resigned') || lowerText.includes('resignation') || lowerText.includes('burnout') ||
-             lowerText.includes('setback') || lowerText.includes('risk') || lowerText.includes('delays') ||
-             lowerText.includes('struggling') || lowerText.includes('work-life balance') || lowerText.includes('overwhelming') ||
-             lowerText.includes('exhausted') || lowerText.includes('70-hour') || lowerText.includes('barely sleeping') ||
-             lowerText.includes('cancelled') || lowerText.includes('missing family') || lowerText.includes('sustainable') ||
-             lowerText.includes('pressure') || lowerText.includes('stress') || lowerText.includes('overwhelm')) {
-      category = 'challenge';
     }
     // Planning patterns - strategy, plans, future, pivots
     else if (lowerText.includes('plan') || lowerText.includes('strategy') || lowerText.includes('roadmap') ||
