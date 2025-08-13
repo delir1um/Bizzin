@@ -14,5 +14,14 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
+  },
+  global: {
+    headers: {
+      'X-Skip-Schema-Cache': 'true',
+      'Cache-Control': 'no-cache'
+    }
+  },
+  db: {
+    schema: 'public'
   }
 })
