@@ -236,7 +236,7 @@ export function PodcastPage() {
             >
               <Card 
                 className="bg-white dark:bg-slate-800 hover:shadow-xl transition-all duration-300 cursor-pointer group
-                  border-2 hover:border-blue-300 dark:hover:border-blue-600 relative overflow-hidden"
+                  border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600 relative overflow-hidden"
                 onClick={() => setLocation('/training/series/strategy')}
               >
                 <CardContent className="p-6 text-center">
@@ -268,7 +268,7 @@ export function PodcastPage() {
               <Card 
                 className="bg-white dark:bg-slate-800 hover:shadow-xl hover:shadow-green-200/50 dark:hover:shadow-green-900/30 
                   hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer group
-                  border-2 hover:border-green-300 dark:hover:border-green-600 relative overflow-hidden"
+                  border border-slate-200 dark:border-slate-700 hover:border-green-300 dark:hover:border-green-600 relative overflow-hidden"
                 onClick={() => setLocation('/training/series/marketing')}
               >
                 <CardContent className="p-6 text-center relative z-10">
@@ -299,7 +299,7 @@ export function PodcastPage() {
               <Card 
                 className="bg-white dark:bg-slate-800 hover:shadow-xl hover:shadow-purple-200/50 dark:hover:shadow-purple-900/30 
                   hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer group
-                  border-2 hover:border-purple-300 dark:hover:border-purple-600 relative overflow-hidden"
+                  border border-slate-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-600 relative overflow-hidden"
                 onClick={() => setLocation('/training/series/finance')}
               >
                 <CardContent className="p-6 text-center relative z-10">
@@ -330,7 +330,7 @@ export function PodcastPage() {
               <Card 
                 className="bg-white dark:bg-slate-800 hover:shadow-xl hover:shadow-orange-200/50 dark:hover:shadow-orange-900/30 
                   hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer group
-                  border-2 hover:border-orange-300 dark:hover:border-orange-600 relative overflow-hidden"
+                  border border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-600 relative overflow-hidden"
                 onClick={() => setLocation('/training/series/leadership')}
               >
                 <CardContent className="p-6 text-center relative z-10">
