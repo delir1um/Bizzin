@@ -122,6 +122,18 @@ export function getDisplayEnergy(entry: JournalEntry): string {
 
 export function getDisplayMoodEmoji(entry: JournalEntry): string {
   const displayMood = getDisplayMood(entry)
+  const category = getDisplayCategory(entry)
+  
+  // Check if title or category suggests strategic planning
+  const title = entry.title.toLowerCase()
+  if (title.includes('strategic') || title.includes('planning') || category === 'Planning') {
+    return '📋'
+  }
+  
+  if (category === 'Growth') {
+    return '📈'
+  }
+  
   return getMoodEmoji(displayMood)
 }
 
