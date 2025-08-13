@@ -118,13 +118,16 @@ const businessContexts = {
 
 // Enhanced Hugging Face API implementation for business sentiment analysis
 async function callEnhancedHuggingFaceAnalysis(text: string): Promise<BusinessSentiment | null> {
-  const apiKey = import.meta.env.VITE_HUGGING_FACE_API_KEY;
+  // Try both VITE_ prefixed and direct access to environment variable
+  const apiKey = import.meta.env.VITE_HUGGING_FACE_API_KEY || import.meta.env.HUGGING_FACE_API_KEY;
   
   console.log('🔍 DEBUG - Hugging Face API Key Check:', {
     hasViteKey: !!import.meta.env.VITE_HUGGING_FACE_API_KEY,
-    keyLength: import.meta.env.VITE_HUGGING_FACE_API_KEY?.length || 0,
-    keyPreview: import.meta.env.VITE_HUGGING_FACE_API_KEY?.substring(0, 10) + '...',
-    allViteEnvVars: Object.keys(import.meta.env).filter(k => k.startsWith('VITE_'))
+    hasDirectKey: !!import.meta.env.HUGGING_FACE_API_KEY,
+    keyLength: apiKey?.length || 0,
+    keyPreview: apiKey?.substring(0, 10) + '...',
+    allViteEnvVars: Object.keys(import.meta.env).filter(k => k.startsWith('VITE_')),
+    allEnvVars: Object.keys(import.meta.env).slice(0, 10)
   });
   
   if (!apiKey) {
