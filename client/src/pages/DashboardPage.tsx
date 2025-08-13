@@ -14,7 +14,7 @@ import { JournalStatsCard } from '@/components/dashboard/JournalStatsCard'
 import { GoalsStatsCard } from '@/components/dashboard/GoalsStatsCard'
 import { TrainingStatsCard } from '@/components/dashboard/TrainingStatsCard'
 import { DocSafeStatsCard } from '@/components/dashboard/DocSafeStatsCard'
-import { ReferralStatsCard } from '@/components/dashboard/ReferralStatsCard'
+import { BizBuilderStatsCard } from '@/components/dashboard/BizBuilderStatsCard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -312,11 +312,11 @@ export function DashboardPage() {
             <TrainingStatsCard 
               onNavigate={navigate} 
             />
-            <DocSafeStatsCard 
-              storageStats={storageStats || null} 
+            <BizBuilderStatsCard 
               onNavigate={navigate} 
             />
-            <ReferralStatsCard 
+            <DocSafeStatsCard 
+              storageStats={storageStats || null} 
               onNavigate={navigate} 
             />
           </motion.div>
