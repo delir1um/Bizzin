@@ -318,7 +318,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Mount SEO routes
   app.use('/api/seo', seoRoutes);
 
-  // Add journal routes for testing
+  // Add journal routes for testing (supporting frontend endpoints)
+  
+  // GET /api/journal-entries - retrieve all entries (frontend expects this endpoint)
+  app.get('/api/journal-entries', async (req: Request, res: Response) => {
+    try {
+      // Return empty array since this is primarily for demo/testing
+      // In production, this would query the database
+      console.log('Fetching journal entries...');
+      res.json([]);
+    } catch (error) {
+      console.error('Journal fetch error:', error);
+      res.status(500).json({ error: 'Failed to fetch journal entries' });
+    }
+  });
+  
+  // POST /api/journal-entries - create entry (frontend expects this endpoint) 
+  app.post('/api/journal-entries', async (req: Request, res: Response) => {
+    try {
+      const { title, content, user_id, tags } = req.body;
+      
+      // Call sentiment analysis
+      const sentimentResponse = await fetch('http://localhost:5000/api/analyze-sentiment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: content })
+      });
+      
+      const sentimentData = await sentimentResponse.json();
+      
+      // Create journal entry with AI analysis
+      const entry = {
+        id: Date.now().toString(),
+        title: title || 'Untitled Entry',
+        content,
+        user_id,
+        tags: tags || [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        mood: sentimentData.success ? sentimentData.sentiment.primary_mood : 'Neutral',
+        energy_level: sentimentData.success ? (sentimentData.sentiment.energy === 'high' ? 3 : sentimentData.sentiment.energy === 'medium' ? 2 : 1) : 2,
+        categories: sentimentData.success ? [sentimentData.sentiment.business_category] : ['General'],
+        ai_sentiment: sentimentData.success ? JSON.stringify(sentimentData.sentiment) : null,
+        ai_insights: sentimentData.success ? sentimentData.sentiment.insights?.join(' ') : null,
+        is_favorite: false
+      };
+      
+      console.log(`Created journal entry: ${entry.title} - AI Analysis Complete`);
+      res.json(entry);
+    } catch (error) {
+      console.error('Journal creation error:', error);
+      res.status(500).json({ error: 'Failed to create journal entry' });
+    }
+  });
+
+  // POST /api/journal - legacy endpoint for compatibility
   app.post('/api/journal', async (req: Request, res: Response) => {
     try {
       const { title, content, user_id } = req.body;

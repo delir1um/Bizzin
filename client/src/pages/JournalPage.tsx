@@ -349,7 +349,8 @@ export function JournalPage() {
         const textOnlyEntry = {
           title: entry.title,
           content: entry.content,
-          entry_date: randomDate.toISOString()
+          entry_date: randomDate.toISOString(),
+          tags: [] // Add empty tags array to satisfy TypeScript
         }
         await JournalService.createEntry(textOnlyEntry)
         added++
