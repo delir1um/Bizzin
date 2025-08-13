@@ -95,7 +95,7 @@ const SpecificationRules: Rule[] = [
   },
   { 
     id: 'HIRING_COMPLETED',
-    test: t => /\b(hired?|recruiting|onboarded)\b/.test(t) && /\b(new|three|completed|joined)\b/.test(t) && !/\b(plan|planning|strategy|roadmap)\b/.test(t),
+    test: t => /\b(hired?|onboarded|welcomed)\b/.test(t) && /\b(new|three|completed|joined|started)\b/.test(t) && !/\b(plan|planning|strategy|roadmap|session|expansion)\b/.test(t),
     category: 'Growth',
     energy: 'high',
     moodPolarity: 'Positive',
@@ -187,11 +187,11 @@ const SpecificationRules: Rule[] = [
   },
   { 
     id: 'CUSTOMER_FEEDBACK_ANALYSIS',
-    test: t => /\b(customer|feedback|survey|nps|net promoter)\b/.test(t) && /\b(reflecting|results|insights|analysis|came back|score)\b/.test(t),
+    test: t => /\b(customer|feedback|survey|nps|net promoter|score)\b/.test(t) && /\b(reflecting|results|insights|analysis|came back|month|last)\b/.test(t),
     category: 'Learning',
     energy: 'medium',
     moodPolarity: 'Neutral',
-    confidenceBoost: 20
+    confidenceBoost: 22
   },
 
   // Research Activities
