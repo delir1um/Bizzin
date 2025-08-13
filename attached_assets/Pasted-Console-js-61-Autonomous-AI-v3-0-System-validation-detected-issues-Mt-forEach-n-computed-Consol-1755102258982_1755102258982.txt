@@ -1,0 +1,37 @@
+Console.js:61 Autonomous AI v3.0: System validation detected issues
+Mt.forEach.n.<computed>	@	Console.js:61
+initializeEnhancedAI	@	index.ts:73
+getCurrentUser	@	JournalPage.tsx:54
+await in getCurrentUser		
+(anonymous)	@	JournalPage.tsx:59
+Console.js:61 Autonomous AI System v3.0 initialized with full specification compliance
+Console.js:61 Autonomous AI v3.0: Running system validation...
+Console.js:61 Autonomous AI v3.0: Analyzing entry with full specification compliance...
+Console.js:61 Autonomous AI: Rule matched - SUPPLY_CHAIN_DISRUPTION for text: "Supplier delayed our shipment and production is at risk..."
+Console.js:61 Rule Fallback: Challenge (weak AI similarity: 0%)
+Console.js:61 Autonomous AI v3.0: Complete - Challenge/Frustrated/medium (80%)
+Console.js:61 Analysis method: rule-fallback-weak-ai
+Console.js:61 Autonomous AI v3.0: Analyzing entry with full specification compliance...
+Console.js:61 Autonomous AI: Rule matched - REVENUE_GROWTH for text: "We closed five new accounts and revenue is at all-time high..."
+Console.js:61 Rule Fallback: Growth (weak AI similarity: 0%)
+Console.js:61 Autonomous AI v3.0: Complete - Growth/Excited/high (78%)
+Console.js:61 Analysis method: rule-fallback-weak-ai
+Console.js:61 Validation concern: "We closed five new accounts and revenue is at all-time high" only got 78% confidence
+Mt.forEach.n.<computed>	@	Console.js:61
+validateAutonomousSystem	@	autonomousAnalyzer.ts:544
+initializeEnhancedAI	@	index.ts:71
+getCurrentUser	@	JournalPage.tsx:54
+await in getCurrentUser		
+(anonymous)	@	JournalPage.tsx:59
+Console.js:61 Autonomous AI v3.0: Analyzing entry with full specification compliance...
+Console.js:61 Autonomous AI: Rule matched - RESEARCH_PUBLICATION for text: "Finally published our industry research paper..."
+Console.js:61 Rule Fallback: Achievement (weak AI similarity: 0%)
+Console.js:61 Autonomous AI v3.0: Complete - Achievement/Proud/high (80%)
+Console.js:61 Analysis method: rule-fallback-weak-ai
+Console.js:61 Autonomous AI v3.0: Validation NEEDS ATTENTION
+Console.js:61 Autonomous AI v3.0: System validation detected issues
+Mt.forEach.n.<computed>	@	Console.js:61
+initializeEnhancedAI	@	index.ts:73
+getCurrentUser	@	JournalPage.tsx:54
+await in getCurrentUser		
+(anonymous)	@	JournalPage.tsx:59

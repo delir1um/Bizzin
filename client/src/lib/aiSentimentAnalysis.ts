@@ -136,6 +136,8 @@ async function callEnhancedHuggingFaceAnalysis(text: string): Promise<BusinessSe
     }
   }
 
+  console.log('✅ CALLING REAL HUGGING FACE AI MODELS FOR SENTIMENT ANALYSIS...');
+
   console.log('Using Hugging Face AI models for sentiment analysis');
   
   try {
@@ -189,14 +191,21 @@ async function callEnhancedHuggingFaceAnalysis(text: string): Promise<BusinessSe
     // Process results with enhanced business context
     const result = processEnhancedHuggingFaceResults(sentimentData, emotionData, text);
     
-    // Cache the result
-    sentimentCache.set(cacheKey, {
-      result,
-      timestamp: Date.now()
-    });
+    if (result) {
+      // Mark as real Hugging Face result
+      result.analysis_source = 'hugging-face-api';
+      
+      // Cache the result
+      sentimentCache.set(cacheKey, {
+        result,
+        timestamp: Date.now()
+      });
 
-    console.log('Hugging Face analysis complete:', result);
-    return result;
+      console.log('✅ REAL HUGGING FACE AI ANALYSIS COMPLETE:', result);
+      return result;
+    } else {
+      console.log('Hugging Face processing failed, no valid result');
+    }
 
   } catch (error) {
     console.error('Hugging Face API error:', error);
