@@ -166,7 +166,7 @@ export class JournalService {
       const wordCount = entry.content.split(/\s+/).length
       const readingTime = Math.max(1, Math.ceil(wordCount / 200))
 
-      // Analyze with enhanced AI system (the production-ready autonomous system)
+      // Analyze with enhanced AI system (Hugging Face first, then autonomous fallback)
       const aiAnalysis = await analyzeJournalEntry(entry.content, user.id)
       
       console.log('Using production AI analysis results:', {

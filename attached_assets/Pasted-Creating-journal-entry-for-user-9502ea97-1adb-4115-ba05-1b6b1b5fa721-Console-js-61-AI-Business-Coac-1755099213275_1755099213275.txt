@@ -1,0 +1,44 @@
+Creating journal entry for user: 9502ea97-1adb-4115-ba05-1b6b1b5fa721
+Console.js:61 AI Business Coach analysis completed
+Console.js:61 Autonomous AI v3.0: Analyzing entry with full specification compliance...
+Console.js:61 Autonomous AI v3.0: Complete - Learning/Thoughtful/medium (45%)
+Console.js:61 Analysis method: fallback - no strong patterns detected
+Console.js:61 Using production AI analysis results: Object
+Console.js:61 Creating journal entry for user: 9502ea97-1adb-4115-ba05-1b6b1b5fa721
+Console.js:61 AI Business Coach analysis completed
+Console.js:61 Clearing all journal entries for user: 9502ea97-1adb-4115-ba05-1b6b1b5fa721
+Console.js:61 Existing entries cleared
+Console.js:61 Autonomous AI v3.0: Analyzing entry with full specification compliance...
+Console.js:61 Autonomous AI: Rule matched - FUNDING_SUCCESS for text: "TechCrunch announced that our main competitor just raised R25 million and launched features that are..."
+Console.js:61 Rule Fallback: Growth (weak AI similarity: 0%)
+Console.js:61 Autonomous AI v3.0: Complete - Growth/Excited/high (80%)
+Console.js:61 Analysis method: rule-fallback-weak-ai
+Console.js:61 Using production AI analysis results: {category: 'Growth', mood: 'Excited', energy: 'high', confidence: 80, rulesMatched: 1}
+Console.js:61 Creating journal entry for user: 9502ea97-1adb-4115-ba05-1b6b1b5fa721
+Console.js:61 AI Business Coach analysis completed
+Console.js:61 Autonomous AI v3.0: Analyzing entry with full specification compliance...
+Console.js:61 Autonomous AI v3.0: Complete - Learning/Thoughtful/medium (45%)
+Console.js:61 Analysis method: fallback - no strong patterns detected
+Console.js:61 Using production AI analysis results: {category: 'Learning', mood: 'Thoughtful', energy: 'medium', confidence: 45, rulesMatched: 0}
+Console.js:61 Creating journal entry for user: 9502ea97-1adb-4115-ba05-1b6b1b5fa721
+Console.js:61 AI Business Coach analysis completed
+Console.js:61 Autonomous AI v3.0: Analyzing entry with full specification compliance...
+Console.js:61 Autonomous AI: Rule matched - FUNDING_SUCCESS for text: "Met with our investment advisor today to discuss raising Series A funding. We need R15 million to sc..."
+Console.js:61 Rule Fallback: Growth (weak AI similarity: 0%)
+Console.js:61 Autonomous AI v3.0: Complete - Growth/Excited/high (80%)
+Console.js:61 Analysis method: rule-fallback-weak-ai
+Console.js:61 Using production AI analysis results: {category: 'Growth', mood: 'Excited', energy: 'high', confidence: 80, rulesMatched: 1}
+Console.js:61 Creating journal entry for user: 9502ea97-1adb-4115-ba05-1b6b1b5fa721
+Console.js:61 AI Business Coach analysis completed
+Console.js:61 Autonomous AI v3.0: Analyzing entry with full specification compliance...
+Console.js:61 Autonomous AI v3.0: Complete - Learning/Thoughtful/medium (45%)
+Console.js:61 Analysis method: fallback - no strong patterns detected
+Console.js:61 Using production AI analysis results: {category: 'Learning', mood: 'Thoughtful', energy: 'medium', confidence: 45, rulesMatched: 0}
+Console.js:61 Creating journal entry for user: 9502ea97-1adb-4115-ba05-1b6b1b5fa721
+Console.js:61 AI Business Coach analysis completed
+Console.js:61 Autonomous AI v3.0: Analyzing entry with full specification compliance...
+Console.js:61 Autonomous AI v3.0: Complete - Learning/Thoughtful/medium (45%)
+Console.js:61 Analysis method: fallback - no strong patterns detected
+Console.js:61 Using production AI analysis results: {category: 'Learning', mood: 'Thoughtful', energy: 'medium', confidence: 45, rulesMatched: 0}
+Console.js:61 Creating journal entry for user: 9502ea97-1adb-4115-ba05-1b6b1b5fa721
+Console.js:61 AI Business Coach analysis completed
