@@ -11,6 +11,9 @@ export function PreviewOrProtected({
 }: PreviewOrProtectedProps) {
   const { user, loading } = useAuth()
 
+  // Debug authentication state
+  console.log('PreviewOrProtected - user:', !!user, 'loading:', loading)
+
   // Show loading state while checking auth
   if (loading) {
     return (
