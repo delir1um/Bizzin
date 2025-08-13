@@ -227,13 +227,16 @@ router.post('/analyze', async (req, res) => {
       const lowerText = text.toLowerCase();
       
       if (category === 'challenge') {
-        if (lowerText.includes('database') || lowerText.includes('technical') || lowerText.includes('system')) {
+        if (lowerText.includes('competitor') || lowerText.includes('raised') || lowerText.includes('funding')) {
+          contextualInsights.push('Competitive pressure creates opportunity. Focus on execution speed and customer experience over feature parity.');
+          contextualInsights.push('Market validation through competition is valuable. Study their moves, then differentiate yours.');
+        } else if (lowerText.includes('database') || lowerText.includes('technical') || lowerText.includes('system')) {
           contextualInsights.push('Technical failures expose infrastructure weaknesses. Build redundancy before you need it.');
         } else if (lowerText.includes('employee') || lowerText.includes('staff') || lowerText.includes('team')) {
           contextualInsights.push('Team challenges signal cultural or process gaps. Address root causes, not just symptoms.');
         } else if (lowerText.includes('burnout') || lowerText.includes('exhausted') || lowerText.includes('overwhelming')) {
           contextualInsights.push('Burnout is a leading indicator of unsustainable practices. Delegate or systematize before breaking.');
-        } else if (lowerText.includes('funding') || lowerText.includes('cash flow') || lowerText.includes('revenue')) {
+        } else if (lowerText.includes('cash flow') || lowerText.includes('revenue')) {
           contextualInsights.push('Financial pressure demands creative solutions. Focus on customer value and operational efficiency.');
         } else {
           contextualInsights.push('Every challenge contains market intelligence. Document what you learn for competitive advantage.');

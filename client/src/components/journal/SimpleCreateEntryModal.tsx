@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react"
 import { queryClient } from "@/lib/queryClient"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -344,6 +344,9 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
             <PlusCircle className="w-5 h-5 text-orange-600" />
             New Journal Entry
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Create a new business journal entry with AI-powered sentiment analysis and insights
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
