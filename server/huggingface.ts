@@ -14,6 +14,23 @@ const HF_MODELS = {
   emotion: 'j-hartmann/emotion-english-distilroberta-base'
 };
 
+// API usage tracking and error handling
+interface APIUsageStats {
+  requestsToday: number;
+  errorsToday: number;
+  lastRequestTime: number;
+  quotaExceeded: boolean;
+  fallbackMode: boolean;
+}
+
+let apiUsageStats: APIUsageStats = {
+  requestsToday: 0,
+  errorsToday: 0,
+  lastRequestTime: 0,
+  quotaExceeded: false,
+  fallbackMode: false
+};
+
 async function callHuggingFaceAPI(text: string, model: string): Promise<HuggingFaceResponse[]> {
   const apiKey = process.env.HUGGING_FACE_API_KEY;
   
@@ -21,23 +38,103 @@ async function callHuggingFaceAPI(text: string, model: string): Promise<HuggingF
     throw new Error('Hugging Face API key not configured');
   }
 
-  const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ inputs: text }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Hugging Face API error: ${response.status}`);
+  // Check if we're in fallback mode due to quota issues
+  if (apiUsageStats.quotaExceeded) {
+    console.warn('⚠️ Hugging Face quota exceeded - using fallback analysis');
+    throw new Error('QUOTA_EXCEEDED');
   }
 
-  return response.json();
+  try {
+    const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ inputs: text }),
+    });
+
+    // Track successful request
+    apiUsageStats.requestsToday++;
+    apiUsageStats.lastRequestTime = Date.now();
+
+    // Handle rate limiting and quota errors
+    if (response.status === 429) {
+      console.error('🚨 Hugging Face rate limit exceeded');
+      apiUsageStats.quotaExceeded = true;
+      apiUsageStats.fallbackMode = true;
+      throw new Error('RATE_LIMIT_EXCEEDED');
+    }
+
+    if (response.status === 403) {
+      console.error('🚨 Hugging Face quota exceeded');
+      apiUsageStats.quotaExceeded = true;
+      apiUsageStats.fallbackMode = true;
+      throw new Error('QUOTA_EXCEEDED');
+    }
+
+    if (!response.ok) {
+      apiUsageStats.errorsToday++;
+      console.error(`❌ Hugging Face API error: ${response.status} - ${response.statusText}`);
+      throw new Error(`HF_API_ERROR_${response.status}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    apiUsageStats.errorsToday++;
+    
+    // Reset quota flag after 1 hour if it was a temporary issue
+    if (apiUsageStats.quotaExceeded && Date.now() - apiUsageStats.lastRequestTime > 3600000) {
+      apiUsageStats.quotaExceeded = false;
+      apiUsageStats.fallbackMode = false;
+    }
+    
+    throw error;
+  }
 }
 
-// Analyze sentiment using Hugging Face models
+// Fallback sentiment analysis when API limits are hit
+function generateFallbackAnalysis(text: string) {
+  console.log('🔄 Generating fallback analysis due to API limitations');
+  
+  // Basic keyword-based sentiment analysis for emergency fallback
+  const positiveWords = ['success', 'great', 'amazing', 'excellent', 'achieved', 'progress', 'breakthrough', 'excited', 'confident'];
+  const negativeWords = ['problem', 'issue', 'struggle', 'difficult', 'failed', 'stress', 'worried', 'frustrated', 'challenging'];
+  const neutralWords = ['planning', 'research', 'analysis', 'meeting', 'discussion', 'review', 'considering'];
+  
+  const lowerText = text.toLowerCase();
+  
+  let positiveScore = positiveWords.reduce((score, word) => score + (lowerText.includes(word) ? 1 : 0), 0);
+  let negativeScore = negativeWords.reduce((score, word) => score + (lowerText.includes(word) ? 1 : 0), 0);
+  let neutralScore = neutralWords.reduce((score, word) => score + (lowerText.includes(word) ? 1 : 0), 0);
+  
+  // Determine primary sentiment
+  let primary_mood = 'Neutral';
+  let energy = 'medium';
+  let business_category = 'Planning';
+  
+  if (positiveScore > negativeScore && positiveScore > neutralScore) {
+    primary_mood = 'Optimistic';
+    energy = 'high';
+    business_category = 'Achievement';
+  } else if (negativeScore > positiveScore && negativeScore > neutralScore) {
+    primary_mood = 'Concerned';
+    energy = 'low';
+    business_category = 'Challenge';
+  }
+  
+  return {
+    primary_mood,
+    confidence: 60, // Lower confidence for fallback
+    energy,
+    emotions: [primary_mood.toLowerCase()],
+    insights: ['Analysis temporarily using simplified processing. Full AI insights will resume when API access is restored.'],
+    business_category,
+    analysis_source: 'fallback-system'
+  };
+}
+
+// Analyze sentiment using Hugging Face models with fallback protection
 router.post('/analyze', async (req, res) => {
   try {
     const { text } = req.body;
@@ -48,15 +145,27 @@ router.post('/analyze', async (req, res) => {
 
     console.log('🚀 Server-side Hugging Face analysis starting for:', text.substring(0, 50) + '...');
 
-    // Get sentiment and emotion analysis
-    const [sentimentData, emotionData] = await Promise.all([
-      callHuggingFaceAPI(text, HF_MODELS.sentiment),
-      callHuggingFaceAPI(text, HF_MODELS.emotion)
-    ]);
+    let sentimentData, emotionData;
+    let usedFallback = false;
 
-    console.log('✅ Hugging Face API calls successful');
-    console.log('Raw sentiment response:', JSON.stringify(sentimentData, null, 2));
-    console.log('Raw emotion response:', JSON.stringify(emotionData, null, 2));
+    try {
+      // Get sentiment and emotion analysis
+      [sentimentData, emotionData] = await Promise.all([
+        callHuggingFaceAPI(text, HF_MODELS.sentiment),
+        callHuggingFaceAPI(text, HF_MODELS.emotion)
+      ]);
+
+      console.log('✅ Hugging Face API calls successful');
+      console.log('Raw sentiment response:', JSON.stringify(sentimentData, null, 2));
+      console.log('Raw emotion response:', JSON.stringify(emotionData, null, 2));
+      
+    } catch (apiError: any) {
+      console.warn('⚠️ Hugging Face API unavailable, using fallback analysis:', apiError.message);
+      
+      // Generate fallback analysis to ensure users never get errors
+      const fallbackResult = generateFallbackAnalysis(text);
+      return res.json(fallbackResult);
+    }
 
     // Process results - Hugging Face returns nested arrays, flatten them
     let flatSentimentData = sentimentData;
@@ -323,12 +432,25 @@ router.post('/analyze', async (req, res) => {
     res.json(result);
 
   } catch (error) {
-    console.error('❌ Hugging Face analysis failed:', error);
-    res.status(500).json({ 
-      error: 'Analysis failed', 
-      details: error instanceof Error ? error.message : 'Unknown error' 
-    });
+    console.error('❌ Server-side Hugging Face error:', error);
+    
+    // Always provide fallback analysis instead of returning errors to users
+    const fallbackResult = generateFallbackAnalysis(req.body.text || '');
+    console.log('🔄 Providing fallback analysis to maintain user experience');
+    res.json(fallbackResult);
   }
+});
+
+// API monitoring endpoint for admin use
+router.get('/status', (req, res) => {
+  res.json({
+    usage_stats: apiUsageStats,
+    api_health: !apiUsageStats.quotaExceeded ? 'healthy' : 'quota_exceeded',
+    fallback_active: apiUsageStats.fallbackMode,
+    last_request: new Date(apiUsageStats.lastRequestTime).toISOString(),
+    requests_today: apiUsageStats.requestsToday,
+    errors_today: apiUsageStats.errorsToday
+  });
 });
 
 export default router;
