@@ -357,8 +357,8 @@ export function JournalPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="bg-slate-50 dark:bg-slate-900 pb-8">
+        <div className="max-w-7xl mx-auto px-4 pt-6">
           <div className="text-center py-16">
             <motion.div
               animate={{ rotate: 360 }}
@@ -379,7 +379,7 @@ export function JournalPage() {
 
   return (
     <div 
-      className="min-h-screen bg-slate-50 dark:bg-slate-900"
+      className="bg-slate-50 dark:bg-slate-900 pb-8"
       onClick={(e) => {
         // Collapse all sections when clicking outside entries
         const target = e.target as HTMLElement
@@ -394,7 +394,7 @@ export function JournalPage() {
         }
       }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
       {/* Page Header with Enhanced Animations */}
       <motion.div 
         className="mb-8"
