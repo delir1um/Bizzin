@@ -23,7 +23,7 @@ export const BUSINESS_JOURNAL_TRAINING_DATA: TrainingExample[] = [
   },
   {
     text: "Struggling with cash flow this month, need to find solutions",
-    expected_category: "Challenge", 
+    expected_categorya: "Challenge", 
     expected_mood: "Stressed",
     expected_energy: "low",
     confidence_range: [85, 95],
