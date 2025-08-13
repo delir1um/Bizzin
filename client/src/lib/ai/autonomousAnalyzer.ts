@@ -37,7 +37,7 @@ const SpecificationRules: Rule[] = [
   },
   { 
     id: 'TECHNICAL_OUTAGES',
-    test: t => /\b(down|outage|crash|server|platform|website)\b/.test(t) && /\b(hours?|failed|lost|revenue)\b/.test(t),
+    test: t => /\b(outage|crash|server|platform|website)\b/.test(t) && /\b(down|hours?|failed|lost|revenue)\b/.test(t) && !/\b(costs? are down|costs? down|acquisition costs?|expenses? down)\b/.test(t),
     category: 'Challenge',
     energy: 'medium',
     moodPolarity: 'Negative',
