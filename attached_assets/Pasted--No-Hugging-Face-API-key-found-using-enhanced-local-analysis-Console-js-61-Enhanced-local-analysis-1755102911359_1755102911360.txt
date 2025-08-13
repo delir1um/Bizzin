@@ -1,0 +1,22 @@
+❌ No Hugging Face API key found, using enhanced local analysis
+Console.js:61 Enhanced local analysis successful
+Console.js:61 Hugging Face AI analysis successful: {primary_mood: 'Confident', confidence: 70, energy: 'medium', emotions: Array(1), insights: Array(1), …}
+Console.js:61 ✅ REAL HUGGING FACE AI ANALYSIS COMPLETE
+Console.js:61 Hugging Face AI analysis successful, converting to AIAnalysisResult format
+Console.js:61 Hugging Face analysis complete: {business_category: 'growth', primary_mood: 'Confident', confidence: 70, energy: 'medium', mood_polarity: 'Neutral', …}
+Console.js:61 Using production AI analysis results: {category: 'growth', mood: 'Confident', energy: 'medium', confidence: 70, rulesMatched: 0}
+Console.js:61 Creating journal entry for user: 9502ea97-1adb-4115-ba05-1b6b1b5fa721
+Console.js:61 AI Business Coach analysis completed
+Console.js:61 ✅ CALLING REAL HUGGING FACE AI MODELS
+Console.js:61 🚀 Starting AI business sentiment analysis with Hugging Face integration...
+Console.js:61 Starting AI business sentiment analysis with Hugging Face integration...
+Console.js:61 🔍 DEBUG - Hugging Face API Key Check: {hasViteKey: false, hasDirectKey: false, keyLength: 0, keyPreview: 'undefined...', allViteEnvVars: Array(7), …}
+Console.js:61 ❌ No Hugging Face API key found, using enhanced local analysis
+Console.js:61 Enhanced local analysis successful
+Console.js:61 Hugging Face AI analysis successful: {primary_mood: 'Frustrated', confidence: 90, energy: 'low', emotions: Array(1), insights: Array(1), …}
+Console.js:61 ✅ REAL HUGGING FACE AI ANALYSIS COMPLETE
+Console.js:61 Hugging Face AI analysis successful, converting to AIAnalysisResult format
+Console.js:61 Hugging Face analysis complete: {business_category: 'growth', primary_mood: 'Frustrated', confidence: 90, energy: 'low', mood_polarity: 'Negative', …}
+Console.js:61 Using production AI analysis results: {category: 'growth', mood: 'Frustrated', energy: 'low', confidence: 90, rulesMatched: 0}
+Console.js:61 Creating journal entry for user: 9502ea97-1adb-4115-ba05-1b6b1b5fa721
+Console.js:61 AI Business Coach analysis completed

@@ -118,110 +118,41 @@ const businessContexts = {
 
 // Enhanced Hugging Face API implementation for business sentiment analysis
 async function callEnhancedHuggingFaceAnalysis(text: string): Promise<BusinessSentiment | null> {
-  // Try both VITE_ prefixed and direct access to environment variable
-  const apiKey = import.meta.env.VITE_HUGGING_FACE_API_KEY || import.meta.env.HUGGING_FACE_API_KEY;
+  console.log('🚀 Calling server-side Hugging Face API for:', text.substring(0, 50) + '...');
   
-  console.log('🔍 DEBUG - Hugging Face API Key Check:', {
-    hasViteKey: !!import.meta.env.VITE_HUGGING_FACE_API_KEY,
-    hasDirectKey: !!import.meta.env.HUGGING_FACE_API_KEY,
-    keyLength: apiKey?.length || 0,
-    keyPreview: apiKey?.substring(0, 10) + '...',
-    allViteEnvVars: Object.keys(import.meta.env).filter(k => k.startsWith('VITE_')),
-    allEnvVars: Object.keys(import.meta.env).slice(0, 10)
-  });
-  
-  if (!apiKey) {
-    console.log('❌ No Hugging Face API key found, using enhanced local analysis');
+  try {
+    const response = await fetch('/api/huggingface/analyze', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ text }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server API error: ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log('✅ Server-side Hugging Face analysis successful:', result);
+    
+    return {
+      ...result,
+      analysis_source: 'hugging-face-server'
+    };
+    
+  } catch (error) {
+    console.warn('❌ Server-side Hugging Face analysis failed:', error);
+    console.log('🔄 Falling back to enhanced local analysis');
     try {
       const analysisResult = performEnhancedLocalAnalysis(text);
       console.log('Enhanced local analysis successful');
-      return analysisResult;
-    } catch (error) {
-      console.warn('Enhanced local analysis failed:', error);
-      return null;
-    }
-  }
-
-  console.log('✅ CALLING REAL HUGGING FACE AI MODELS FOR SENTIMENT ANALYSIS...');
-
-  console.log('Using Hugging Face AI models for sentiment analysis');
-  
-  try {
-    // Check cache first
-    const cacheKey = text.toLowerCase().trim();
-    const cached = sentimentCache.get(cacheKey);
-    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      console.log('Using cached Hugging Face analysis');
-      return cached.result;
-    }
-
-    // Call Hugging Face models in parallel for better performance
-    const [sentimentResponse, emotionResponse] = await Promise.allSettled([
-      fetch(`https://api-inference.huggingface.co/models/${HF_MODELS.sentiment}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ inputs: text })
-      }),
-      fetch(`https://api-inference.huggingface.co/models/${HF_MODELS.emotion}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ inputs: text })
-      })
-    ]);
-
-    let sentimentData = null;
-    let emotionData = null;
-
-    // Process sentiment response
-    if (sentimentResponse.status === 'fulfilled' && sentimentResponse.value.ok) {
-      sentimentData = await sentimentResponse.value.json();
-      console.log('Hugging Face sentiment analysis successful');
-    } else {
-      console.warn('Hugging Face sentiment analysis failed');
-    }
-
-    // Process emotion response
-    if (emotionResponse.status === 'fulfilled' && emotionResponse.value.ok) {
-      emotionData = await emotionResponse.value.json();
-      console.log('Hugging Face emotion analysis successful');
-    } else {
-      console.warn('Hugging Face emotion analysis failed');
-    }
-
-    // Process results with enhanced business context
-    const result = processEnhancedHuggingFaceResults(sentimentData, emotionData, text);
-    
-    if (result) {
-      // Mark as real Hugging Face result
-      result.analysis_source = 'hugging-face-api';
-      
-      // Cache the result
-      sentimentCache.set(cacheKey, {
-        result,
-        timestamp: Date.now()
-      });
-
-      console.log('✅ REAL HUGGING FACE AI ANALYSIS COMPLETE:', result);
-      return result;
-    } else {
-      console.log('Hugging Face processing failed, no valid result');
-    }
-
-  } catch (error) {
-    console.error('Hugging Face API error:', error);
-    // Fallback to local analysis
-    try {
-      const analysisResult = performEnhancedLocalAnalysis(text);
-      console.log('Fallback to enhanced local analysis successful');
-      return analysisResult;
-    } catch (fallbackError) {
-      console.warn('Both Hugging Face and local analysis failed:', fallbackError);
+      return {
+        ...analysisResult,
+        analysis_source: 'enhanced_local'
+      };
+    } catch (localError) {
+      console.error('Enhanced local analysis failed:', localError);
       return null;
     }
   }

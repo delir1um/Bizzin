@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import huggingfaceRouter from "./huggingface";
 
 const app = express();
 // Increase body size limit for video uploads (200MB to handle larger files)
@@ -38,6 +39,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Add Hugging Face API routes
+  app.use('/api/huggingface', huggingfaceRouter);
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
