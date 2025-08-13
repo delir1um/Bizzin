@@ -56,7 +56,12 @@ router.post('/analyze', async (req, res) => {
 
     console.log('✅ Hugging Face API calls successful');
 
-    // Process results
+    // Process results - ensure we have valid arrays
+    if (!Array.isArray(sentimentData) || !Array.isArray(emotionData) || 
+        sentimentData.length === 0 || emotionData.length === 0) {
+      throw new Error('Invalid response format from Hugging Face API');
+    }
+
     const topSentiment = sentimentData[0];
     const topEmotion = emotionData[0];
 
@@ -66,14 +71,14 @@ router.post('/analyze', async (req, res) => {
     let primaryMood = 'focused';
     let energy: 'high' | 'medium' | 'low' = 'medium';
     
-    // Handle different sentiment label formats
-    const sentimentLabel = topSentiment.label;
-    const sentimentScore = topSentiment.score;
+    // Handle different sentiment label formats - ensure we have valid data
+    const sentimentLabel = topSentiment?.label || '';
+    const sentimentScore = topSentiment?.score || 0.5;
     
-    if (sentimentLabel === 'LABEL_2' || sentimentLabel === 'POSITIVE' || sentimentLabel.includes('positive')) {
+    if (sentimentLabel === 'LABEL_2' || sentimentLabel === 'POSITIVE' || (typeof sentimentLabel === 'string' && sentimentLabel.includes('positive'))) {
       primaryMood = 'optimistic';
       energy = 'high';
-    } else if (sentimentLabel === 'LABEL_0' || sentimentLabel === 'NEGATIVE' || sentimentLabel.includes('negative')) {
+    } else if (sentimentLabel === 'LABEL_0' || sentimentLabel === 'NEGATIVE' || (typeof sentimentLabel === 'string' && sentimentLabel.includes('negative'))) {
       primaryMood = 'frustrated';
       energy = 'low';
     }

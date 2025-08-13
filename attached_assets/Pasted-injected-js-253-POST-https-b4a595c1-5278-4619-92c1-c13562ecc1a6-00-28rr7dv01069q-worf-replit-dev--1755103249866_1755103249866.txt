@@ -1,0 +1,215 @@
+injected.js:253  POST https://b4a595c1-5278-4619-92c1-c13562ecc1a6-00-28rr7dv01069q.worf.replit.dev/api/huggingface/analyze 500 (Internal Server Error)
+window.fetch @ Network.js:219
+apply @ injected.js:253
+callEnhancedHuggingFaceAnalysis @ aiSentimentAnalysis.ts:124
+analyzeBusinessSentimentAI @ aiSentimentAnalysis.ts:701
+analyzeBusinessSentiment @ aiSentimentAnalysis.ts:1070
+analyzeJournalEntry @ index.ts:24
+await in analyzeJournalEntry
+createEntry @ journal.ts:170
+await in createEntry
+handleAddSamples @ JournalPage.tsx:345
+await in handleAddSamples
+callCallback2 @ chunk-276SZO74.js?v=706ac23a:3674
+invokeGuardedCallbackDev @ chunk-276SZO74.js?v=706ac23a:3699
+invokeGuardedCallback @ chunk-276SZO74.js?v=706ac23a:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-276SZO74.js?v=706ac23a:3736
+executeDispatch @ chunk-276SZO74.js?v=706ac23a:7014
+processDispatchQueueItemsInOrder @ chunk-276SZO74.js?v=706ac23a:7034
+processDispatchQueue @ chunk-276SZO74.js?v=706ac23a:7043
+dispatchEventsForPlugins @ chunk-276SZO74.js?v=706ac23a:7051
+(anonymous) @ chunk-276SZO74.js?v=706ac23a:7174
+batchedUpdates$1 @ chunk-276SZO74.js?v=706ac23a:18913
+batchedUpdates @ chunk-276SZO74.js?v=706ac23a:3579
+dispatchEventForPluginEventSystem @ chunk-276SZO74.js?v=706ac23a:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-276SZO74.js?v=706ac23a:5478
+dispatchEvent @ chunk-276SZO74.js?v=706ac23a:5472
+dispatchDiscreteEvent @ chunk-276SZO74.js?v=706ac23a:5449
+Console.js:61 ❌ Server-side Hugging Face analysis failed: Error: Server API error: 500
+    at callEnhancedHuggingFaceAnalysis (aiSentimentAnalysis.ts:133:13)
+    at async analyzeBusinessSentimentAI (aiSentimentAnalysis.ts:701:31)
+    at async analyzeBusinessSentiment (aiSentimentAnalysis.ts:1070:18)
+    at async analyzeJournalEntry (index.ts:24:31)
+    at async JournalService.createEntry (journal.ts:170:26)
+    at async handleAddSamples (JournalPage.tsx:345:9)
+Mt.forEach.n.<computed> @ Console.js:61
+callEnhancedHuggingFaceAnalysis @ aiSentimentAnalysis.ts:145
+await in callEnhancedHuggingFaceAnalysis
+analyzeBusinessSentimentAI @ aiSentimentAnalysis.ts:701
+analyzeBusinessSentiment @ aiSentimentAnalysis.ts:1070
+analyzeJournalEntry @ index.ts:24
+await in analyzeJournalEntry
+createEntry @ journal.ts:170
+await in createEntry
+handleAddSamples @ JournalPage.tsx:345
+await in handleAddSamples
+callCallback2 @ chunk-276SZO74.js?v=706ac23a:3674
+invokeGuardedCallbackDev @ chunk-276SZO74.js?v=706ac23a:3699
+invokeGuardedCallback @ chunk-276SZO74.js?v=706ac23a:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-276SZO74.js?v=706ac23a:3736
+executeDispatch @ chunk-276SZO74.js?v=706ac23a:7014
+processDispatchQueueItemsInOrder @ chunk-276SZO74.js?v=706ac23a:7034
+processDispatchQueue @ chunk-276SZO74.js?v=706ac23a:7043
+dispatchEventsForPlugins @ chunk-276SZO74.js?v=706ac23a:7051
+(anonymous) @ chunk-276SZO74.js?v=706ac23a:7174
+batchedUpdates$1 @ chunk-276SZO74.js?v=706ac23a:18913
+batchedUpdates @ chunk-276SZO74.js?v=706ac23a:3579
+dispatchEventForPluginEventSystem @ chunk-276SZO74.js?v=706ac23a:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-276SZO74.js?v=706ac23a:5478
+dispatchEvent @ chunk-276SZO74.js?v=706ac23a:5472
+dispatchDiscreteEvent @ chunk-276SZO74.js?v=706ac23a:5449
+Console.js:61 🔄 Falling back to enhanced local analysis
+Console.js:61 Enhanced local analysis successful
+Console.js:61 Hugging Face AI analysis successful: {primary_mood: 'Stressed', confidence: 92, energy: 'low', emotions: Array(1), insights: Array(1), …}
+Console.js:61 ✅ REAL HUGGING FACE AI ANALYSIS COMPLETE
+Console.js:61 Hugging Face AI analysis successful, converting to AIAnalysisResult format
+Console.js:61 Hugging Face analysis complete: {business_category: 'learning', primary_mood: 'Stressed', confidence: 92, energy: 'low', mood_polarity: 'Negative', …}
+Console.js:61 Using production AI analysis results: {category: 'learning', mood: 'Stressed', energy: 'low', confidence: 92, rulesMatched: 0}
+Console.js:61 Creating journal entry for user: 9502ea97-1adb-4115-ba05-1b6b1b5fa721
+Console.js:61 AI Business Coach analysis completed
+Console.js:61 ✅ CALLING REAL HUGGING FACE AI MODELS
+Console.js:61 🚀 Starting AI business sentiment analysis with Hugging Face integration...
+Console.js:61 Starting AI business sentiment analysis with Hugging Face integration...
+Console.js:61 🚀 Calling server-side Hugging Face API for:  Our presentation at the FinTech Summit generated ...
+injected.js:253  POST https://b4a595c1-5278-4619-92c1-c13562ecc1a6-00-28rr7dv01069q.worf.replit.dev/api/huggingface/analyze 500 (Internal Server Error)
+window.fetch @ Network.js:219
+apply @ injected.js:253
+callEnhancedHuggingFaceAnalysis @ aiSentimentAnalysis.ts:124
+analyzeBusinessSentimentAI @ aiSentimentAnalysis.ts:701
+analyzeBusinessSentiment @ aiSentimentAnalysis.ts:1070
+analyzeJournalEntry @ index.ts:24
+await in analyzeJournalEntry
+createEntry @ journal.ts:170
+await in createEntry
+handleAddSamples @ JournalPage.tsx:345
+await in handleAddSamples
+callCallback2 @ chunk-276SZO74.js?v=706ac23a:3674
+invokeGuardedCallbackDev @ chunk-276SZO74.js?v=706ac23a:3699
+invokeGuardedCallback @ chunk-276SZO74.js?v=706ac23a:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-276SZO74.js?v=706ac23a:3736
+executeDispatch @ chunk-276SZO74.js?v=706ac23a:7014
+processDispatchQueueItemsInOrder @ chunk-276SZO74.js?v=706ac23a:7034
+processDispatchQueue @ chunk-276SZO74.js?v=706ac23a:7043
+dispatchEventsForPlugins @ chunk-276SZO74.js?v=706ac23a:7051
+(anonymous) @ chunk-276SZO74.js?v=706ac23a:7174
+batchedUpdates$1 @ chunk-276SZO74.js?v=706ac23a:18913
+batchedUpdates @ chunk-276SZO74.js?v=706ac23a:3579
+dispatchEventForPluginEventSystem @ chunk-276SZO74.js?v=706ac23a:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-276SZO74.js?v=706ac23a:5478
+dispatchEvent @ chunk-276SZO74.js?v=706ac23a:5472
+dispatchDiscreteEvent @ chunk-276SZO74.js?v=706ac23a:5449
+Console.js:61 ❌ Server-side Hugging Face analysis failed: Error: Server API error: 500
+    at callEnhancedHuggingFaceAnalysis (aiSentimentAnalysis.ts:133:13)
+    at async analyzeBusinessSentimentAI (aiSentimentAnalysis.ts:701:31)
+    at async analyzeBusinessSentiment (aiSentimentAnalysis.ts:1070:18)
+    at async analyzeJournalEntry (index.ts:24:31)
+    at async JournalService.createEntry (journal.ts:170:26)
+    at async handleAddSamples (JournalPage.tsx:345:9)
+Mt.forEach.n.<computed> @ Console.js:61
+callEnhancedHuggingFaceAnalysis @ aiSentimentAnalysis.ts:145
+await in callEnhancedHuggingFaceAnalysis
+analyzeBusinessSentimentAI @ aiSentimentAnalysis.ts:701
+analyzeBusinessSentiment @ aiSentimentAnalysis.ts:1070
+analyzeJournalEntry @ index.ts:24
+await in analyzeJournalEntry
+createEntry @ journal.ts:170
+await in createEntry
+handleAddSamples @ JournalPage.tsx:345
+await in handleAddSamples
+callCallback2 @ chunk-276SZO74.js?v=706ac23a:3674
+invokeGuardedCallbackDev @ chunk-276SZO74.js?v=706ac23a:3699
+invokeGuardedCallback @ chunk-276SZO74.js?v=706ac23a:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-276SZO74.js?v=706ac23a:3736
+executeDispatch @ chunk-276SZO74.js?v=706ac23a:7014
+processDispatchQueueItemsInOrder @ chunk-276SZO74.js?v=706ac23a:7034
+processDispatchQueue @ chunk-276SZO74.js?v=706ac23a:7043
+dispatchEventsForPlugins @ chunk-276SZO74.js?v=706ac23a:7051
+(anonymous) @ chunk-276SZO74.js?v=706ac23a:7174
+batchedUpdates$1 @ chunk-276SZO74.js?v=706ac23a:18913
+batchedUpdates @ chunk-276SZO74.js?v=706ac23a:3579
+dispatchEventForPluginEventSystem @ chunk-276SZO74.js?v=706ac23a:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-276SZO74.js?v=706ac23a:5478
+dispatchEvent @ chunk-276SZO74.js?v=706ac23a:5472
+dispatchDiscreteEvent @ chunk-276SZO74.js?v=706ac23a:5449
+Console.js:61 🔄 Falling back to enhanced local analysis
+Console.js:61 Enhanced local analysis successful
+Console.js:61 Hugging Face AI analysis successful: {primary_mood: 'Confident', confidence: 70, energy: 'medium', emotions: Array(1), insights: Array(1), …}
+Console.js:61 ✅ REAL HUGGING FACE AI ANALYSIS COMPLETE
+Console.js:61 Hugging Face AI analysis successful, converting to AIAnalysisResult format
+Console.js:61 Hugging Face analysis complete: {business_category: 'growth', primary_mood: 'Confident', confidence: 70, energy: 'medium', mood_polarity: 'Neutral', …}
+Console.js:61 Using production AI analysis results: {category: 'growth', mood: 'Confident', energy: 'medium', confidence: 70, rulesMatched: 0}
+Console.js:61 Creating journal entry for user: 9502ea97-1adb-4115-ba05-1b6b1b5fa721
+Console.js:61 AI Business Coach analysis completed
+Console.js:61 ✅ CALLING REAL HUGGING FACE AI MODELS
+Console.js:61 🚀 Starting AI business sentiment analysis with Hugging Face integration...
+Console.js:61 Starting AI business sentiment analysis with Hugging Face integration...
+Console.js:61 🚀 Calling server-side Hugging Face API for:  After 8 months of negotiations, we finally signed...
+injected.js:253  POST https://b4a595c1-5278-4619-92c1-c13562ecc1a6-00-28rr7dv01069q.worf.replit.dev/api/huggingface/analyze 500 (Internal Server Error)
+window.fetch @ Network.js:219
+apply @ injected.js:253
+callEnhancedHuggingFaceAnalysis @ aiSentimentAnalysis.ts:124
+analyzeBusinessSentimentAI @ aiSentimentAnalysis.ts:701
+analyzeBusinessSentiment @ aiSentimentAnalysis.ts:1070
+analyzeJournalEntry @ index.ts:24
+await in analyzeJournalEntry
+createEntry @ journal.ts:170
+await in createEntry
+handleAddSamples @ JournalPage.tsx:345
+await in handleAddSamples
+callCallback2 @ chunk-276SZO74.js?v=706ac23a:3674
+invokeGuardedCallbackDev @ chunk-276SZO74.js?v=706ac23a:3699
+invokeGuardedCallback @ chunk-276SZO74.js?v=706ac23a:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-276SZO74.js?v=706ac23a:3736
+executeDispatch @ chunk-276SZO74.js?v=706ac23a:7014
+processDispatchQueueItemsInOrder @ chunk-276SZO74.js?v=706ac23a:7034
+processDispatchQueue @ chunk-276SZO74.js?v=706ac23a:7043
+dispatchEventsForPlugins @ chunk-276SZO74.js?v=706ac23a:7051
+(anonymous) @ chunk-276SZO74.js?v=706ac23a:7174
+batchedUpdates$1 @ chunk-276SZO74.js?v=706ac23a:18913
+batchedUpdates @ chunk-276SZO74.js?v=706ac23a:3579
+dispatchEventForPluginEventSystem @ chunk-276SZO74.js?v=706ac23a:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-276SZO74.js?v=706ac23a:5478
+dispatchEvent @ chunk-276SZO74.js?v=706ac23a:5472
+dispatchDiscreteEvent @ chunk-276SZO74.js?v=706ac23a:5449
+Console.js:61 ❌ Server-side Hugging Face analysis failed: Error: Server API error: 500
+    at callEnhancedHuggingFaceAnalysis (aiSentimentAnalysis.ts:133:13)
+    at async analyzeBusinessSentimentAI (aiSentimentAnalysis.ts:701:31)
+    at async analyzeBusinessSentiment (aiSentimentAnalysis.ts:1070:18)
+    at async analyzeJournalEntry (index.ts:24:31)
+    at async JournalService.createEntry (journal.ts:170:26)
+    at async handleAddSamples (JournalPage.tsx:345:9)
+Mt.forEach.n.<computed> @ Console.js:61
+callEnhancedHuggingFaceAnalysis @ aiSentimentAnalysis.ts:145
+await in callEnhancedHuggingFaceAnalysis
+analyzeBusinessSentimentAI @ aiSentimentAnalysis.ts:701
+analyzeBusinessSentiment @ aiSentimentAnalysis.ts:1070
+analyzeJournalEntry @ index.ts:24
+await in analyzeJournalEntry
+createEntry @ journal.ts:170
+await in createEntry
+handleAddSamples @ JournalPage.tsx:345
+await in handleAddSamples
+callCallback2 @ chunk-276SZO74.js?v=706ac23a:3674
+invokeGuardedCallbackDev @ chunk-276SZO74.js?v=706ac23a:3699
+invokeGuardedCallback @ chunk-276SZO74.js?v=706ac23a:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-276SZO74.js?v=706ac23a:3736
+executeDispatch @ chunk-276SZO74.js?v=706ac23a:7014
+processDispatchQueueItemsInOrder @ chunk-276SZO74.js?v=706ac23a:7034
+processDispatchQueue @ chunk-276SZO74.js?v=706ac23a:7043
+dispatchEventsForPlugins @ chunk-276SZO74.js?v=706ac23a:7051
+(anonymous) @ chunk-276SZO74.js?v=706ac23a:7174
+batchedUpdates$1 @ chunk-276SZO74.js?v=706ac23a:18913
+batchedUpdates @ chunk-276SZO74.js?v=706ac23a:3579
+dispatchEventForPluginEventSystem @ chunk-276SZO74.js?v=706ac23a:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-276SZO74.js?v=706ac23a:5478
+dispatchEvent @ chunk-276SZO74.js?v=706ac23a:5472
+dispatchDiscreteEvent @ chunk-276SZO74.js?v=706ac23a:5449
+Console.js:61 🔄 Falling back to enhanced local analysis
+Console.js:61 Enhanced local analysis successful
+Console.js:61 Hugging Face AI analysis successful: {primary_mood: 'Confident', confidence: 70, energy: 'medium', emotions: Array(1), insights: Array(1), …}
+Console.js:61 ✅ REAL HUGGING FACE AI ANALYSIS COMPLETE
+Console.js:61 Hugging Face AI analysis successful, converting to AIAnalysisResult format
+Console.js:61 Hugging Face analysis complete: {business_category: 'challenge', primary_mood: 'Confident', confidence: 70, energy: 'medium', mood_polarity: 'Neutral', …}
+Console.js:61 Using production AI analysis results: {category: 'challenge', mood: 'Confident', energy: 'medium', confidence: 70, rulesMatched: 0}
+Console.js:61 Creating journal entry for user: 9502ea97-1adb-4115-ba05-1b6b1b5fa721
+Console.js:61 AI Business Coach analysis completed
