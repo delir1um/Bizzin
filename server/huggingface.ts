@@ -164,19 +164,26 @@ router.post('/analyze', async (req, res) => {
         lowerText.includes('google') || lowerText.includes('hired') || lowerText.includes('equity')) {
       category = 'achievement';
     }
-    // Growth patterns - revenue, scaling, expansion, competition
-    else if (lowerText.includes('revenue') || lowerText.includes('growth') || lowerText.includes('expand') ||
+    // Growth patterns - revenue, scaling, expansion, competition (but not when context is negative)
+    else if ((lowerText.includes('revenue') || lowerText.includes('growth') || lowerText.includes('expand') ||
              lowerText.includes('scaling') || lowerText.includes('clients') || lowerText.includes('customers') ||
              lowerText.includes('funding') || lowerText.includes('investment') || lowerText.includes('series') ||
-             lowerText.includes('competitor') || lowerText.includes('raised') || lowerText.includes('million')) {
+             lowerText.includes('competitor') || lowerText.includes('raised') || lowerText.includes('million')) &&
+             // Don't classify as growth if sentiment is strongly negative or context suggests problems
+             !(primaryMood === 'reflective' && energy === 'low' && 
+               (lowerText.includes('struggling') || lowerText.includes('pressure') || lowerText.includes('overwhelming')))) {
       category = 'growth';
     }
-    // Challenge patterns - problems, issues, departures, risks
+    // Challenge patterns - problems, issues, departures, risks, burnout, work-life balance
     else if (lowerText.includes('problem') || lowerText.includes('challenge') || lowerText.includes('difficult') ||
              lowerText.includes('down') || lowerText.includes('outage') || lowerText.includes('issue') ||
              lowerText.includes('error') || lowerText.includes('failed') || lowerText.includes('quit') ||
              lowerText.includes('resigned') || lowerText.includes('resignation') || lowerText.includes('burnout') ||
-             lowerText.includes('setback') || lowerText.includes('risk') || lowerText.includes('delays')) {
+             lowerText.includes('setback') || lowerText.includes('risk') || lowerText.includes('delays') ||
+             lowerText.includes('struggling') || lowerText.includes('work-life balance') || lowerText.includes('overwhelming') ||
+             lowerText.includes('exhausted') || lowerText.includes('70-hour') || lowerText.includes('barely sleeping') ||
+             lowerText.includes('cancelled') || lowerText.includes('missing family') || lowerText.includes('sustainable') ||
+             lowerText.includes('pressure') || lowerText.includes('stress') || lowerText.includes('overwhelm')) {
       category = 'challenge';
     }
     // Planning patterns - strategy, plans, future, pivots
@@ -225,6 +232,9 @@ router.post('/analyze', async (req, res) => {
       if (primaryMood === 'excited') {
         insights.push('Growth euphoria can mask operational gaps. Ensure systems can handle the increased scale.');
         insights.push('Competitive pressure creates opportunity. Focus on unique differentiators while others chase funding.');
+      } else if (primaryMood === 'reflective' && energy === 'low') {
+        // This shouldn't happen anymore with improved logic, but fallback
+        insights.push('Growth pressures can lead to burnout. Sustainable scaling requires operational discipline and delegation.');
       } else {
         insights.push('Market dynamics are shifting. Use competitor intelligence to refine your strategic positioning.');
       }
