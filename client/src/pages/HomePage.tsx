@@ -339,7 +339,7 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Subscription Tiers */}
+      {/* Pricing */}
       <section className="py-24 bg-slate-50 dark:bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -348,7 +348,7 @@ export function HomePage() {
           </div>
 
           <div className="max-w-2xl mx-auto">
-            {/* Single Pricing Card */}
+            {/* Pricing Card */}
             <div className="bg-orange-50 dark:bg-orange-900/20 p-8 rounded-xl border-2 border-orange-200 dark:border-orange-800 relative">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                 <span className="bg-orange-600 text-white px-4 py-2 rounded-full text-sm font-medium">14-Day Free Trial</span>
@@ -370,7 +370,7 @@ export function HomePage() {
                 </li>
                 <li className="flex items-center text-slate-700 dark:text-slate-300">
                   <Calculator className="w-5 h-5 text-orange-500 mr-3" />
-                  Premium financial calculators + CSV export
+                  Professional financial calculators + CSV export
                 </li>
                 <li className="flex items-center text-slate-700 dark:text-slate-300">
                   <Headphones className="w-5 h-5 text-orange-500 mr-3" />

@@ -26,7 +26,7 @@ The platform implements a hybrid AI architecture for sentiment analysis using bo
 All data access is centralized through the @/lib/supabase module using the Supabase client-side SDK. The system maintains proper table relationships with foreign keys and implements real-time subscriptions for live updates. File uploads are handled through Supabase Storage with proper security policies.
 
 ### Business Model & Calculator Features  
-The platform operates on a freemium model with a 14-day free trial followed by R199/month premium subscription. The BizBuilder Tools include professional financial calculators (Cash Flow Projection, Break-Even Analysis, Business Budget, Loan Amortisation) with calculation history functionality. Users can save, load, and manage their calculation scenarios for strategic planning and decision-making.
+The platform operates on a unified subscription model with a 14-day free trial followed by R199/month for full access to all features. The BizBuilder Tools include professional financial calculators (Cash Flow Projection, Break-Even Analysis, Business Budget, Loan Amortisation) with calculation history functionality. Users can save, load, and manage their calculation scenarios for strategic planning and decision-making. All marketing content has been updated to remove tier references and present the platform as a complete business intelligence suite.
 
 ### Component Architecture
 The application uses a highly modular component structure with reusable UI components from shadcn/ui. Custom business logic is separated into services (PlansService, PodcastService) and hooks (usePlans, useAdminCheck, usePodcastProgress). The layout uses a consistent header/navigation system with theme support.

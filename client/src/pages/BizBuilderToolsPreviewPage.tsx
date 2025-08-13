@@ -5,16 +5,14 @@ import { Calculator, TrendingUp, DollarSign, Calendar, BarChart3, CreditCard, Pi
 import { useLocation } from "wouter"
 import { FadeInUp, FadeInLeft, FadeInRight } from "@/components/animations/ScrollReveal"
 
-// Actual BizBuilder tools from the portal
+// Professional BizBuilder tools for comprehensive business analysis
 const demoTools = [
-  // Core Tools (Free)
   {
     id: "business-budget",
     title: "Business Budget Calculator",
     description: "Plan and track your business income and expenses with detailed budget analysis",
     icon: DollarSign,
-    category: "Core",
-    tier: "free",
+    category: "Financial Planning",
     color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
   },
   {
@@ -22,8 +20,7 @@ const demoTools = [
     title: "Cash Flow Projection Calculator", 
     description: "Project monthly cash flows and identify potential shortfalls before they happen",
     icon: Calendar,
-    category: "Core",
-    tier: "free",
+    category: "Financial Planning",
     color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
   },
   {
@@ -31,18 +28,15 @@ const demoTools = [
     title: "Break-Even Calculator",
     description: "Determine the break-even point for your business operations with margin of safety analysis",
     icon: BarChart3,
-    category: "Core",
-    tier: "free",
+    category: "Business Analysis",
     color: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
   },
-  // Premium Tools
   {
     id: "loan-amortisation",
     title: "Loan Amortisation Calculator",
     description: "Calculate loan payments, interest schedules, and early payoff scenarios",
     icon: CreditCard,
-    category: "Premium",
-    tier: "premium",
+    category: "Financial Planning",
     color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
   },
   {
@@ -50,8 +44,7 @@ const demoTools = [
     title: "Compound Interest Calculator",
     description: "Calculate investment growth with compound interest and monthly contributions",
     icon: PiggyBank,
-    category: "Premium",
-    tier: "premium",
+    category: "Investment Analysis",
     color: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200"
   },
   {
@@ -59,8 +52,7 @@ const demoTools = [
     title: "Simple Interest Calculator",
     description: "Calculate simple interest with monthly compounding and tax considerations",
     icon: Percent,
-    category: "Premium",
-    tier: "premium",
+    category: "Investment Analysis",
     color: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
   }
 ]
@@ -112,8 +104,8 @@ export function BizBuilderToolsPreviewPage() {
                   <BarChart3 className="h-4 w-4 text-white" />
                 </div>
                 <div>
-                  <div className="text-lg font-bold text-green-900 dark:text-green-100">Tiered</div>
-                  <div className="text-sm text-green-700 dark:text-green-300">Categories</div>
+                  <div className="text-lg font-bold text-green-900 dark:text-green-100">Complete</div>
+                  <div className="text-sm text-green-700 dark:text-green-300">Tool Suite</div>
                 </div>
               </div>
             </CardContent>
@@ -139,14 +131,14 @@ export function BizBuilderToolsPreviewPage() {
         <FadeInUp delay={0.4}>
           <div className="text-center mb-8">
             <div className="bg-gradient-to-r from-orange-600 to-amber-600 text-white p-6 rounded-lg mb-6">
-              <h2 className="text-2xl font-bold mb-2">Use Our Business Planning Tools</h2>
-              <p className="text-orange-100 mb-4">Make informed decisions with our professionally built calculator suite</p>
+              <h2 className="text-2xl font-bold mb-2">Professional Business Intelligence Platform</h2>
+              <p className="text-orange-100 mb-4">Complete financial planning toolkit with 14-day free trial, then R199/month</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button 
                   onClick={() => setLocation('/auth')}
                   className="bg-white text-orange-600 hover:bg-orange-50 font-medium"
                 >
-                  Start Using Tools <ArrowRight className="w-4 h-4 ml-2" />
+                  Start 14-Day Free Trial <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
             </div>
