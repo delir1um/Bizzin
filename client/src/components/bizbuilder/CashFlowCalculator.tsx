@@ -327,10 +327,10 @@ export default function CashFlowCalculator({ onClose }: { onClose: () => void })
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-slate-900 rounded-xl max-w-7xl max-h-[95vh] overflow-hidden mx-4 shadow-2xl border border-slate-200 dark:border-slate-700">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-slate-900 rounded-xl w-full max-w-7xl h-full max-h-[95vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-700">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
           <div>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Cash Flow Projection Calculator</h2>
             <p className="text-slate-600 dark:text-slate-300">Project your business cash flow and identify potential shortfalls</p>
@@ -341,7 +341,7 @@ export default function CashFlowCalculator({ onClose }: { onClose: () => void })
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex overflow-hidden min-h-0">
           {/* Left Panel - Input */}
           <div className="lg:w-1/2 border-r border-slate-200 dark:border-slate-700 p-6 overflow-y-auto">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -685,7 +685,7 @@ export default function CashFlowCalculator({ onClose }: { onClose: () => void })
           </div>
 
           {/* Right Panel - Results */}
-          <div className="lg:w-1/2 p-6 overflow-y-auto">
+          <div className="lg:w-1/2 p-6 overflow-y-auto flex-shrink-0">
             {/* Key Metrics */}
             {projection.length > 0 && (
               <>

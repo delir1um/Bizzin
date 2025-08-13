@@ -268,7 +268,7 @@ export default function BreakEvenCalculator({ onClose }: { onClose: () => void }
           </Button>
         </div>
 
-        <div className="flex flex-col lg:flex-row h-full max-h-[calc(90vh-80px)]">
+        <div className="flex flex-col lg:flex-row flex-1 overflow-hidden min-h-0">
           {/* Left Panel - Setup */}
           <div className="lg:w-1/2 p-6 overflow-y-auto border-r border-slate-200 dark:border-slate-700">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -465,7 +465,7 @@ export default function BreakEvenCalculator({ onClose }: { onClose: () => void }
           </div>
 
           {/* Right Panel - Results */}
-          <div className="lg:w-1/2 p-6 overflow-y-auto">
+          <div className="lg:w-1/2 p-6 overflow-y-auto flex-shrink-0">
             {/* Key Metrics */}
             {contributionMargin > 0 && totalFixedCosts > 0 && (
               <>

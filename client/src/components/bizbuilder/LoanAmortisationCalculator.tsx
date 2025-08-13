@@ -224,10 +224,10 @@ export default function LoanAmortisationCalculator({ onClose }: LoanAmortisation
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-slate-900 rounded-xl max-w-7xl max-h-[95vh] overflow-hidden mx-4 shadow-2xl border border-slate-200 dark:border-slate-700">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-slate-900 rounded-xl w-full max-w-7xl h-full max-h-[95vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-700">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
               <CreditCard className="w-5 h-5 text-purple-600 dark:text-purple-400" />
@@ -242,7 +242,7 @@ export default function LoanAmortisationCalculator({ onClose }: LoanAmortisation
           </Button>
         </div>
 
-        <div className="flex flex-col lg:flex-row h-full max-h-[calc(90vh-80px)]">
+        <div className="flex flex-col lg:flex-row flex-1 overflow-hidden min-h-0">
           {/* Left Panel - Setup */}
           <div className="lg:w-1/2 p-6 overflow-y-auto border-r border-slate-200 dark:border-slate-700">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -373,7 +373,7 @@ export default function LoanAmortisationCalculator({ onClose }: LoanAmortisation
           </div>
 
           {/* Right Panel - Results */}
-          <div className="lg:w-1/2 p-6 overflow-y-auto">
+          <div className="lg:w-1/2 p-6 overflow-y-auto flex-shrink-0">
             {/* Summary Cards */}
             <div className="grid grid-cols-2 gap-4 mb-6">
               <Card>
