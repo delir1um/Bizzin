@@ -41,7 +41,12 @@ const getProgressColor = (percentage: number): string => {
 export function PlanManagement() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const { user } = useAuth()
-  const { usageStatus, isPremium, isFree, isLoading, refetch } = usePlans()
+  // const { usageStatus, isPremium, isFree, isLoading, refetch } = usePlans() // DISABLED TO PREVENT HEAD REQUESTS
+  const usageStatus = null
+  const isPremium = false
+  const isFree = true
+  const isLoading = false
+  const refetch = () => {}
   
   // Get ZAR pricing for display
   const monthlyPrice = PaystackService.getSubscriptionPrice('monthly')

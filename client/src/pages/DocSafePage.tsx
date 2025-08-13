@@ -35,7 +35,10 @@ export function DocSafePage() {
   const [showViewModal, setShowViewModal] = useState(false)
   const queryClient = useQueryClient()
   const { toast } = useToast()
-  const { usageStatus, canUploadDocument, hasStorageSpace } = usePlans()
+  // const { usageStatus, canUploadDocument, hasStorageSpace } = usePlans() // DISABLED TO PREVENT HEAD REQUESTS
+  const usageStatus = null
+  const canUploadDocument = true
+  const hasStorageSpace = true
 
   // Show loading spinner if auth is still loading to prevent flash
   if (loading) {

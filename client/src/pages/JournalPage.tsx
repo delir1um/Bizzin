@@ -41,7 +41,12 @@ export function JournalPage() {
   const { toast } = useToast()
   
   // Get plan information
-  const { usageStatus, canCreateJournalEntry, getRemainingQuota, isPremium, isFree } = usePlans()
+  // const { usageStatus, canCreateJournalEntry, getRemainingQuota, isPremium, isFree } = usePlans() // DISABLED TO PREVENT HEAD REQUESTS
+  const usageStatus = null
+  const canCreateJournalEntry = true
+  const getRemainingQuota = () => ({ remaining: 999, limit: 999 })
+  const isPremium = false
+  const isFree = true
 
   // Get current user and initialize AI system
   useEffect(() => {
