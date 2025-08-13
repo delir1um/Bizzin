@@ -32,6 +32,13 @@ Implemented comprehensive protection against Hugging Face API limitations to ens
 - Auto-recovery system that resumes full AI analysis when quota resets
 - Cost-efficient usage tracking with clear upgrade paths to PRO tier ($9/month for 20× credits)
 
+**Enhanced Business Insights (Aug 13, 2025):**
+Expanded journal entry insights from single sentences to comprehensive 2-3 sentence entrepreneurial guidance with zero additional API costs:
+- Server-side insights use existing AI sentiment data to generate contextual business advice
+- Enhanced fallback system provides detailed strategic guidance during API limitations
+- Content-aware insights adapt to specific business scenarios (competition, technical challenges, team issues, financial pressure)
+- Improved actionability with specific recommendations for planning, growth, achievements, and learning experiences
+
 **Recent Infrastructure Issue Resolved (Aug 13, 2025):**
 Successfully resolved persistent HEAD request errors by creating missing user_plans table in Supabase database:
 - Created user_plans table with proper RLS policies and foreign key constraints

@@ -59,47 +59,38 @@ function generateContextualInsights(aiAnalysis: AIAnalysisResult, content: strin
   // Category-specific insights (fallback)
   else if (category === 'challenge') {
     if (confidence >= 85) {
-      insights.push("Every challenge is market research disguised as a problem. Document what you're learning - these insights become your competitive advantage.");
-      insights.push("The obstacles that break weak businesses become the moats that protect strong ones. Use this resistance to build competitive barriers.");
+      insights.push("Every challenge is market research disguised as a problem that your competitors haven't solved yet. Document what you're learning and how you're solving these issues - these insights become your competitive advantage. The businesses that emerge stronger from difficulties often capture market share from those that struggle.");
     } else {
-      insights.push("Obstacles reveal gaps between vision and execution. Use this tension to build stronger systems and processes.");
-      insights.push("Challenges test your business model's resilience. What survives stress testing becomes your sustainable competitive advantage.");
+      insights.push("Obstacles reveal critical gaps between your vision and current execution capabilities. Use this tension to build stronger systems, clearer processes, and more resilient operations. The challenges you face today predict the competitive advantages you'll need tomorrow.");
     }
   }
   
   else if (category === 'growth') {
     if (confidence >= 85) {
-      insights.push("Growth creates new problems - this is progress, not failure. Scale your systems before scaling your team.");
-      insights.push("Sustainable growth requires operational discipline. The companies that scale successfully automate before they accelerate.");
+      insights.push("Growth creates new problems - this is progress, not failure, and signals market demand for your solution. Scale your systems, processes, and team capacity before you desperately need them. The companies that scale successfully automate operations before they accelerate growth initiatives.");
     } else {
-      insights.push("Sustainable growth comes from repeatable processes. Focus on what's working and eliminate what isn't.");
-      insights.push("Growth without systems creates chaos. Build the infrastructure to handle success before success arrives.");
+      insights.push("Sustainable growth comes from repeatable processes and clear operational discipline rather than heroic individual efforts. Focus intensely on what's working and systematically eliminate what isn't contributing to results. Growth without proper systems creates chaos that limits your future potential.");
     }
   }
   
   else if (category === 'achievement') {
-    insights.push("Celebrate wins, then dissect them. Understanding why things work is more valuable than the success itself.");
-    insights.push("Achievements reveal patterns of success. Codify what worked so you can repeat and scale these victories.");
+    insights.push("Celebrate wins briefly, then dissect them thoroughly to understand the underlying success patterns. Understanding why things work and what conditions enabled success is more valuable than the achievement itself. These insights become the foundation for repeating and scaling future victories.");
   }
   
   else if (category === 'planning') {
-    insights.push("Strategic thinking separates entrepreneurs from operators. Your planning today determines your opportunities tomorrow.");
-    insights.push("Great plans survive contact with reality. Build frameworks that adapt rather than predictions that break.");
+    insights.push("Strategic thinking separates successful entrepreneurs from busy operators who react rather than lead. Your planning decisions today directly determine the opportunities and challenges you'll face tomorrow. Build comprehensive frameworks that adapt to changing market conditions rather than rigid predictions that break under pressure.");
   }
   
   else if (category === 'learning') {
-    insights.push("Learning accelerates decision-making quality. Every insight you gain today shortens tomorrow's learning curve.");
-    insights.push("Continuous learning is competitive advantage. The rate at which you absorb and apply knowledge determines business velocity.");
+    insights.push("Learning velocity accelerates decision-making quality and reduces the cost of future mistakes. Every insight you gain today shortens tomorrow's learning curve and improves your strategic judgment. Continuous learning becomes sustainable competitive advantage when properly documented and applied across your organization.");
   }
   
   else if (category === 'research') {
-    insights.push("Research transforms assumptions into data-driven decisions. The time you invest in understanding compounds over time.");
-    insights.push("Market research isn't academic exercise - it's competitive intelligence. Use what you learn to make better strategic bets.");
+    insights.push("Research transforms dangerous assumptions into data-driven decisions that reduce risk and improve success rates. The time you invest in understanding your market, customers, and competition compounds over time into better strategic judgment. Market research isn't academic exercise - it's competitive intelligence that informs better resource allocation and strategic positioning.");
   }
   
   else {
-    insights.push("Your business experience is valuable data. Document these moments to build stronger strategic thinking and decision-making abilities.");
-    insights.push("Entrepreneurial intuition develops through pattern recognition. Each experience you document strengthens your business judgment.");
+    insights.push("Your business experience is valuable data that becomes strategic advantage when properly analyzed and applied. Document these moments and the lessons they contain to build stronger strategic thinking and more confident decision-making abilities. Entrepreneurial intuition develops through careful pattern recognition - each experience you document strengthens your business judgment and competitive positioning.");
   }
   
   return insights;

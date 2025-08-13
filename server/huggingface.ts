@@ -353,62 +353,60 @@ router.post('/analyze', async (req, res) => {
       
       if (category === 'challenge') {
         if (lowerText.includes('competitor') || lowerText.includes('raised') || lowerText.includes('funding')) {
-          contextualInsights.push('Competitive pressure creates opportunity. Focus on execution speed and customer experience over feature parity.');
-          contextualInsights.push('Market validation through competition is valuable. Study their moves, then differentiate yours.');
+          contextualInsights.push('Competitive pressure creates opportunity - it validates market demand and forces innovation. Focus on execution speed and customer experience over feature parity. Study their moves carefully, then build something distinctly better rather than just different.');
         } else if (lowerText.includes('database') || lowerText.includes('technical') || lowerText.includes('system')) {
-          contextualInsights.push('Technical failures expose infrastructure weaknesses. Build redundancy before you need it.');
+          contextualInsights.push('Technical failures expose infrastructure weaknesses before they become catastrophic. Build redundancy and monitoring systems now, not after the next outage. Every technical crisis is a learning opportunity that strengthens your operational foundation.');
         } else if (lowerText.includes('employee') || lowerText.includes('staff') || lowerText.includes('team')) {
-          contextualInsights.push('Team challenges signal cultural or process gaps. Address root causes, not just symptoms.');
+          contextualInsights.push('Team challenges signal cultural or process gaps that compound over time. Address root causes through better communication and clearer expectations, not just symptoms. The patterns you see now predict the culture you\'ll have at scale.');
         } else if (lowerText.includes('burnout') || lowerText.includes('exhausted') || lowerText.includes('overwhelming')) {
-          contextualInsights.push('Burnout is a leading indicator of unsustainable practices. Delegate or systematize before breaking.');
+          contextualInsights.push('Burnout is a leading indicator of unsustainable practices that will limit your growth potential. Delegate tasks that don\'t require your unique expertise and systematize recurring decisions. Your capacity to think strategically is your most valuable asset - protect it.');
         } else if (lowerText.includes('cash flow') || lowerText.includes('revenue')) {
-          contextualInsights.push('Financial pressure demands creative solutions. Focus on customer value and operational efficiency.');
+          contextualInsights.push('Financial pressure demands creative solutions that often lead to breakthrough innovations. Focus intensely on customer value and operational efficiency rather than just cutting costs. Cash constraints force prioritization that makes businesses stronger.');
         } else {
-          contextualInsights.push('Every challenge contains market intelligence. Document what you learn for competitive advantage.');
+          contextualInsights.push('Every challenge contains valuable market intelligence that your competitors don\'t have. Document what you learn and how you solve problems - these insights become your competitive advantage. Difficult periods build the resilience that separates successful entrepreneurs from those who give up.');
         }
       } else if (category === 'growth') {
         if (lowerText.includes('competitor') || lowerText.includes('funding')) {
-          contextualInsights.push('Market validation through competition is valuable. Study their moves, then differentiate yours.');
+          contextualInsights.push('Market validation through competition proves there\'s demand worth fighting for. Study their strategies and customer acquisition methods, then build something distinctly better. Competition means the market is ready - now execution determines the winner.');
         } else if (lowerText.includes('revenue') || lowerText.includes('sales') || lowerText.includes('clients')) {
-          contextualInsights.push('Revenue growth without operational scaling creates future bottlenecks. Plan for tomorrow today.');
+          contextualInsights.push('Revenue growth without operational scaling creates future bottlenecks that limit your potential. Invest in systems, processes, and team capacity before you desperately need them. Today\'s growth decisions determine tomorrow\'s scaling ability.');
         } else if (lowerText.includes('team') || lowerText.includes('hiring')) {
-          contextualInsights.push('Growing teams require evolving leadership. Your role must change as the company scales.');
+          contextualInsights.push('Growing teams require evolving leadership skills and clearer communication structures. Your role must shift from doing everything to enabling others to excel. Build the culture and processes that work at 10x your current size.');
         } else {
-          contextualInsights.push('Sustainable growth balances ambition with execution capacity. Monitor both metrics closely.');
+          contextualInsights.push('Sustainable growth balances ambitious goals with realistic execution capacity. Monitor both your growth metrics and your team\'s ability to deliver quality consistently. Growth that compromises quality creates long-term problems.');
         }
       } else if (category === 'achievement') {
         if (lowerText.includes('signed') || lowerText.includes('deal') || lowerText.includes('contract')) {
-          contextualInsights.push('Major deals validate your value proposition. Analyze why this succeeded to replicate success.');
+          contextualInsights.push('Major deals validate your value proposition and prove market demand for your solution. Analyze exactly why this succeeded - what messaging resonated, which features mattered most, how the decision process unfolded. Document these patterns to replicate success with future prospects.');
         } else if (lowerText.includes('milestone') || lowerText.includes('goal') || lowerText.includes('target')) {
-          contextualInsights.push('Milestone achievements prove your strategic direction. Use this momentum to tackle bigger challenges.');
+          contextualInsights.push('Milestone achievements prove your strategic direction and execution capability. Use this momentum to tackle bigger challenges and set more ambitious targets. Success builds confidence in your team and credibility with stakeholders.');
         } else if (lowerText.includes('launch') || lowerText.includes('product') || lowerText.includes('feature')) {
-          contextualInsights.push('Product launches reveal market readiness. Customer response patterns guide future development.');
+          contextualInsights.push('Product launches reveal market readiness and customer behavior patterns you can\'t predict in advance. Study early user feedback, usage analytics, and support requests to guide future development priorities. Successful launches create data that informs your next strategic decisions.');
         } else {
-          contextualInsights.push('Success patterns become your competitive moat. Document and systematize what worked.');
+          contextualInsights.push('Success patterns become your competitive moat when properly understood and systematized. Document what worked, why it worked, and how to replicate these conditions. Your ability to repeat successes consistently separates good businesses from great ones.');
         }
       } else if (category === 'planning') {
         if (lowerText.includes('pivot') || lowerText.includes('business model') || lowerText.includes('freemium') || lowerText.includes('pricing')) {
-          contextualInsights.push('Business model pivots require careful customer research. Test assumptions before making major changes.');
-          contextualInsights.push('Pricing changes affect customer psychology. Study how similar companies navigated these transitions.');
+          contextualInsights.push('Business model pivots require careful customer research and gradual testing before full commitment. Interview existing customers about their willingness to adapt, then test new models with small segments first. Study how similar companies navigated these transitions and what they learned from the process.');
         } else if (lowerText.includes('strategy') || lowerText.includes('roadmap')) {
-          contextualInsights.push('Strategic plans need execution checkpoints. Build accountability into every major initiative.');
+          contextualInsights.push('Strategic plans need specific execution checkpoints and regular review cycles to stay relevant. Build accountability mechanisms into every major initiative with clear owners and deadlines. The best strategies adapt based on real market feedback while maintaining core vision.');
         } else if (lowerText.includes('budget') || lowerText.includes('financial')) {
-          contextualInsights.push('Financial planning requires scenario modeling. Prepare for best case, worst case, and most likely.');
+          contextualInsights.push('Financial planning requires scenario modeling that prepares you for multiple possible futures. Create detailed projections for best case, worst case, and most likely scenarios. Build buffers for unexpected opportunities and ensure cash flow can survive extended difficult periods.');
         } else if (lowerText.includes('considering') || lowerText.includes('debating')) {
-          contextualInsights.push('Strategic decisions require customer validation. Test assumptions with real users before committing resources.');
+          contextualInsights.push('Strategic decisions require customer validation and market testing before major resource commitments. Interview target users, run small experiments, and gather real data to inform your choices. The cost of being wrong increases significantly as your business grows.');
         } else {
-          contextualInsights.push('Effective planning connects daily actions to long-term vision. Bridge the gap consistently.');
+          contextualInsights.push('Effective planning connects daily actions to long-term vision through clear prioritization and regular course correction. Bridge the gap between strategy and execution with specific, measurable goals that your team can track and adjust.');
         }
       } else if (category === 'learning') {
         if (lowerText.includes('feedback') || lowerText.includes('customer')) {
-          contextualInsights.push('Customer feedback is product direction data. Weight it by customer value and market size.');
+          contextualInsights.push('Customer feedback is valuable product direction data, but weight it by customer value, market size, and strategic fit. Focus most on feedback from your ideal customers who represent the largest market opportunity. Not all feedback deserves equal attention - prioritize input that aligns with your core value proposition.');
         } else if (lowerText.includes('mistake') || lowerText.includes('lesson')) {
-          contextualInsights.push('Expensive lessons become competitive advantages when properly internalized and shared.');
+          contextualInsights.push('Expensive lessons become competitive advantages when properly internalized, documented, and shared across your team. Create systems to capture these insights and prevent repeating costly mistakes. The businesses that learn fastest from failures often outperform those that avoid risk entirely.');
         } else {
-          contextualInsights.push('Learning velocity determines business evolution speed. Apply insights immediately for maximum impact.');
+          contextualInsights.push('Learning velocity determines how quickly your business can evolve and adapt to market changes. Apply insights immediately while they\'re fresh and relevant to maximize their impact. Build organizational learning processes that capture and distribute knowledge effectively.');
         }
       } else {
-        contextualInsights.push('Business intuition develops through pattern recognition. Track what works and what doesn\'t.');
+        contextualInsights.push('Business intuition develops through careful pattern recognition and reflection on what drives success versus failure. Track what works, what doesn\'t, and why certain approaches succeed in specific contexts. Your accumulated experience becomes strategic advantage when properly analyzed and applied.');
       }
       
       return contextualInsights;
