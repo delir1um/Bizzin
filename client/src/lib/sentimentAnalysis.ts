@@ -158,11 +158,27 @@ function generateBusinessInsights(primaryEmotion: string, category: string, emot
   // Generate contextual insights based on business category and detected patterns in the content
   const lowerContent = (contentText || '').toLowerCase();
   
+
+  
   // Category-specific contextual insights based on actual business scenarios
   const categoryLower = category.toLowerCase();
   
+  // Direct keyword-based content detection (regardless of category)
+  if (lowerContent.includes('funding') || lowerContent.includes('investment') || lowerContent.includes('investor')) {
+    if (lowerContent.includes('series a') || lowerContent.includes('seed') || lowerContent.includes('raise')) {
+      insights.push("Fundraising is a full-time job that pauses building. Set clear timelines, prepare thoroughly, and get back to customers fast.");
+    } else {
+      insights.push("Funding is fuel, not validation. Stay focused on unit economics and customer satisfaction - investors bet on execution, not ideas.");
+    }
+  }
+  
+  // If no direct content match, try category-based analysis
+  else if (lowerContent.includes('revenue') || lowerContent.includes('sales') || lowerContent.includes('million') || lowerContent.includes('growth')) {
+    insights.push("Revenue growth without process growth creates chaos. Scale your systems and team capabilities alongside your customer base.");
+  }
+  
   // Handle different category naming from AI systems
-  if (categoryLower === 'achievement' || lowerContent.includes('achievement') || lowerContent.includes('success') || lowerContent.includes('milestone')) {
+  else if (categoryLower === 'achievement' || lowerContent.includes('achievement') || lowerContent.includes('success') || lowerContent.includes('milestone')) {
     if (lowerContent.includes('client') || lowerContent.includes('customer') || lowerContent.includes('deal')) {
       insights.push("Major client wins validate your value proposition. Use this momentum to refine your sales process and document what worked for future deals.");
     } else if (lowerContent.includes('launch') || lowerContent.includes('product') || lowerContent.includes('feature')) {
