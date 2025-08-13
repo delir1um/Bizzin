@@ -32,8 +32,18 @@ export function TrainingStatsCard({ onNavigate }: TrainingStatsCardProps) {
   const learningInfo = getLearningStatus(trainingStats.learningStreak, trainingStats.completionRate)
   
   return (
-    <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20 border-purple-200 dark:border-purple-800 h-full flex flex-col">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 min-h-[50px]">
+    <Card className="relative overflow-hidden group 
+      hover:shadow-lg hover:shadow-purple-200/50 dark:hover:shadow-purple-900/30
+      hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer
+      hover:border-purple-300 dark:hover:border-purple-600
+      bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20 
+      border-purple-200 dark:border-purple-800 h-full flex flex-col"
+      onClick={() => onNavigate('/training')}
+    >
+      {/* Animated Background Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-transparent dark:from-purple-900/10 
+        opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 min-h-[50px] relative z-10">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400">
             <Brain className="h-4 w-4" />

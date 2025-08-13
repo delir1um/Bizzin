@@ -627,11 +627,18 @@ export function JournalPage() {
                         transition={{ delay: index * 0.05 }}
                       >
                         <Card 
-                          className="hover:shadow-lg transition-all duration-300 cursor-pointer group border border-slate-200 hover:border-orange-300 bg-white hover:bg-orange-50/30"
+                          className="hover:shadow-lg hover:shadow-orange-200/50 dark:hover:shadow-orange-900/30
+                            hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer group 
+                            border border-slate-200 hover:border-orange-300 bg-white hover:bg-orange-50/30
+                            dark:bg-slate-800 dark:border-slate-700 dark:hover:border-orange-600 dark:hover:bg-orange-950/20
+                            relative overflow-hidden"
                           onClick={() => handleViewEntry(entry)}
                           data-entry-card
                         >
-                          <CardHeader className="pb-4">
+                          {/* Animated Background Gradient */}
+                          <div className="absolute inset-0 bg-gradient-to-br from-orange-50/50 to-transparent dark:from-orange-900/10 
+                            opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          <CardHeader className="pb-4 relative z-10">
                             <div className="flex items-start justify-between mb-3">
                               <div className="flex items-center gap-3 flex-1">
                                 <span className="text-2xl" title={entry.mood || entry.sentiment_data?.primary_mood || 'No mood detected'}>
@@ -660,7 +667,7 @@ export function JournalPage() {
                               )}
                             </div>
                           </CardHeader>
-                          <CardContent className="pt-0 pb-4">
+                          <CardContent className="pt-0 pb-4 relative z-10">
                             <div className="mb-3">
                               <p className="text-slate-700 leading-relaxed line-clamp-2">
                                 {entry.content}

@@ -409,11 +409,35 @@ export function PodcastPage() {
           <AnimatedGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" stagger={0.15}>
             {filteredEpisodes.slice(0, 6).map((episode, index) => (
               <AnimatedItem key={episode.id}>
-                <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
-                  <CardHeader>
+                <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 
+                  hover:shadow-lg hover:shadow-blue-200/50 dark:hover:shadow-blue-900/30 
+                  hover:border-blue-300 dark:hover:border-blue-600
+                  hover:-translate-y-1 transition-all duration-300 ease-out
+                  cursor-pointer group relative overflow-hidden"
+                  onClick={() => {
+                    setSelectedEpisode({
+                      id: episode.id,
+                      title: episode.title,
+                      description: episode.description,
+                      duration: episode.duration,
+                      series: episode.series,
+                      seriesColor: episode.seriesColor,
+                      hasVideo: episode.hasVideo,
+                      videoUrl: episode.videoUrl,
+                      audioUrl: episode.audioUrl
+                    })
+                    setShowEpisodeModal(true)
+                  }}
+                >
+                  {/* Animated Background Gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-900/10 
+                    opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <CardHeader className="relative z-10">
                     <div className="flex items-start justify-between">
                       <div>
-                        <CardTitle className="text-lg text-slate-900 dark:text-white">
+                        <CardTitle className="text-lg text-slate-900 dark:text-white 
+                          group-hover:text-blue-600 dark:group-hover:text-blue-400 
+                          transition-colors duration-300">
                           {episode.title}
                         </CardTitle>
                         <CardDescription className="text-slate-600 dark:text-slate-400">
@@ -427,7 +451,7 @@ export function PodcastPage() {
                       </Badge>
                     </div>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="relative z-10">
                     <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400 mb-4">
                       <div className="flex items-center gap-3">
                         <div className="flex items-center">

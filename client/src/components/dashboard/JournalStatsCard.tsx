@@ -99,8 +99,18 @@ export function JournalStatsCard({ journalEntries, onNavigate }: JournalStatsCar
   const streakInfo = getStreakStatus(stats.streak)
   
   return (
-    <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/20 dark:to-orange-900/20 border-orange-200 dark:border-orange-800 h-full flex flex-col">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 min-h-[50px]">
+    <Card className="relative overflow-hidden group 
+      hover:shadow-lg hover:shadow-orange-200/50 dark:hover:shadow-orange-900/30
+      hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer
+      hover:border-orange-300 dark:hover:border-orange-600
+      bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/20 dark:to-orange-900/20 
+      border-orange-200 dark:border-orange-800 h-full flex flex-col"
+      onClick={() => onNavigate('/journal')}
+    >
+      {/* Animated Background Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-orange-50/50 to-transparent dark:from-orange-900/10 
+        opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 min-h-[50px] relative z-10">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-orange-500/10 text-orange-600 dark:text-orange-400">
             <Notebook className="h-4 w-4" />
@@ -112,7 +122,7 @@ export function JournalStatsCard({ journalEntries, onNavigate }: JournalStatsCar
         </Badge>
       </CardHeader>
       
-      <CardContent className="flex flex-col h-full space-y-4">
+      <CardContent className="flex flex-col h-full space-y-4 relative z-10">
         {/* Primary Metrics */}
         <div className="text-center space-y-1">
           <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">

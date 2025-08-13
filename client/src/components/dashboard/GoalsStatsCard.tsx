@@ -70,8 +70,18 @@ export function GoalsStatsCard({ goals, onNavigate }: GoalsStatsCardProps) {
   const progressInfo = getProgressStatus(stats.averageProgress, stats.urgentCount)
   
   return (
-    <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border-blue-200 dark:border-blue-800 h-full flex flex-col">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 min-h-[50px]">
+    <Card className="relative overflow-hidden group 
+      hover:shadow-lg hover:shadow-blue-200/50 dark:hover:shadow-blue-900/30
+      hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer
+      hover:border-blue-300 dark:hover:border-blue-600
+      bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 
+      border-blue-200 dark:border-blue-800 h-full flex flex-col"
+      onClick={() => onNavigate('/goals')}
+    >
+      {/* Animated Background Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-900/10 
+        opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 min-h-[50px] relative z-10">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
             <Target className="h-4 w-4" />

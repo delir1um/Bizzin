@@ -187,10 +187,17 @@ export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid' }: GoalCard
 
   // Grid view - original card design
   return (
-    <Card className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 border-l-4 ${priorityColors[goal.priority]} ${
-      goal.status === 'completed' ? 'opacity-75' : ''
-    }`}>
-      <CardHeader>
+    <Card className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 border-l-4 ${priorityColors[goal.priority]} 
+      hover:shadow-lg hover:shadow-green-200/50 dark:hover:shadow-green-900/30
+      hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer group
+      hover:border-green-300 dark:hover:border-green-600
+      relative overflow-hidden
+      ${goal.status === 'completed' ? 'opacity-75' : ''}
+    `}>
+      {/* Animated Background Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-green-50/50 to-transparent dark:from-green-900/10 
+        opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <CardHeader className="relative z-10">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <CardTitle className="text-xl text-slate-900 dark:text-white">

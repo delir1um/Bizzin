@@ -559,7 +559,12 @@ export function DocSafePage() {
               <AnimatedGrid stagger={0.05}>
                 {displayDocs.map((doc, index) => (
                   <AnimatedItem key={doc.id}>
-                    <div className="group grid grid-cols-12 gap-4 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 border-b border-slate-100 dark:border-slate-700 last:border-b-0 cursor-pointer transition-colors"
+                    <div className="group grid grid-cols-12 gap-4 px-4 py-3 
+                      hover:bg-slate-50 dark:hover:bg-slate-700 
+                      hover:shadow-md hover:shadow-blue-200/50 dark:hover:shadow-blue-900/30
+                      hover:-translate-y-1 transition-all duration-300 ease-out
+                      border-b border-slate-100 dark:border-slate-700 last:border-b-0 cursor-pointer
+                      rounded-lg mx-2 my-1"
                          onClick={() => handleViewDocument(doc)}>
                       {/* Name column */}
                       <div className="col-span-5 flex items-center gap-3 min-w-0">
