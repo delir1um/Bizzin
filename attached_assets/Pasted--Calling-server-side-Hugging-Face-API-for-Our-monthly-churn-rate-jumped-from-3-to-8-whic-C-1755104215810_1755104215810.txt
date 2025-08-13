@@ -1,0 +1,33 @@
+🚀 Calling server-side Hugging Face API for:  Our monthly churn rate jumped from 3% to 8%, whic...
+Console.js:61 ✅ Server-side Hugging Face analysis successful: {primary_mood: 'focused', confidence: 50, energy: 'medium', emotions: Array(1), business_category: 'growth', …}
+Console.js:61 Hugging Face AI analysis successful: {primary_mood: 'focused', confidence: 50, energy: 'medium', emotions: Array(1), business_category: 'growth', …}
+Console.js:61 Hugging Face unavailable or low confidence, falling back to autonomous analysis
+Console.js:61 Using autonomous analyzer as fallback
+Console.js:61 Autonomous AI v3.0: Analyzing entry with full specification compliance...
+Console.js:61 Autonomous AI v3.0: Complete - Learning/Thoughtful/medium (45%)
+Console.js:61 Analysis method: fallback - no strong patterns detected
+Console.js:61 Using production AI analysis results: {category: 'Learning', mood: 'Thoughtful', energy: 'medium', confidence: 45, rulesMatched: 0}
+Console.js:61 Creating journal entry for user: 9502ea97-1adb-4115-ba05-1b6b1b5fa721
+Console.js:61 AI Business Coach analysis completed
+Console.js:61 ✅ CALLING REAL HUGGING FACE AI MODELS
+Console.js:61 🚀 Starting AI business sentiment analysis with Hugging Face integration...
+Console.js:61 Hugging Face unavailable or low confidence, falling back to autonomous analysis
+Console.js:61 Using autonomous analyzer as fallback
+Console.js:61 Autonomous AI v3.0: Analyzing entry with full specification compliance...
+Console.js:61 Autonomous AI v3.0: Complete - Learning/Thoughtful/medium (45%)
+Console.js:61 Analysis method: fallback - no strong patterns detected
+Console.js:61 Using production AI analysis results: {category: 'Learning', mood: 'Thoughtful', energy: 'medium', confidence: 45, rulesMatched: 0}
+Console.js:61 Creating journal entry for user: 9502ea97-1adb-4115-ba05-1b6b1b5fa721
+Console.js:61 AI Business Coach analysis completed
+Console.js:61 ✅ CALLING REAL HUGGING FACE AI MODELS
+Console.js:61 🚀 Starting AI business sentiment analysis with Hugging Face integration...
+Console.js:61 Hugging Face unavailable or low confidence, falling back to autonomous analysis
+Console.js:61 Using autonomous analyzer as fallback
+Console.js:61 Autonomous AI v3.0: Analyzing entry with full specification compliance...
+Console.js:61 Autonomous AI: Rule matched - TECHNICAL_OUTAGES for text: "Our main database went down for 4 hours this morning during peak usage time. Customers couldn't acce..."
+Console.js:61 Rule Fallback: Challenge (weak AI similarity: 0%)
+Console.js:61 Autonomous AI v3.0: Complete - Challenge/Frustrated/medium (75%)
+Console.js:61 Analysis method: rule-fallback-weak-ai
+Console.js:61 Using production AI analysis results: {category: 'Challenge', mood: 'Frustrated', energy: 'medium', confidence: 75, rulesMatched: 1}
+Console.js:61 Creating journal entry for user: 9502ea97-1adb-4115-ba05-1b6b1b5fa721
+Console.js:61 AI Business Coach analysis completed
