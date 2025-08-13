@@ -2,53 +2,10 @@ import { supabase } from '@/lib/supabase'
 import type { UserPlan, UsageLimits, PlanLimits, UsageStatus, PlanType } from '@/types/plans'
 
 export class PlansService {
-  // Get user's current plan
+  // Get user's current plan - COMPLETELY DISABLED to prevent HEAD requests
   static async getUserPlan(userId: string): Promise<UserPlan | null> {
-    try {
-      const { data, error } = await supabase
-        .from('user_plans')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle()
-
-      if (error) {
-        // If table doesn't exist or there's a schema issue, return default free plan
-        if (error.code === '42P01' || error.message?.includes('relation') || error.message?.includes('does not exist')) {
-          console.log('user_plans table not available, using default free plan')
-          return this.createDefaultFreePlan(userId)
-        }
-        
-        // If no plan exists, create a free plan for the user
-        if (error.code === 'PGRST116') {
-          console.log('No plan found for user, creating free plan')
-          try {
-            const { data: newPlan, error: createError } = await supabase
-              .from('user_plans')
-              .insert([{ user_id: userId, plan_type: 'free' }])
-              .select()
-              .single()
-
-            if (createError) {
-              console.log('Error creating user plan, using default:', createError.message)
-              return this.createDefaultFreePlan(userId)
-            }
-
-            return newPlan
-          } catch (insertError) {
-            console.log('Insert failed, using default free plan')
-            return this.createDefaultFreePlan(userId)
-          }
-        }
-        
-        console.log('Plan query error, using default:', error.message)
-        return this.createDefaultFreePlan(userId)
-      }
-
-      return data || this.createDefaultFreePlan(userId)
-    } catch (error) {
-      console.log('getUserPlan failed, using default free plan')
-      return this.createDefaultFreePlan(userId)
-    }
+    console.log('getUserPlan disabled to prevent HEAD requests - returning default free plan')
+    return this.createDefaultFreePlan(userId)
   }
 
   // Create a default free plan for users when database is not available
@@ -64,46 +21,11 @@ export class PlansService {
     }
   }
 
-  // Get current month usage limits
+  // Get current month usage limits - COMPLETELY DISABLED to prevent HEAD requests  
   static async getUserUsage(userId: string): Promise<UsageLimits | null> {
-    const currentMonth = new Date().toISOString().substring(0, 7) // YYYY-MM format
-    
-    try {
-      // First try to get existing usage record
-      let { data, error } = await supabase
-        .from('usage_limits')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('month_year', currentMonth)
-        .maybeSingle()
-
-      if (error && error.code === 'PGRST116') {
-        // No record exists, try to create one
-        try {
-          const { data: newUsage, error: createError } = await supabase
-            .from('usage_limits')
-            .insert([{ user_id: userId, month_year: currentMonth }])
-            .select()
-            .single()
-
-          if (createError) {
-            console.log('Error creating usage limits, using default:', createError.message)
-            return this.createDefaultUsageLimits(userId, currentMonth)
-          }
-
-          data = newUsage
-        } catch (insertError) {
-          return this.createDefaultUsageLimits(userId, currentMonth)
-        }
-      } else if (error) {
-        console.log('Error fetching user usage, using default:', error.message)
-        return this.createDefaultUsageLimits(userId, currentMonth)
-      }
-
-      return data || this.createDefaultUsageLimits(userId, currentMonth)
-    } catch (error) {
-      return this.createDefaultUsageLimits(userId, currentMonth)
-    }
+    const currentMonth = new Date().toISOString().substring(0, 7)
+    console.log('getUserUsage disabled to prevent HEAD requests - returning default usage limits')
+    return this.createDefaultUsageLimits(userId, currentMonth)
   }
 
   // Create default usage limits when database is not available
@@ -351,28 +273,10 @@ export class PlansService {
     }
   }
 
-  // Upgrade user to premium
+  // Upgrade user to premium - DISABLED to prevent HEAD requests
   static async upgradeToPremium(userId: string): Promise<boolean> {
-    try {
-      const { error } = await supabase
-        .from('user_plans')
-        .update({
-          plan_type: 'premium',
-          updated_at: new Date().toISOString(),
-          expires_at: null // For now, premium is indefinite
-        })
-        .eq('user_id', userId)
-
-      if (error) {
-        console.error('Error upgrading to premium:', error)
-        return false
-      }
-
-      return true
-    } catch (error) {
-      console.error('Error upgrading to premium:', error)
-      return false
-    }
+    console.log('upgradeToPremium disabled to prevent HEAD requests')
+    return false // Always fail since we can't actually upgrade without database
   }
 
   // Format storage size for display
