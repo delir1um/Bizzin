@@ -152,6 +152,15 @@ router.post('/analyze', async (req, res) => {
       }
     }
 
+    // Apply business context to mood - competitor/challenge scenarios shouldn't be "excited"
+    const lowerTextForMood = text.toLowerCase();
+    if ((lowerTextForMood.includes('competitor') || lowerTextForMood.includes('funding') || 
+         lowerTextForMood.includes('challenge') || lowerTextForMood.includes('threat')) && 
+        primaryMood === 'excited') {
+      primaryMood = 'focused';
+      energy = 'high';
+    }
+
     // Business category detection using AI sentiment + context
     const lowerText = text.toLowerCase();
     let category = 'reflection';
