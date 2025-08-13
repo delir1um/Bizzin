@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast"
 import { UploadModal } from "@/components/docsafe/UploadModal"
 import { EditDocumentModal } from "@/components/docsafe/EditDocumentModal"
 import { FileViewer } from "@/components/docsafe/FileViewer"
-import { PlanLimitBanner } from "@/components/plans/PlanLimitBanner"
+
 import { UpgradeModal } from "@/components/plans/UpgradeModal"
 import { usePlans } from "@/hooks/usePlans"
 import { format } from "date-fns"
@@ -268,21 +268,7 @@ export function DocSafePage() {
 
 
 
-      {/* Plan Limit Banners */}
-      {usageStatus && (
-        <div className="space-y-4 mb-8">
-          <PlanLimitBanner 
-            usageStatus={usageStatus} 
-            limitType="storage" 
-            onUpgrade={() => setShowUpgradeModal(true)}
-          />
-          <PlanLimitBanner 
-            usageStatus={usageStatus} 
-            limitType="documents" 
-            onUpgrade={() => setShowUpgradeModal(true)}
-          />
-        </div>
-      )}
+
 
       {/* Storage Overview with Professional Animations */}
       <motion.div 
@@ -326,36 +312,35 @@ export function DocSafePage() {
           transition={{ duration: 0.5, delay: 0.5, ease: "backOut" }}
           whileHover={{ y: -4, transition: { duration: 0.2 } }}
         >
-          <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800
-            hover:border-orange-300 dark:hover:border-orange-600">
+          <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950 dark:to-emerald-900 border-emerald-200 dark:border-emerald-800
+            hover:border-emerald-300 dark:hover:border-emerald-600">
             <CardContent className="p-6">
               <div className="flex items-center">
-                <div className="p-2 bg-orange-500 rounded-lg shadow-sm">
+                <div className="p-2 bg-emerald-500 rounded-lg shadow-sm">
                   <Lock className="w-5 h-5 text-white" />
                 </div>
                 <div className="ml-4">
                   <motion.div 
-                    className="text-2xl font-bold text-orange-900 dark:text-orange-100"
+                    className="text-2xl font-bold text-emerald-900 dark:text-emerald-100"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.5, delay: 0.7 }}
                   >
-                    {stats?.storage_used ? DocumentService.formatFileSize(stats.storage_used) : 
-                     allDocuments.length > 0 ? DocumentService.formatFileSize(allDocuments.reduce((total, doc) => total + doc.file_size, 0)) : '0 B'}
+                    {allDocuments.length >= 20 ? 'Rich' : allDocuments.length >= 10 ? 'Growing' : allDocuments.length >= 5 ? 'Active' : allDocuments.length > 0 ? 'Started' : 'Ready'}
                   </motion.div>
-                  <p className="text-sm font-medium text-orange-700 dark:text-orange-300">Storage Used</p>
-                  {((stats && stats.storage_used > 0) || allDocuments.length > 0) && (
+                  <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Collection Status</p>
+                  {allDocuments.length > 0 && (
                     <motion.div 
-                      className="mt-2 w-32 bg-slate-200 dark:bg-slate-700 rounded-full h-1.5"
+                      className="mt-2 w-32 bg-emerald-200 dark:bg-emerald-700 rounded-full h-1.5"
                       initial={{ width: 0 }}
                       animate={{ width: "8rem" }}
                       transition={{ duration: 0.8, delay: 0.8 }}
                     >
                       <motion.div 
-                        className="bg-orange-600 h-1.5 rounded-full" 
+                        className="bg-emerald-600 h-1.5 rounded-full" 
                         initial={{ width: "0%" }}
                         animate={{ 
-                          width: `${Math.min(((stats?.storage_used || allDocuments.reduce((total, doc) => total + doc.file_size, 0)) / (50*1024*1024)) * 100, 100)}%` 
+                          width: `${Math.min((allDocuments.length / 25) * 100, 100)}%` 
                         }}
                         transition={{ duration: 1.2, delay: 1, ease: "easeOut" }}
                       />
