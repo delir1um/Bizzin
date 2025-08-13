@@ -122,15 +122,15 @@ export type Goal = {
   title: string;
   description?: string;
   category?: string;
-  priority?: string;
+  priority: 'low' | 'medium' | 'high';
   target_value?: number;
   current_value?: number;
   unit?: string;
-  target_date?: string;
-  status: string; // 'active', 'completed', 'paused', 'cancelled'
+  deadline: string; // ISO date string (renamed from target_date for consistency)
+  status: 'not_started' | 'in_progress' | 'completed' | 'on_hold' | 'at_risk';
   completion_date?: string;
-  notes?: string;
-  is_favorite: boolean;
+  reflection?: string; // renamed from notes for consistency
+  progress: number; // 0-100
   created_at: string;
   updated_at: string;
 };
@@ -192,11 +192,14 @@ export const createGoalSchema = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
   category: z.string().optional(),
-  priority: z.enum(['low', 'medium', 'high']).optional(),
+  priority: z.enum(['low', 'medium', 'high']),
   target_value: z.number().positive().optional(),
   current_value: z.number().min(0).optional(),
   unit: z.string().optional(),
-  target_date: z.string().optional(),
+  deadline: z.string(), // ISO date string
+  status: z.enum(['not_started', 'in_progress', 'completed', 'on_hold', 'at_risk']),
+  progress: z.number().min(0).max(100),
+  reflection: z.string().optional(),
 });
 
 export const createDocumentSchema = z.object({
