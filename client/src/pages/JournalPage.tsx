@@ -337,7 +337,12 @@ export function JournalPage() {
       
       let added = 0
       for (const entry of selectedEntries) {
-        await JournalService.createEntry(entry)
+        // Only pass title and content - let AI analyze mood, category, and insights
+        const textOnlyEntry = {
+          title: entry.title,
+          content: entry.content
+        }
+        await JournalService.createEntry(textOnlyEntry)
         added++
       }
       
