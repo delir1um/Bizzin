@@ -166,7 +166,8 @@ router.post('/analyze', async (req, res) => {
     let category = 'reflection';
     
     // Challenge patterns - check FIRST to catch resignations, problems, issues, departures, risks, burnout, work-life balance
-    if (lowerText.includes('problem') || lowerText.includes('challenge') || lowerText.includes('difficult') ||
+    // BUT exclude positive launches/achievements even if they mention challenges
+    if ((lowerText.includes('problem') || lowerText.includes('challenge') || lowerText.includes('difficult') ||
         lowerText.includes('down') || lowerText.includes('outage') || lowerText.includes('issue') ||
         lowerText.includes('error') || lowerText.includes('failed') || lowerText.includes('quit') ||
         lowerText.includes('resigned') || lowerText.includes('resignation') || lowerText.includes('burnout') ||
@@ -176,7 +177,10 @@ router.post('/analyze', async (req, res) => {
         lowerText.includes('cancelled') || lowerText.includes('missing family') || lowerText.includes('sustainable') ||
         lowerText.includes('pressure') || lowerText.includes('stress') || lowerText.includes('overwhelm') ||
         lowerText.includes('handed in her') || lowerText.includes('handed in his') || lowerText.includes('leaving') ||
-        lowerText.includes('departing') || lowerText.includes('losing her knowledge') || lowerText.includes('major setback')) {
+        lowerText.includes('departing') || lowerText.includes('losing her knowledge') || lowerText.includes('major setback')) &&
+        // Don't categorize as challenge if it's clearly a positive launch/achievement context
+        !(lowerText.includes('launched') && (lowerText.includes('success') || lowerText.includes('download') || 
+          lowerText.includes('positive') || lowerText.includes('response') || lowerText.includes('already')))) {
       category = 'challenge';
     }
     // Achievement patterns - success, wins, completions
