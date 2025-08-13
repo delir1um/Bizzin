@@ -1,10 +1,10 @@
 import { supabase } from '@/lib/supabase'
-import { analyzeBusinessSentimentAI } from '../aiSentimentAnalysis'
+import { analyzeJournalEntry } from '@/lib/ai'
 import type { JournalEntry } from '@/types/journal'
 
 export class AIMigrationService {
   private static readonly MIGRATION_VERSION_KEY = 'ai_migration_version'
-  private static readonly CURRENT_VERSION = 27 // FINAL FIX: Removed duplicate getMoodEmoji functions from SmartSearch and JournalDashboard - all components now use centralized utility
+  private static readonly CURRENT_VERSION = 30 // ENHANCED AI v2.0: TF-IDF similarity, negation handling, mood normalization, user learning, business rules
 
   // Check if migration is needed
   static needsMigration(): boolean {
@@ -43,23 +43,42 @@ export class AIMigrationService {
             onProgress?.(currentIndex + 1, results.total, entry)
             
             try {
-              // Re-analyze the entry with latest AI
-              const aiAnalysis = await analyzeBusinessSentimentAI(entry.content, entry.title)
+              // Re-analyze the entry with enhanced AI system
+              const aiAnalysis = await analyzeJournalEntry(entry.content, entry.user_id)
               
-              // Update the entry with new AI analysis and improved title
+              // Format sentiment data for database storage
+              const sentimentData = {
+                primary_mood: aiAnalysis.primary_mood,
+                confidence: aiAnalysis.confidence,
+                energy: aiAnalysis.energy,
+                mood_polarity: aiAnalysis.mood_polarity,
+                emotions: [aiAnalysis.primary_mood],
+                insights: [`Enhanced AI v2.0 - Confidence: ${aiAnalysis.confidence}%`],
+                business_category: aiAnalysis.business_category,
+                rules_matched: aiAnalysis.rules_matched || [],
+                user_learned: aiAnalysis.user_learned
+              }
+              
+              // Update the entry with new enhanced AI analysis
               const updateData: any = {
-                sentiment_data: aiAnalysis,
+                sentiment_data: sentimentData,
                 // Update category and mood with new AI analysis (allow AI to override for better accuracy)
                 category: this.mapBusinessCategoryToJournal(aiAnalysis.business_category),
                 mood: this.mapAIMoodToJournal(aiAnalysis.primary_mood)
               }
               
-              // Update title if AI suggests a better one
-              if (aiAnalysis.suggested_title) {
-                updateData.title = aiAnalysis.suggested_title
-                console.log(`📝 Title update: "${entry.title}" → "${aiAnalysis.suggested_title}"`)
-              } else {
-                console.log(`⚠️ No suggested title for entry: ${entry.title}`)
+              // Generate improved title from content if current title is generic
+              const isGenericTitle = !entry.title || 
+                entry.title.toLowerCase().includes('journal entry') ||
+                entry.title.toLowerCase().includes('untitled') ||
+                entry.title.trim().length < 5
+              
+              if (isGenericTitle) {
+                const suggestedTitle = this.generateSmartTitle(entry.content, aiAnalysis.business_category, aiAnalysis.primary_mood)
+                if (suggestedTitle && suggestedTitle !== entry.title) {
+                  updateData.title = suggestedTitle
+                  console.log(`📝 Enhanced title: "${entry.title}" → "${suggestedTitle}"`)
+                }
               }
               
               const { error: updateError } = await supabase
@@ -151,6 +170,61 @@ export class AIMigrationService {
     return mapping[aiMood] || aiMood
   }
 
+  // Generate smart titles from content using enhanced logic
+  private static generateSmartTitle(content: string, category: string, mood: string): string {
+    if (!content?.trim()) return "Journal Entry"
+    
+    // Remove extra whitespace and get first sentence
+    const cleanText = content.trim().replace(/\s+/g, ' ')
+    const firstSentence = cleanText.split(/[.!?]/)[0]
+    
+    // Business context keywords for better titles
+    const businessKeywords = {
+      growth: ['expanding', 'scaling', 'growing', 'opportunity', 'market'],
+      challenge: ['problem', 'issue', 'difficulty', 'obstacle', 'concern'],
+      achievement: ['completed', 'finished', 'accomplished', 'success', 'milestone'],
+      planning: ['strategy', 'plan', 'roadmap', 'vision', 'goals'],
+      learning: ['learned', 'insight', 'understanding', 'discovered', 'realized'],
+      research: ['analyzing', 'investigating', 'studying', 'exploring', 'researching']
+    }
+    
+    // Find meaningful words that relate to business context
+    const words = firstSentence.toLowerCase().split(' ')
+    const categoryKey = category.toLowerCase()
+    const relevantKeywords = businessKeywords[categoryKey as keyof typeof businessKeywords] || []
+    
+    // Look for business-relevant terms
+    const hasBusinessContext = words.some(word => 
+      relevantKeywords.includes(word) ||
+      ['client', 'customer', 'revenue', 'profit', 'team', 'product', 'service', 'business'].includes(word)
+    )
+    
+    // If first sentence is too long, take meaningful part
+    if (firstSentence.length > 50) {
+      const meaningfulWords = firstSentence.split(' ').filter(word => 
+        word.length > 2 && 
+        !['the', 'and', 'but', 'for', 'are', 'was', 'were', 'been', 'have', 'has', 'had', 'will', 'would', 'could', 'should'].includes(word.toLowerCase())
+      )
+      
+      if (meaningfulWords.length >= 3) {
+        const title = meaningfulWords.slice(0, 6).join(' ')
+        return hasBusinessContext ? title : `${category}: ${title}`
+      }
+      
+      const title = words.slice(0, 8).join(' ')
+      return hasBusinessContext ? title : `${category}: ${title}`
+    }
+    
+    // Return first sentence if reasonable length
+    if (firstSentence.length >= 10) {
+      return hasBusinessContext ? firstSentence : `${category}: ${firstSentence}`
+    }
+    
+    // Fallback to first few words with category context
+    const title = cleanText.split(' ').slice(0, 6).join(' ')
+    return hasBusinessContext ? title : `${category}: ${title}`
+  }
+
   // Check specific entry needs migration
   static entryNeedsMigration(entry: JournalEntry): boolean {
     // Check if entry has old-style analysis or inconsistent data
@@ -162,10 +236,22 @@ export class AIMigrationService {
 
   // Migrate a single entry
   static async migrateSingleEntry(entry: JournalEntry): Promise<JournalEntry> {
-    const aiAnalysis = await analyzeBusinessSentimentAI(entry.content, entry.title)
+    const aiAnalysis = await analyzeJournalEntry(entry.content, entry.user_id)
+    
+    const sentimentData = {
+      primary_mood: aiAnalysis.primary_mood,
+      confidence: aiAnalysis.confidence,
+      energy: aiAnalysis.energy,
+      mood_polarity: aiAnalysis.mood_polarity,
+      emotions: [aiAnalysis.primary_mood],
+      insights: [`Enhanced AI v2.0 - Confidence: ${aiAnalysis.confidence}%`],
+      business_category: aiAnalysis.business_category,
+      rules_matched: aiAnalysis.rules_matched || [],
+      user_learned: aiAnalysis.user_learned
+    }
     
     const updates = {
-      sentiment_data: aiAnalysis,
+      sentiment_data: sentimentData,
       category: this.mapBusinessCategoryToJournal(aiAnalysis.business_category),
       mood: this.mapAIMoodToJournal(aiAnalysis.primary_mood)
     }
