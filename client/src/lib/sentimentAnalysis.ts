@@ -285,39 +285,87 @@ export function getMoodColor(mood: string): string {
 // Get mood emoji for display
 export function getMoodEmoji(mood: string): string {
   const emojiMap: Record<string, string> = {
-    // Lowercase versions
+    // Lowercase versions - all using emotional facial expressions
     'optimistic': '😊',
     'frustrated': '😤',
-    'focused': '🎯',
+    'focused': '😌',        // Changed from 🎯 to calm/focused face
     'reflective': '🤔',
-    'confident': '💪',
-    'excited': '⚡',
-    'determined': '🔥',
-    'accomplished': '🏆',
+    'confident': '😎',      // Changed from 💪 to confident/cool face
+    'excited': '😃',        // Changed from ⚡ to excited face
+    'determined': '😤',     // Changed from 🔥 to determined face
+    'accomplished': '😊',   // Changed from 🏆 to proud/happy face
     'thoughtful': '🤔',
-    'curious': '🤔',
+    'curious': '🤨',        // Changed to raised eyebrow curious face
     'sad': '😢',
     'tired': '😴',
     'conflicted': '😔',
     'stressed': '😰',
-    'uncertain': '🤔',
+    'uncertain': '😕',      // Changed from 🤔 to uncertain face
     'neutral': '😐',
-    // Capitalized versions (from AI)
+    'worried': '😟',        // Added worried expression
+    'proud': '😌',          // Added proud expression
+    'pleased': '😊',        // Added pleased expression
+    'relieved': '😌',       // Added relieved expression
+    'energised': '😃',      // Added energised expression
+    'encouraged': '😊',     // Added encouraged expression
+    'hopeful': '🙂',        // Added hopeful expression
+    'positive': '😊',       // Added positive expression
+    'analytical': '🤔',     // Added analytical expression
+    'methodical': '😌',     // Added methodical expression
+    'organised': '😊',      // Added organised expression
+    'practical': '🙂',      // Added practical expression
+    'prepared': '😌',       // Added prepared expression
+    'strategic': '🤔',      // Added strategic expression
+    'resolved': '😌',       // Added resolved expression
+    'insightful': '🤔',     // Added insightful expression
+    'humbled': '😔',        // Added humbled expression
+    'balanced': '😌',       // Added balanced expression
+    'observant': '🤨',      // Added observant expression
+    'inquisitive': '🤔',    // Added inquisitive expression
+    'investigative': '🤔',  // Added investigative expression
+    'exploratory': '🤔',    // Added exploratory expression
+    'pragmatic': '😌',      // Added pragmatic expression
+    'open-minded': '🙂',    // Added open-minded expression
+    // Capitalized versions (from AI) - all using emotional facial expressions
     'Optimistic': '😊',
     'Frustrated': '😤',
-    'Focused': '🎯',
+    'Focused': '😌',
     'Reflective': '🤔',
-    'Confident': '💪',
-    'Excited': '⚡',
-    'Determined': '🔥',
-    'Accomplished': '🏆',
+    'Confident': '😎',
+    'Excited': '😃',
+    'Determined': '😤',
+    'Accomplished': '😊',
     'Thoughtful': '🤔',
-    'Curious': '🤔',
+    'Curious': '🤨',
     'Sad': '😢',
     'Tired': '😴',
     'Conflicted': '😔',
     'Stressed': '😰',
-    'Uncertain': '🤔'
+    'Uncertain': '😕',
+    'Worried': '😟',
+    'Proud': '😌',
+    'Pleased': '😊',
+    'Relieved': '😌',
+    'Energised': '😃',
+    'Encouraged': '😊',
+    'Hopeful': '🙂',
+    'Positive': '😊',
+    'Analytical': '🤔',
+    'Methodical': '😌',
+    'Organised': '😊',
+    'Practical': '🙂',
+    'Prepared': '😌',
+    'Strategic': '🤔',
+    'Resolved': '😌',
+    'Insightful': '🤔',
+    'Humbled': '😔',
+    'Balanced': '😌',
+    'Observant': '🤨',
+    'Inquisitive': '🤔',
+    'Investigative': '🤔',
+    'Exploratory': '🤔',
+    'Pragmatic': '😌',
+    'Open-minded': '🙂'
   };
   
   return emojiMap[mood] || emojiMap[mood.toLowerCase()] || emojiMap.neutral;
