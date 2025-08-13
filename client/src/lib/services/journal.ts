@@ -12,51 +12,95 @@ function generateContextualInsights(aiAnalysis: AIAnalysisResult, content: strin
   const mood = aiAnalysis.primary_mood.toLowerCase();
   const confidence = aiAnalysis.confidence;
   
-  // Rule-based contextual insights for specific business scenarios
+  // Financial/funding-related insights (most specific)
   if (lowerContent.includes('funding') || lowerContent.includes('investment') || lowerContent.includes('investor') || 
       lowerContent.includes('funds') || lowerContent.includes('capital') || lowerContent.includes('money') || 
       lowerContent.includes('cash flow') || lowerContent.includes('financial') || lowerContent.includes('budget')) {
     
     if (lowerContent.includes('worried') || lowerContent.includes('concern') || lowerContent.includes('trouble')) {
       insights.push("Financial concerns are normal for entrepreneurs. Create a detailed cash flow forecast and identify your 3 most critical revenue drivers to focus on.");
+      insights.push("Turn financial pressure into operational clarity. The businesses that survive cash crunches emerge stronger and more efficient.");
     } else if (lowerContent.includes('series a') || lowerContent.includes('seed') || lowerContent.includes('raised')) {
       insights.push("Fundraising is a full-time job that pauses building. Set clear timelines, prepare thoroughly, and get back to customers fast.");
+      insights.push("New funding means new accountability. Use this capital to prove your business model works at scale, not just to extend runway.");
     } else {
       insights.push("Funding is fuel, not validation. Stay focused on unit economics and customer satisfaction - investors bet on execution, not ideas.");
+      insights.push("Smart money management separates successful startups from failures. Every dollar should drive measurable business growth.");
     }
   }
   
-  // Category-specific insights
+  // Team/hiring-related insights
+  else if (lowerContent.includes('team') || lowerContent.includes('hiring') || lowerContent.includes('employees') || 
+           lowerContent.includes('staff') || lowerContent.includes('onboard')) {
+    if (category === 'growth') {
+      insights.push("Growth creates new problems - this is progress, not failure. Scale your systems before scaling your team.");
+      insights.push("Great teams aren't built by hiring fast - they're built by hiring intentionally. Culture scales harder than code.");
+    } else if (category === 'planning') {
+      insights.push("Strategic thinking separates entrepreneurs from operators. Your planning today determines your opportunities tomorrow.");
+      insights.push("Hiring roadmaps reveal business strategy. Who you hire next shows where you're betting the company will grow.");
+    } else {
+      insights.push("Team building is product building. The people you choose determine the solutions you can create.");
+      insights.push("Every hire changes company DNA. Choose people who elevate the team's collective ability to solve hard problems.");
+    }
+  }
+  
+  // Product/launch-related insights
+  else if (lowerContent.includes('product') || lowerContent.includes('launch') || lowerContent.includes('feature') || 
+           lowerContent.includes('release') || lowerContent.includes('build')) {
+    if (category === 'achievement') {
+      insights.push("Celebrate wins, then dissect them. Understanding why things work is more valuable than the success itself.");
+      insights.push("Product launches are learning experiments. The real work begins after customers start using what you built.");
+    } else {
+      insights.push("Product decisions compound over time. What feels like a small choice today becomes infrastructure tomorrow.");
+      insights.push("Build for the problem, not the solution you fell in love with. Customer feedback should reshape your roadmap continuously.");
+    }
+  }
+  
+  // Category-specific insights (fallback)
   else if (category === 'challenge') {
     if (confidence >= 85) {
       insights.push("Every challenge is market research disguised as a problem. Document what you're learning - these insights become your competitive advantage.");
+      insights.push("The obstacles that break weak businesses become the moats that protect strong ones. Use this resistance to build competitive barriers.");
     } else {
       insights.push("Obstacles reveal gaps between vision and execution. Use this tension to build stronger systems and processes.");
+      insights.push("Challenges test your business model's resilience. What survives stress testing becomes your sustainable competitive advantage.");
     }
   }
   
   else if (category === 'growth') {
     if (confidence >= 85) {
       insights.push("Growth creates new problems - this is progress, not failure. Scale your systems before scaling your team.");
+      insights.push("Sustainable growth requires operational discipline. The companies that scale successfully automate before they accelerate.");
     } else {
       insights.push("Sustainable growth comes from repeatable processes. Focus on what's working and eliminate what isn't.");
+      insights.push("Growth without systems creates chaos. Build the infrastructure to handle success before success arrives.");
     }
   }
   
   else if (category === 'achievement') {
     insights.push("Celebrate wins, then dissect them. Understanding why things work is more valuable than the success itself.");
+    insights.push("Achievements reveal patterns of success. Codify what worked so you can repeat and scale these victories.");
   }
   
   else if (category === 'planning') {
     insights.push("Strategic thinking separates entrepreneurs from operators. Your planning today determines your opportunities tomorrow.");
+    insights.push("Great plans survive contact with reality. Build frameworks that adapt rather than predictions that break.");
+  }
+  
+  else if (category === 'learning') {
+    insights.push("Learning accelerates decision-making quality. Every insight you gain today shortens tomorrow's learning curve.");
+    insights.push("Continuous learning is competitive advantage. The rate at which you absorb and apply knowledge determines business velocity.");
+  }
+  
+  else if (category === 'research') {
+    insights.push("Research transforms assumptions into data-driven decisions. The time you invest in understanding compounds over time.");
+    insights.push("Market research isn't academic exercise - it's competitive intelligence. Use what you learn to make better strategic bets.");
   }
   
   else {
     insights.push("Your business experience is valuable data. Document these moments to build stronger strategic thinking and decision-making abilities.");
+    insights.push("Entrepreneurial intuition develops through pattern recognition. Each experience you document strengthens your business judgment.");
   }
-  
-  // Add a general entrepreneurial insight
-  insights.push("Your entrepreneurial journey is unique. Each experience, whether challenging or rewarding, is building your business intuition.");
   
   return insights;
 }
