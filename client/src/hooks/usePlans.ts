@@ -15,7 +15,7 @@ export function usePlans() {
   } = useQuery({
     queryKey: ['usage-status', user?.id],
     queryFn: () => user ? PlansService.getUserUsageStatus(user.id) : null,
-    enabled: !!user,
+    enabled: false, // Disable this query completely to stop HEAD requests
     staleTime: 30000, // 30 seconds
     refetchOnWindowFocus: false,
   })

@@ -62,6 +62,7 @@ export default function AdminDashboardPage() {
   // Fetch admin statistics with comprehensive real data
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['admin-stats'],
+    enabled: false, // Disable to prevent any HEAD requests
     queryFn: async () => {
       console.log('Fetching comprehensive admin stats...')
       
@@ -222,7 +223,6 @@ export default function AdminDashboardPage() {
       console.log('Final comprehensive stats:', stats)
       return stats
     },
-    enabled: !!isAdmin,
     refetchInterval: 60000 // Refresh every minute
   })
 

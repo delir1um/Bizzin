@@ -77,6 +77,7 @@ export function AdminFinancialOverview() {
   // Fetch financial metrics
   const { data: metrics, isLoading: metricsLoading, refetch } = useQuery({
     queryKey: ['admin-financial-metrics'],
+    enabled: false, // Completely disable to prevent HEAD requests
     queryFn: async () => {
       console.log('Fetching financial metrics...')
       
@@ -284,6 +285,7 @@ export function AdminFinancialOverview() {
   // Fetch real transactions from user_plans (simplified to avoid foreign key issues)
   const { data: recentTransactions } = useQuery({
     queryKey: ['admin-recent-transactions'],
+    enabled: false, // Completely disable to prevent HEAD requests
     queryFn: async () => {
       try {
         // Since there's no foreign key relationship, just get basic plan data
@@ -325,8 +327,7 @@ export function AdminFinancialOverview() {
         console.log('Error accessing user_plans for transactions')
         return []
       }
-    },
-    enabled: !!metrics // Only fetch if main metrics loaded
+    }
   })
 
   const handleExportFinancials = () => {
