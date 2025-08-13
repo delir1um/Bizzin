@@ -73,7 +73,7 @@ export function AdminAIMonitorPage() {
   }
 
   const healthColor = apiStatus?.api_health === 'healthy' ? 'text-green-500' : 'text-red-500'
-  const healthIcon = apiStatus?.api_health === 'healthy' ? CheckCircle : AlertTriangle
+  const HealthIcon = apiStatus?.api_health === 'healthy' ? CheckCircle : AlertTriangle
 
   const errorRate = apiStatus ? 
     (apiStatus.errors_today / Math.max(apiStatus.requests_today, 1) * 100).toFixed(1) : '0'
@@ -119,7 +119,7 @@ export function AdminAIMonitorPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">API Health</CardTitle>
-            {healthIcon && <healthIcon.type className={`h-4 w-4 ${healthColor}`} />}
+            <HealthIcon className={`h-4 w-4 ${healthColor}`} />
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold ${healthColor}`}>
