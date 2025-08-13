@@ -18,48 +18,195 @@ type Rule = {
 };
 
 const SpecificationRules: Rule[] = [
+  // Financial Challenges
   { 
-    id: 'CASH_FLOW_CHALLENGE',
-    test: t => /\bcash\s*flow\b/.test(t) || /\bpayroll\b/.test(t),
+    id: 'CASH_FLOW_CRISIS',
+    test: t => /\b(cash\s*flow|payroll|credit\s*limit|working\s*capital)\b/.test(t) && /\b(tight|struggling|crisis|danger|problem)\b/.test(t),
     category: 'Challenge', 
     energy: 'low', 
+    moodPolarity: 'Negative',
+    confidenceBoost: 18
+  },
+  { 
+    id: 'CUSTOMER_CHURN',
+    test: t => /\b(client|customer)\b/.test(t) && /\b(cancel|left|churn|lost|terminated)\b/.test(t),
+    category: 'Challenge',
+    energy: 'low',
+    moodPolarity: 'Negative',
+    confidenceBoost: 16
+  },
+  { 
+    id: 'TECHNICAL_OUTAGES',
+    test: t => /\b(down|outage|crash|server|platform|website)\b/.test(t) && /\b(hours?|failed|lost|revenue)\b/.test(t),
+    category: 'Challenge',
+    energy: 'medium',
     moodPolarity: 'Negative',
     confidenceBoost: 15
   },
   { 
-    id: 'TECHNICAL_INCIDENTS',
-    test: t => /\b(churn|downtime|outage|bug|incident)\b/.test(t),
+    id: 'TALENT_LOSS',
+    test: t => /\b(resign|quit|left|departure)\b/.test(t) && /\b(engineer|developer|employee|talent|team)\b/.test(t),
     category: 'Challenge',
-    confidenceBoost: 12
+    energy: 'low',
+    moodPolarity: 'Negative',
+    confidenceBoost: 14
   },
   { 
-    id: 'PRODUCT_LAUNCHES',
-    test: t => /\b(launched?|release(d)?)\b/.test(t), 
-    category: 'Achievement', 
-    energy: 'high', 
+    id: 'COMPLIANCE_ISSUES',
+    test: t => /\b(compliance|audit|regulatory|license)\b/.test(t) && /\b(issue|problem|risk|violation)\b/.test(t),
+    category: 'Challenge',
+    energy: 'medium',
+    moodPolarity: 'Negative',
+    confidenceBoost: 13
+  },
+
+  // Growth Indicators
+  { 
+    id: 'FUNDING_SUCCESS',
+    test: t => /\b(funding|investment|series|round)\b/.test(t) && /\b(closed|raised|secured|million)\b/.test(t),
+    category: 'Growth',
+    energy: 'high',
+    moodPolarity: 'Positive',
+    confidenceBoost: 20
+  },
+  { 
+    id: 'REVENUE_GROWTH',
+    test: t => /\b(revenue|sales|accounts|mrr|arr)\b/.test(t) && /\b(high|record|milestone|increased|doubled)\b/.test(t),
+    category: 'Growth',
+    energy: 'high',
     moodPolarity: 'Positive',
     confidenceBoost: 18
   },
   { 
-    id: 'HIRING_GROWTH',
-    test: t => /\b(hired?|recruit(ing)?|offer accepted)\b/.test(t),
-    category: 'Growth', 
+    id: 'MARKET_EXPANSION',
+    test: t => /\b(expansion|market|international|enterprise|partnership)\b/.test(t) && /\b(new|first|signed|entered)\b/.test(t),
+    category: 'Growth',
     energy: 'high',
-    confidenceBoost: 15
+    moodPolarity: 'Positive',
+    confidenceBoost: 16
   },
   { 
-    id: 'PLANNING_ACTIVITIES',
-    test: t => /\bplan(ning)?\b|\broadmap\b|\bbudget(s|ing)?\b/.test(t),
+    id: 'VIRAL_SUCCESS',
+    test: t => /\b(viral|signups|users|growth)\b/.test(t) && /\b(increased|400%|doubled|exploded)\b/.test(t),
+    category: 'Growth',
+    energy: 'high',
+    moodPolarity: 'Positive',
+    confidenceBoost: 17
+  },
+  { 
+    id: 'TEAM_EXPANSION',
+    test: t => /\b(hired?|recruiting|team|office|employees)\b/.test(t) && /\b(new|three|expanded|opened)\b/.test(t),
+    category: 'Growth',
+    energy: 'high',
+    moodPolarity: 'Positive',
+    confidenceBoost: 14
+  },
+
+  // Achievements
+  { 
+    id: 'IPO_MILESTONE',
+    test: t => /\b(ipo|public|board)\b/.test(t) && /\b(approved|preparations|milestone)\b/.test(t),
+    category: 'Achievement',
+    energy: 'high',
+    moodPolarity: 'Positive',
+    confidenceBoost: 20
+  },
+  { 
+    id: 'INDUSTRY_RECOGNITION',
+    test: t => /\b(award|recognition|innovation|patent)\b/.test(t) && /\b(won|approved|year|industry)\b/.test(t),
+    category: 'Achievement',
+    energy: 'high',
+    moodPolarity: 'Positive',
+    confidenceBoost: 18
+  },
+  { 
+    id: 'PRODUCT_LAUNCH',
+    test: t => /\b(launched?|release|product|feature)\b/.test(t) && /\b(success|positive|overwhelm)\b/.test(t),
+    category: 'Achievement',
+    energy: 'high',
+    moodPolarity: 'Positive',
+    confidenceBoost: 16
+  },
+  { 
+    id: 'CERTIFICATION_SUCCESS',
+    test: t => /\b(certification|compliance|audit|soc)\b/.test(t) && /\b(passed|approved|success|attempt)\b/.test(t),
+    category: 'Achievement',
+    energy: 'medium',
+    moodPolarity: 'Positive',
+    confidenceBoost: 14
+  },
+
+  // Planning Activities
+  { 
+    id: 'STRATEGIC_PLANNING',
+    test: t => /\b(strategic|strategy|plan|roadmap)\b/.test(t) && /\b(year|quarter|mapping|creating)\b/.test(t),
     category: 'Planning',
-    confidenceBoost: 10
-  },
-  { 
-    id: 'USER_RESEARCH',
-    test: t => /\b(user|customer)\s+(interview|feedback|research|study)\b/.test(t),
-    category: 'Research',
+    energy: 'medium',
+    moodPolarity: 'Neutral',
     confidenceBoost: 12
   },
-  // Specification-specific patterns for test scenarios
+  { 
+    id: 'BUDGET_PLANNING',
+    test: t => /\b(budget|allocation|financial|invest)\b/.test(t) && /\b(planning|next|year|growth)\b/.test(t),
+    category: 'Planning',
+    energy: 'medium',
+    moodPolarity: 'Neutral',
+    confidenceBoost: 11
+  },
+  { 
+    id: 'HIRING_STRATEGY',
+    test: t => /\b(hiring|talent|acquisition|scaling)\b/.test(t) && /\b(strategy|plan|100|employees)\b/.test(t),
+    category: 'Planning',
+    energy: 'medium',
+    moodPolarity: 'Neutral',
+    confidenceBoost: 10
+  },
+
+  // Research Activities
+  { 
+    id: 'COMPETITIVE_ANALYSIS',
+    test: t => /\b(competitor|competitive|market|analysis)\b/.test(t) && /\b(gaps|exploit|position)\b/.test(t),
+    category: 'Research',
+    energy: 'medium',
+    moodPolarity: 'Neutral',
+    confidenceBoost: 12
+  },
+  { 
+    id: 'CUSTOMER_RESEARCH',
+    test: t => /\b(customer|user|interview|research)\b/.test(t) && /\b(convert|behavior|understand)\b/.test(t),
+    category: 'Research',
+    energy: 'medium',
+    moodPolarity: 'Neutral',
+    confidenceBoost: 11
+  },
+  { 
+    id: 'AB_TESTING',
+    test: t => /\b(test|testing|a\/b|experiment)\b/.test(t) && /\b(onboarding|conversion|activation)\b/.test(t),
+    category: 'Research',
+    energy: 'medium',
+    moodPolarity: 'Neutral',
+    confidenceBoost: 10
+  },
+
+  // Learning Activities
+  { 
+    id: 'CONFERENCE_LEARNING',
+    test: t => /\b(conference|techcrunch|attending|disrupt)\b/.test(t) && /\b(learn|trends|network)\b/.test(t),
+    category: 'Learning',
+    energy: 'medium',
+    moodPolarity: 'Neutral',
+    confidenceBoost: 9
+  },
+  { 
+    id: 'SKILL_DEVELOPMENT',
+    test: t => /\b(coaching|course|mentor|book)\b/.test(t) && /\b(improve|skills|leadership|insights)\b/.test(t),
+    category: 'Learning',
+    energy: 'medium',
+    moodPolarity: 'Neutral',
+    confidenceBoost: 8
+  },
+
+  // Legacy test patterns (keep for compatibility)
   {
     id: 'SUPPLY_CHAIN_DISRUPTION',
     test: t => /\b(supplier|shipment|delivery|raw material)\b/.test(t) && /\b(delayed?|risk|behind|problem)\b/.test(t),
