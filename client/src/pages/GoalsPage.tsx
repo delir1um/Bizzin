@@ -283,13 +283,7 @@ export function GoalsPage() {
                 transition-all duration-300 hover:shadow-lg hover:shadow-orange-200 dark:hover:shadow-orange-900/30
                 relative overflow-hidden group"
             >
-              <motion.div
-                animate={{ rotate: [0, 360] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                className="group-hover:animate-none"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-              </motion.div>
+              <Plus className="w-4 h-4 mr-2" />
               <span className="relative z-10">New Goal</span>
               
               {/* Animated background shine */}

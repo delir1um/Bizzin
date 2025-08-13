@@ -81,7 +81,7 @@ export function BizBuilderToolsPage() {
 
   const handleToolSelect = (toolId: string) => {
     // Add delightful transition animation
-    const toolElement = document.querySelector(`[data-tool-id="${toolId}"]`)
+    const toolElement = document.querySelector(`[data-tool-id="${toolId}"]`) as HTMLElement
     if (toolElement) {
       toolElement.style.transform = 'scale(0.95)'
       setTimeout(() => {
@@ -149,16 +149,7 @@ export function BizBuilderToolsPage() {
                 className="border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-950/20
                   transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
               >
-                <motion.div
-                  animate={{ rotate: [0, 180, 360] }}
-                  transition={{ 
-                    duration: 3, 
-                    repeat: Infinity, 
-                    ease: "linear" 
-                  }}
-                >
-                  <Calculator className="w-4 h-4 mr-2" />
-                </motion.div>
+                <Calculator className="w-4 h-4 mr-2" />
                 Professional Suite
               </Button>
             </motion.div>
