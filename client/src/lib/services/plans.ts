@@ -4,68 +4,123 @@ import type { UserPlan, UsageLimits, PlanLimits, UsageStatus, PlanType } from '@
 export class PlansService {
   // Get user's current plan
   static async getUserPlan(userId: string): Promise<UserPlan | null> {
-    const { data, error } = await supabase
-      .from('user_plans')
-      .select('*')
-      .eq('user_id', userId)
-      .single()
+    try {
+      const { data, error } = await supabase
+        .from('user_plans')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle()
 
-    if (error) {
-      // If no plan exists, create a free plan for the user
-      if (error.code === 'PGRST116') {
-        console.log('No plan found for user, creating free plan')
-        const { data: newPlan, error: createError } = await supabase
-          .from('user_plans')
-          .insert([{ user_id: userId, plan_type: 'free' }])
-          .select()
-          .single()
-
-        if (createError) {
-          console.error('Error creating user plan:', createError)
-          return null
+      if (error) {
+        // If table doesn't exist or there's a schema issue, return default free plan
+        if (error.code === '42P01' || error.message?.includes('relation') || error.message?.includes('does not exist')) {
+          console.log('user_plans table not available, using default free plan')
+          return this.createDefaultFreePlan(userId)
         }
+        
+        // If no plan exists, create a free plan for the user
+        if (error.code === 'PGRST116') {
+          console.log('No plan found for user, creating free plan')
+          try {
+            const { data: newPlan, error: createError } = await supabase
+              .from('user_plans')
+              .insert([{ user_id: userId, plan_type: 'free' }])
+              .select()
+              .single()
 
-        return newPlan
+            if (createError) {
+              console.log('Error creating user plan, using default:', createError.message)
+              return this.createDefaultFreePlan(userId)
+            }
+
+            return newPlan
+          } catch (insertError) {
+            console.log('Insert failed, using default free plan')
+            return this.createDefaultFreePlan(userId)
+          }
+        }
+        
+        console.log('Plan query error, using default:', error.message)
+        return this.createDefaultFreePlan(userId)
       }
-      console.error('Error fetching user plan:', error)
-      return null
-    }
 
-    return data
+      return data || this.createDefaultFreePlan(userId)
+    } catch (error) {
+      console.log('getUserPlan failed, using default free plan')
+      return this.createDefaultFreePlan(userId)
+    }
+  }
+
+  // Create a default free plan for users when database is not available
+  static createDefaultFreePlan(userId: string): UserPlan {
+    const now = new Date().toISOString()
+    return {
+      id: `default-${userId}`,
+      user_id: userId,
+      plan_type: 'free',
+      plan_status: 'active',
+      created_at: now,
+      updated_at: now
+    }
   }
 
   // Get current month usage limits
   static async getUserUsage(userId: string): Promise<UsageLimits | null> {
     const currentMonth = new Date().toISOString().substring(0, 7) // YYYY-MM format
     
-    // First try to get existing usage record
-    let { data, error } = await supabase
-      .from('usage_limits')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('month_year', currentMonth)
-      .single()
-
-    if (error && error.code === 'PGRST116') {
-      // No record exists, create one
-      const { data: newUsage, error: createError } = await supabase
+    try {
+      // First try to get existing usage record
+      let { data, error } = await supabase
         .from('usage_limits')
-        .insert([{ user_id: userId, month_year: currentMonth }])
-        .select()
-        .single()
+        .select('*')
+        .eq('user_id', userId)
+        .eq('month_year', currentMonth)
+        .maybeSingle()
 
-      if (createError) {
-        console.error('Error creating usage limits:', createError)
-        return null
+      if (error && error.code === 'PGRST116') {
+        // No record exists, try to create one
+        try {
+          const { data: newUsage, error: createError } = await supabase
+            .from('usage_limits')
+            .insert([{ user_id: userId, month_year: currentMonth }])
+            .select()
+            .single()
+
+          if (createError) {
+            console.log('Error creating usage limits, using default:', createError.message)
+            return this.createDefaultUsageLimits(userId, currentMonth)
+          }
+
+          data = newUsage
+        } catch (insertError) {
+          return this.createDefaultUsageLimits(userId, currentMonth)
+        }
+      } else if (error) {
+        console.log('Error fetching user usage, using default:', error.message)
+        return this.createDefaultUsageLimits(userId, currentMonth)
       }
 
-      data = newUsage
-    } else if (error) {
-      console.error('Error fetching user usage:', error)
-      return null
+      return data || this.createDefaultUsageLimits(userId, currentMonth)
+    } catch (error) {
+      return this.createDefaultUsageLimits(userId, currentMonth)
     }
+  }
 
-    return data
+  // Create default usage limits when database is not available
+  static createDefaultUsageLimits(userId: string, monthYear: string): UsageLimits {
+    const now = new Date().toISOString()
+    return {
+      id: `default-${userId}-${monthYear}`,
+      user_id: userId,
+      month_year: monthYear,
+      storage_used: 0,
+      documents_uploaded: 0,
+      journal_entries_created: 0,
+      goals_created: 0,
+      calculator_uses: {},
+      created_at: now,
+      updated_at: now
+    }
   }
 
   // Get plan limits for a specific plan type
