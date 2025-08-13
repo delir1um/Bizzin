@@ -104,26 +104,26 @@ export function BizBuilderStatsCard({ onNavigate }: BizBuilderStatsCardProps) {
           <div className="p-2 rounded-lg bg-orange-500/10 text-orange-600 dark:text-orange-400">
             <Calculator className="w-5 h-5" />
           </div>
-          <CardTitle className="text-base font-semibold text-orange-900 dark:text-orange-100">
-            BizBuilder Tools
-          </CardTitle>
+          <h3 className="font-semibold text-gray-900 dark:text-gray-100">BizBuilder Tools</h3>
         </div>
       </CardHeader>
       
-      <CardContent className="flex-1 flex flex-col justify-between pb-12">
-        {/* Main Stats */}
-        <div className="space-y-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-orange-900 dark:text-orange-100 mb-1">
-              {totalCalculations}
-            </div>
-            <div className="text-sm text-orange-700 dark:text-orange-300">
-              {hasCalculations ? 'Saved Scenarios' : 'Start Planning'}
-            </div>
+      <CardContent className="flex flex-col h-full space-y-4">
+        {/* Primary Metrics */}
+        <div className="text-center space-y-1">
+          <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+            {totalCalculations}
           </div>
-
-          {/* Progress Bar */}
-          <div className="space-y-2">
+          <div className="text-sm text-gray-600 dark:text-gray-400">
+            {hasCalculations ? 'Saved Scenarios' : 'Start Planning'}
+          </div>
+          <div className="text-xs font-medium text-orange-600 dark:text-orange-400">
+            {hasCalculations ? 'Planning' : 'Getting Started'}
+          </div>
+        </div>
+        
+        {/* Progress Bar */}
+        <div className="space-y-2">
             <div className="w-full bg-orange-200/50 dark:bg-orange-800/30 rounded-full h-3">
               <div 
                 className="bg-gradient-to-r from-orange-400 to-orange-500 h-3 rounded-full transition-all duration-500"
@@ -136,47 +136,36 @@ export function BizBuilderStatsCard({ onNavigate }: BizBuilderStatsCardProps) {
             </div>
           </div>
 
-          {/* Activity Stats */}
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <BarChart3 className="w-3 h-3 text-orange-600 dark:text-orange-400" />
-                <span className="font-semibold text-orange-900 dark:text-orange-100">
-                  {toolsUsed}
-                </span>
-              </div>
-              <div className="text-orange-700 dark:text-orange-300">Tools Used</div>
-            </div>
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <TrendingUp className="w-3 h-3 text-orange-600 dark:text-orange-400" />
-                <span className="font-semibold text-orange-900 dark:text-orange-100">
-                  {recentCalculations}
-                </span>
-              </div>
-              <div className="text-orange-700 dark:text-orange-300">This Week</div>
-            </div>
+        {/* Secondary Stats */}
+        <div className="grid grid-cols-2 gap-3 text-sm">
+          <div className="text-center">
+            <div className="font-semibold text-gray-900 dark:text-gray-100">{toolsUsed}</div>
+            <div className="text-gray-600 dark:text-gray-400">Tools Used</div>
           </div>
+          <div className="text-center">
+            <div className="font-semibold text-gray-900 dark:text-gray-100">{recentCalculations}</div>
+            <div className="text-gray-600 dark:text-gray-400">This Week</div>
+          </div>
+        </div>
 
-          {/* Status Information */}
-          <div className="text-xs text-orange-600 dark:text-orange-400 text-center">
-            {hasRecentActivity ? (
-              <>
-                <FileSpreadsheet className="h-3 w-3 inline mr-1" />
-                Last: {getCalculatorDisplayName(mostRecentCalc.calculator_type)} {getTimeSince(mostRecentCalc.created_at)}
-              </>
-            ) : hasCalculations ? (
-              <>
-                <FileSpreadsheet className="h-3 w-3 inline mr-1" />
-                Last calculation: {getTimeSince(mostRecentCalc.created_at)}
-              </>
-            ) : (
-              <>
-                <FileSpreadsheet className="h-3 w-3 inline mr-1" />
-                6 powerful calculators to plan and grow your business
-              </>
-            )}
-          </div>
+        {/* Status Information */}
+        <div className="text-xs text-gray-600 dark:text-gray-400 text-center">
+          {hasRecentActivity ? (
+            <>
+              <FileSpreadsheet className="h-3 w-3 inline mr-1" />
+              Last: {getCalculatorDisplayName(mostRecentCalc.calculator_type)} {getTimeSince(mostRecentCalc.created_at)}
+            </>
+          ) : hasCalculations ? (
+            <>
+              <FileSpreadsheet className="h-3 w-3 inline mr-1" />
+              Last calculation: {getTimeSince(mostRecentCalc.created_at)}
+            </>
+          ) : (
+            <>
+              <FileSpreadsheet className="h-3 w-3 inline mr-1" />
+              6 powerful calculators to plan and grow your business
+            </>
+          )}
         </div>
 
         {/* Spacer to push button to bottom */}
