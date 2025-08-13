@@ -957,8 +957,14 @@ export function JournalPage() {
               {Object.keys(organizedEntries.previousYears).length > 0 && 
                 Object.keys(organizedEntries.previousYears)
                   .sort((a, b) => parseInt(b) - parseInt(a)) // Sort years in descending order
-                  .map(year => (
-                    <div key={year} className="space-y-3 mt-8">
+                  .map((year, index) => (
+                    <motion.div 
+                      key={year} 
+                      className="space-y-3 mt-8"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: 1.8 + index * 0.2, ease: "easeOut" }}
+                    >
                       <Button
                         variant="ghost"
                         className="flex items-center justify-between w-full p-4 hover:bg-gradient-to-r hover:from-slate-50 hover:to-slate-100 rounded-xl border border-slate-200 hover:border-slate-300 transition-all duration-200"
@@ -1012,7 +1018,7 @@ export function JournalPage() {
                           </motion.div>
                         </AnimatePresence>
                       )}
-                    </div>
+                    </motion.div>
                   ))
               }
             </>
