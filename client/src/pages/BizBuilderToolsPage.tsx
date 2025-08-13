@@ -380,9 +380,9 @@ export function BizBuilderToolsPage() {
       {/* Business Budget Calculator */}
       {selectedTool === 'business-budget' && (
         <motion.div
-          initial={{ opacity: 0, y: 20, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -20, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.98 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
         >
           <BusinessBudgetCalculator onClose={() => setSelectedTool(null)} />
@@ -392,9 +392,9 @@ export function BizBuilderToolsPage() {
       {/* Cash Flow Projection Calculator */}
       {selectedTool === 'cash-flow' && (
         <motion.div
-          initial={{ opacity: 0, y: 20, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -20, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.98 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
         >
           <CashFlowCalculator onClose={() => setSelectedTool(null)} />
@@ -404,9 +404,9 @@ export function BizBuilderToolsPage() {
       {/* Break-Even Calculator */}
       {selectedTool === 'break-even' && (
         <motion.div
-          initial={{ opacity: 0, y: 20, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -20, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.98 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
         >
           <BreakEvenCalculator onClose={() => setSelectedTool(null)} />
@@ -416,9 +416,9 @@ export function BizBuilderToolsPage() {
       {/* Loan Amortisation Calculator */}
       {selectedTool === 'loan-amortisation' && (
         <motion.div
-          initial={{ opacity: 0, y: 20, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -20, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.98 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
         >
           <LoanAmortisationCalculator onClose={() => setSelectedTool(null)} />
@@ -428,9 +428,9 @@ export function BizBuilderToolsPage() {
       {/* Compound Interest Calculator */}
       {selectedTool === 'compound-interest' && (
         <motion.div
-          initial={{ opacity: 0, y: 20, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -20, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.98 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
         >
           <CompoundInterestCalculator onClose={() => setSelectedTool(null)} />
@@ -440,9 +440,9 @@ export function BizBuilderToolsPage() {
       {/* Simple Interest Calculator */}
       {selectedTool === 'simple-interest' && (
         <motion.div
-          initial={{ opacity: 0, y: 20, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -20, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.98 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
         >
           <SimpleInterestCalculator onClose={() => setSelectedTool(null)} />
