@@ -251,7 +251,7 @@ export function GoalsPage() {
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
+            transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
           >
             <motion.h1 
               className="text-3xl font-bold text-slate-900 dark:text-white"
@@ -278,7 +278,7 @@ export function GoalsPage() {
               className="mt-2 text-lg text-slate-600 dark:text-slate-300"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
             >
               Set, track, and achieve your business objectives
             </motion.p>
@@ -288,7 +288,7 @@ export function GoalsPage() {
             className="mt-4 sm:mt-0"
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.4, ease: "backOut" }}
+            transition={{ duration: 0.6, delay: 0.3, ease: "backOut" }}
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -316,12 +316,12 @@ export function GoalsPage() {
         className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.5, staggerChildren: 0.1 }}
+        transition={{ duration: 0.6, delay: 0.4, staggerChildren: 0.1 }}
       >
         <motion.div
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
           whileHover={{ scale: 1.02, y: -4 }}
         >
           <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800
@@ -343,7 +343,7 @@ export function GoalsPage() {
                       className="text-2xl font-bold text-orange-900 dark:text-orange-100"
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      transition={{ duration: 0.5, delay: 0.8, type: "spring" }}
+                      transition={{ duration: 0.5, delay: 0.7, type: "spring" }}
                     >
                       {stats.total}
                     </motion.div>
@@ -358,7 +358,7 @@ export function GoalsPage() {
         <motion.div
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.7 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
           whileHover={{ scale: 1.02, y: -4 }}
         >
           <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900 border-green-200 dark:border-green-800
@@ -383,7 +383,7 @@ export function GoalsPage() {
                       className="text-2xl font-bold text-green-900 dark:text-green-100"
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      transition={{ duration: 0.5, delay: 0.9, type: "spring" }}
+                      transition={{ duration: 0.5, delay: 0.8, type: "spring" }}
                     >
                       {stats.completed}
                     </motion.div>
@@ -398,7 +398,7 @@ export function GoalsPage() {
         <motion.div
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.8 }}
+          transition={{ duration: 0.5, delay: 0.7 }}
           whileHover={{ scale: 1.02, y: -4 }}
         >
           <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-900 border-blue-200 dark:border-blue-800
@@ -423,7 +423,7 @@ export function GoalsPage() {
                       className="text-2xl font-bold text-blue-900 dark:text-blue-100"
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      transition={{ duration: 0.5, delay: 1.0, type: "spring" }}
+                      transition={{ duration: 0.5, delay: 0.9, type: "spring" }}
                     >
                       {stats.inProgress}
                     </motion.div>
@@ -438,7 +438,7 @@ export function GoalsPage() {
         <motion.div
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.9 }}
+          transition={{ duration: 0.5, delay: 0.8 }}
           whileHover={{ scale: 1.02, y: -4 }}
         >
           <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-purple-50 to-pink-100 dark:from-purple-950 dark:to-pink-900 border-purple-200 dark:border-purple-800
@@ -463,7 +463,7 @@ export function GoalsPage() {
                       className="text-2xl font-bold text-purple-900 dark:text-purple-100"
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      transition={{ duration: 0.5, delay: 1.1, type: "spring" }}
+                      transition={{ duration: 0.5, delay: 1.0, type: "spring" }}
                     >
                       {Math.round(stats.successRate)}%
                     </motion.div>
@@ -481,7 +481,7 @@ export function GoalsPage() {
         className="mb-6 space-y-4"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 1.2 }}
+        transition={{ duration: 0.6, delay: 0.7 }}
       >
         {/* Search Bar */}
         <div className="flex flex-col lg:flex-row gap-4">
@@ -669,7 +669,12 @@ export function GoalsPage() {
       ) : (
         <>
           {/* Results Info */}
-          <div className="flex justify-between items-center mb-4">
+          <motion.div 
+            className="flex justify-between items-center mb-4"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.8 }}
+          >
             <p className="text-sm text-slate-600 dark:text-slate-400">
               Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, processedGoals.length)} of {processedGoals.length} goals
               {(searchQuery || statusFilter !== 'all' || priorityFilter !== 'all') && 
@@ -678,10 +683,15 @@ export function GoalsPage() {
             <p className="text-sm text-slate-600 dark:text-slate-400">
               Page {currentPage} of {Math.max(1, totalPages)}
             </p>
-          </div>
+          </motion.div>
 
           {/* Goals Grid/List */}
-          <AnimatedGrid 
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.9 }}
+          >
+            <AnimatedGrid 
             className={
               viewMode === 'grid' 
                 ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8"
@@ -700,7 +710,8 @@ export function GoalsPage() {
               />
               </AnimatedItem>
             ))}
-          </AnimatedGrid>
+            </AnimatedGrid>
+          </motion.div>
 
           {/* Pagination Controls */}
           {totalPages > 1 && (
