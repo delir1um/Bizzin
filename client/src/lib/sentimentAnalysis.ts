@@ -138,7 +138,7 @@ export function analyzeBusinessSentiment(content: string, title?: string): Busin
   });
   
   // Generate insights based on emotions and context
-  const insights = generateBusinessInsights(primaryEmotion, category, topEmotions);
+  const insights = generateBusinessInsights(primaryEmotion, category, topEmotions, content);
   
   return {
     mood: {
@@ -152,58 +152,98 @@ export function analyzeBusinessSentiment(content: string, title?: string): Busin
   };
 }
 
-function generateBusinessInsights(primaryEmotion: string, category: string, emotions: string[]): string[] {
+function generateBusinessInsights(primaryEmotion: string, category: string, emotions: string[], contentText?: string): string[] {
   const insights: string[] = [];
   
-  // Inspirational reflection messages based on emotions - helping entrepreneurs on their journey
+  // Generate contextual insights based on business category and detected patterns in the content
+  const lowerContent = (contentText || '').toLowerCase();
+  
+  // Category-specific contextual insights based on actual business scenarios
+  if (category.toLowerCase() === 'achievement') {
+    if (lowerContent.includes('client') || lowerContent.includes('customer') || lowerContent.includes('deal')) {
+      insights.push("Major client wins validate your value proposition. Use this momentum to refine your sales process and document what worked for future deals.");
+    } else if (lowerContent.includes('launch') || lowerContent.includes('product') || lowerContent.includes('feature')) {
+      insights.push("Product launches teach you more about your market than months of research. Capture every piece of feedback while it's fresh.");
+    } else if (lowerContent.includes('funding') || lowerContent.includes('investment') || lowerContent.includes('raised')) {
+      insights.push("Funding is fuel, not validation. Stay focused on unit economics and customer satisfaction - investors bet on execution, not ideas.");
+    } else if (lowerContent.includes('research') || lowerContent.includes('publication') || lowerContent.includes('breakthrough')) {
+      insights.push("Technical breakthroughs differentiate you in crowded markets. Document your innovation process - it's as valuable as the breakthrough itself.");
+    } else {
+      insights.push("Every win teaches you something about your business model. Document what worked so you can replicate success systematically.");
+    }
+  }
+  
+  else if (category.toLowerCase() === 'challenge') {
+    if (lowerContent.includes('supply') || lowerContent.includes('supplier') || lowerContent.includes('chain')) {
+      insights.push("Supply chain issues reveal dependency risks. Use this crisis to diversify suppliers and build resilience into your operations.");
+    } else if (lowerContent.includes('churn') || lowerContent.includes('customer') || lowerContent.includes('left')) {
+      insights.push("Churn spikes are early warning signals. Interview departing customers immediately - their honest feedback is worth its weight in gold.");
+    } else if (lowerContent.includes('server') || lowerContent.includes('outage') || lowerContent.includes('technical') || lowerContent.includes('system')) {
+      insights.push("Technical failures test your crisis management and customer communication. Recovery speed matters less than transparency and learning.");
+    } else if (lowerContent.includes('team') || lowerContent.includes('employee') || lowerContent.includes('quit') || lowerContent.includes('left')) {
+      insights.push("Key person dependency is a business risk. Use departures to strengthen processes, documentation, and cross-training.");
+    } else {
+      insights.push("Challenges reveal gaps in your business foundation. Address root causes, not just symptoms, for lasting solutions.");
+    }
+  }
+  
+  else if (category.toLowerCase() === 'planning') {
+    if (lowerContent.includes('strategy') || lowerContent.includes('strategic') || lowerContent.includes('planning')) {
+      insights.push("Strategic planning sessions should challenge assumptions, not just confirm them. Document what you're NOT doing and why.");
+    } else if (lowerContent.includes('hiring') || lowerContent.includes('team') || lowerContent.includes('expand')) {
+      insights.push("Hiring is investing in your future capacity. Move fast on great candidates but never compromise on cultural fit and values alignment.");
+    } else if (lowerContent.includes('budget') || lowerContent.includes('financial') || lowerContent.includes('cost')) {
+      insights.push("Budget planning forces prioritization. Every rand allocated is a strategic choice - make sure your spending reflects your actual priorities.");
+    } else {
+      insights.push("Strategic thinking separates entrepreneurs from operators. Plan with conviction but stay flexible on execution.");
+    }
+  }
+  
+  else if (category.toLowerCase() === 'growth') {
+    if (lowerContent.includes('revenue') || lowerContent.includes('sales') || lowerContent.includes('income')) {
+      insights.push("Revenue growth without process growth creates chaos. Scale your systems and team capabilities alongside your customer base.");
+    } else if (lowerContent.includes('market') || lowerContent.includes('expansion') || lowerContent.includes('new')) {
+      insights.push("New markets test your product-market fit assumptions. Start small, learn fast, and adapt your approach based on local insights.");
+    } else if (lowerContent.includes('viral') || lowerContent.includes('trending') || lowerContent.includes('buzz')) {
+      insights.push("Viral moments are opportunities to capture sustainable growth. Have systems ready to convert attention into lasting customer relationships.");
+    } else {
+      insights.push("Sustainable growth requires strong fundamentals. Build processes that can handle 10x your current scale before you need them.");
+    }
+  }
+  
+  else if (category.toLowerCase() === 'learning') {
+    if (lowerContent.includes('feedback') || lowerContent.includes('customer') || lowerContent.includes('user')) {
+      insights.push("Customer feedback patterns reveal product evolution opportunities. Look for the requests behind the requests - what job are they really hiring you for?");
+    } else if (lowerContent.includes('research') || lowerContent.includes('industry') || lowerContent.includes('market')) {
+      insights.push("Industry research keeps you ahead of disruption. Focus on understanding changing customer behavior, not just competitor moves.");
+    } else {
+      insights.push("Learning from customers and market feedback accelerates product-market fit. Every insight is competitive intelligence.");
+    }
+  }
+  
+  // Add a mood-specific motivational insight as the second message
   switch (primaryEmotion.toLowerCase()) {
     case 'confident':
-    case 'Confident':
-      insights.push("Your confidence radiates strength. Trust your instincts - they've brought you this far for a reason.");
-      break;
     case 'excited':
-    case 'Excited':
-      insights.push("This excitement is your inner entrepreneur speaking. Channel this energy into bold action.");
-      break;
-    case 'focused':
-    case 'Focused':
-      insights.push("Your clarity of purpose is a superpower. Stay in this zone - great things happen here.");
-      break;
-    case 'stressed':
-    case 'Stressed':
-      insights.push("Every great entrepreneur walks this path. Remember: diamonds are formed under pressure.");
-      break;
-    case 'uncertain':
-    case 'Uncertain':
-      insights.push("Uncertainty is the birthplace of innovation. You're exactly where breakthrough leaders begin their journey.");
-      break;
     case 'accomplished':
-    case 'Accomplished':
-      insights.push("Savor this moment - you've earned it. Success like this creates ripples far beyond what you can see.");
+    case 'proud':
+      insights.push("Your positive energy is magnetic - it attracts opportunities, partners, and customers. This momentum is your competitive advantage.");
       break;
     case 'frustrated':
-    case 'Frustrated':
-      insights.push("This friction means you're pushing boundaries. Every obstacle you face is building the resilience that will define your success.");
-      break;
+    case 'stressed':
     case 'worried':
-    case 'Worried':
-      insights.push("Your concern shows how much you care about your mission. Channel this into protective action for what matters most.");
-      break;
-    case 'proud':
-    case 'Proud':
-      insights.push("This pride is well-deserved. You're building something meaningful - let this moment fuel your next chapter.");
+      insights.push("This friction means you're pushing boundaries. Every obstacle builds the resilience that separates successful entrepreneurs from the rest.");
       break;
     case 'thoughtful':
-    case 'Thoughtful':
-      insights.push("Your reflection shows wisdom. Great leaders pause to think deeply before they leap boldly.");
-      break;
-    case 'curious':
-    case 'Curious':
-      insights.push("Your curiosity is the compass that will lead you to discoveries others miss. Keep asking the hard questions.");
-      break;
     case 'strategic':
-    case 'Strategic':
-      insights.push("Your strategic mindset is architecting the future. This deep thinking is the foundation upon which business empires are built.");
+    case 'curious':
+      insights.push("Your reflective approach is building wisdom. Great entrepreneurs combine bold action with deep thinking - you're mastering both.");
+      break;
+    case 'uncertain':
+      insights.push("Uncertainty is where innovation lives. You're navigating uncharted territory - that's exactly where breakthrough opportunities hide.");
+      break;
+    default:
+      insights.push("Your entrepreneurial journey is unique. Each experience, whether challenging or rewarding, is building your business intuition.");
       break;
   }
   

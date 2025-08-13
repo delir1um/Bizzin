@@ -1,41 +1,28 @@
-// Test script to analyze our sample entries
-const sampleTitles = [
-  "Closed our biggest client deal yet!",
-  "Major supply chain disruption hitting us hard",
-  "Team expansion strategy session - exciting times ahead", 
-  "Reflecting on customer feedback from last month's survey",
-  "Breakthrough moment with the new algorithm!",
-  "Difficult conversation with underperforming team member"
-];
+// Test script to create a sample entry and view its insights
+const userId = '9502ea97-1adb-4115-ba05-1b6b1b5fa721';
 
-async function checkSampleAnalysis() {
-  try {
-    const response = await fetch('http://localhost:5000/api/journal/entries', {
-      headers: {
-        'Content-Type': 'application/json',
-        'x-user-id': '9502ea97-1adb-4115-ba05-1b6b1b5fa721'
-      }
-    });
-    
-    const entries = await response.json();
-    
-    console.log('\n=== SAMPLE ENTRY ANALYSIS RESULTS ===\n');
-    
-    sampleTitles.forEach(title => {
-      const entry = entries.find(e => e.title.includes(title.split(' ')[0]));
-      if (entry) {
-        console.log(`📝 ${entry.title}`);
-        console.log(`   Category: ${entry.category} | Mood: ${entry.mood} | Energy: ${entry.energy_level}`);
-        console.log(`   Confidence: ${entry.confidence}% | AI Insights: ${entry.ai_insights ? 'Present' : 'Missing'}`);
-        console.log('');
-      }
-    });
-    
-  } catch (error) {
-    console.error('Error checking entries:', error.message);
-  }
-}
+// Create a test entry with technical content
+const testEntry = {
+  title: "Server outage caused customer complaints",
+  content: "Our main server went down for 3 hours today and we got 15 angry customer emails. I need to fix our technical infrastructure and improve our communication during outages.",
+  user_id: userId
+};
 
-if (typeof window !== 'undefined') {
-  checkSampleAnalysis();
-}
+fetch('http://localhost:5000/api/journal/entries', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-user-id': userId
+  },
+  body: JSON.stringify(testEntry)
+}).then(r => r.json()).then(entry => {
+  console.log('\n=== NEW ENTRY WITH ENHANCED INSIGHTS ===\n');
+  console.log(`Title: "${entry.title}"`);
+  console.log(`Category: ${entry.sentiment_data.business_category}`);
+  console.log(`Mood: ${entry.sentiment_data.primary_mood}`);
+  console.log(`Confidence: ${entry.sentiment_data.confidence}%`);
+  console.log(`\nAI Business Insights:`);
+  entry.sentiment_data.insights.forEach((insight, i) => {
+    console.log(`${i+1}. ${insight}`);
+  });
+}).catch(console.error);
