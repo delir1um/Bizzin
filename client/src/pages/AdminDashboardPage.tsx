@@ -116,12 +116,23 @@ export default function AdminDashboardPage() {
           stats.activeUsers = 1
         }
 
-        // 2. Get paid users and revenue from user_plans
-        const { data: plansData, error: plansError } = await supabase
-          .from('user_plans')
-          .select('plan_type, created_at, expires_at')
+        // 2. Get paid users and revenue from user_plans (gracefully handle missing table)
+        let plansData: any[] = []
         
-        if (!plansError && plansData) {
+        try {
+          const plansResult = await supabase
+            .from('user_plans')
+            .select('plan_type, created_at, expires_at')
+            
+          if (!plansResult.error && plansResult.data) {
+            plansData = plansResult.data
+          }
+        } catch (error) {
+          // Table doesn't exist, use empty array
+          plansData = []
+        }
+        
+        if (plansData.length > 0) {
           const now = new Date()
           const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1)
           

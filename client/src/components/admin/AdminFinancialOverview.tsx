@@ -81,64 +81,23 @@ export function AdminFinancialOverview() {
       console.log('Fetching financial metrics...')
       
       try {
-        // First check what columns actually exist in user_plans
-        const { data: subscriptions, error: subsError } = await supabase
-          .from('user_plans')
-          .select('*')
-          .limit(1)
+        // Try to fetch user plans data, handle missing table gracefully
+        let allPlans: any[] = []
+        
+        try {
+          const plansResult = await supabase
+            .from('user_plans')
+            .select('*')
 
-        if (subsError) {
-          console.log('Error fetching user_plans:', subsError)
-          // Return empty metrics - no dummy data
-          return {
-            totalRevenue: 0,
-            monthlyRevenue: 0,
-            averageRevenuePerUser: 0,
-            churnRate: 0,
-            subscriptions: {
-              total: 0,
-              active: 0,
-              cancelled: 0,
-              expired: 0
-            },
-            userSegmentation: {
-              free: 0,
-              trial: 0,
-              premium: 0,
-              expired_trial: 0
-            },
-            conversionMetrics: {
-              free_to_trial: 0,
-              trial_to_premium: 0,
-              trial_to_churn: 0,
-              overall_conversion: 0
-            },
-            revenueGrowth: 0,
-            refunds: 0
-          } as FinancialMetrics
-        }
-
-        // Get all user plans
-        const { data: allPlans, error: plansError } = await supabase
-          .from('user_plans')
-          .select('*')
-
-        if (plansError) {
-          console.log('Error fetching all user_plans:', plansError)
-          return {
-            totalRevenue: 0,
-            monthlyRevenue: 0,
-            averageRevenuePerUser: 0,
-            churnRate: 0,
-            subscriptions: {
-              total: 0,
-              active: 0,
-              cancelled: 0,
-              expired: 0
-            },
-            revenueGrowth: 0,
-            refunds: 0
-          } as FinancialMetrics
+          if (plansResult.error) {
+            console.log('user_plans table not available for financial overview')
+            allPlans = []
+          } else {
+            allPlans = plansResult.data || []
+          }
+        } catch (error) {
+          console.log('user_plans table not accessible, using empty data')
+          allPlans = []
         }
 
         console.log('All user plans data:', allPlans)
@@ -326,41 +285,46 @@ export function AdminFinancialOverview() {
   const { data: recentTransactions } = useQuery({
     queryKey: ['admin-recent-transactions'],
     queryFn: async () => {
-      // Since there's no foreign key relationship, just get basic plan data
-      const { data: plans, error } = await supabase
-        .from('user_plans')
-        .select('id, user_id, amount_paid, plan_type, created_at')
-        .not('amount_paid', 'is', null)
-        .order('created_at', { ascending: false })
-        .limit(10)
+      try {
+        // Since there's no foreign key relationship, just get basic plan data
+        const { data: plans, error } = await supabase
+          .from('user_plans')
+          .select('id, user_id, amount_paid, plan_type, created_at')
+          .not('amount_paid', 'is', null)
+          .order('created_at', { ascending: false })
+          .limit(10)
 
-      if (error) {
-        console.log('Error fetching transactions:', error)
-        return []
-      }
-
-      if (!plans || plans.length === 0) {
-        return []
-      }
-
-      // Get user emails separately to avoid foreign key issues
-      const userIds = plans.map(plan => plan.user_id)
-      const { data: profiles } = await supabase
-        .from('user_profiles')
-        .select('user_id, email')
-        .in('user_id', userIds)
-
-      return plans.map(plan => {
-        const profile = profiles?.find(p => p.user_id === plan.user_id)
-        return {
-          id: plan.id,
-          user_email: profile?.email || 'Unknown User',
-          amount: plan.amount_paid || 0,
-          plan_type: plan.plan_type,
-          status: 'completed' as const,
-          created_at: plan.created_at
+        if (error) {
+          console.log('user_plans table not available for recent transactions')
+          return []
         }
-      })
+
+        if (!plans || plans.length === 0) {
+          return []
+        }
+
+        // Get user emails separately to avoid foreign key issues
+        const userIds = plans.map(plan => plan.user_id)
+        const { data: profiles } = await supabase
+          .from('user_profiles')
+          .select('user_id, email')
+          .in('user_id', userIds)
+
+        return plans.map(plan => {
+          const profile = profiles?.find(p => p.user_id === plan.user_id)
+          return {
+            id: plan.id,
+            user_email: profile?.email || 'Unknown User',
+            amount: plan.amount_paid || 0,
+            plan_type: plan.plan_type,
+            status: 'completed' as const,
+            created_at: plan.created_at
+          }
+        })
+      } catch (error) {
+        console.log('Error accessing user_plans for transactions')
+        return []
+      }
     },
     enabled: !!metrics // Only fetch if main metrics loaded
   })
