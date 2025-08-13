@@ -155,57 +155,90 @@ export function analyzeBusinessSentiment(content: string, title?: string): Busin
 function generateBusinessInsights(primaryEmotion: string, category: string, emotions: string[]): string[] {
   const insights: string[] = [];
   
-  // Emotion-based insights
-  switch (primaryEmotion) {
+  // Inspirational reflection messages based on emotions - helping entrepreneurs on their journey
+  switch (primaryEmotion.toLowerCase()) {
     case 'confident':
-      insights.push("Your confidence is showing - this mindset often leads to breakthrough moments");
+    case 'Confident':
+      insights.push("Your confidence radiates strength. Trust your instincts - they've brought you this far for a reason.");
       break;
     case 'excited':
-      insights.push("High energy and enthusiasm can be contagious - great time to rally your team");
+    case 'Excited':
+      insights.push("This excitement is your inner entrepreneur speaking. Channel this energy into bold action.");
       break;
     case 'focused':
-      insights.push("This systematic approach suggests you're building sustainable business habits");
+    case 'Focused':
+      insights.push("Your clarity of purpose is a superpower. Stay in this zone - great things happen here.");
       break;
     case 'stressed':
-      insights.push("Stress often precedes growth phases - consider what support systems you need");
+    case 'Stressed':
+      insights.push("Every great entrepreneur walks this path. Remember: diamonds are formed under pressure.");
       break;
     case 'uncertain':
-      insights.push("Uncertainty is where innovation happens - trust the process");
+    case 'Uncertain':
+      insights.push("Uncertainty is the birthplace of innovation. You're exactly where breakthrough leaders begin their journey.");
       break;
     case 'accomplished':
-      insights.push("Celebrating wins builds momentum - document what worked for future reference");
+    case 'Accomplished':
+      insights.push("Savor this moment - you've earned it. Success like this creates ripples far beyond what you can see.");
       break;
     case 'frustrated':
-      insights.push("Obstacles reveal opportunities - what is this challenge teaching you?");
+    case 'Frustrated':
+      insights.push("This friction means you're pushing boundaries. Every obstacle you face is building the resilience that will define your success.");
+      break;
+    case 'worried':
+    case 'Worried':
+      insights.push("Your concern shows how much you care about your mission. Channel this into protective action for what matters most.");
+      break;
+    case 'proud':
+    case 'Proud':
+      insights.push("This pride is well-deserved. You're building something meaningful - let this moment fuel your next chapter.");
+      break;
+    case 'thoughtful':
+    case 'Thoughtful':
+      insights.push("Your reflection shows wisdom. Great leaders pause to think deeply before they leap boldly.");
+      break;
+    case 'curious':
+    case 'Curious':
+      insights.push("Your curiosity is the compass that will lead you to discoveries others miss. Keep asking the hard questions.");
       break;
   }
   
-  // Category-based insights
-  switch (category) {
+  // Inspirational category-based insights - focused on the entrepreneur's journey
+  switch (category.toLowerCase()) {
     case 'growth':
-      insights.push("Growth patterns detected - track what's driving this expansion");
+      insights.push("You're in expansion mode - this is where legends are made. Scale your vision as boldly as you scale your business.");
       break;
     case 'challenge':
-      insights.push("Every successful entrepreneur faces setbacks - how you respond defines success");
+      insights.push("This challenge is your chrysalis. Every entrepreneur's greatest breakthroughs come disguised as their biggest problems.");
       break;
     case 'achievement':
-      insights.push("Success builds on itself - consider how to replicate this outcome");
+      insights.push("You've just proven what's possible when vision meets determination. This success is a launchpad, not a destination.");
       break;
     case 'planning':
-      insights.push("Strategic thinking is evident - great foundation for execution");
+      insights.push("Strategic thinking is your competitive advantage. You're not just building a business - you're architecting the future.");
+      break;
+    case 'research':
+      insights.push("Your quest for understanding sets you apart. Data becomes wisdom in the hands of someone who knows how to listen.");
+      break;
+    case 'learning':
+      insights.push("Every lesson you absorb becomes part of your entrepreneurial DNA. You're not just learning - you're evolving.");
       break;
   }
   
-  // Multi-emotion insights
+  // Inspirational multi-emotion insights
   if (emotions.includes('excited') && emotions.includes('focused')) {
-    insights.push("The combination of excitement and focus is powerful - ideal state for big moves");
+    insights.push("When passion meets precision, magic happens. You're in the perfect headspace for breakthrough moments.");
   }
   
   if (emotions.includes('frustrated') && emotions.includes('determined')) {
-    insights.push("Frustration paired with determination often leads to breakthroughs");
+    insights.push("This tension between frustration and determination is where champions are forged. Push through - your breakthrough is closer than you think.");
   }
   
-  return insights.slice(0, 2); // Limit to 2 insights to keep it concise
+  if (emotions.includes('worried') && emotions.includes('confident')) {
+    insights.push("The balance of concern and confidence shows mature leadership. You care deeply while staying strong - that's rare and powerful.");
+  }
+  
+  return insights.slice(0, 2); // Limit to 2 insights to keep it concise and impactful
 }
 
 // Get mood color for UI display
