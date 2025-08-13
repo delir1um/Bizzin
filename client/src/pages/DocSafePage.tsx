@@ -20,6 +20,7 @@ import { format } from "date-fns"
 import { StandardPageLayout, createStatCard } from "@/components/layout/StandardPageLayout"
 import { motion, AnimatePresence } from "framer-motion"
 import { AnimatedCard, AnimatedGrid, AnimatedItem } from "@/components/ui/animated-card"
+import { useAuth } from "@/hooks/AuthProvider"
 
 export function DocSafePage() {
   const [user, setUser] = useState<any>(null)
