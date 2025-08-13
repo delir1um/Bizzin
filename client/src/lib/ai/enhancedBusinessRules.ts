@@ -2,6 +2,36 @@
 import { BusinessRule, Category, Energy, MoodPolarity } from './types'
 
 export const BusinessRules: BusinessRule[] = [
+  // Supply chain and procurement challenges
+  {
+    id: 'SUPPLY_CHAIN_ISSUES',
+    test: (t: string) => /\b(supplier|shipment|delivery|raw material|delayed?|supply chain|procurement)\b/i.test(t) && /\b(delayed?|risk|problem|issue|behind)\b/i.test(t),
+    category: 'Challenge',
+    energy: 'medium',
+    moodPolarity: 'Negative',
+    confidence_boost: 18
+  },
+  
+  // Customer acquisition and revenue wins
+  {
+    id: 'CUSTOMER_ACQUISITION',
+    test: (t: string) => /\b(closed?|new accounts?|customers?|recurring revenue|mrr|growth)\b/i.test(t) && /\b(high|increased?|new|five|records?|all-time)\b/i.test(t),
+    category: 'Growth',
+    energy: 'high',
+    moodPolarity: 'Positive',
+    confidence_boost: 20
+  },
+  
+  // Publications and research achievements
+  {
+    id: 'RESEARCH_PUBLICATION',
+    test: (t: string) => /\b(published?|research paper|industry|finally|hard work|paid off)\b/i.test(t),
+    category: 'Achievement',
+    energy: 'high',
+    moodPolarity: 'Positive',
+    confidence_boost: 18
+  },
+  
   // Cash flow and financial challenges
   {
     id: 'CASH_FLOW_CHALLENGE',
@@ -111,7 +141,15 @@ export function applyBusinessRules(text: string): {
   confidenceBoost: number;
 } {
   const lowerText = text.toLowerCase();
-  const matchedRules = BusinessRules.filter(rule => rule.test(lowerText));
+  console.log('Testing business rules against:', lowerText.substring(0, 50));
+  
+  const matchedRules = BusinessRules.filter(rule => {
+    const matches = rule.test(lowerText);
+    if (matches) {
+      console.log('Matched rule:', rule.id, 'for text pattern');
+    }
+    return matches;
+  });
   
   if (matchedRules.length === 0) {
     return { matchedRules: [], confidenceBoost: 0 };

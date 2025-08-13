@@ -46,23 +46,29 @@ export function analyzeJournalEntryEnhanced(text: string, userId: string): AIAna
                            (bestMatch?.expected_category as Category) || 
                            'Learning';
     
-    // Step 4: Mood analysis with normalization
+    // Step 4: Energy inference from text patterns (needs to be before mood mapping)
+    const energy: Energy = ruleResults.suggestedEnergy || inferEnergy(text);
+    
+    // Step 5: Mood analysis with normalization
     let primaryMood = 'Thoughtful';
     let moodPolarity: MoodPolarity = 'Neutral';
     
-    if (bestMatch?.expected_mood) {
+    // Use rule-based mood mapping first, then fallback to training data
+    if (ruleResults.suggestedMoodPolarity) {
+      moodPolarity = ruleResults.suggestedMoodPolarity;
+      // Map mood polarity to specific moods based on context
+      if (moodPolarity === 'Positive' && energy === 'high') {
+        primaryMood = category === 'Growth' ? 'Excited' : category === 'Achievement' ? 'Proud' : 'Confident';
+      } else if (moodPolarity === 'Negative') {
+        primaryMood = energy === 'low' ? 'Worried' : 'Frustrated';
+      } else {
+        primaryMood = 'Thoughtful';
+      }
+    } else if (bestMatch?.expected_mood) {
       const normalized = normalizeMood(bestMatch.expected_mood);
       primaryMood = normalized.norm;
       moodPolarity = normalized.polarity;
     }
-    
-    // Override with rule suggestions if available
-    if (ruleResults.suggestedMoodPolarity) {
-      moodPolarity = ruleResults.suggestedMoodPolarity;
-    }
-    
-    // Step 5: Energy inference from text patterns
-    const energy: Energy = ruleResults.suggestedEnergy || inferEnergy(text);
     
     // Step 6: Calculate base confidence
     let baseConfidence = 50;

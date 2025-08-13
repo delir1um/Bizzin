@@ -293,6 +293,39 @@ export function getMoodEmoji(mood: string): string {
 // Training data for enhanced AI system (specification compliant)
 export const BUSINESS_JOURNAL_TRAINING_DATA = [
   {
+    id: "SUPPLY_CHAIN_001",
+    version: 1,
+    text: "Supplier delayed the raw material shipment by two weeks, and now our production schedule is at risk",
+    expected_category: "Challenge" as const,
+    expected_mood: "Frustrated",
+    expected_energy: "medium" as const,
+    confidence_range: [85, 95] as [number, number],
+    business_context: "Supply chain disruption impacting production timelines",
+    source: "handwritten" as const
+  },
+  {
+    id: "REVENUE_GROWTH_001",
+    version: 1,
+    text: "We closed five new accounts this week, and our monthly recurring revenue is now at an all-time high",
+    expected_category: "Growth" as const,
+    expected_mood: "Excited",
+    expected_energy: "high" as const,
+    confidence_range: [90, 95] as [number, number],
+    business_context: "Rapid customer acquisition driving financial growth",
+    source: "handwritten" as const
+  },
+  {
+    id: "RESEARCH_ACHIEVEMENT_001",
+    version: 1,
+    text: "Finally published our first industry research paper — the team's hard work has paid off",
+    expected_category: "Achievement" as const,
+    expected_mood: "Proud",
+    expected_energy: "high" as const,
+    confidence_range: [85, 95] as [number, number],
+    business_context: "Successful completion of a major intellectual deliverable",
+    source: "handwritten" as const
+  },
+  {
     id: "GROWTH_001",
     version: 1,
     text: "We hired three new developers this week and they're already contributing to the codebase",
