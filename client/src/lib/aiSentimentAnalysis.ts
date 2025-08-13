@@ -117,18 +117,93 @@ const businessContexts = {
 
 // Enhanced Hugging Face API implementation for business sentiment analysis
 async function callEnhancedHuggingFaceAnalysis(text: string): Promise<BusinessSentiment | null> {
-  // For now, let's improve the local analysis to work better
-  // We'll add server-side analysis later once the routing is fixed
-  console.log('Using enhanced local business sentiment analysis');
+  const apiKey = import.meta.env.VITE_HUGGING_FACE_API_KEY || process.env.HUGGING_FACE_API_KEY;
+  
+  if (!apiKey) {
+    console.log('No Hugging Face API key found, using enhanced local analysis');
+    try {
+      const analysisResult = performEnhancedLocalAnalysis(text);
+      console.log('Enhanced local analysis successful');
+      return analysisResult;
+    } catch (error) {
+      console.warn('Enhanced local analysis failed:', error);
+      return null;
+    }
+  }
+
+  console.log('Using Hugging Face AI models for sentiment analysis');
   
   try {
-    // Enhanced local analysis with better business context understanding
-    const analysisResult = performEnhancedLocalAnalysis(text);
-    console.log('Enhanced local analysis successful');
-    return analysisResult;
+    // Check cache first
+    const cacheKey = text.toLowerCase().trim();
+    const cached = sentimentCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      console.log('Using cached Hugging Face analysis');
+      return cached.result;
+    }
+
+    // Call Hugging Face models in parallel for better performance
+    const [sentimentResponse, emotionResponse] = await Promise.allSettled([
+      fetch(`https://api-inference.huggingface.co/models/${HF_MODELS.sentiment}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ inputs: text })
+      }),
+      fetch(`https://api-inference.huggingface.co/models/${HF_MODELS.emotion}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ inputs: text })
+      })
+    ]);
+
+    let sentimentData = null;
+    let emotionData = null;
+
+    // Process sentiment response
+    if (sentimentResponse.status === 'fulfilled' && sentimentResponse.value.ok) {
+      sentimentData = await sentimentResponse.value.json();
+      console.log('Hugging Face sentiment analysis successful');
+    } else {
+      console.warn('Hugging Face sentiment analysis failed');
+    }
+
+    // Process emotion response
+    if (emotionResponse.status === 'fulfilled' && emotionResponse.value.ok) {
+      emotionData = await emotionResponse.value.json();
+      console.log('Hugging Face emotion analysis successful');
+    } else {
+      console.warn('Hugging Face emotion analysis failed');
+    }
+
+    // Process results with enhanced business context
+    const result = processEnhancedHuggingFaceResults(sentimentData, emotionData, text);
+    
+    // Cache the result
+    sentimentCache.set(cacheKey, {
+      result,
+      timestamp: Date.now()
+    });
+
+    console.log('Hugging Face analysis complete:', result);
+    return result;
+
   } catch (error) {
-    console.warn('Enhanced local analysis failed:', error);
-    return null;
+    console.error('Hugging Face API error:', error);
+    // Fallback to local analysis
+    try {
+      const analysisResult = performEnhancedLocalAnalysis(text);
+      console.log('Fallback to enhanced local analysis successful');
+      return analysisResult;
+    } catch (fallbackError) {
+      console.warn('Both Hugging Face and local analysis failed:', fallbackError);
+      return null;
+    }
   }
 }
 
@@ -577,7 +652,7 @@ function processEnhancedHuggingFaceResults(sentimentData: any, emotionData: any,
     energy,
     emotions: emotions.slice(0, 3),
     insights,
-    business_category: category
+    business_category: category as 'growth' | 'challenge' | 'achievement' | 'planning' | 'reflection' | 'learning' | 'research'
   };
 }
 
@@ -669,7 +744,24 @@ export async function analyzeBusinessSentimentAI(content: string, title?: string
   }
   
   try {
-    // Use the enhanced local analysis directly since it's more accurate
+    console.log('Starting AI business sentiment analysis with Hugging Face integration...');
+    
+    // Try Hugging Face AI models first (actual AI understanding)
+    const huggingFaceResult = await callEnhancedHuggingFaceAnalysis(text);
+    if (huggingFaceResult) {
+      console.log('Hugging Face AI analysis successful:', huggingFaceResult);
+      
+      // Cache Hugging Face result
+      sentimentCache.set(cacheKey, {
+        data: huggingFaceResult,
+        timestamp: Date.now()
+      });
+      
+      return huggingFaceResult;
+    }
+    
+    console.log('Hugging Face unavailable, falling back to enhanced local analysis');
+    // Use the enhanced local analysis as fallback
     const aiResult = performEnhancedLocalAnalysis(text);
     
     if (aiResult) {
@@ -681,7 +773,7 @@ export async function analyzeBusinessSentimentAI(content: string, title?: string
         // Apply all training data corrections, not just category
         if (trainingMatch.expected_category.toLowerCase() !== aiResult.business_category.toLowerCase()) {
           console.log(`Correcting category from ${aiResult.business_category} to ${trainingMatch.expected_category} based on training data`);
-          aiResult.business_category = trainingMatch.expected_category.toLowerCase() as any;
+          aiResult.business_category = trainingMatch.expected_category.toLowerCase() as BusinessSentiment['business_category'];
           aiResult.category = trainingMatch.expected_category; // Legacy compatibility
         }
         
@@ -862,7 +954,7 @@ function processHuggingFaceResults(sentimentData: any, emotionData: any, content
     energy,
     emotions: emotions.slice(0, 3),
     insights,
-    business_category: category,
+    business_category: category as BusinessSentiment['business_category'],
     suggested_title: suggestedTitle
   };
 }
