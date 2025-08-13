@@ -122,6 +122,20 @@ export function BizBuilderStatsCard({ onNavigate }: BizBuilderStatsCardProps) {
             </div>
           </div>
 
+          {/* Progress Bar */}
+          <div className="space-y-2">
+            <div className="w-full bg-orange-200/50 dark:bg-orange-800/30 rounded-full h-3">
+              <div 
+                className="bg-gradient-to-r from-orange-400 to-orange-500 h-3 rounded-full transition-all duration-500"
+                style={{ width: `${completionPercentage}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+              <span>0 tools</span>
+              <span>6 tools complete</span>
+            </div>
+          </div>
+
           {/* Activity Stats */}
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div className="text-center">
@@ -141,22 +155,6 @@ export function BizBuilderStatsCard({ onNavigate }: BizBuilderStatsCardProps) {
                 </span>
               </div>
               <div className="text-orange-700 dark:text-orange-300">This Week</div>
-            </div>
-          </div>
-
-
-
-          {/* Progress Bar */}
-          <div className="space-y-2">
-            <div className="w-full bg-orange-200/50 dark:bg-orange-800/30 rounded-full h-3">
-              <div 
-                className="bg-gradient-to-r from-orange-400 to-orange-500 h-3 rounded-full transition-all duration-500"
-                style={{ width: `${completionPercentage}%` }}
-              />
-            </div>
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-              <span>0 tools</span>
-              <span>6 tools complete</span>
             </div>
           </div>
 
