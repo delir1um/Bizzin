@@ -205,22 +205,61 @@ export function DashboardPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="space-y-8">
-        {/* Welcome Header */}
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
-            Welcome back, <span className="text-orange-600 italic">
-              {user?.user_metadata?.full_name || 
-               user?.user_metadata?.first_name || 
-               user?.email?.split('@')[0] || 
-               "Entrepreneur"}
-            </span>
-          </h1>
-          <p className="text-slate-600 dark:text-slate-300 text-lg">Your business command center</p>
-        </div>
+        {/* Welcome Header - Exact Same Animation as Journal & Goals */}
+        <motion.div 
+          className="text-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+        >
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
+          >
+            <motion.h1 
+              className="text-4xl font-bold text-slate-900 dark:text-white mb-2"
+              whileHover={{ 
+                scale: 1.02,
+                transition: { duration: 0.2 }
+              }}
+            >
+              Welcome back, <motion.span 
+                className="text-orange-600 italic"
+                animate={{ 
+                  color: ["#ea7a57", "#f97316", "#ea7a57"],
+                }}
+                transition={{ 
+                  duration: 4, 
+                  repeat: Infinity, 
+                  ease: "easeInOut" 
+                }}
+              >
+                {user?.user_metadata?.full_name || 
+                 user?.user_metadata?.first_name || 
+                 user?.email?.split('@')[0] || 
+                 "Entrepreneur"}
+              </motion.span>
+            </motion.h1>
+            <motion.p 
+              className="text-slate-600 dark:text-slate-300 text-lg"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              Your business command center
+            </motion.p>
+          </motion.div>
+        </motion.div>
 
         {/* Daily Business Quote */}
-        <Card className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/50 dark:to-amber-950/50 border-orange-200 dark:border-orange-800 shadow-sm">
-          <CardContent className="p-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
+        >
+          <Card className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/50 dark:to-amber-950/50 border-orange-200 dark:border-orange-800 shadow-sm hover:shadow-lg transition-all duration-300">
+            <CardContent className="p-6">
             <div className="flex items-start gap-4">
               <div className="p-2 bg-orange-500 rounded-lg shadow-sm flex-shrink-0">
                 <Quote className="w-5 h-5 text-white" />
@@ -244,13 +283,24 @@ export function DashboardPage() {
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {/* Platform Features Section */}
-        <div className="space-y-6">
+        <motion.div 
+          className="space-y-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.5, ease: "easeOut" }}
+        >
           {/* Feature Statistics Cards */}
-          <div className="grid grid-cols-1 xl:grid-cols-5 lg:grid-cols-3 md:grid-cols-2 gap-4 items-stretch">
+          <motion.div 
+            className="grid grid-cols-1 xl:grid-cols-5 lg:grid-cols-3 md:grid-cols-2 gap-4 items-stretch"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
+          >
             <JournalStatsCard 
               journalEntries={journalEntries} 
               onNavigate={navigate} 
@@ -269,8 +319,8 @@ export function DashboardPage() {
             <ReferralStatsCard 
               onNavigate={navigate} 
             />
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Business Intelligence Section */}
         <div className="space-y-6">
