@@ -251,28 +251,41 @@ export function JournalPage() {
 
   // Handle bulk re-analysis
   const handleReAnalyzeEntries = async () => {
-    if (!user?.id) return
+    if (!user?.id) {
+      toast({
+        title: "Authentication Error",
+        description: "Please sign in to re-analyze entries.",
+        variant: "destructive"
+      })
+      return
+    }
     
+    console.log('Starting bulk re-analysis from UI...')
     setIsReAnalyzing(true)
+    
     try {
       const result = await JournalService.reAnalyzeAllEntries()
+      console.log('Re-analysis result received:', result)
       
       // Refresh data
-      queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
+      await queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
       
+      // Show success notification
       toast({
-        title: "Re-analysis Complete",
-        description: `${result.updated} entries updated with enhanced AI v3.0. ${result.errors > 0 ? `${result.errors} errors occurred.` : 'All entries processed successfully!'}`,
+        title: "Re-analysis Complete!",
+        description: `${result.updated} entries updated with enhanced AI v3.0. ${result.errors > 0 ? `${result.errors} errors occurred.` : 'All entries now have inspirational insights!'}`,
       })
+      
     } catch (error) {
       console.error('Error re-analyzing entries:', error)
       toast({
-        title: "Error",
-        description: "Failed to re-analyze entries. Please try again.",
+        title: "Re-analysis Failed",
+        description: error?.status || "An error occurred during re-analysis. Please try again.",
         variant: "destructive"
       })
     } finally {
       setIsReAnalyzing(false)
+      console.log('Re-analysis UI state reset')
     }
   }
 

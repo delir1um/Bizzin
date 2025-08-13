@@ -382,19 +382,27 @@ export class JournalService {
         }
       }
 
-      const status = `Re-analysis complete: ${updated} entries updated, ${errors} errors`
-      console.log(status)
-
-      return {
+      console.log(`Re-analysis complete: ${updated} entries updated, ${errors} errors`)
+      
+      const result = {
         total: entries.length,
         updated,
         errors,
-        status
+        status: errors > 0 ? 'Completed with some errors' : 'Successfully completed'
       }
+      
+      console.log('Returning re-analysis result:', result)
+      return result
 
     } catch (err) {
       console.error('Error in bulk re-analysis:', err)
-      throw err
+      // Return a proper error result instead of throwing
+      return {
+        total: 0,
+        updated: 0,
+        errors: 1,
+        status: `Failed: ${(err as Error).message || 'Unknown error'}`
+      }
     }
   }
 }
