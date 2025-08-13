@@ -367,53 +367,146 @@ export function JournalPage() {
       }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Page Header */}
-      <div className="mb-8">
+      {/* Page Header with Enhanced Animations */}
+      <motion.div 
+        className="mb-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Business Journal</h1>
-            <p className="mt-2 text-lg text-slate-600 dark:text-slate-300">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
+          >
+            <motion.h1 
+              className="text-3xl font-bold text-slate-900 dark:text-white"
+              whileHover={{ 
+                scale: 1.02,
+                transition: { duration: 0.2 }
+              }}
+            >
+              <motion.span
+                animate={{ 
+                  color: ["#1e293b", "#ea7a57", "#1e293b"],
+                }}
+                transition={{ 
+                  duration: 4, 
+                  repeat: Infinity, 
+                  ease: "easeInOut" 
+                }}
+                className="dark:animate-none dark:text-white"
+              >
+                AI Business Journal
+              </motion.span>
+            </motion.h1>
+            <motion.p 
+              className="mt-2 text-lg text-slate-600 dark:text-slate-300"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
               Track your thoughts, insights, and business learnings. AI automatically detects mood and category.
-            </p>
-          </div>
-          <div className="mt-4 sm:mt-0 flex gap-2">
+            </motion.p>
+          </motion.div>
+          
+          <motion.div 
+            className="mt-4 sm:mt-0 flex gap-2"
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.3, ease: "backOut" }}
+          >
             {AIMigrationService.needsMigration() && entries.length > 0 && (
-              <Button 
-                onClick={() => setShowMigrationDialog(true)}
-                variant="outline"
-                size="sm"
-                className="border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-950/20"
+              <motion.div
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.2 }}
               >
-                <Brain className="w-4 h-4 mr-2" />
-                Update AI Analysis
-              </Button>
+                <Button 
+                  onClick={() => setShowMigrationDialog(true)}
+                  variant="outline"
+                  size="sm"
+                  className="border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-950/20
+                    transition-all duration-300 hover:shadow-md relative overflow-hidden"
+                >
+                  <motion.div
+                    animate={{ 
+                      scale: [1, 1.1, 1],
+                      rotate: [0, 10, -10, 0]
+                    }}
+                    transition={{ 
+                      duration: 2, 
+                      repeat: Infinity, 
+                      ease: "easeInOut" 
+                    }}
+                  >
+                    <Brain className="w-4 h-4 mr-2" />
+                  </motion.div>
+                  Update AI Analysis
+                  
+                  {/* Subtle pulse effect */}
+                  <div className="absolute inset-0 bg-orange-500/10 rounded-md scale-0 group-hover:scale-100 transition-transform duration-300" />
+                </Button>
+              </motion.div>
             )}
+            
             {canCreateEntry() && (
-              <Button 
-                onClick={handleCreateEntry}
-                className="bg-orange-600 hover:bg-orange-700 text-white"
+              <motion.div
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.2 }}
               >
-                <PlusCircle className="w-4 h-4 mr-2" />
-                Write Entry
-              </Button>
+                <Button 
+                  onClick={handleCreateEntry}
+                  className="bg-orange-600 hover:bg-orange-700 text-white
+                    transition-all duration-300 hover:shadow-lg hover:shadow-orange-200 dark:hover:shadow-orange-900/30
+                    relative overflow-hidden group"
+                >
+                  <motion.div
+                    animate={{ rotate: [0, 360] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                    className="group-hover:animate-none"
+                  >
+                    <PlusCircle className="w-4 h-4 mr-2" />
+                  </motion.div>
+                  <span className="relative z-10">Write Entry</span>
+                  
+                  {/* Animated background shine */}
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent 
+                      transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out" />
+                  </div>
+                </Button>
+              </motion.div>
             )}
-          </div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Standard Plan Limit Banner */}
+      {/* Plan Limit Banner with Animation */}
       {usageStatus && (
-        <div className="mb-8">
+        <motion.div 
+          className="mb-8"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
           <PlanLimitBanner 
             usageStatus={usageStatus} 
             limitType="journal" 
             onUpgrade={() => setShowUpgradeModal(true)}
           />
-        </div>
+        </motion.div>
       )}
 
-      {/* Statistics Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      {/* Statistics Overview with Smooth Animations */}
+      <motion.div 
+        className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.5 }}
+      >
         <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800">
           <CardContent className="p-6">
             <div className="flex items-center">
@@ -467,9 +560,7 @@ export function JournalPage() {
             </div>
           </CardContent>
         </Card>
-
-
-      </div>
+      </motion.div>
 
       {/* Search */}
       <div className="mb-8 flex flex-col sm:flex-row gap-4">

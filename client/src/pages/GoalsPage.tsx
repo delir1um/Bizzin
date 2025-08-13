@@ -219,105 +219,261 @@ export function GoalsPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Page Header */}
-      <div className="mb-8">
+    <motion.div 
+      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+    >
+      {/* Page Header with Enhanced Animations */}
+      <motion.div 
+        className="mb-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+      >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Business Goals</h1>
-            <p className="mt-2 text-lg text-slate-600 dark:text-slate-300">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
+          >
+            <motion.h1 
+              className="text-3xl font-bold text-slate-900 dark:text-white"
+              whileHover={{ 
+                scale: 1.02,
+                transition: { duration: 0.2 }
+              }}
+            >
+              <motion.span
+                animate={{ 
+                  color: ["#1e293b", "#ea7a57", "#1e293b"],
+                }}
+                transition={{ 
+                  duration: 4, 
+                  repeat: Infinity, 
+                  ease: "easeInOut" 
+                }}
+                className="dark:animate-none dark:text-white"
+              >
+                Business Goals
+              </motion.span>
+            </motion.h1>
+            <motion.p 
+              className="mt-2 text-lg text-slate-600 dark:text-slate-300"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
               Set, track, and achieve your business objectives
-            </p>
-          </div>
-          <div className="mt-4 sm:mt-0">
+            </motion.p>
+          </motion.div>
+          
+          <motion.div 
+            className="mt-4 sm:mt-0"
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.4, ease: "backOut" }}
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
+          >
             <Button 
               onClick={() => setAddGoalModalOpen(true)}
-              className="bg-orange-600 hover:bg-orange-700 text-white"
+              className="bg-orange-600 hover:bg-orange-700 text-white
+                transition-all duration-300 hover:shadow-lg hover:shadow-orange-200 dark:hover:shadow-orange-900/30
+                relative overflow-hidden group"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              New Goal
+              <motion.div
+                animate={{ rotate: [0, 360] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                className="group-hover:animate-none"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+              </motion.div>
+              <span className="relative z-10">New Goal</span>
+              
+              {/* Animated background shine */}
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent 
+                  transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out" />
+              </div>
             </Button>
-          </div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Goal Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800">
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-orange-500 rounded-lg shadow-sm">
-                <Target className="w-5 h-5 text-white" />
+      {/* Goal Statistics with Smooth Animations */}
+      <motion.div 
+        className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.5, staggerChildren: 0.1 }}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          whileHover={{ scale: 1.02, y: -4 }}
+        >
+          <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800
+            hover:shadow-orange-100 dark:hover:shadow-orange-900/20 cursor-pointer">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <motion.div 
+                  className="p-2 bg-orange-500 rounded-lg shadow-sm"
+                  whileHover={{ rotate: [0, -10, 10, 0] }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Target className="w-5 h-5 text-white" />
+                </motion.div>
+                <div className="ml-4">
+                  {isLoading ? (
+                    <Skeleton className="h-8 w-12 mb-1" />
+                  ) : (
+                    <motion.div 
+                      className="text-2xl font-bold text-orange-900 dark:text-orange-100"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ duration: 0.5, delay: 0.8, type: "spring" }}
+                    >
+                      {stats.total}
+                    </motion.div>
+                  )}
+                  <p className="text-sm font-medium text-orange-700 dark:text-orange-300">Total Goals</p>
+                </div>
               </div>
-              <div className="ml-4">
-                {isLoading ? (
-                  <Skeleton className="h-8 w-12 mb-1" />
-                ) : (
-                  <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">{stats.total}</div>
-                )}
-                <p className="text-sm font-medium text-orange-700 dark:text-orange-300">Total Goals</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900 border-green-200 dark:border-green-800">
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-500 rounded-lg shadow-sm">
-                <CheckCircle className="w-5 h-5 text-white" />
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.7 }}
+          whileHover={{ scale: 1.02, y: -4 }}
+        >
+          <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900 border-green-200 dark:border-green-800
+            hover:shadow-green-100 dark:hover:shadow-green-900/20 cursor-pointer">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <motion.div 
+                  className="p-2 bg-green-500 rounded-lg shadow-sm"
+                  whileHover={{ 
+                    scale: [1, 1.2, 1],
+                    rotate: [0, 360]
+                  }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <CheckCircle className="w-5 h-5 text-white" />
+                </motion.div>
+                <div className="ml-4">
+                  {isLoading ? (
+                    <Skeleton className="h-8 w-12 mb-1" />
+                  ) : (
+                    <motion.div 
+                      className="text-2xl font-bold text-green-900 dark:text-green-100"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ duration: 0.5, delay: 0.9, type: "spring" }}
+                    >
+                      {stats.completed}
+                    </motion.div>
+                  )}
+                  <p className="text-sm font-medium text-green-700 dark:text-green-300">Completed</p>
+                </div>
               </div>
-              <div className="ml-4">
-                {isLoading ? (
-                  <Skeleton className="h-8 w-12 mb-1" />
-                ) : (
-                  <div className="text-2xl font-bold text-green-900 dark:text-green-100">{stats.completed}</div>
-                )}
-                <p className="text-sm font-medium text-green-700 dark:text-green-300">Completed</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-900 border-blue-200 dark:border-blue-800">
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-500 rounded-lg shadow-sm">
-                <Clock className="w-5 h-5 text-white" />
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.8 }}
+          whileHover={{ scale: 1.02, y: -4 }}
+        >
+          <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-900 border-blue-200 dark:border-blue-800
+            hover:shadow-blue-100 dark:hover:shadow-blue-900/20 cursor-pointer">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <motion.div 
+                  className="p-2 bg-blue-500 rounded-lg shadow-sm"
+                  whileHover={{ 
+                    scale: [1, 1.1, 1],
+                    rotate: [0, 180, 360]
+                  }}
+                  transition={{ duration: 0.8 }}
+                >
+                  <Clock className="w-5 h-5 text-white" />
+                </motion.div>
+                <div className="ml-4">
+                  {isLoading ? (
+                    <Skeleton className="h-8 w-12 mb-1" />
+                  ) : (
+                    <motion.div 
+                      className="text-2xl font-bold text-blue-900 dark:text-blue-100"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ duration: 0.5, delay: 1.0, type: "spring" }}
+                    >
+                      {stats.inProgress}
+                    </motion.div>
+                  )}
+                  <p className="text-sm font-medium text-blue-700 dark:text-blue-300">In Progress</p>
+                </div>
               </div>
-              <div className="ml-4">
-                {isLoading ? (
-                  <Skeleton className="h-8 w-12 mb-1" />
-                ) : (
-                  <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">{stats.inProgress}</div>
-                )}
-                <p className="text-sm font-medium text-blue-700 dark:text-blue-300">In Progress</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-purple-50 to-pink-100 dark:from-purple-950 dark:to-pink-900 border-purple-200 dark:border-purple-800">
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-500 rounded-lg shadow-sm">
-                <TrendingUp className="w-5 h-5 text-white" />
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.9 }}
+          whileHover={{ scale: 1.02, y: -4 }}
+        >
+          <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-purple-50 to-pink-100 dark:from-purple-950 dark:to-pink-900 border-purple-200 dark:border-purple-800
+            hover:shadow-purple-100 dark:hover:shadow-purple-900/20 cursor-pointer">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <motion.div 
+                  className="p-2 bg-purple-500 rounded-lg shadow-sm"
+                  whileHover={{ 
+                    scale: [1, 1.3, 1],
+                    y: [0, -5, 0]
+                  }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <TrendingUp className="w-5 h-5 text-white" />
+                </motion.div>
+                <div className="ml-4">
+                  {isLoading ? (
+                    <Skeleton className="h-8 w-12 mb-1" />
+                  ) : (
+                    <motion.div 
+                      className="text-2xl font-bold text-purple-900 dark:text-purple-100"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ duration: 0.5, delay: 1.1, type: "spring" }}
+                    >
+                      {Math.round(stats.successRate)}%
+                    </motion.div>
+                  )}
+                  <p className="text-sm font-medium text-purple-700 dark:text-purple-300">Success Rate</p>
+                </div>
               </div>
-              <div className="ml-4">
-                {isLoading ? (
-                  <Skeleton className="h-8 w-12 mb-1" />
-                ) : (
-                  <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">{Math.round(stats.successRate)}%</div>
-                )}
-                <p className="text-sm font-medium text-purple-700 dark:text-purple-300">Success Rate</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
 
-      {/* Search and Controls */}
-      <div className="mb-6 space-y-4">
+      {/* Search and Controls with Animation */}
+      <motion.div 
+        className="mb-6 space-y-4"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 1.2 }}
+      >
         {/* Search Bar */}
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1 relative">
@@ -425,7 +581,7 @@ export function GoalsPage() {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Error State */}
       {error && (
@@ -634,6 +790,6 @@ export function GoalsPage() {
         goalTitle={completedGoal?.title || ""}
         onComplete={handleCelebrationComplete}
       />
-    </div>
+    </motion.div>
   )
 }
