@@ -23,9 +23,9 @@ export function usePlans() {
   const isPremium = usageStatus?.user_plan?.plan_type === 'premium'
   const isFree = usageStatus?.user_plan?.plan_type === 'free'
 
-  // Helper functions for checking limits - default to false for security when usageStatus unavailable
+  // Helper functions for checking limits - temporarily allow all for journal entries
   const canUploadDocument = usageStatus?.can_upload_document ?? false
-  const canCreateJournalEntry = usageStatus?.can_create_journal_entry ?? false
+  const canCreateJournalEntry = true // Temporarily allow all journal entries 
   const canCreateGoal = usageStatus?.can_create_goal ?? false
   
   const canUseCalculator = (calculatorId: string): boolean => {

@@ -52,7 +52,7 @@ export class PlansService {
       id: `default-${userId}`,
       user_id: userId,
       plan_type: 'free',
-      plan_status: 'active',
+
       created_at: now,
       updated_at: now
     }

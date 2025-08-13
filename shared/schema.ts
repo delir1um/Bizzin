@@ -46,7 +46,6 @@ export type UserPlan = {
   id: string;
   user_id: string;
   plan_type: string; // 'free' or 'premium'
-  plan_status: string; // 'active', 'cancelled', 'expired'
   billing_cycle?: string; // 'monthly', 'yearly'
   amount_paid?: number;
   currency?: string;
