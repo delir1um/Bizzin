@@ -29,6 +29,8 @@ const editGoalSchema = z.object({
   status: z.enum(['not_started', 'in_progress', 'completed', 'on_hold', 'at_risk']),
   priority: z.enum(['low', 'medium', 'high']),
   category: z.string().max(50, "Category must be less than 50 characters").optional(),
+  target_value: z.number().positive().optional(),
+  current_value: z.number().min(0).optional(),
   progress: z.number().min(0).max(100),
   reflection: z.string().max(1000, "Reflection must be less than 1000 characters").optional(),
 })
@@ -71,6 +73,8 @@ export function EditGoalModal({ open, onOpenChange, goal, onGoalCompleted }: Edi
       status: 'not_started',
       priority: 'medium',
       category: "",
+      target_value: undefined,
+      current_value: undefined,
       progress: 0,
       reflection: "",
     },
@@ -86,6 +90,8 @@ export function EditGoalModal({ open, onOpenChange, goal, onGoalCompleted }: Edi
         status: goal.status,
         priority: goal.priority,
         category: goal.category || "",
+        target_value: goal.target_value,
+        current_value: goal.current_value,
         progress: goal.progress,
         reflection: goal.reflection || "",
       })
@@ -100,6 +106,8 @@ export function EditGoalModal({ open, onOpenChange, goal, onGoalCompleted }: Edi
         title: data.title,
         description: data.description || "",
         status: data.status,
+        target_value: data.target_value,
+        current_value: data.current_value,
         progress: data.progress,
         deadline: data.deadline.toISOString(),
         priority: data.priority,
@@ -271,24 +279,69 @@ export function EditGoalModal({ open, onOpenChange, goal, onGoalCompleted }: Edi
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Category</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="e.g., Growth, Product, Marketing"
-                        {...field}
-                        disabled={updateGoalMutation.isPending}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g., Growth, Product, Marketing"
+                      {...field}
+                      disabled={updateGoalMutation.isPending}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="space-y-4 border rounded-lg p-4 bg-slate-50 dark:bg-slate-900">
+              <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">Progress Tracking</h4>
+              <p className="text-xs text-slate-600 dark:text-slate-400">Set target and current values for automatic progress calculation, or manually set progress percentage.</p>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="current_value"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Current Value</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number"
+                          placeholder="e.g., 3500"
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                          disabled={updateGoalMutation.isPending}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="target_value"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Target Value</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number"
+                          placeholder="e.g., 10000"
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                          disabled={updateGoalMutation.isPending}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}
@@ -308,6 +361,7 @@ export function EditGoalModal({ open, onOpenChange, goal, onGoalCompleted }: Edi
                         disabled={updateGoalMutation.isPending}
                       />
                     </FormControl>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">Auto-calculated when current/target values are set</p>
                     <FormMessage />
                   </FormItem>
                 )}

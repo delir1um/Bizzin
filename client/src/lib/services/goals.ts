@@ -27,6 +27,19 @@ export class GoalsService {
 
       // Remove fields that might not exist in database yet and ensure user_id
       const { reflection, ...goalData } = goal
+      
+      // Auto-calculate progress if current_value and target_value are provided
+      if (goalData.current_value !== undefined && goalData.target_value !== undefined) {
+        const { current_value, target_value } = goalData
+        
+        if (target_value > 0) {
+          // Standard "higher is better" calculation
+          const calculatedProgress = Math.min(100, Math.max(0, (current_value / target_value) * 100))
+          goalData.progress = Math.round(calculatedProgress)
+          console.log(`Auto-calculated progress: ${current_value}/${target_value} = ${goalData.progress}%`)
+        }
+      }
+      
       const goalWithUserId = {
         ...goalData,
         user_id: user.id  // Use authenticated user's ID
@@ -64,6 +77,18 @@ export class GoalsService {
 
       // Remove fields that shouldn't be updated or might cause errors
       const { updated_at, created_at, id, user_id, reflection, ...updateData } = updates
+
+      // Auto-calculate progress if current_value and target_value are provided
+      if (updateData.current_value !== undefined && updateData.target_value !== undefined) {
+        const { current_value, target_value } = updateData
+        
+        if (target_value > 0) {
+          // Standard "higher is better" calculation
+          const calculatedProgress = Math.min(100, Math.max(0, (current_value / target_value) * 100))
+          updateData.progress = Math.round(calculatedProgress)
+          console.log(`Auto-calculated progress: ${current_value}/${target_value} = ${updateData.progress}%`)
+        }
+      }
 
       // Also remove any undefined fields
       const cleanUpdateData = Object.fromEntries(
