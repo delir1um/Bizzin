@@ -11,49 +11,63 @@ import { analyzeJournalEntryAutonomous, validateAutonomousSystem } from './auton
 import { ProductionSafeLearningSystem } from './productionSafeLearning';
 import type { UserFeedback, AIAnalysisResult } from './types';
 
-// Main AI analysis function - Hugging Face first, then autonomous fallback
+// Main AI analysis function - Hugging Face server API first, then autonomous fallback
 export async function analyzeJournalEntry(text: string, userId: string): Promise<AIAnalysisResult> {
-  // Import the Hugging Face integration
-  const { analyzeBusinessSentiment } = await import('../aiSentimentAnalysis');
-  
   try {
-    console.log('✅ CALLING REAL HUGGING FACE AI MODELS');
-    console.log('🚀 Starting AI business sentiment analysis with Hugging Face integration...');
+    // Primary analysis: Call Hugging Face API endpoint directly
+    console.log('🚀 Calling server-side Hugging Face API for:', text.substring(0, 50) + '...')
     
-    // Try Hugging Face AI models first for actual content understanding
-    const huggingFaceResult = await analyzeBusinessSentiment(text, '');
-    
-    if (huggingFaceResult && huggingFaceResult.confidence >= 70) {
-      console.log('✅ REAL HUGGING FACE AI ANALYSIS COMPLETE');
-      console.log('Hugging Face AI analysis successful, converting to AIAnalysisResult format');
+    const response = await fetch('/api/huggingface/analyze', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ text })
+    })
+
+    if (response.ok) {
+      const hfResult = await response.json()
+      console.log('✅ Server-side Hugging Face analysis successful:', hfResult)
       
-      // Convert BusinessSentiment to AIAnalysisResult format
-      const aiResult: AIAnalysisResult = {
-        business_category: huggingFaceResult.business_category,
-        primary_mood: huggingFaceResult.primary_mood,
-        confidence: huggingFaceResult.confidence,
-        energy: huggingFaceResult.energy,
-        mood_polarity: huggingFaceResult.energy === 'high' ? 'Positive' : 
-                      huggingFaceResult.energy === 'low' ? 'Negative' : 'Neutral',
-        emotions: huggingFaceResult.emotions || [huggingFaceResult.primary_mood],
-        suggested_title: huggingFaceResult.suggested_title,
-        rules_matched: [], // Hugging Face doesn't use rules
+      // Convert Hugging Face server result to our expected format
+      const result: AIAnalysisResult = {
+        primary_mood: hfResult.primary_mood,
+        confidence: hfResult.confidence,
+        energy: hfResult.energy,
+        mood_polarity: hfResult.primary_mood === 'excited' || hfResult.primary_mood === 'confident' || hfResult.primary_mood === 'optimistic' ? 'Positive' : 
+                       hfResult.primary_mood === 'frustrated' || hfResult.primary_mood === 'stressed' || hfResult.primary_mood === 'concerned' ? 'Negative' : 'Neutral',
+        emotions: hfResult.emotions || [hfResult.primary_mood],
+        business_category: hfResult.business_category,
+        insights: hfResult.insights || [], // Use server-generated insights directly
+        rules_matched: [],
         user_learned: false,
-        analysis_method: 'hugging-face-ai' as const
-      };
+        analysis_method: 'hugging-face-ai'
+      }
       
-      console.log('Hugging Face analysis complete:', aiResult);
-      return aiResult;
+      console.log('Hugging Face AI analysis successful:', result)
+      console.log('Hugging Face analysis complete:', result)
+      
+      return result
+    } else {
+      console.warn('Hugging Face API failed, falling back to local analysis')
     }
-    
-    console.log('Hugging Face unavailable or low confidence, falling back to autonomous analysis');
   } catch (error) {
-    console.warn('Hugging Face analysis failed:', error);
+    console.warn('Hugging Face server analysis failed:', error)
   }
   
-  // Fallback to autonomous analyzer
+  // Fallback to autonomous analyzer with basic insights
   console.log('Using autonomous analyzer as fallback');
-  return analyzeJournalEntryAutonomous(text, userId);
+  const fallbackResult = analyzeJournalEntryAutonomous(text, userId);
+  
+  // Add basic insights for fallback
+  if (!fallbackResult.insights || fallbackResult.insights.length === 0) {
+    fallbackResult.insights = [
+      "Your business experience is valuable data. Document these moments to build stronger strategic thinking.",
+      "Entrepreneurial intuition develops through pattern recognition. Each experience strengthens your judgment."
+    ]
+  }
+  
+  return fallbackResult;
 }
 
 // System validation

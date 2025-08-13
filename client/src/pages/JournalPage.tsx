@@ -20,7 +20,7 @@ import { getDisplayMoodEmoji, getEntryDisplayData } from "@/lib/journalDisplayUt
 import { usePlans } from "@/hooks/usePlans"
 import { UpgradeModal } from "@/components/plans/UpgradeModal"
 import { PlanLimitBanner } from "@/components/plans/PlanLimitBanner"
-import { initializeAISystem } from "@/lib/ai"
+// AI system initializes per-request now via Hugging Face API
 
 export function JournalPage() {
   const [user, setUser] = useState<any>(null)
@@ -43,18 +43,11 @@ export function JournalPage() {
   // Get plan information
   const { usageStatus, canCreateJournalEntry, getRemainingQuota, isPremium, isFree } = usePlans()
 
-  // Get current user and initialize AI system
+  // Get current user (AI system initializes per-request now)
   useEffect(() => {
     const getCurrentUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
-      
-      // Initialize enhanced AI system
-      try {
-        initializeAISystem()
-      } catch (error) {
-        console.warn('Failed to initialize AI system:', error)
-      }
     }
     getCurrentUser()
   }, [])
