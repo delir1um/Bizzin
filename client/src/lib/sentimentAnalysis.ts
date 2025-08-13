@@ -224,6 +224,11 @@ function generateBusinessInsights(primaryEmotion: string, category: string, emot
     }
   }
   
+  // If no specific insights were added yet, add a fallback insight
+  if (insights.length === 0) {
+    insights.push("Your business experience is valuable data. Document these moments to build stronger strategic thinking and decision-making abilities.");
+  }
+  
   // Add a mood-specific motivational insight as the second message
   switch (primaryEmotion.toLowerCase()) {
     case 'confident':
@@ -248,41 +253,6 @@ function generateBusinessInsights(primaryEmotion: string, category: string, emot
     default:
       insights.push("Your entrepreneurial journey is unique. Each experience, whether challenging or rewarding, is building your business intuition.");
       break;
-  }
-  
-  // Inspirational category-based insights - focused on the entrepreneur's journey
-  switch (category.toLowerCase()) {
-    case 'growth':
-      insights.push("You're in expansion mode - this is where legends are made. Scale your vision as boldly as you scale your business.");
-      break;
-    case 'challenge':
-      insights.push("This challenge is your chrysalis. Every entrepreneur's greatest breakthroughs come disguised as their biggest problems.");
-      break;
-    case 'achievement':
-      insights.push("You've just proven what's possible when vision meets determination. This success is a launchpad, not a destination.");
-      break;
-    case 'planning':
-      insights.push("Strategic thinking is your competitive advantage. You're not just building a business - you're architecting the future.");
-      break;
-    case 'research':
-      insights.push("Your quest for understanding sets you apart. Data becomes wisdom in the hands of someone who knows how to listen.");
-      break;
-    case 'learning':
-      insights.push("Every lesson you absorb becomes part of your entrepreneurial DNA. You're not just learning - you're evolving.");
-      break;
-  }
-  
-  // Inspirational multi-emotion insights
-  if (emotions.includes('excited') && emotions.includes('focused')) {
-    insights.push("When passion meets precision, magic happens. You're in the perfect headspace for breakthrough moments.");
-  }
-  
-  if (emotions.includes('frustrated') && emotions.includes('determined')) {
-    insights.push("This tension between frustration and determination is where champions are forged. Push through - your breakthrough is closer than you think.");
-  }
-  
-  if (emotions.includes('worried') && emotions.includes('confident')) {
-    insights.push("The balance of concern and confidence shows mature leadership. You care deeply while staying strong - that's rare and powerful.");
   }
   
   return insights.slice(0, 2); // Limit to 2 insights to keep it concise and impactful
