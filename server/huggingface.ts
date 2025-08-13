@@ -55,23 +55,38 @@ router.post('/analyze', async (req, res) => {
     ]);
 
     console.log('✅ Hugging Face API calls successful');
+    console.log('Raw sentiment response:', JSON.stringify(sentimentData, null, 2));
+    console.log('Raw emotion response:', JSON.stringify(emotionData, null, 2));
 
-    // Process results - ensure we have valid arrays
-    if (!Array.isArray(sentimentData) || !Array.isArray(emotionData) || 
-        sentimentData.length === 0 || emotionData.length === 0) {
+    // Process results - Hugging Face returns nested arrays, flatten them
+    let flatSentimentData = sentimentData;
+    let flatEmotionData = emotionData;
+    
+    // Handle nested array format from HF API
+    if (Array.isArray(sentimentData[0]) && Array.isArray(sentimentData[0])) {
+      flatSentimentData = sentimentData[0];
+    }
+    if (Array.isArray(emotionData[0]) && Array.isArray(emotionData[0])) {
+      flatEmotionData = emotionData[0];
+    }
+    
+    if (!Array.isArray(flatSentimentData) || !Array.isArray(flatEmotionData) || 
+        flatSentimentData.length === 0 || flatEmotionData.length === 0) {
       throw new Error('Invalid response format from Hugging Face API');
     }
 
     // Sort results by confidence to get the most confident predictions
-    const sortedSentiment = sentimentData.sort((a, b) => b.score - a.score);
-    const sortedEmotion = emotionData.sort((a, b) => b.score - a.score);
+    const sortedSentiment = flatSentimentData.sort((a, b) => b.score - a.score);
+    const sortedEmotion = flatEmotionData.sort((a, b) => b.score - a.score);
     
     const topSentiment = sortedSentiment[0];
     const topEmotion = sortedEmotion[0];
 
     console.log('Processing Hugging Face results:', { 
-      topSentiment: sortedSentiment, 
-      topEmotion: sortedEmotion 
+      topSentiment, 
+      topEmotion,
+      allSentiment: sortedSentiment,
+      allEmotion: sortedEmotion
     });
 
     // Map sentiment to business mood using REAL AI data
