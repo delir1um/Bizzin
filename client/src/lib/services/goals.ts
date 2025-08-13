@@ -26,19 +26,19 @@ export class GoalsService {
       }
 
       // Remove fields that might not exist in database yet and ensure user_id
-      const { reflection, current_value, target_value, ...goalData } = goal
+      const { reflection, ...goalData } = goal
       
-      // Temporarily disabled: Auto-calculate progress until database columns are added
-      // TODO: Re-enable once current_value and target_value columns are added to database
-      /*
-      if (current_value !== undefined && target_value !== undefined) {
+      // Auto-calculate progress if current_value and target_value are provided
+      if (goalData.current_value !== undefined && goalData.target_value !== undefined) {
+        const { current_value, target_value } = goalData
+        
         if (target_value > 0) {
+          // Standard "higher is better" calculation
           const calculatedProgress = Math.min(100, Math.max(0, (current_value / target_value) * 100))
           goalData.progress = Math.round(calculatedProgress)
           console.log(`Auto-calculated progress: ${current_value}/${target_value} = ${goalData.progress}%`)
         }
       }
-      */
       
       const goalWithUserId = {
         ...goalData,
@@ -76,19 +76,19 @@ export class GoalsService {
       console.log('Updating goal:', goalId, 'for user:', user.id)
 
       // Remove fields that shouldn't be updated or might cause errors
-      const { updated_at, created_at, id, user_id, reflection, current_value, target_value, ...updateData } = updates
+      const { updated_at, created_at, id, user_id, reflection, ...updateData } = updates
 
-      // Temporarily disabled: Auto-calculate progress until database columns are added
-      // TODO: Re-enable once current_value and target_value columns are added to database
-      /*
-      if (current_value !== undefined && target_value !== undefined) {
+      // Auto-calculate progress if current_value and target_value are provided
+      if (updateData.current_value !== undefined && updateData.target_value !== undefined) {
+        const { current_value, target_value } = updateData
+        
         if (target_value > 0) {
+          // Standard "higher is better" calculation
           const calculatedProgress = Math.min(100, Math.max(0, (current_value / target_value) * 100))
           updateData.progress = Math.round(calculatedProgress)
           console.log(`Auto-calculated progress: ${current_value}/${target_value} = ${updateData.progress}%`)
         }
       }
-      */
 
       // Also remove any undefined fields
       const cleanUpdateData = Object.fromEntries(
