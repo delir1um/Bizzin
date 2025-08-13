@@ -140,6 +140,13 @@ export function analyzeBusinessSentiment(content: string, title?: string): Busin
   // Generate insights based on emotions and context
   const insights = generateBusinessInsights(primaryEmotion, category, topEmotions, content);
   
+  console.log('DEBUG analyzeBusinessSentiment result:', {
+    primaryEmotion,
+    category,
+    insightsGenerated: insights.length,
+    insights: insights
+  });
+  
   return {
     mood: {
       primary: primaryEmotion,
@@ -157,6 +164,16 @@ function generateBusinessInsights(primaryEmotion: string, category: string, emot
   
   // Generate contextual insights based on business category and detected patterns in the content
   const lowerContent = (contentText || '').toLowerCase();
+  
+  console.log('DEBUG generateBusinessInsights:', {
+    primaryEmotion,
+    category,
+    contentLength: contentText?.length || 0,
+    lowerContentPreview: lowerContent.substring(0, 150),
+    hasFunding: lowerContent.includes('funding'),
+    hasInvestment: lowerContent.includes('investment'),
+    hasInvestor: lowerContent.includes('investor')
+  });
   
 
   
