@@ -383,7 +383,7 @@ export function BizBuilderToolsPage() {
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.95 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
         >
           <BusinessBudgetCalculator onClose={() => setSelectedTool(null)} />
         </motion.div>
@@ -395,7 +395,7 @@ export function BizBuilderToolsPage() {
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.95 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
         >
           <CashFlowCalculator onClose={() => setSelectedTool(null)} />
         </motion.div>
@@ -407,7 +407,7 @@ export function BizBuilderToolsPage() {
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.95 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
         >
           <BreakEvenCalculator onClose={() => setSelectedTool(null)} />
         </motion.div>
@@ -419,7 +419,7 @@ export function BizBuilderToolsPage() {
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.95 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
         >
           <LoanAmortisationCalculator onClose={() => setSelectedTool(null)} />
         </motion.div>
@@ -431,7 +431,7 @@ export function BizBuilderToolsPage() {
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.95 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
         >
           <CompoundInterestCalculator onClose={() => setSelectedTool(null)} />
         </motion.div>
@@ -443,7 +443,7 @@ export function BizBuilderToolsPage() {
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.95 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
         >
           <SimpleInterestCalculator onClose={() => setSelectedTool(null)} />
         </motion.div>
