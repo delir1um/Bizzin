@@ -68,8 +68,16 @@ export class JournalService {
       // Analyze with enhanced AI system
       const aiAnalysis = await analyzeJournalEntry(entry.content, user.id)
       
-      // Generate inspirational insights using our enhanced sentiment analysis
+      // Generate inspirational insights using our enhanced sentiment analysis with AI category context
       const enhancedSentiment = await analyzeBusinessSentiment(entry.content, entry.title)
+      
+      // For debugging: log the analysis to see what's being generated
+      console.log('Enhanced sentiment analysis result:', {
+        category: enhancedSentiment.category,
+        aiCategory: aiAnalysis.business_category,
+        insightsCount: enhancedSentiment.insights.length,
+        insights: enhancedSentiment.insights
+      })
       
       const sentimentData = {
         primary_mood: aiAnalysis.primary_mood,
@@ -77,7 +85,10 @@ export class JournalService {
         energy: aiAnalysis.energy,
         mood_polarity: aiAnalysis.mood_polarity,
         emotions: [aiAnalysis.primary_mood],
-        insights: enhancedSentiment.insights.length > 0 ? enhancedSentiment.insights : [`Enhanced AI v3.0 - Confidence: ${aiAnalysis.confidence}%`],
+        insights: enhancedSentiment.insights.length > 0 ? enhancedSentiment.insights : [
+          `Business context analysis: ${aiAnalysis.business_category}/${aiAnalysis.primary_mood}/${aiAnalysis.energy} (${aiAnalysis.confidence}%)`,
+          "Continue documenting your entrepreneurial journey - consistent reflection builds stronger business intuition."
+        ],
         business_category: aiAnalysis.business_category,
         rules_matched: aiAnalysis.rules_matched || [],
         user_learned: aiAnalysis.user_learned || false

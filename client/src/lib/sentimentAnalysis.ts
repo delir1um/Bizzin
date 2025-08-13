@@ -159,7 +159,10 @@ function generateBusinessInsights(primaryEmotion: string, category: string, emot
   const lowerContent = (contentText || '').toLowerCase();
   
   // Category-specific contextual insights based on actual business scenarios
-  if (category.toLowerCase() === 'achievement') {
+  const categoryLower = category.toLowerCase();
+  
+  // Handle different category naming from AI systems
+  if (categoryLower === 'achievement' || lowerContent.includes('achievement') || lowerContent.includes('success') || lowerContent.includes('milestone')) {
     if (lowerContent.includes('client') || lowerContent.includes('customer') || lowerContent.includes('deal')) {
       insights.push("Major client wins validate your value proposition. Use this momentum to refine your sales process and document what worked for future deals.");
     } else if (lowerContent.includes('launch') || lowerContent.includes('product') || lowerContent.includes('feature')) {
@@ -199,8 +202,8 @@ function generateBusinessInsights(primaryEmotion: string, category: string, emot
     }
   }
   
-  else if (category.toLowerCase() === 'growth') {
-    if (lowerContent.includes('revenue') || lowerContent.includes('sales') || lowerContent.includes('income')) {
+  else if (categoryLower === 'growth' || lowerContent.includes('growth') || lowerContent.includes('revenue') || lowerContent.includes('scaling')) {
+    if (lowerContent.includes('revenue') || lowerContent.includes('sales') || lowerContent.includes('income') || lowerContent.includes('million')) {
       insights.push("Revenue growth without process growth creates chaos. Scale your systems and team capabilities alongside your customer base.");
     } else if (lowerContent.includes('market') || lowerContent.includes('expansion') || lowerContent.includes('new')) {
       insights.push("New markets test your product-market fit assumptions. Start small, learn fast, and adapt your approach based on local insights.");
