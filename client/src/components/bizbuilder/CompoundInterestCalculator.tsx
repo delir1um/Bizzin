@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { X, Download, TrendingUp, DollarSign, PiggyBank, Calendar, Target, Zap } from "lucide-react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from "recharts"
 
@@ -284,8 +285,8 @@ export default function CompoundInterestCalculator({ onClose }: { onClose: () =>
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-slate-900 rounded-lg shadow-xl w-full max-w-7xl h-[90vh] flex flex-col">
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="max-w-7xl max-h-[95vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
           <div>
@@ -710,7 +711,7 @@ export default function CompoundInterestCalculator({ onClose }: { onClose: () =>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }
