@@ -1,8 +1,65 @@
 import { supabase } from '@/lib/supabase'
 import type { JournalEntry, CreateJournalEntry, UpdateJournalEntry } from '@/types/journal'
 import { analyzeJournalEntry } from '@/lib/ai'
-import { analyzeBusinessSentiment } from '@/lib/sentimentAnalysis'
 import { aiBusinessCoach } from '@/lib/aiBusinessCoach'
+import type { AIAnalysisResult } from '@/lib/ai/types'
+
+// Generate contextual business insights based on AI analysis results
+function generateContextualInsights(aiAnalysis: AIAnalysisResult, content: string): string[] {
+  const insights: string[] = [];
+  const lowerContent = content.toLowerCase();
+  const category = aiAnalysis.business_category.toLowerCase();
+  const mood = aiAnalysis.primary_mood.toLowerCase();
+  const confidence = aiAnalysis.confidence;
+  
+  // Rule-based contextual insights for specific business scenarios
+  if (lowerContent.includes('funding') || lowerContent.includes('investment') || lowerContent.includes('investor') || 
+      lowerContent.includes('funds') || lowerContent.includes('capital') || lowerContent.includes('money') || 
+      lowerContent.includes('cash flow') || lowerContent.includes('financial') || lowerContent.includes('budget')) {
+    
+    if (lowerContent.includes('worried') || lowerContent.includes('concern') || lowerContent.includes('trouble')) {
+      insights.push("Financial concerns are normal for entrepreneurs. Create a detailed cash flow forecast and identify your 3 most critical revenue drivers to focus on.");
+    } else if (lowerContent.includes('series a') || lowerContent.includes('seed') || lowerContent.includes('raised')) {
+      insights.push("Fundraising is a full-time job that pauses building. Set clear timelines, prepare thoroughly, and get back to customers fast.");
+    } else {
+      insights.push("Funding is fuel, not validation. Stay focused on unit economics and customer satisfaction - investors bet on execution, not ideas.");
+    }
+  }
+  
+  // Category-specific insights
+  else if (category === 'challenge') {
+    if (confidence >= 85) {
+      insights.push("Every challenge is market research disguised as a problem. Document what you're learning - these insights become your competitive advantage.");
+    } else {
+      insights.push("Obstacles reveal gaps between vision and execution. Use this tension to build stronger systems and processes.");
+    }
+  }
+  
+  else if (category === 'growth') {
+    if (confidence >= 85) {
+      insights.push("Growth creates new problems - this is progress, not failure. Scale your systems before scaling your team.");
+    } else {
+      insights.push("Sustainable growth comes from repeatable processes. Focus on what's working and eliminate what isn't.");
+    }
+  }
+  
+  else if (category === 'achievement') {
+    insights.push("Celebrate wins, then dissect them. Understanding why things work is more valuable than the success itself.");
+  }
+  
+  else if (category === 'planning') {
+    insights.push("Strategic thinking separates entrepreneurs from operators. Your planning today determines your opportunities tomorrow.");
+  }
+  
+  else {
+    insights.push("Your business experience is valuable data. Document these moments to build stronger strategic thinking and decision-making abilities.");
+  }
+  
+  // Add a general entrepreneurial insight
+  insights.push("Your entrepreneurial journey is unique. Each experience, whether challenging or rewarding, is building your business intuition.");
+  
+  return insights;
+}
 
 export class JournalService {
   static async getUserEntries(userId: string): Promise<JournalEntry[]> {
@@ -65,34 +122,19 @@ export class JournalService {
       const wordCount = entry.content.split(/\s+/).length
       const readingTime = Math.max(1, Math.ceil(wordCount / 200))
 
-      // Analyze with enhanced AI system
+      // Analyze with enhanced AI system (the production-ready autonomous system)
       const aiAnalysis = await analyzeJournalEntry(entry.content, user.id)
       
-      // Generate inspirational insights using our enhanced sentiment analysis with AI category context
-      console.log('CALLING analyzeBusinessSentiment with:', {
-        contentLength: entry.content.length,
-        contentPreview: entry.content.substring(0, 100),
-        titlePreview: entry.title.substring(0, 50)
+      console.log('Using production AI analysis results:', {
+        category: aiAnalysis.business_category,
+        mood: aiAnalysis.primary_mood,
+        energy: aiAnalysis.energy,
+        confidence: aiAnalysis.confidence,
+        rulesMatched: aiAnalysis.rules_matched?.length || 0
       });
       
-      let enhancedSentiment;
-      try {
-        enhancedSentiment = await analyzeBusinessSentiment(entry.content, entry.title)
-        console.log('RECEIVED from analyzeBusinessSentiment:', {
-          category: enhancedSentiment.category,
-          insightsLength: enhancedSentiment.insights.length,
-          insights: enhancedSentiment.insights,
-          mood: enhancedSentiment.mood
-        });
-      } catch (error) {
-        console.error('ERROR in analyzeBusinessSentiment:', error);
-        // Fallback sentiment data if analysis fails
-        enhancedSentiment = {
-          mood: { primary: 'neutral', confidence: 0.5, energy: 'medium', emotions: ['neutral'] },
-          insights: [],
-          category: 'reflection'
-        };
-      }
+      // Generate contextual business insights based on AI analysis results
+      const insights = generateContextualInsights(aiAnalysis, entry.content);
       
       const sentimentData = {
         primary_mood: aiAnalysis.primary_mood,
@@ -100,10 +142,7 @@ export class JournalService {
         energy: aiAnalysis.energy,
         mood_polarity: aiAnalysis.mood_polarity,
         emotions: [aiAnalysis.primary_mood],
-        insights: enhancedSentiment.insights.length > 0 ? enhancedSentiment.insights : [
-          `Business context analysis: ${aiAnalysis.business_category}/${aiAnalysis.primary_mood}/${aiAnalysis.energy} (${aiAnalysis.confidence}%)`,
-          "Continue documenting your entrepreneurial journey - consistent reflection builds stronger business intuition."
-        ],
+        insights: insights,
         business_category: aiAnalysis.business_category,
         rules_matched: aiAnalysis.rules_matched || [],
         user_learned: aiAnalysis.user_learned || false
@@ -177,8 +216,8 @@ export class JournalService {
         if (content || title) {
           const aiAnalysis = await analyzeJournalEntry(content, user.id)
           
-          // Generate inspirational insights using our enhanced sentiment analysis
-          const enhancedSentiment = await analyzeBusinessSentiment(content, title)
+          // Generate contextual business insights based on AI analysis
+          const insights = generateContextualInsights(aiAnalysis, content);
           
           updateData.sentiment_data = {
             primary_mood: aiAnalysis.primary_mood,
@@ -186,7 +225,7 @@ export class JournalService {
             energy: aiAnalysis.energy,
             mood_polarity: aiAnalysis.mood_polarity,
             emotions: [aiAnalysis.primary_mood],
-            insights: enhancedSentiment.insights.length > 0 ? enhancedSentiment.insights : [`Enhanced AI v3.0 - Confidence: ${aiAnalysis.confidence}%`],
+            insights: insights,
             business_category: aiAnalysis.business_category,
             rules_matched: aiAnalysis.rules_matched || [],
             user_learned: aiAnalysis.user_learned || false
@@ -360,8 +399,8 @@ export class JournalService {
             // Analyze with enhanced AI system
             const aiAnalysis = await analyzeJournalEntry(entry.content, user.id)
             
-            // Generate inspirational insights using our enhanced sentiment analysis
-            const enhancedSentiment = await analyzeBusinessSentiment(entry.content, entry.title || '')
+            // Generate contextual business insights based on AI analysis
+            const insights = generateContextualInsights(aiAnalysis, entry.content);
             
             // Create updated sentiment data with enhanced insights
             const sentimentData = {
@@ -370,7 +409,7 @@ export class JournalService {
               energy: aiAnalysis.energy,
               mood_polarity: aiAnalysis.mood_polarity,
               emotions: [aiAnalysis.primary_mood],
-              insights: enhancedSentiment.insights.length > 0 ? enhancedSentiment.insights : [`Enhanced AI v3.0 - Confidence: ${aiAnalysis.confidence}%`],
+              insights: insights,
               business_category: aiAnalysis.business_category,
               rules_matched: aiAnalysis.rules_matched || [],
               user_learned: aiAnalysis.user_learned || false
