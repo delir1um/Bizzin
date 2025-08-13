@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { PlusCircle, Search, BookOpen, Calendar, Brain, ChevronDown, ChevronRight, Flame, TrendingUp, Heart, Sparkles, Zap, X } from "lucide-react"
+import { PlusCircle, Plus, Search, BookOpen, Calendar, Brain, ChevronDown, ChevronRight, Flame, TrendingUp, Heart, Sparkles, Zap, X } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useToast } from "@/hooks/use-toast"
@@ -249,6 +249,60 @@ export function JournalPage() {
     setShowWriteModal(true)
   }
 
+  // Handle adding sample entries
+  const handleAddSamples = async () => {
+    if (!user?.id) return
+    
+    const sampleEntries = [
+      {
+        title: "Closed our biggest client deal yet! 🎉",
+        content: "Just finished the presentation to the board at MegaCorp and they signed a R2.5 million contract for the next 18 months. This is huge for us - it's triple our previous biggest client. The team worked incredibly hard preparing the proposal, doing market research, and building custom prototypes. I'm so proud of everyone. This deal will allow us to hire 3 new developers and finally move to that bigger office space we've been eyeing. The client was particularly impressed with our AI integration capabilities and how we can scale their operations. This validates everything we've been building for the past 2 years."
+      },
+      {
+        title: "Major supply chain disruption hitting us hard",
+        content: "Our main supplier in China just informed us they'll be shutting down for 6 weeks due to new regulations. This affects 70% of our inventory and we only have 3 weeks of stock left. Customers are already asking about delivery delays and I'm worried about losing the momentum we've built this quarter. Had emergency meetings with the procurement team to find alternative suppliers, but the costs are 40% higher and quality standards are unknown. This could seriously impact our Q4 projections and the investor update is next month. Need to decide whether to absorb the cost increase or pass it to customers - neither option feels good right now."
+      },
+      {
+        title: "Team expansion strategy session - exciting times ahead",
+        content: "Spent the morning with Sarah and Mike planning our hiring roadmap for 2025. We're looking to grow from 12 to 25 employees over the next 8 months. The roles we need most urgently are: senior backend developer, UX designer, sales specialist, and customer success manager. We've mapped out the interview process, salary bands, and equity allocation. The challenging part is maintaining our culture as we scale - we don't want to lose the close-knit feeling that makes this place special. We're also exploring remote work policies to tap into talent outside Cape Town. Budget-wise, we're comfortable with the runway thanks to the recent funding round."
+      },
+      {
+        title: "Reflecting on customer feedback from last month's survey",
+        content: "The results from our Net Promoter Score survey came back and there are some interesting insights. Overall score is 67 which is decent but not where I want us to be. The main complaint is response time to support tickets - averaging 18 hours when customers expect same-day replies. On the positive side, 89% love our product features and 92% would recommend us to others. Three customers specifically mentioned that our solution saves them 5+ hours per week. I think we need to invest more in our customer success team and maybe implement a live chat feature. This feedback is gold for product development priorities."
+      },
+      {
+        title: "Breakthrough moment with the new algorithm!",
+        content: "After 6 weeks of debugging and optimization, we finally cracked the performance issue that was plaguing our recommendation engine. The new machine learning model is running 300% faster and accuracy improved from 73% to 91%. The team stayed late three nights this week testing different approaches, and yesterday evening everything just clicked into place. This breakthrough means we can handle 10x more concurrent users without additional server costs. Already scheduled demos with two enterprise prospects for next week. Sometimes the best solutions come when you least expect them - this could be a game-changer for our competitive position."
+      },
+      {
+        title: "Difficult conversation with underperforming team member",
+        content: "Had to have a tough but necessary conversation with James today about his recent work quality and attendance issues. He's been with us since the beginning and I really want him to succeed, but his performance has declined over the past 3 months. Other team members are starting to notice and it's affecting morale. We discussed specific areas for improvement and set up bi-weekly check-ins for the next two months. If things don't improve by then, we'll need to consider other options. These conversations are never easy but they're part of being a leader. The team deserves someone who's fully committed to our mission."
+      }
+    ]
+    
+    try {
+      let added = 0
+      for (const entry of sampleEntries) {
+        await JournalService.createEntry(entry)
+        added++
+      }
+      
+      // Refresh journal entries
+      queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
+      
+      toast({
+        title: "Sample Entries Added!",
+        description: `${added} diverse business journal entries created to showcase AI analysis capabilities.`,
+      })
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add sample entries. Please try again.",
+        variant: "destructive"
+      })
+    }
+  }
+
   // Handle bulk re-analysis
   const handleReAnalyzeEntries = async () => {
     if (!user?.id) {
@@ -279,8 +333,8 @@ export function JournalPage() {
     } catch (error) {
       console.error('Error re-analyzing entries:', error)
       toast({
-        title: "Re-analysis Failed",
-        description: error?.status || "An error occurred during re-analysis. Please try again.",
+        title: "Re-analysis Failed", 
+        description: (error as any)?.status || "An error occurred during re-analysis. Please try again.",
         variant: "destructive"
       })
     } finally {
@@ -538,7 +592,7 @@ export function JournalPage() {
               >
                 <Button 
                   onClick={handleCreateEntry}
-                  className="bg-orange-600 hover:bg-orange-700 text-white
+                  className="bg-orange-600 hover:bg-orange-700 text-white mr-2
                     transition-all duration-300 hover:shadow-lg hover:shadow-orange-200 dark:hover:shadow-orange-900/30
                     relative overflow-hidden group"
                 >
@@ -553,6 +607,17 @@ export function JournalPage() {
                 </Button>
               </motion.div>
             )}
+            
+            {/* Add Sample Entries Button for Testing */}
+            <Button 
+              onClick={handleAddSamples}
+              variant="outline"
+              size="sm"
+              className="border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-950/20"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Samples
+            </Button>
           </motion.div>
         </div>
       </motion.div>
