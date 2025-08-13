@@ -41,59 +41,65 @@ export function SentimentInsights({ entry, className = "" }: SentimentInsightsPr
     }
   }
 
-  // Generate meaningful business insights based on the content
+  // Generate inspirational business insights using our enhanced sentiment analysis
   const generateBusinessInsights = () => {
+    // Check if the sentiment_data already contains proper insights from our enhanced system
+    if (sentiment.insights && sentiment.insights.length > 0) {
+      // Use the inspirational insights from our enhanced sentiment analysis
+      return sentiment.insights
+    }
+
+    // Fallback: Generate inspirational insights based on mood and category
     const insights = []
     const businessCategory = sentiment.business_category || displayData.category
     const mood = displayData.mood
     const energy = displayData.energy || sentiment.energy
-    const confidence = sentiment.confidence || 0
 
-    // Category-specific insights
-    if (businessCategory === 'growth' || businessCategory === 'Growth') {
-      insights.push("This entry reflects positive business momentum and expansion mindset.")
-    } else if (businessCategory === 'planning' || businessCategory === 'Planning') {
-      insights.push("Strategic thinking and forward planning are evident in this reflection.")
-    } else if (businessCategory === 'achievement' || businessCategory === 'Achievement') {
-      insights.push("Milestone achievement detected - great progress on business objectives.")
-    } else if (businessCategory === 'challenge' || businessCategory === 'Challenge') {
-      insights.push("Challenging situation identified - resilience and problem-solving focused.")
-    } else if (businessCategory === 'learning' || businessCategory === 'Learning') {
-      insights.push("Knowledge acquisition and business learning captured in this entry.")
-    } else if (businessCategory === 'research' || businessCategory === 'Research') {
-      insights.push("Data-driven analysis and market research insights documented.")
+    // Inspirational mood-based insights (matching our enhanced system)
+    switch (mood?.toLowerCase()) {
+      case 'excited':
+        insights.push("This excitement is your inner entrepreneur speaking. Channel this energy into bold action that transforms your vision into reality.")
+        break
+      case 'strategic':
+        insights.push("Your strategic mindset is architecting the future. This deep thinking is the foundation upon which business empires are built.")
+        break
+      case 'focused':
+        insights.push("Your clarity of purpose is a superpower. Stay in this zone - great things happen when vision meets unwavering focus.")
+        break
+      case 'confident':
+        insights.push("Your confidence radiates strength. Trust your instincts - they've brought you this far for a reason.")
+        break
+      case 'thoughtful':
+        insights.push("Your reflection shows wisdom. Great leaders pause to think deeply before they leap boldly.")
+        break
+      default:
+        insights.push("Every moment of reflection builds the entrepreneur you're becoming. Trust the process - your journey is unfolding exactly as it should.")
     }
 
-    // Mood and energy combination insights
-    if (mood === 'Focused' && energy === 'high') {
-      insights.push("High-energy focus suggests productive execution phase.")
-    } else if (mood === 'Optimistic' && energy === 'high') {
-      insights.push("Strong positive outlook combined with high energy indicates peak performance.")
-    } else if (mood === 'Determined' && energy === 'medium') {
-      insights.push("Steady determination shows consistent progress toward goals.")
-    } else if (mood === 'Reflective' && energy === 'medium') {
-      insights.push("Thoughtful analysis period - good time for strategic decisions.")
+    // Inspirational category-based insights
+    switch (businessCategory?.toLowerCase()) {
+      case 'growth':
+        insights.push("You're in expansion mode - this is where legends are made. Scale your vision as boldly as you scale your business.")
+        break
+      case 'planning':
+        insights.push("Strategic thinking is your competitive advantage. You're not just building a business - you're architecting the future that others will admire.")
+        break
+      case 'achievement':
+        insights.push("You've just proven what's possible when vision meets determination. This success is a launchpad, not a destination.")
+        break
+      case 'challenge':
+        insights.push("This challenge is your chrysalis. Every entrepreneur's greatest breakthroughs come disguised as their biggest problems.")
+        break
+      case 'learning':
+        insights.push("Every lesson you absorb becomes part of your entrepreneurial DNA. You're not just learning - you're evolving into the leader your vision needs.")
+        break
+      case 'research':
+        insights.push("Your quest for understanding sets you apart. Data becomes wisdom in the hands of someone who knows how to listen.")
+        break
     }
 
-    // Confidence-based insights
-    if (confidence >= 85) {
-      insights.push("AI analysis shows high confidence in mood and category detection.")
-    } else if (confidence >= 70) {
-      insights.push("AI analysis indicates good confidence in emotional and business context.")
-    }
-
-    // Enhanced AI features indicators (safely access with optional chaining)
-    const rulesMatched = (sentiment as any).rules_matched
-    if (rulesMatched && rulesMatched.length > 0) {
-      insights.push(`Business pattern recognition applied (${rulesMatched.length} rules matched).`)
-    }
-    
-    const userLearned = (sentiment as any).user_learned
-    if (userLearned) {
-      insights.push("AI system has learned from your previous feedback on similar entries.")
-    }
-
-    return insights.length > 0 ? insights : ["Business context analyzed with enhanced AI system."]
+    // Return a single, cohesive inspirational paragraph
+    return [insights.slice(0, 2).join(" ")]
   }
 
   const businessInsights = generateBusinessInsights()

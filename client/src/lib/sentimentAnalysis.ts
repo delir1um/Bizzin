@@ -201,6 +201,10 @@ function generateBusinessInsights(primaryEmotion: string, category: string, emot
     case 'Curious':
       insights.push("Your curiosity is the compass that will lead you to discoveries others miss. Keep asking the hard questions.");
       break;
+    case 'strategic':
+    case 'Strategic':
+      insights.push("Your strategic mindset is architecting the future. This deep thinking is the foundation upon which business empires are built.");
+      break;
   }
   
   // Inspirational category-based insights - focused on the entrepreneur's journey
