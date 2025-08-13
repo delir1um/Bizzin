@@ -60,11 +60,11 @@ export function DocSafeStatsCard({ storageStats, onNavigate }: DocSafeStatsCardP
           </div>
           <h3 className="font-semibold text-gray-900 dark:text-gray-100">DocSafe</h3>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 text-xs">
-            Secure Storage
+            Secure
           </Badge>
-          <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
+          <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 text-xs">
             {stats.total_documents} docs
           </Badge>
         </div>

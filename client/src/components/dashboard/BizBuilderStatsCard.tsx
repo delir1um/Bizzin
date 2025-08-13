@@ -176,9 +176,8 @@ export function BizBuilderStatsCard({ onNavigate }: BizBuilderStatsCardProps) {
         {/* Action Button */}
         <Button 
           onClick={() => onNavigate('/bizbuilder')}
-          variant="outline"
+          className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
           size="sm"
-          className="w-full mt-4 border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-950/50"
         >
           <FileSpreadsheet className="w-4 h-4 mr-2" />
           {hasCalculations ? 'Continue Planning' : 'Start Planning'}
