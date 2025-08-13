@@ -161,6 +161,38 @@ const SpecificationRules: Rule[] = [
     moodPolarity: 'Neutral',
     confidenceBoost: 10
   },
+  { 
+    id: 'TEAM_EXPANSION',
+    test: t => /\b(team|hiring|employees)\b/.test(t) && /\b(expansion|grow|roadmap|25|12)\b/.test(t) && /\b(planning|strategy|session|months)\b/.test(t),
+    category: 'Planning',
+    energy: 'medium',
+    moodPolarity: 'Positive',
+    confidenceBoost: 18
+  },
+  { 
+    id: 'MAJOR_CLIENT_SUCCESS',
+    test: t => /\b(client|deal|contract|million)\b/.test(t) && /\b(signed|closed|biggest|huge)\b/.test(t),
+    category: 'Achievement',
+    energy: 'high',
+    moodPolarity: 'Positive',
+    confidenceBoost: 20
+  },
+  { 
+    id: 'ALGORITHM_BREAKTHROUGH',
+    test: t => /\b(algorithm|breakthrough|performance|model)\b/.test(t) && /\b(faster|cracked|improved|optimization)\b/.test(t),
+    category: 'Achievement',
+    energy: 'high',
+    moodPolarity: 'Positive',
+    confidenceBoost: 19
+  },
+  { 
+    id: 'CUSTOMER_FEEDBACK_ANALYSIS',
+    test: t => /\b(customer|feedback|survey|score)\b/.test(t) && /\b(reflecting|results|insights|analysis)\b/.test(t),
+    category: 'Learning',
+    energy: 'medium',
+    moodPolarity: 'Neutral',
+    confidenceBoost: 16
+  },
 
   // Research Activities
   { 
