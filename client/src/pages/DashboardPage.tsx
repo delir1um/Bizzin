@@ -323,24 +323,78 @@ export function DashboardPage() {
         </motion.div>
 
         {/* Business Intelligence Section */}
-        <div className="space-y-6">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+        <motion.div 
+          className="space-y-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.7, ease: "easeOut" }}
+        >
+          <motion.div 
+            className="text-center"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.8, ease: "easeOut" }}
+          >
+            <motion.h2 
+              className="text-2xl font-bold text-slate-900 dark:text-white mb-2"
+              whileHover={{ 
+                scale: 1.02,
+                transition: { duration: 0.2 }
+              }}
+            >
               Business Intelligence Dashboard
-            </h2>
-            <p className="text-slate-600 dark:text-slate-300">
+            </motion.h2>
+            <motion.p 
+              className="text-slate-600 dark:text-slate-300"
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.9 }}
+            >
               AI-powered insights from your journal entries
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
 
           {/* All Business Health Metrics in Single Row */}
-          <div className="grid grid-cols-1 xl:grid-cols-4 lg:grid-cols-2 gap-4">
-            <BurnoutRiskCard journalEntries={journalEntries} />
-            <BusinessHealthRadar journalEntries={journalEntries} />
-            <GrowthMomentumCard journalEntries={journalEntries} />
-            <RecoveryResilienceCard journalEntries={journalEntries} />
-          </div>
-        </div>
+          <motion.div 
+            className="grid grid-cols-1 xl:grid-cols-4 lg:grid-cols-2 gap-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 1.0, ease: "easeOut" }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 1.1, ease: "backOut" }}
+              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+            >
+              <BurnoutRiskCard journalEntries={journalEntries} />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 1.2, ease: "backOut" }}
+              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+            >
+              <BusinessHealthRadar journalEntries={journalEntries} />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 1.3, ease: "backOut" }}
+              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+            >
+              <GrowthMomentumCard journalEntries={journalEntries} />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 1.4, ease: "backOut" }}
+              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+            >
+              <RecoveryResilienceCard journalEntries={journalEntries} />
+            </motion.div>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   )

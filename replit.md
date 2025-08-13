@@ -7,6 +7,7 @@ Bizzin is a modern SaaS platform designed for entrepreneurs to plan, journal, an
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Animation preferences: Sequential top-to-bottom animations for clean, professional page loading experience. Elements should appear in logical order from header down through content sections.
 
 ## System Architecture
 
