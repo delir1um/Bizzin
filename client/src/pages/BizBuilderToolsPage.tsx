@@ -105,7 +105,7 @@ export function BizBuilderToolsPage() {
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
+            transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
           >
             <motion.h1 
               className="text-3xl font-bold text-slate-900 dark:text-white"
@@ -132,7 +132,7 @@ export function BizBuilderToolsPage() {
               className="mt-2 text-lg text-slate-600 dark:text-slate-300"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
             >
               Complete business intelligence platform with professional calculators and analysis tools
             </motion.p>
@@ -140,7 +140,7 @@ export function BizBuilderToolsPage() {
               className="mt-4 flex flex-wrap gap-4 text-sm text-slate-500 dark:text-slate-400"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
             >
               <div className="flex items-center">
                 <div className="w-3 h-3 bg-green-500 rounded-full mr-2 animate-pulse"></div>
@@ -161,7 +161,7 @@ export function BizBuilderToolsPage() {
             className="mt-4 sm:mt-0"
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.4, ease: "backOut" }}
+            transition={{ duration: 0.6, delay: 0.3, ease: "backOut" }}
           >
             <motion.div
               whileHover={{ scale: 1.02 }}
@@ -187,7 +187,7 @@ export function BizBuilderToolsPage() {
         className="mb-8"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+        transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
       >
         <div className="flex flex-wrap gap-2">
           {categories.map((category, index) => (
@@ -197,7 +197,7 @@ export function BizBuilderToolsPage() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ 
                 duration: 0.4, 
-                delay: 0.4 + (index * 0.1),
+                delay: 0.5 + (index * 0.1),
                 ease: "backOut"
               }}
               whileHover={{ scale: 1.05 }}
@@ -222,7 +222,12 @@ export function BizBuilderToolsPage() {
       </motion.div>
 
       {/* Tools Grid with Enhanced Animations */}
-      <AnimatedGrid className="grid gap-8 grid-cols-1 md:grid-cols-3" stagger={0.15}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.9 }}
+      >
+        <AnimatedGrid className="grid gap-8 grid-cols-1 md:grid-cols-3" stagger={0.15}>
         {filteredTools.map((tool, index) => {
           const IconComponent = tool.icon
           return (
@@ -367,38 +372,81 @@ export function BizBuilderToolsPage() {
             </AnimatedItem>
           )
         })}
-      </AnimatedGrid>
+        </AnimatedGrid>
+      </motion.div>
 
 
 
       {/* Business Budget Calculator */}
       {selectedTool === 'business-budget' && (
-        <BusinessBudgetCalculator onClose={() => setSelectedTool(null)} />
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -20, scale: 0.95 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          <BusinessBudgetCalculator onClose={() => setSelectedTool(null)} />
+        </motion.div>
       )}
 
       {/* Cash Flow Projection Calculator */}
       {selectedTool === 'cash-flow' && (
-        <CashFlowCalculator onClose={() => setSelectedTool(null)} />
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -20, scale: 0.95 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          <CashFlowCalculator onClose={() => setSelectedTool(null)} />
+        </motion.div>
       )}
 
       {/* Break-Even Calculator */}
       {selectedTool === 'break-even' && (
-        <BreakEvenCalculator onClose={() => setSelectedTool(null)} />
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -20, scale: 0.95 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          <BreakEvenCalculator onClose={() => setSelectedTool(null)} />
+        </motion.div>
       )}
 
       {/* Loan Amortisation Calculator */}
       {selectedTool === 'loan-amortisation' && (
-        <LoanAmortisationCalculator onClose={() => setSelectedTool(null)} />
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -20, scale: 0.95 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          <LoanAmortisationCalculator onClose={() => setSelectedTool(null)} />
+        </motion.div>
       )}
 
       {/* Compound Interest Calculator */}
       {selectedTool === 'compound-interest' && (
-        <CompoundInterestCalculator onClose={() => setSelectedTool(null)} />
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -20, scale: 0.95 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          <CompoundInterestCalculator onClose={() => setSelectedTool(null)} />
+        </motion.div>
       )}
 
       {/* Simple Interest Calculator */}
       {selectedTool === 'simple-interest' && (
-        <SimpleInterestCalculator onClose={() => setSelectedTool(null)} />
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -20, scale: 0.95 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          <SimpleInterestCalculator onClose={() => setSelectedTool(null)} />
+        </motion.div>
       )}
 
       {/* Tool Opening Animation */}
