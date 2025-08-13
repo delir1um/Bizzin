@@ -172,7 +172,7 @@ export function EditGoalModal({ open, onOpenChange, goal, onGoalCompleted }: Edi
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[525px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-[525px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Goal</DialogTitle>
           <DialogDescription>
@@ -219,7 +219,7 @@ export function EditGoalModal({ open, onOpenChange, goal, onGoalCompleted }: Edi
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="status"
@@ -301,7 +301,7 @@ export function EditGoalModal({ open, onOpenChange, goal, onGoalCompleted }: Edi
               <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">Progress Tracking</h4>
               <p className="text-xs text-slate-600 dark:text-slate-400">Set target and current values for automatic progress calculation, or manually set progress percentage.</p>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="current_value"

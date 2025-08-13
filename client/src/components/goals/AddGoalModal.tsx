@@ -68,6 +68,7 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
         ...data,
         description: data.description || "",
         category: data.category || "",
+        deadline: data.deadline.toISOString(),
         progress: data.progress || 0,
         user_id: user.id,
       }
@@ -100,7 +101,7 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="sm:max-w-[600px]"
+        className="w-[95vw] max-w-[600px] max-h-[90vh] overflow-y-auto"
         onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
@@ -149,7 +150,7 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="status"
@@ -229,7 +230,7 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
               <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">Progress Tracking</h4>
               <p className="text-xs text-slate-600 dark:text-slate-400">Set target and current values for automatic progress calculation, or manually set progress percentage.</p>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="current_value"
