@@ -162,48 +162,82 @@ export function DocSafePage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Page Header */}
-      <div className="mb-8">
+      {/* Page Header with Professional Animations */}
+      <motion.div 
+        className="mb-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-          <div>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+          >
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Document Safe</h1>
             <p className="mt-2 text-lg text-slate-600 dark:text-slate-300">
               Securely store and manage your business documents
             </p>
-          </div>
-          <div className="mt-4 sm:mt-0 flex gap-2">
-            <Button 
-              onClick={() => {
-                refetchDocs()
-                refetchStats()
-              }}
-              variant="outline"
-              size="sm"
-              className="border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-950/20"
+          </motion.div>
+          <motion.div 
+            className="mt-4 sm:mt-0 flex gap-2"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+          >
+            <motion.div
+              whileHover={{ scale: 1.02, y: -1 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ duration: 0.2 }}
             >
-              Refresh
-            </Button>
-            <Button 
-              onClick={() => {
-                // Check storage limit: use plan system if available, otherwise fallback to 50MB limit
-                const storageExceeded = usageStatus ? 
-                  !canUploadDocument : 
-                  stats && stats.storage_used > (50 * 1024 * 1024) // 50MB fallback limit
+              <Button 
+                onClick={() => {
+                  refetchDocs()
+                  refetchStats()
+                }}
+                variant="outline"
+                size="sm"
+                className="border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-950/20
+                  transition-all duration-300 hover:shadow-md"
+              >
+                Refresh
+              </Button>
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.02, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Button 
+                onClick={() => {
+                  // Check storage limit: use plan system if available, otherwise fallback to 50MB limit
+                  const storageExceeded = usageStatus ? 
+                    !canUploadDocument : 
+                    stats && stats.storage_used > (50 * 1024 * 1024) // 50MB fallback limit
+                  
+                  if (storageExceeded) {
+                    setShowUpgradeModal(true)
+                  } else {
+                    setShowUploadModal(true)
+                  }
+                }}
+                className="bg-orange-600 hover:bg-orange-700 text-white
+                  transition-all duration-300 hover:shadow-lg hover:shadow-orange-200 dark:hover:shadow-orange-900/30
+                  relative overflow-hidden group"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                <span className="relative z-10">Upload Document</span>
                 
-                if (storageExceeded) {
-                  setShowUpgradeModal(true)
-                } else {
-                  setShowUploadModal(true)
-                }
-              }}
-              className="bg-orange-600 hover:bg-orange-700 text-white"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              Upload Document
-            </Button>
-          </div>
+                {/* Animated background shine */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out" />
+                </div>
+              </Button>
+            </motion.div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Storage Limit Warning for fallback system */}
       {!usageStatus && stats && stats.storage_used > (50 * 1024 * 1024) && (
@@ -252,67 +286,118 @@ export function DocSafePage() {
         </div>
       )}
 
-      {/* Storage Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-900 border-blue-200 dark:border-blue-800">
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-500 rounded-lg shadow-sm">
-                <FileText className="w-5 h-5 text-white" />
-              </div>
-              <div className="ml-4">
-                <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                  {stats?.total_documents || allDocuments.length || 0}
+      {/* Storage Overview with Professional Animations */}
+      <motion.div 
+        className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.4, ease: "backOut" }}
+          whileHover={{ y: -4, transition: { duration: 0.2 } }}
+        >
+          <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-900 border-blue-200 dark:border-blue-800
+            hover:border-blue-300 dark:hover:border-blue-600">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="p-2 bg-blue-500 rounded-lg shadow-sm">
+                  <FileText className="w-5 h-5 text-white" />
                 </div>
-                <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Total Documents</p>
+                <div className="ml-4">
+                  <motion.div 
+                    className="text-2xl font-bold text-blue-900 dark:text-blue-100"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.6 }}
+                  >
+                    {stats?.total_documents || allDocuments.length || 0}
+                  </motion.div>
+                  <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Total Documents</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800">
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-orange-500 rounded-lg shadow-sm">
-                <Lock className="w-5 h-5 text-white" />
-              </div>
-              <div className="ml-4">
-                <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">
-                  {stats?.storage_used ? DocumentService.formatFileSize(stats.storage_used) : 
-                   allDocuments.length > 0 ? DocumentService.formatFileSize(allDocuments.reduce((total, doc) => total + doc.file_size, 0)) : '0 B'}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.5, ease: "backOut" }}
+          whileHover={{ y: -4, transition: { duration: 0.2 } }}
+        >
+          <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800
+            hover:border-orange-300 dark:hover:border-orange-600">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="p-2 bg-orange-500 rounded-lg shadow-sm">
+                  <Lock className="w-5 h-5 text-white" />
                 </div>
-                <p className="text-sm font-medium text-orange-700 dark:text-orange-300">Storage Used</p>
-                {((stats && stats.storage_used > 0) || allDocuments.length > 0) && (
-                  <div className="mt-2 w-32 bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
-                    <div 
-                      className="bg-orange-600 h-1.5 rounded-full" 
-                      style={{ 
-                        width: `${Math.min(((stats?.storage_used || allDocuments.reduce((total, doc) => total + doc.file_size, 0)) / (50*1024*1024)) * 100, 100)}%` 
-                      }}
-                    ></div>
-                  </div>
-                )}
+                <div className="ml-4">
+                  <motion.div 
+                    className="text-2xl font-bold text-orange-900 dark:text-orange-100"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.7 }}
+                  >
+                    {stats?.storage_used ? DocumentService.formatFileSize(stats.storage_used) : 
+                     allDocuments.length > 0 ? DocumentService.formatFileSize(allDocuments.reduce((total, doc) => total + doc.file_size, 0)) : '0 B'}
+                  </motion.div>
+                  <p className="text-sm font-medium text-orange-700 dark:text-orange-300">Storage Used</p>
+                  {((stats && stats.storage_used > 0) || allDocuments.length > 0) && (
+                    <motion.div 
+                      className="mt-2 w-32 bg-slate-200 dark:bg-slate-700 rounded-full h-1.5"
+                      initial={{ width: 0 }}
+                      animate={{ width: "8rem" }}
+                      transition={{ duration: 0.8, delay: 0.8 }}
+                    >
+                      <motion.div 
+                        className="bg-orange-600 h-1.5 rounded-full" 
+                        initial={{ width: "0%" }}
+                        animate={{ 
+                          width: `${Math.min(((stats?.storage_used || allDocuments.reduce((total, doc) => total + doc.file_size, 0)) / (50*1024*1024)) * 100, 100)}%` 
+                        }}
+                        transition={{ duration: 1.2, delay: 1, ease: "easeOut" }}
+                      />
+                    </motion.div>
+                  )}
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900 border-green-200 dark:border-green-800">
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-500 rounded-lg shadow-sm">
-                <Folder className="w-5 h-5 text-white" />
-              </div>
-              <div className="ml-4">
-                <div className="text-2xl font-bold text-green-900 dark:text-green-100">
-                  {Array.from(new Set(allDocuments.map(doc => doc.category))).length || 0}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.6, ease: "backOut" }}
+          whileHover={{ y: -4, transition: { duration: 0.2 } }}
+        >
+          <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900 border-green-200 dark:border-green-800
+            hover:border-green-300 dark:hover:border-green-600">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="p-2 bg-green-500 rounded-lg shadow-sm">
+                  <Folder className="w-5 h-5 text-white" />
                 </div>
-                <p className="text-sm font-medium text-green-700 dark:text-green-300">Categories</p>
+                <div className="ml-4">
+                  <motion.div 
+                    className="text-2xl font-bold text-green-900 dark:text-green-100"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.8 }}
+                  >
+                    {Array.from(new Set(allDocuments.map(doc => doc.category))).length || 0}
+                  </motion.div>
+                  <p className="text-sm font-medium text-green-700 dark:text-green-300">Categories</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
 
       {/* Search and Filter */}
       <div className="mb-8 flex flex-col sm:flex-row gap-4">

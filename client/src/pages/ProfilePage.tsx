@@ -14,6 +14,7 @@ import { User, Settings, Mail, Phone, MapPin, Calendar, Save, AlertCircle, Check
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PlanManagement } from "@/components/profile/PlanManagement"
 import { ReferralDashboard } from "@/components/referrals/ReferralDashboard"
+import { motion, AnimatePresence } from "framer-motion"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 const profileSchema = z.object({

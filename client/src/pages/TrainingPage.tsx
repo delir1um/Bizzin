@@ -145,18 +145,34 @@ export function PodcastPage() {
         <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">Popular Series</h2>
         <AnimatedGrid className="grid grid-cols-2 md:grid-cols-4 gap-4" stagger={0.1}>
           <AnimatedItem>
-            <Card 
-              className="bg-white dark:bg-slate-800 hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => setLocation('/training/series/strategy')}
+            <motion.div
+              whileHover={{ y: -6, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ duration: 0.2 }}
             >
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mx-auto mb-3">
-                <Mic className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-              </div>
-              <h3 className="font-semibold text-slate-900 dark:text-white">Strategy</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{episodes.filter(ep => ep.series === 'Strategy').length} episodes</p>
-            </CardContent>
-          </Card>
+              <Card 
+                className="bg-white dark:bg-slate-800 hover:shadow-xl transition-all duration-300 cursor-pointer group
+                  border-2 hover:border-blue-300 dark:hover:border-blue-600 relative overflow-hidden"
+                onClick={() => setLocation('/training/series/strategy')}
+              >
+                <CardContent className="p-6 text-center">
+                  <motion.div 
+                    className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mx-auto mb-3"
+                    whileHover={{ rotate: 360 }}
+                    transition={{ duration: 0.6 }}
+                  >
+                    <Mic className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                  </motion.div>
+                  <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Strategy</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{episodes.filter(ep => ep.series === 'Strategy').length} episodes</p>
+                  
+                  {/* Background shine effect */}
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-100/20 dark:via-blue-900/20 to-transparent skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out" />
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
 
           </AnimatedItem>
           <AnimatedItem>

@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { motion, AnimatePresence } from "framer-motion"
 import { AnimatedGrid, AnimatedItem } from '@/components/ui/animated-card'
 import { ConfettiCelebration, CelebrationToast } from '@/components/ConfettiCelebration'
 import {
