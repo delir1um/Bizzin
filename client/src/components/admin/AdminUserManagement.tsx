@@ -82,7 +82,8 @@ export function AdminUserManagement() {
         
         // Handle potentially missing tables gracefully
         const [plansResult, journalResult, goalsResult, documentsResult] = await Promise.allSettled([
-          supabase.from('user_plans').select('user_id, plan_type').in('user_id', userIds),
+          // supabase.from('user_plans').select('user_id, plan_type').in('user_id', userIds), // DISABLED TO PREVENT HEAD REQUESTS
+          Promise.resolve({ data: [], error: null }),
           supabase.from('journal_entries').select('user_id').in('user_id', userIds),
           supabase.from('goals').select('user_id, status, title').in('user_id', userIds),
           supabase.from('documents').select('user_id, file_size, name').in('user_id', userIds)

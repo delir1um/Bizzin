@@ -85,17 +85,10 @@ export function AdminFinancialOverview() {
         // Try to fetch user plans data, handle missing table gracefully
         let allPlans: any[] = []
         
+        // DISABLED TO PREVENT HEAD REQUESTS
         try {
-          const plansResult = await supabase
-            .from('user_plans')
-            .select('*')
-
-          if (plansResult.error) {
-            console.log('user_plans table not available for financial overview')
-            allPlans = []
-          } else {
-            allPlans = plansResult.data || []
-          }
+          console.log('user_plans queries disabled to prevent HEAD requests')
+          allPlans = []
         } catch (error) {
           console.log('user_plans table not accessible, using empty data')
           allPlans = []
@@ -289,12 +282,8 @@ export function AdminFinancialOverview() {
     queryFn: async () => {
       try {
         // Since there's no foreign key relationship, just get basic plan data
-        const { data: plans, error } = await supabase
-          .from('user_plans')
-          .select('id, user_id, amount_paid, plan_type, created_at')
-          .not('amount_paid', 'is', null)
-          .order('created_at', { ascending: false })
-          .limit(10)
+        // DISABLED TO PREVENT HEAD REQUESTS
+        const { data: plans, error } = { data: [], error: null }
 
         if (error) {
           console.log('user_plans table not available for recent transactions')
