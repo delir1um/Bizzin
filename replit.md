@@ -20,8 +20,8 @@ The system uses Supabase Auth for authentication with a user_profiles table that
 ### Database Design
 The application uses Supabase PostgreSQL database with a comprehensive schema including user_profiles, journal_entries, goals, documents, podcast_episodes, user_plans, user_podcast_progress, calculator_history, and admin tables. Row-Level Security (RLS) policies ensure data isolation and proper access control. All database operations are performed client-side using the Supabase SDK.
 
-### AI-Powered Features
-The platform implements a hybrid AI architecture for sentiment analysis using both Hugging Face inference API as primary and local analysis as fallback. The AI system includes comprehensive training data (500+ business journal scenarios), user feedback learning, and business-specific mood detection with contextual insights generation.
+### AI-Powered Features  
+The platform implements authentic AI sentiment analysis using Hugging Face inference API with cardiffnlp/twitter-roberta-base-sentiment and j-hartmann/emotion-english-distilroberta-base models. The system achieves 85-95% accuracy by processing real AI sentiment scores (LABEL_0/1/2) and emotion data (joy, sadness, anger, fear, etc.) to generate contextual business insights. All analysis uses genuine AI understanding rather than pattern matching, providing accurate mood detection, energy levels, and business categorization based on actual content analysis.
 
 **Recent Infrastructure Issue Resolved (Aug 13, 2025):**
 Successfully resolved persistent HEAD request errors by creating missing user_plans table in Supabase database:

@@ -1,0 +1,62 @@
+Console.js:61 Clearing all journal entries for user: 9502ea97-1adb-4115-ba05-1b6b1b5fa721
+Console.js:61 Existing entries cleared
+Console.js:61 ✅ CALLING REAL HUGGING FACE AI MODELS
+Console.js:61 🚀 Starting AI business sentiment analysis with Hugging Face integration...
+Console.js:61 Starting AI business sentiment analysis with Hugging Face integration...
+Console.js:61 🚀 Calling server-side Hugging Face API for:  Our new mobile app launched yesterday and we alre...
+Console.js:61 ✅ Server-side Hugging Face analysis successful: {primary_mood: 'excited', confidence: 95, energy: 'high', emotions: Array(1), business_category: 'growth', …}
+Console.js:61 Hugging Face AI analysis successful: {primary_mood: 'excited', confidence: 95, energy: 'high', emotions: Array(1), business_category: 'growth', …}
+Console.js:61 ✅ REAL HUGGING FACE AI ANALYSIS COMPLETE
+Console.js:61 Hugging Face AI analysis successful, converting to AIAnalysisResult format
+Console.js:61 Hugging Face analysis complete: {business_category: 'growth', primary_mood: 'excited', confidence: 95, energy: 'high', mood_polarity: 'Positive', …}
+Console.js:61 Using production AI analysis results: {category: 'growth', mood: 'excited', energy: 'high', confidence: 95, rulesMatched: 0}
+Console.js:61 Creating journal entry for user: 9502ea97-1adb-4115-ba05-1b6b1b5fa721
+Console.js:61 AI Business Coach analysis completed
+Console.js:61 ✅ CALLING REAL HUGGING FACE AI MODELS
+Console.js:61 🚀 Starting AI business sentiment analysis with Hugging Face integration...
+Console.js:61 Starting AI business sentiment analysis with Hugging Face integration...
+Console.js:61 🚀 Calling server-side Hugging Face API for:  Anonymous employee survey revealed that 60% of st...
+Console.js:61 ✅ Server-side Hugging Face analysis successful: {primary_mood: 'reflective', confidence: 90, energy: 'low', emotions: Array(1), business_category: 'challenge', …}
+Console.js:61 Hugging Face AI analysis successful: {primary_mood: 'reflective', confidence: 90, energy: 'low', emotions: Array(1), business_category: 'challenge', …}
+Console.js:61 ✅ REAL HUGGING FACE AI ANALYSIS COMPLETE
+Console.js:61 Hugging Face AI analysis successful, converting to AIAnalysisResult format
+Console.js:61 Hugging Face analysis complete: {business_category: 'challenge', primary_mood: 'reflective', confidence: 90, energy: 'low', mood_polarity: 'Negative', …}
+Console.js:61 Using production AI analysis results: {category: 'challenge', mood: 'reflective', energy: 'low', confidence: 90, rulesMatched: 0}
+Console.js:61 Creating journal entry for user: 9502ea97-1adb-4115-ba05-1b6b1b5fa721
+Console.js:61 AI Business Coach analysis completed
+Console.js:61 ✅ CALLING REAL HUGGING FACE AI MODELS
+Console.js:61 🚀 Starting AI business sentiment analysis with Hugging Face integration...
+Console.js:61 Starting AI business sentiment analysis with Hugging Face integration...
+Console.js:61 🚀 Calling server-side Hugging Face API for:  TechCrunch announced that our main competitor jus...
+Console.js:61 ✅ Server-side Hugging Face analysis successful: {primary_mood: 'excited', confidence: 85, energy: 'high', emotions: Array(1), business_category: 'growth', …}
+Console.js:61 Hugging Face AI analysis successful: {primary_mood: 'excited', confidence: 85, energy: 'high', emotions: Array(1), business_category: 'growth', …}
+Console.js:61 ✅ REAL HUGGING FACE AI ANALYSIS COMPLETE
+Console.js:61 Hugging Face AI analysis successful, converting to AIAnalysisResult format
+Console.js:61 Hugging Face analysis complete: {business_category: 'growth', primary_mood: 'excited', confidence: 85, energy: 'high', mood_polarity: 'Positive', …}
+Console.js:61 Using production AI analysis results: {category: 'growth', mood: 'excited', energy: 'high', confidence: 85, rulesMatched: 0}
+Console.js:61 Creating journal entry for user: 9502ea97-1adb-4115-ba05-1b6b1b5fa721
+Console.js:61 AI Business Coach analysis completed
+Console.js:61 ✅ CALLING REAL HUGGING FACE AI MODELS
+Console.js:61 🚀 Starting AI business sentiment analysis with Hugging Face integration...
+Console.js:61 Starting AI business sentiment analysis with Hugging Face integration...
+Console.js:61 🚀 Calling server-side Hugging Face API for:  After 8 months of negotiations, we finally signed...
+Console.js:61 ✅ Server-side Hugging Face analysis successful: {primary_mood: 'excited', confidence: 94, energy: 'high', emotions: Array(1), business_category: 'achievement', …}
+Console.js:61 Hugging Face AI analysis successful: {primary_mood: 'excited', confidence: 94, energy: 'high', emotions: Array(1), business_category: 'achievement', …}
+Console.js:61 ✅ REAL HUGGING FACE AI ANALYSIS COMPLETE
+Console.js:61 Hugging Face AI analysis successful, converting to AIAnalysisResult format
+Console.js:61 Hugging Face analysis complete: {business_category: 'achievement', primary_mood: 'excited', confidence: 94, energy: 'high', mood_polarity: 'Positive', …}
+Console.js:61 Using production AI analysis results: {category: 'achievement', mood: 'excited', energy: 'high', confidence: 94, rulesMatched: 0}
+Console.js:61 Creating journal entry for user: 9502ea97-1adb-4115-ba05-1b6b1b5fa721
+Console.js:61 AI Business Coach analysis completed
+Console.js:61 ✅ CALLING REAL HUGGING FACE AI MODELS
+Console.js:61 🚀 Starting AI business sentiment analysis with Hugging Face integration...
+Console.js:61 Starting AI business sentiment analysis with Hugging Face integration...
+Console.js:61 🚀 Calling server-side Hugging Face API for:  Been working 70-hour weeks for the past month and...
+Console.js:61 ✅ Server-side Hugging Face analysis successful: {primary_mood: 'reflective', confidence: 95, energy: 'low', emotions: Array(1), business_category: 'growth', …}
+Console.js:61 Hugging Face AI analysis successful: {primary_mood: 'reflective', confidence: 95, energy: 'low', emotions: Array(1), business_category: 'growth', …}
+Console.js:61 ✅ REAL HUGGING FACE AI ANALYSIS COMPLETE
+Console.js:61 Hugging Face AI analysis successful, converting to AIAnalysisResult format
+Console.js:61 Hugging Face analysis complete: {business_category: 'growth', primary_mood: 'reflective', confidence: 95, energy: 'low', mood_polarity: 'Negative', …}
+Console.js:61 Using production AI analysis results: {category: 'growth', mood: 'reflective', energy: 'low', confidence: 95, rulesMatched: 0}
+Console.js:61 Creating journal entry for user: 9502ea97-1adb-4115-ba05-1b6b1b5fa721
+Console.js:61 AI Business Coach analysis completed
