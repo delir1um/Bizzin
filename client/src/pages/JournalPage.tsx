@@ -249,40 +249,94 @@ export function JournalPage() {
     setShowWriteModal(true)
   }
 
-  // Handle adding sample entries
+  // Handle adding sample entries - clears existing and generates 5 random entries each time
   const handleAddSamples = async () => {
     if (!user?.id) return
     
-    const sampleEntries = [
+    try {
+      // First clear all existing entries
+      await JournalService.clearAllEntries()
+      console.log('Existing entries cleared')
+    } catch (error) {
+      console.error('Error clearing entries:', error)
+      toast({
+        title: "Error",
+        description: "Failed to clear existing entries. Please try again.",
+        variant: "destructive"
+      })
+      return
+    }
+    
+    const businessScenarios = [
       {
-        title: "Closed our biggest client deal yet! 🎉",
-        content: "Just finished the presentation to the board at MegaCorp and they signed a R2.5 million contract for the next 18 months. This is huge for us - it's triple our previous biggest client. The team worked incredibly hard preparing the proposal, doing market research, and building custom prototypes. I'm so proud of everyone. This deal will allow us to hire 3 new developers and finally move to that bigger office space we've been eyeing. The client was particularly impressed with our AI integration capabilities and how we can scale their operations. This validates everything we've been building for the past 2 years."
+        title: "Landed our first enterprise client! 💼",
+        content: "After 8 months of negotiations, we finally signed IBM as our first Fortune 500 client. The deal is worth R1.8 million annually and validates our enterprise-grade security features. The sales team worked incredibly hard, doing countless demos and addressing every technical concern. This opens doors to other big corporations who were waiting to see if we could handle enterprise-scale deployments. Already have three more enterprise prospects wanting to schedule calls next week."
       },
       {
-        title: "Major supply chain disruption hitting us hard",
-        content: "Our main supplier in China just informed us they'll be shutting down for 6 weeks due to new regulations. This affects 70% of our inventory and we only have 3 weeks of stock left. Customers are already asking about delivery delays and I'm worried about losing the momentum we've built this quarter. Had emergency meetings with the procurement team to find alternative suppliers, but the costs are 40% higher and quality standards are unknown. This could seriously impact our Q4 projections and the investor update is next month. Need to decide whether to absorb the cost increase or pass it to customers - neither option feels good right now."
+        title: "Server outage cost us R50k in revenue today",
+        content: "Our main database went down for 4 hours this morning during peak usage time. Customers couldn't access their accounts and we had to pause all payment processing. The issue was traced to a failed disk in our primary server cluster. We've been meaning to upgrade our infrastructure but kept postponing due to cost concerns. This incident shows we can't delay critical infrastructure investments any longer. Setting up redundant systems and better monitoring is now our top priority."
       },
       {
-        title: "Team expansion strategy session - exciting times ahead",
-        content: "Spent the morning with Sarah and Mike planning our hiring roadmap for 2025. We're looking to grow from 12 to 25 employees over the next 8 months. The roles we need most urgently are: senior backend developer, UX designer, sales specialist, and customer success manager. We've mapped out the interview process, salary bands, and equity allocation. The challenging part is maintaining our culture as we scale - we don't want to lose the close-knit feeling that makes this place special. We're also exploring remote work policies to tap into talent outside Cape Town. Budget-wise, we're comfortable with the runway thanks to the recent funding round."
+        title: "Planning our Series A funding strategy",
+        content: "Met with our investment advisor today to discuss raising Series A funding. We need R15 million to scale our engineering team and expand to three new markets. Our current burn rate gives us 8 months of runway, so timing is crucial. We've identified 12 potential investors who focus on B2B SaaS companies at our stage. The pitch deck needs to demonstrate clear product-market fit and a path to R50M ARR within 24 months."
       },
       {
-        title: "Reflecting on customer feedback from last month's survey",
-        content: "The results from our Net Promoter Score survey came back and there are some interesting insights. Overall score is 67 which is decent but not where I want us to be. The main complaint is response time to support tickets - averaging 18 hours when customers expect same-day replies. On the positive side, 89% love our product features and 92% would recommend us to others. Three customers specifically mentioned that our solution saves them 5+ hours per week. I think we need to invest more in our customer success team and maybe implement a live chat feature. This feedback is gold for product development priorities."
+        title: "Competitor launched similar features to ours",
+        content: "TechCrunch announced that our main competitor just raised R25 million and launched features that are eerily similar to our roadmap. Their marketing team is aggressive and they're already reaching out to our prospects. This validates our product direction but also means we need to move faster. We can't compete on funding, so we need to win on execution speed and customer experience. Time to double down on our unique differentiators."
       },
       {
-        title: "Breakthrough moment with the new algorithm!",
-        content: "After 6 weeks of debugging and optimization, we finally cracked the performance issue that was plaguing our recommendation engine. The new machine learning model is running 300% faster and accuracy improved from 73% to 91%. The team stayed late three nights this week testing different approaches, and yesterday evening everything just clicked into place. This breakthrough means we can handle 10x more concurrent users without additional server costs. Already scheduled demos with two enterprise prospects for next week. Sometimes the best solutions come when you least expect them - this could be a game-changer for our competitive position."
+        title: "Customer churn hit 8% this month - need action plan",
+        content: "Our monthly churn rate jumped from 3% to 8%, which is concerning for our growth projections. Exit interviews reveal that customers are frustrated with our onboarding process and lack of advanced reporting features. Three customers mentioned switching to competitors who offer better analytics dashboards. We need to prioritize the business intelligence module we've been planning and completely redesign the first-week user experience."
       },
       {
-        title: "Difficult conversation with underperforming team member",
-        content: "Had to have a tough but necessary conversation with James today about his recent work quality and attendance issues. He's been with us since the beginning and I really want him to succeed, but his performance has declined over the past 3 months. Other team members are starting to notice and it's affecting morale. We discussed specific areas for improvement and set up bi-weekly check-ins for the next two months. If things don't improve by then, we'll need to consider other options. These conversations are never easy but they're part of being a leader. The team deserves someone who's fully committed to our mission."
+        title: "Product launch exceeded all expectations! 🚀",
+        content: "Our new mobile app launched yesterday and we already have 2,500 downloads with 4.8 star rating on both app stores. The marketing campaign generated 50,000 website visits and 1,200 trial signups. Social media engagement is through the roof - our announcement post got 500 shares and 2,000 likes. The development team delivered an amazing product and marketing executed flawlessly. This momentum could drive significant growth in Q4."
+      },
+      {
+        title: "Struggling with work-life balance as CEO",
+        content: "Been working 70-hour weeks for the past month and starting to feel the burnout. Missing family dinners, weekend plans cancelled, and barely sleeping 5 hours a night. The pressure to grow fast and meet investor expectations is overwhelming. I know this pace isn't sustainable but there's so much that needs my direct involvement. Need to hire a COO or delegate more effectively - the company's growth shouldn't depend entirely on me being available 24/7."
+      },
+      {
+        title: "Government contract opportunity worth R5M",
+        content: "Received an invitation to bid for a 3-year government digitization project worth R5 million. This would be our largest contract ever and provide stable recurring revenue. However, government projects are notorious for slow payments and bureaucratic delays. We'd need to hire 8 additional developers and invest heavily in compliance certifications. The opportunity is massive but the execution risks are equally significant."
+      },
+      {
+        title: "Key developer gave 2 weeks notice today",
+        content: "Sarah, our lead frontend developer, handed in her resignation this morning. She's been offered a senior role at Google with 40% higher salary plus equity. Losing her knowledge of our codebase is a major setback - she built most of our user interface components. We have two weeks to transition her responsibilities and find a replacement. The job market is competitive and finding someone with her skills won't be easy or cheap."
+      },
+      {
+        title: "Exploring partnership with Microsoft Azure",
+        content: "Had promising discussions with Microsoft's partner team about integrating our solution with Azure Active Directory. This could give us access to their enterprise customer base and technical resources. The partnership would require rebuilding parts of our authentication system but could accelerate our enterprise adoption by 12 months. Need to evaluate the technical complexity versus the potential market access benefits."
+      },
+      {
+        title: "Revenue grew 45% quarter-over-quarter! 📈",
+        content: "Q3 results are in and we hit R2.1 million in revenue, up 45% from Q2. Our monthly recurring revenue is now R720k with healthy growth across all customer segments. The pricing optimization we implemented in July is paying off - average contract value increased by 30%. Customer acquisition costs are down 15% thanks to improved conversion funnels. These numbers will look great in our Series A pitch deck."
+      },
+      {
+        title: "Debating whether to pivot our business model",
+        content: "Customer feedback suggests our current subscription model isn't ideal for smaller businesses. Many potential clients prefer usage-based pricing rather than fixed monthly fees. We're considering a freemium model with pay-per-transaction pricing for premium features. This would require significant changes to our billing system and revenue forecasting. The risk is cannibalizing existing revenue, but it could open up a much larger market segment."
+      },
+      {
+        title: "Compliance audit revealed critical security gaps",
+        content: "External security audit identified several vulnerabilities in our data handling processes. We're not fully compliant with POPIA regulations and our API endpoints lack proper rate limiting. Two clients have already asked for compliance certificates we can't provide. We need to invest R200k in security infrastructure and hire a dedicated compliance officer. This wasn't budgeted but it's non-negotiable for enterprise sales."
+      },
+      {
+        title: "Team morale survey results are concerning",
+        content: "Anonymous employee survey revealed that 60% of staff feel overworked and underappreciated. Several team members mentioned considering other opportunities due to unclear career progression paths. Communication between departments is poor and many feel their contributions aren't recognized. We need to address these cultural issues immediately before we lose more talent. Planning all-hands meeting and management restructuring."
+      },
+      {
+        title: "Successful product demo at industry conference",
+        content: "Our presentation at the FinTech Summit generated incredible interest - collected 180 qualified leads and scheduled 25 follow-up meetings. Three venture capital firms approached us about potential investment opportunities. The live product demonstration went perfectly and several attendees mentioned our solution addressed their exact pain points. This conference exposure could accelerate our sales pipeline by months."
       }
     ]
     
     try {
+      // Select 5 random entries
+      const shuffled = businessScenarios.sort(() => 0.5 - Math.random())
+      const selectedEntries = shuffled.slice(0, 5)
+      
       let added = 0
-      for (const entry of sampleEntries) {
+      for (const entry of selectedEntries) {
         await JournalService.createEntry(entry)
         added++
       }
@@ -291,8 +345,8 @@ export function JournalPage() {
       queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
       
       toast({
-        title: "Sample Entries Added!",
-        description: `${added} diverse business journal entries created to showcase AI analysis capabilities.`,
+        title: "Random Samples Added!",
+        description: `${added} diverse business scenarios created for AI analysis testing.`,
       })
     } catch (error) {
       toast({
@@ -608,15 +662,15 @@ export function JournalPage() {
               </motion.div>
             )}
             
-            {/* Add Sample Entries Button for Testing */}
+            {/* Add Random Sample Entries Button */}
             <Button 
               onClick={handleAddSamples}
               variant="outline"
               size="sm"
-              className="border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-950/20"
+              className="border-purple-200 text-purple-700 hover:bg-purple-50 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-950/20"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add Samples
+              Add Random Samples
             </Button>
           </motion.div>
         </div>

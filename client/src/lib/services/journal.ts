@@ -405,4 +405,29 @@ export class JournalService {
       }
     }
   }
+
+  static async clearAllEntries(): Promise<void> {
+    try {
+      // Check authentication
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        throw new Error('User not authenticated')
+      }
+
+      console.log('Clearing all journal entries for user:', user.id)
+
+      const { error } = await supabase
+        .from('journal_entries')
+        .delete()
+        .eq('user_id', user.id)
+
+      if (error) {
+        console.error('Error clearing all journal entries:', error)
+        throw new Error(`Failed to clear journal entries: ${error.message}`)
+      }
+    } catch (err) {
+      console.error('Error in clearAllEntries:', err)
+      throw err
+    }
+  }
 }
