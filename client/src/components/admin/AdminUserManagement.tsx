@@ -80,22 +80,28 @@ export function AdminUserManagement() {
         // Get real usage statistics for each user
         const userIds = profileData.map(p => p.user_id)
         
-        const [plansData, journalData, goalsData, documentsData] = await Promise.all([
+        // Handle potentially missing tables gracefully
+        const [plansResult, journalResult, goalsResult, documentsResult] = await Promise.allSettled([
           supabase.from('user_plans').select('user_id, plan_type').in('user_id', userIds),
           supabase.from('journal_entries').select('user_id').in('user_id', userIds),
           supabase.from('goals').select('user_id, status, title').in('user_id', userIds),
           supabase.from('documents').select('user_id, file_size, name').in('user_id', userIds)
         ])
 
+        const plansData = plansResult.status === 'fulfilled' ? plansResult.value : { data: [], error: null }
+        const journalData = journalResult.status === 'fulfilled' ? journalResult.value : { data: [], error: null }
+        const goalsData = goalsResult.status === 'fulfilled' ? goalsResult.value : { data: [], error: null }
+        const documentsData = documentsResult.status === 'fulfilled' ? documentsResult.value : { data: [], error: null }
+
         console.log('Detailed query results:', {
-          plansData: plansData.data,
-          plansError: plansData.error,
-          journalData: journalData.data?.length,
-          journalError: journalData.error,
-          goalsData: goalsData.data,
-          goalsError: goalsData.error,
-          documentsData: documentsData.data?.length,
-          documentsError: documentsData.error
+          plansData: plansData.data?.length || 0,
+          plansError: plansData.error?.message || 'none',
+          journalData: journalData.data?.length || 0,
+          journalError: journalData.error?.message || 'none',
+          goalsData: goalsData.data?.length || 0,
+          goalsError: goalsData.error?.message || 'none',
+          documentsData: documentsData.data?.length || 0,
+          documentsError: documentsData.error?.message || 'none'
         })
 
         console.log('Raw data fetched:', {
