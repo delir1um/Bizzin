@@ -150,11 +150,29 @@ export function DocSafePage() {
     downloadMutation.mutate(doc)
   }
 
+  // Show loading spinner if auth is still loading to prevent flash
+  const { loading } = useAuth()
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-4"></div>
+            <p className="text-slate-600 dark:text-slate-300">Loading...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (!user) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Please sign in to access DocSafe</h1>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-4"></div>
+            <p className="text-slate-600 dark:text-slate-300">Please sign in to access DocSafe</p>
+          </div>
         </div>
       </div>
     )

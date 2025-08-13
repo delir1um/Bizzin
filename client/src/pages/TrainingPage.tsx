@@ -187,7 +187,26 @@ export function PodcastPage() {
             transition={{ duration: 0.5, delay: 0.4 + (index * 0.1), ease: "backOut" }}
             whileHover={{ y: -4, transition: { duration: 0.2 } }}
           >
-            {stat.card}
+            <Card className="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-900 border-blue-200 dark:border-blue-800 hover:shadow-lg transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-blue-500 rounded-lg shadow-sm">
+                    <Headphones className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="ml-4">
+                    <motion.div 
+                      className="text-2xl font-bold text-blue-900 dark:text-blue-100"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5, delay: 0.6 + (index * 0.1) }}
+                    >
+                      {stat.value}
+                    </motion.div>
+                    <p className="text-sm font-medium text-blue-700 dark:text-blue-300">{stat.title}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
         ))}
       </motion.div>
