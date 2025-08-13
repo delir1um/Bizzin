@@ -557,7 +557,12 @@ export function JournalPage() {
       </motion.div>
 
       {/* Search */}
-      <div className="mb-8 flex flex-col sm:flex-row gap-4">
+      <motion.div 
+        className="mb-8 flex flex-col sm:flex-row gap-4"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
+      >
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
           <Input
@@ -578,10 +583,15 @@ export function JournalPage() {
             </Button>
           )}
         </div>
-      </div>
+      </motion.div>
 
         {/* Chronological Entries */}
-        <div className="space-y-6">
+        <motion.div 
+          className="space-y-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.7, ease: "easeOut" }}
+        >
           {filteredEntries.length === 0 ? (
             <Card className="p-8 text-center">
               <BookOpen className="w-16 h-16 text-slate-300 mx-auto mb-4" />
@@ -607,14 +617,24 @@ export function JournalPage() {
           ) : (
             <>
               {/* Today's Section - Always show */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 mb-6">
+              <motion.div 
+                className="space-y-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.8, ease: "easeOut" }}
+              >
+                <motion.div 
+                  className="flex items-center gap-3 mb-6"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.6, delay: 0.9, ease: "easeOut" }}
+                >
                   <div className="w-1 h-8 bg-gradient-to-b from-orange-500 to-orange-600 rounded-full"></div>
                   <h2 className="text-2xl font-bold text-slate-900">Today</h2>
                   <Badge className="bg-orange-100 text-orange-700 border-orange-200 font-medium">
                     {organizedEntries.today.length} entries
                   </Badge>
-                </div>
+                </motion.div>
                 
                 {/* Today's entries or placeholder prompt */}
                 {organizedEntries.today.length > 0 ? (
@@ -624,7 +644,7 @@ export function JournalPage() {
                         key={entry.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
+                        transition={{ duration: 0.5, delay: 1.0 + index * 0.1, ease: "backOut" }}
                       >
                         <Card 
                           className="hover:shadow-lg hover:shadow-orange-200/50 dark:hover:shadow-orange-900/30
@@ -695,7 +715,7 @@ export function JournalPage() {
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
+                    transition={{ duration: 0.6, delay: 1.0, ease: "easeOut" }}
                   >
                     <Card className="p-8 text-center border-2 border-dashed border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100 transition-all duration-300">
                       <div className="flex flex-col items-center space-y-4">
@@ -725,11 +745,16 @@ export function JournalPage() {
                     </Card>
                   </motion.div>
                 )}
-              </div>
+              </motion.div>
 
               {/* This Week - Medium Cards */}
               {organizedEntries.thisWeek.length > 0 && (
-                <div className="space-y-3 mt-8">
+                <motion.div 
+                  className="space-y-3 mt-8"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 1.2, ease: "easeOut" }}
+                >
                   <Button
                     variant="ghost"
                     className="flex items-center justify-between w-full p-4 hover:bg-gradient-to-r hover:from-slate-50 hover:to-orange-50 rounded-xl border border-slate-200 hover:border-orange-200 transition-all duration-200"
@@ -791,12 +816,17 @@ export function JournalPage() {
                       </motion.div>
                     </AnimatePresence>
                   )}
-                </div>
+                </motion.div>
               )}
 
               {/* This Month - Condensed Cards */}
               {organizedEntries.thisMonth.length > 0 && (
-                <div className="space-y-3 mt-8">
+                <motion.div 
+                  className="space-y-3 mt-8"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 1.4, ease: "easeOut" }}
+                >
                   <Button
                     variant="ghost"
                     className="flex items-center justify-between w-full p-4 hover:bg-gradient-to-r hover:from-slate-50 hover:to-green-50 rounded-xl border border-slate-200 hover:border-green-200 transition-all duration-200"
@@ -854,12 +884,17 @@ export function JournalPage() {
                       </motion.div>
                     </AnimatePresence>
                   )}
-                </div>
+                </motion.div>
               )}
 
               {/* This Year - Dense List */}
               {organizedEntries.thisYear.length > 0 && (
-                <div className="space-y-3 mt-8">
+                <motion.div 
+                  className="space-y-3 mt-8"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 1.6, ease: "easeOut" }}
+                >
                   <Button
                     variant="ghost"
                     className="flex items-center justify-between w-full p-4 hover:bg-gradient-to-r hover:from-slate-50 hover:to-purple-50 rounded-xl border border-slate-200 hover:border-purple-200 transition-all duration-200"
@@ -915,7 +950,7 @@ export function JournalPage() {
                       </motion.div>
                     </AnimatePresence>
                   )}
-                </div>
+                </motion.div>
               )}
 
               {/* Previous Years - Ultra Dense List */}
@@ -982,7 +1017,7 @@ export function JournalPage() {
               }
             </>
           )}
-        </div>
+        </motion.div>
       </div>
 
       {/* Modals */}
