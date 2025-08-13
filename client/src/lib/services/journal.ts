@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import type { JournalEntry, CreateJournalEntry, UpdateJournalEntry } from '@/types/journal'
-import { analyzeBusinessSentimentAI } from '@/lib/aiSentimentAnalysis'
+import { analyzeJournalEntry } from '@/lib/ai'
 import { aiBusinessCoach } from '@/lib/aiBusinessCoach'
 
 export class JournalService {
@@ -64,15 +64,18 @@ export class JournalService {
       const wordCount = entry.content.split(/\s+/).length
       const readingTime = Math.max(1, Math.ceil(wordCount / 200))
 
-      // Analyze business sentiment with AI
-      const sentiment = await analyzeBusinessSentimentAI(entry.content, entry.title)
+      // Analyze with enhanced AI system
+      const aiAnalysis = await analyzeJournalEntry(entry.content, user.id)
       const sentimentData = {
-        primary_mood: sentiment.primary_mood,
-        confidence: sentiment.confidence,
-        energy: sentiment.energy,
-        emotions: sentiment.emotions,
-        insights: sentiment.insights,
-        business_category: sentiment.business_category
+        primary_mood: aiAnalysis.primary_mood,
+        confidence: aiAnalysis.confidence,
+        energy: aiAnalysis.energy,
+        mood_polarity: aiAnalysis.mood_polarity,
+        emotions: [aiAnalysis.primary_mood],
+        insights: [`Enhanced AI v2.0 - Confidence: ${aiAnalysis.confidence}%`],
+        business_category: aiAnalysis.business_category,
+        rules_matched: aiAnalysis.rules_matched || [],
+        user_learned: aiAnalysis.user_learned
       }
 
       // Create entry data (temporarily removing entry_date until database migration)
@@ -81,7 +84,7 @@ export class JournalService {
         content: entry.content,
         // entry_date: entry.entry_date || null, // Commented out until database migration
         user_id: user.id,
-        mood: entry.mood || sentiment.primary_mood, // Use AI mood if no manual mood set
+        mood: entry.mood || aiAnalysis.primary_mood, // Use AI mood if no manual mood set
         category: entry.category || null,
         tags: entry.tags || null,
 
@@ -141,19 +144,22 @@ export class JournalService {
         const content = updates.content || ''
         const title = updates.title || ''
         if (content || title) {
-          const sentiment = await analyzeBusinessSentimentAI(content, title)
+          const aiAnalysis = await analyzeJournalEntry(content, user.id)
           updateData.sentiment_data = {
-            primary_mood: sentiment.primary_mood,
-            confidence: sentiment.confidence,
-            energy: sentiment.energy,
-            emotions: sentiment.emotions,
-            insights: sentiment.insights,
-            business_category: sentiment.business_category
+            primary_mood: aiAnalysis.primary_mood,
+            confidence: aiAnalysis.confidence,
+            energy: aiAnalysis.energy,
+            mood_polarity: aiAnalysis.mood_polarity,
+            emotions: [aiAnalysis.primary_mood],
+            insights: [`Enhanced AI v2.0 - Confidence: ${aiAnalysis.confidence}%`],
+            business_category: aiAnalysis.business_category,
+            rules_matched: aiAnalysis.rules_matched || [],
+            user_learned: aiAnalysis.user_learned
           }
           
           // Update mood if not manually set
           if (!updates.mood) {
-            updateData.mood = sentiment.primary_mood
+            updateData.mood = aiAnalysis.primary_mood
           }
         }
       }

@@ -11,7 +11,7 @@ import { supabase } from "@/lib/supabase"
 import { useMutation } from "@tanstack/react-query"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
-import { analyzeBusinessSentimentAI } from "@/lib/aiSentimentAnalysis"
+import { analyzeJournalEntry, initializeAISystem } from "@/lib/ai"
 import { motion, AnimatePresence } from "framer-motion"
 import { SuggestedTitleButton } from "./SuggestedTitleButton"
 
@@ -40,9 +40,23 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('No user found')
 
-      // Analyze content with AI and generate title
+      // Analyze content with enhanced AI system
       setIsAnalyzing(true)
-      const sentimentData = await analyzeBusinessSentimentAI(content)
+      const aiAnalysis = await analyzeJournalEntry(content, user.id)
+      
+      // Format for existing UI components
+      const sentimentData = {
+        primary_mood: aiAnalysis.primary_mood,
+        confidence: aiAnalysis.confidence,
+        energy: aiAnalysis.energy,
+        mood_polarity: aiAnalysis.mood_polarity,
+        business_category: aiAnalysis.business_category,
+        suggested_title: title || generateTitleFromContent(content),
+        insights: [`Enhanced AI v2.0 - Confidence: ${aiAnalysis.confidence}%`],
+        emotions: [aiAnalysis.primary_mood],
+        rules_matched: aiAnalysis.rules_matched || [],
+        user_learned: aiAnalysis.user_learned
+      }
       
       setIsAnalyzing(false)
       setAiPreview(sentimentData)
