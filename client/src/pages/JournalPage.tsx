@@ -71,31 +71,6 @@ export function JournalPage() {
     enabled: !!user
   })
 
-  // Check for migration needs when entries are loaded
-  useEffect(() => {
-    if (entries.length > 0 && AIMigrationService.needsMigration()) {
-      // Auto-show migration dialog if entries need updating
-      setShowMigrationDialog(true)
-    }
-  }, [entries])
-
-  // Filter entries based on search
-  const filteredEntries = entries.filter((entry: JournalEntry) => {
-    const query = searchQuery.toLowerCase()
-    const titleMatch = entry.title.toLowerCase().includes(query)
-    const contentMatch = entry.content.toLowerCase().includes(query)
-    
-    // Check category from multiple sources
-    const category = entry.category || entry.sentiment_data?.business_category || ''
-    const categoryMatch = category.toLowerCase().includes(query)
-    
-    // Check mood for additional searchability
-    const mood = entry.mood || entry.sentiment_data?.primary_mood || ''
-    const moodMatch = mood.toLowerCase().includes(query)
-    
-    return titleMatch || contentMatch || categoryMatch || moodMatch
-  })
-
   // Organize entries by time periods
   const organizeEntriesByTime = (entries: JournalEntry[]) => {
     const now = new Date()
@@ -140,6 +115,59 @@ export function JournalPage() {
     
     return results
   }
+
+  // Initialize expanded sections with all possible year keys
+  useEffect(() => {
+    if (entries.length > 0) {
+      const organizedEntries = organizeEntriesByTime(entries)
+      const allYears = Object.keys(organizedEntries.previousYears)
+      
+      setExpandedSections(prev => {
+        const newSections: Record<string, boolean> = {
+          ...prev,
+          thisWeek: false,
+          thisMonth: false,
+          thisYear: false
+        }
+        
+        // Add all previous years as collapsed by default
+        allYears.forEach(year => {
+          if (!(year in prev)) {
+            newSections[year] = false
+          } else {
+            newSections[year] = prev[year] // Keep current state if it exists
+          }
+        })
+        
+        return newSections
+      })
+    }
+  }, [entries])
+
+  // Check for migration needs when entries are loaded
+  useEffect(() => {
+    if (entries.length > 0 && AIMigrationService.needsMigration()) {
+      // Auto-show migration dialog if entries need updating
+      setShowMigrationDialog(true)
+    }
+  }, [entries])
+
+  // Filter entries based on search
+  const filteredEntries = entries.filter((entry: JournalEntry) => {
+    const query = searchQuery.toLowerCase()
+    const titleMatch = entry.title.toLowerCase().includes(query)
+    const contentMatch = entry.content.toLowerCase().includes(query)
+    
+    // Check category from multiple sources
+    const category = entry.category || entry.sentiment_data?.business_category || ''
+    const categoryMatch = category.toLowerCase().includes(query)
+    
+    // Check mood for additional searchability
+    const mood = entry.mood || entry.sentiment_data?.primary_mood || ''
+    const moodMatch = mood.toLowerCase().includes(query)
+    
+    return titleMatch || contentMatch || categoryMatch || moodMatch
+  })
 
   const organizedEntries = organizeEntriesByTime(filteredEntries)
 
@@ -969,6 +997,7 @@ export function JournalPage() {
                         variant="ghost"
                         className="flex items-center justify-between w-full p-4 hover:bg-gradient-to-r hover:from-slate-50 hover:to-slate-100 rounded-xl border border-slate-200 hover:border-slate-300 transition-all duration-200"
                         onClick={() => toggleSection(year as any)}
+                        data-section-header
                       >
                         <div className="flex items-center gap-3">
                           <div className="w-3 h-3 bg-gradient-to-br from-slate-400 to-slate-500 rounded-full"></div>
