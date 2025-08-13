@@ -623,6 +623,17 @@ export const ENTREPRENEUR_TRAINING_DATA = [
     business_context: "Founder productivity system",
     source: "entrepreneur_fp" as const
   },
+  {
+    id: "PLANNING_015",
+    version: 1,
+    text: "Spent the entire day working on our 2025 strategic plan. I've been analyzing market trends, competitor movements, and our internal capabilities to chart our course for next year. The key priorities are: expanding our AI capabilities, entering two new market verticals, and building a world-class customer success organization. I've outlined quarterly milestones, budget allocations, and hiring plans. The most challenging part is balancing aggressive growth targets with sustainable operations. I want to grow fast but not at the expense of product quality or team burnout. I've scheduled presentations with the board next week to get their input before finalizing our direction.",
+    expected_category: "Planning" as const,
+    expected_mood: "Strategic",
+    expected_energy: "medium" as const,
+    confidence_range: [90, 95] as [number, number],
+    business_context: "Annual strategic planning and business direction",
+    source: "entrepreneur_fp" as const
+  },
 
   // LEARNING scenarios (14 examples)
   {

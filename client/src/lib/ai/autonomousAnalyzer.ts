@@ -79,7 +79,7 @@ const SpecificationRules: Rule[] = [
   },
   { 
     id: 'MARKET_EXPANSION',
-    test: t => /\b(expansion|market|international|enterprise|partnership)\b/.test(t) && /\b(new|first|signed|entered)\b/.test(t),
+    test: t => /\b(expansion|market|international|enterprise|partnership)\b/.test(t) && /\b(new|first|signed|entered|launched|acquired)\b/.test(t) && !/\b(planning|plan|strategy|strategic|analyzing|considering|preparing)\b/.test(t),
     category: 'Growth',
     energy: 'high',
     moodPolarity: 'Positive',
@@ -206,6 +206,16 @@ const SpecificationRules: Rule[] = [
     confidenceBoost: 8
   },
 
+  // Strategic Planning Activities
+  { 
+    id: 'STRATEGIC_PLANNING',
+    test: t => /\b(strategic|strategy|planning|plan|roadmap|vision)\b/.test(t) && /\b(2025|next year|annual|quarterly|future|direction|priorities|goals)\b/.test(t) && /\b(analyzing|working on|developing|crafting|designing|building)\b/.test(t),
+    category: 'Planning',
+    energy: 'medium',
+    moodPolarity: 'Neutral',
+    confidenceBoost: 25
+  },
+  
   // Legacy test patterns (keep for compatibility)
   {
     id: 'SUPPLY_CHAIN_DISRUPTION',
