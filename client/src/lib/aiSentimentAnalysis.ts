@@ -16,6 +16,7 @@ export interface BusinessSentiment {
   insights: string[];
   business_category: 'growth' | 'challenge' | 'achievement' | 'planning' | 'reflection' | 'learning' | 'research';
   suggested_title?: string;
+  analysis_source?: string;
   // Legacy compatibility properties
   mood?: string;
   category?: string;
