@@ -144,19 +144,21 @@ export function BizBuilderStatsCard({ onNavigate }: BizBuilderStatsCardProps) {
             </div>
           </div>
 
+
+
           {/* Progress Bar */}
-          {hasCalculations && (
-            <div className="space-y-2">
-              <div className="flex justify-between text-xs text-orange-700 dark:text-orange-300">
-                <span>Planning Progress</span>
-                <span>{completionPercentage}%</span>
-              </div>
-              <Progress 
-                value={completionPercentage} 
-                className="h-2 bg-orange-100 dark:bg-orange-900/20"
+          <div className="space-y-2">
+            <div className="w-full bg-orange-200/50 dark:bg-orange-800/30 rounded-full h-3">
+              <div 
+                className="bg-gradient-to-r from-orange-400 to-orange-500 h-3 rounded-full transition-all duration-500"
+                style={{ width: `${completionPercentage}%` }}
               />
             </div>
-          )}
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+              <span>0 tools</span>
+              <span>6 tools complete</span>
+            </div>
+          </div>
 
           {/* Status Information */}
           <div className="text-xs text-orange-600 dark:text-orange-400 text-center bg-orange-50 dark:bg-orange-950/30 p-2 rounded">
