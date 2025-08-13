@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+// Dialog components removed - using custom modal instead
 import { X, Plus, Download, Save, Calculator, TrendingUp, TrendingDown, DollarSign, PieChart, History } from "lucide-react"
 import { PieChart as RechartsPieChart, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Pie } from "recharts"
 import { CalculationHistory } from "@/components/calculators/CalculationHistory"
@@ -297,8 +297,8 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
   }
 
   return (
-    <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl max-h-[95vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-slate-900 rounded-xl max-w-7xl max-h-[95vh] overflow-hidden mx-4 shadow-2xl border border-slate-200 dark:border-slate-700">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
           <div className="flex items-center gap-3">
@@ -763,7 +763,7 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
             </div>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   )
 }
