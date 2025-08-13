@@ -458,9 +458,9 @@ export function PodcastPage() {
             {filteredEpisodes.slice(0, 6).map((episode, index) => (
               <AnimatedItem key={episode.id}>
                 <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 
-                  hover:shadow-lg hover:shadow-blue-200/50 dark:hover:shadow-blue-900/30 
+                  hover:shadow-xl hover:shadow-blue-200/50 dark:hover:shadow-blue-900/30 
                   hover:border-blue-300 dark:hover:border-blue-600
-                  hover:-translate-y-1 transition-all duration-300 ease-out
+                  hover:-translate-y-1 hover:scale-[1.02] transition-all duration-300 ease-out
                   cursor-pointer group relative overflow-hidden"
                   onClick={() => {
                     setSelectedEpisode({
