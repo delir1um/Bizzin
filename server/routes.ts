@@ -1,17 +1,18 @@
-import type { Express } from "express";
+import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import seoRoutes from "./routes/seo";
 
 // Hugging Face models for sentiment analysis
 const HF_MODELS = {
-  sentiment: 'cardiffnlp/twitter-roberta-base-sentiment-latest',
+  sentiment: 'cardiffnlp/twitter-roberta-base-sentiment',
   emotion: 'j-hartmann/emotion-english-distilroberta-base'
 };
 
 // Enhanced Hugging Face API call with authentication
 async function callHuggingFaceModel(text: string, model: string, retries = 2): Promise<any> {
-  const token = process.env.HUGGINGFACE_TOKEN;
+  const token = process.env.HUGGING_FACE_API_KEY || process.env.HUGGINGFACE_TOKEN;
+  console.log('HF Token check:', { hasToken: !!token, tokenLength: token?.length || 0 });
   
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
@@ -58,13 +59,27 @@ async function callHuggingFaceModel(text: string, model: string, retries = 2): P
 }
 
 function processHuggingFaceResults(sentimentResult: any, emotionResult: any, text: string) {
-  // Parse sentiment (POSITIVE/NEGATIVE/NEUTRAL)
-  const sentiment = sentimentResult[0];
-  const topSentiment = sentiment?.label?.toLowerCase() || 'neutral';
+  // Flatten nested arrays from HF API - they come as [[data]]
+  const sentimentArray = Array.isArray(sentimentResult[0]) ? sentimentResult[0] : sentimentResult;
+  const emotionArray = Array.isArray(emotionResult[0]) ? emotionResult[0] : emotionResult;
   
-  // Parse emotions
-  const topEmotion = emotionResult[0];
+  // Parse sentiment (LABEL_0=negative, LABEL_1=neutral, LABEL_2=positive)
+  const sentiment = sentimentArray[0];
+  let topSentiment = 'neutral';
+  if (sentiment?.label === 'LABEL_2') topSentiment = 'positive';
+  else if (sentiment?.label === 'LABEL_0') topSentiment = 'negative';
+  
+  // Parse emotions (joy, sadness, anger, fear, surprise, disgust, neutral)
+  const topEmotion = emotionArray[0];
   const emotion = topEmotion?.label?.toLowerCase() || 'neutral';
+  
+  console.log('Fixed Parsed Results:', { 
+    sentiment: sentiment?.label, 
+    sentimentScore: sentiment?.score,
+    emotion: emotion,
+    emotionScore: topEmotion?.score,
+    mappedSentiment: topSentiment
+  });
   
   // Map to business categories and moods
   const businessCategory = mapTextToBusinessCategory(text);
@@ -163,6 +178,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ]);
 
       if (sentimentResult && emotionResult) {
+        console.log('HF Results:', { 
+          sentiment: JSON.stringify(sentimentResult),
+          emotion: JSON.stringify(emotionResult)
+        });
         const sentiment = processHuggingFaceResults(sentimentResult, emotionResult, text);
         return res.json({ success: true, sentiment });
       }
@@ -172,7 +191,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
     } catch (error) {
       console.error('Sentiment analysis error:', error);
-      return res.status(500).json({ success: false, error: 'Analysis failed' });
+      console.error('Error details:', {
+        name: (error as Error).name,
+        message: (error as Error).message,
+        stack: (error as Error).stack
+      });
+      return res.status(500).json({ success: false, error: 'Analysis failed', details: (error as Error).message });
     }
   });
 
@@ -293,6 +317,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Mount SEO routes
   app.use('/api/seo', seoRoutes);
+
+  // Add journal routes for testing
+  app.post('/api/journal', async (req: Request, res: Response) => {
+    try {
+      const { title, content, user_id } = req.body;
+      
+      // Call sentiment analysis
+      const sentimentResponse = await fetch('http://localhost:5000/api/analyze-sentiment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: content })
+      });
+      
+      const sentimentData = await sentimentResponse.json();
+      
+      // Create mock journal entry with AI analysis
+      const entry = {
+        id: Date.now().toString(),
+        title,
+        content,
+        user_id,
+        created_at: new Date().toISOString(),
+        sentiment_score: sentimentData.success ? sentimentData.sentiment : null
+      };
+      
+      console.log(`Created journal entry: ${title} - Analysis:`, entry.sentiment_score);
+      res.json(entry);
+    } catch (error) {
+      console.error('Journal creation error:', error);
+      res.status(500).json({ error: 'Failed to create journal entry' });
+    }
+  });
+
+  app.delete('/api/journal/clear/:userId', async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      console.log(`Clearing all journal entries for user ${userId}`);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Journal clear error:', error);
+      res.status(500).json({ error: 'Failed to clear journal entries' });
+    }
+  });
   
   // Dynamic llms.txt route
   app.get('/llms.txt', async (req, res) => {
