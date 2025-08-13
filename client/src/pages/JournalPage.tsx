@@ -170,6 +170,13 @@ export function JournalPage() {
   })
 
   const organizedEntries = organizeEntriesByTime(filteredEntries)
+  
+  // Debug the organized entries
+  console.log('Journal entries debug:', {
+    totalEntries: entries.length,
+    filteredEntries: filteredEntries.length,
+    organizedEntries
+  })
 
   // Use proper plan system data
 
