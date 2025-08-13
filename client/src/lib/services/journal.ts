@@ -75,14 +75,24 @@ export class JournalService {
         titlePreview: entry.title.substring(0, 50)
       });
       
-      const enhancedSentiment = await analyzeBusinessSentiment(entry.content, entry.title)
-      
-      console.log('RECEIVED from analyzeBusinessSentiment:', {
-        category: enhancedSentiment.category,
-        insightsLength: enhancedSentiment.insights.length,
-        insights: enhancedSentiment.insights,
-        mood: enhancedSentiment.mood
-      });
+      let enhancedSentiment;
+      try {
+        enhancedSentiment = await analyzeBusinessSentiment(entry.content, entry.title)
+        console.log('RECEIVED from analyzeBusinessSentiment:', {
+          category: enhancedSentiment.category,
+          insightsLength: enhancedSentiment.insights.length,
+          insights: enhancedSentiment.insights,
+          mood: enhancedSentiment.mood
+        });
+      } catch (error) {
+        console.error('ERROR in analyzeBusinessSentiment:', error);
+        // Fallback sentiment data if analysis fails
+        enhancedSentiment = {
+          mood: { primary: 'neutral', confidence: 0.5, energy: 'medium', emotions: ['neutral'] },
+          insights: [],
+          category: 'reflection'
+        };
+      }
       
       const sentimentData = {
         primary_mood: aiAnalysis.primary_mood,

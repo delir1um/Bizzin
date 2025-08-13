@@ -40,60 +40,19 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('No user found')
 
-      // Analyze content with enhanced AI system
-      setIsAnalyzing(true)
-      const aiAnalysis = await analyzeJournalEntry(content, user.id)
+      // Use JournalService.createEntry which includes enhanced insights logic
+      console.log('SimpleCreateEntryModal: Using JournalService.createEntry with enhanced insights');
       
-      // Format for existing UI components
-      const sentimentData = {
-        primary_mood: aiAnalysis.primary_mood,
-        confidence: aiAnalysis.confidence,
-        energy: aiAnalysis.energy,
-        mood_polarity: aiAnalysis.mood_polarity,
-        business_category: aiAnalysis.business_category,
-        suggested_title: title || generateTitleFromContent(content),
-        insights: [`Enhanced AI v2.0 - Confidence: ${aiAnalysis.confidence}%`],
-        emotions: [aiAnalysis.primary_mood],
-        rules_matched: aiAnalysis.rules_matched || [],
-        user_learned: aiAnalysis.user_learned
-      }
-      
+      const { JournalService } = await import('@/lib/services/journal')
+      const data = await JournalService.createEntry({
+        title: title || generateTitleFromContent(content),
+        content: content.trim(),
+        user_id: user.id
+      })
+
+      // Update preview with the actual analyzed data
+      setAiPreview(data.sentiment_data)
       setIsAnalyzing(false)
-      setAiPreview(sentimentData)
-      
-      // Auto-suggest title if none provided
-      if (!title && sentimentData.suggested_title) {
-        setTimeout(() => {
-          toast({
-            title: "AI Title Suggestion",
-            description: `Suggested: "${sentimentData.suggested_title}"`,
-            className: "border-orange-200 bg-orange-50 text-orange-800"
-          })
-        }, 500)
-      }
-
-      const { data, error } = await supabase
-        .from('journal_entries')
-        .insert({
-          title: title || sentimentData.suggested_title || generateTitleFromContent(content),
-          content: content.trim(),
-          user_id: user.id,
-          sentiment_data: sentimentData,
-          entry_date: format(new Date(), 'yyyy-MM-dd')
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-      
-      // Update usage tracking after successful journal entry creation
-      try {
-        const { PlansService } = await import('@/lib/services/plans')
-        await PlansService.incrementUsage(user.id, 'journal')
-      } catch (usageError) {
-        console.warn('Failed to update usage tracking:', usageError)
-        // Don't fail the entry creation if usage tracking fails
-      }
       
       return data
     },
