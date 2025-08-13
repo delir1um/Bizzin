@@ -253,7 +253,7 @@ export function BizBuilderToolsPage() {
                 }}
               >
                 <Card 
-                  className="group cursor-pointer border-2 h-full flex flex-col relative overflow-hidden
+                  className="group cursor-pointer border h-full flex flex-col relative overflow-hidden
                     bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm
                     hover:border-orange-300 dark:hover:border-orange-700
                     hover:shadow-xl hover:shadow-orange-100/20 dark:hover:shadow-orange-900/20
