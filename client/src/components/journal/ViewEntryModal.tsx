@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { X, Clock, BookOpen, Edit, Zap, Trash2 } from "lucide-react"
 import type { JournalEntry } from "@/types/journal"
 
@@ -40,7 +41,18 @@ export function ViewEntryModal({ isOpen, onClose, entry, onEdit, onDelete }: Vie
           <div className="flex-1">
             {/* Title with mood emoji */}
             <CardTitle className="text-3xl font-bold text-slate-900 dark:text-white pr-4 mb-3 flex items-center gap-2">
-              <span className="text-2xl">{displayData.moodEmoji}</span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-2xl cursor-default">{displayData.moodEmoji}</span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <p className="text-sm capitalize">
+                      {displayData.mood || 'Neutral'} mood
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               {entry.title}
             </CardTitle>
             
