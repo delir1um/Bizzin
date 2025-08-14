@@ -101,7 +101,7 @@ export function JournalStatsCard({ journalEntries, onNavigate }: JournalStatsCar
   return (
     <Card className="relative overflow-hidden group 
       hover:shadow-lg hover:shadow-orange-200/50 dark:hover:shadow-orange-900/30
-      hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer
+      transition-all duration-300 ease-out cursor-pointer
       hover:border-orange-300 dark:hover:border-orange-600
       bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/20 dark:to-orange-900/20 
       border-orange-200 dark:border-orange-800 h-full flex flex-col"

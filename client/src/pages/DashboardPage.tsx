@@ -301,24 +301,34 @@ export function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
           >
-            <JournalStatsCard 
-              journalEntries={journalEntries} 
-              onNavigate={navigate} 
-            />
-            <GoalsStatsCard 
-              goals={goals} 
-              onNavigate={navigate} 
-            />
-            <TrainingStatsCard 
-              onNavigate={navigate} 
-            />
-            <BizBuilderStatsCard 
-              onNavigate={navigate} 
-            />
-            <DocSafeStatsCard 
-              storageStats={storageStats || null} 
-              onNavigate={navigate} 
-            />
+            <motion.div whileHover={{ y: -4, transition: { duration: 0.2 } }}>
+              <JournalStatsCard 
+                journalEntries={journalEntries} 
+                onNavigate={navigate} 
+              />
+            </motion.div>
+            <motion.div whileHover={{ y: -4, transition: { duration: 0.2 } }}>
+              <GoalsStatsCard 
+                goals={goals} 
+                onNavigate={navigate} 
+              />
+            </motion.div>
+            <motion.div whileHover={{ y: -4, transition: { duration: 0.2 } }}>
+              <TrainingStatsCard 
+                onNavigate={navigate} 
+              />
+            </motion.div>
+            <motion.div whileHover={{ y: -4, transition: { duration: 0.2 } }}>
+              <BizBuilderStatsCard 
+                onNavigate={navigate} 
+              />
+            </motion.div>
+            <motion.div whileHover={{ y: -4, transition: { duration: 0.2 } }}>
+              <DocSafeStatsCard 
+                storageStats={storageStats || null} 
+                onNavigate={navigate} 
+              />
+            </motion.div>
           </motion.div>
         </motion.div>
 
