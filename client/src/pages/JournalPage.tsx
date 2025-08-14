@@ -274,80 +274,80 @@ export function JournalPage() {
     
     const businessScenarios = [
       {
-        title: "Landed our first enterprise client! 💼",
-        content: "After 8 months of negotiations, we finally signed IBM as our first Fortune 500 client. The deal is worth R1.8 million annually and validates our enterprise-grade security features. The sales team worked incredibly hard, doing countless demos and addressing every technical concern. This opens doors to other big corporations who were waiting to see if we could handle enterprise-scale deployments. Already have three more enterprise prospects wanting to schedule calls next week."
+        content: "Received word that our biggest client is canceling their contract effective next month. They represent 35% of our revenue and cited budget cuts due to their own restructuring. This is devastating news that came completely out of nowhere. Had lunch with their CTO just last week and everything seemed fine. Now I'm scrambling to understand what really happened and if there's any way to salvage this relationship. Need to immediately cut costs and accelerate deals with other prospects to fill this massive revenue gap."
       },
       {
-        title: "Server outage cost us R50k in revenue today",
-        content: "Our main database went down for 4 hours this morning during peak usage time. Customers couldn't access their accounts and we had to pause all payment processing. The issue was traced to a failed disk in our primary server cluster. We've been meaning to upgrade our infrastructure but kept postponing due to cost concerns. This incident shows we can't delay critical infrastructure investments any longer. Setting up redundant systems and better monitoring is now our top priority."
+        content: "Our patent application was approved today after 18 months of waiting! This protects our core algorithm that gives us competitive advantage in the machine learning space. Three competitors have been trying to reverse-engineer our approach, so having IP protection feels like a huge weight off my shoulders. The legal fees were steep but worth every penny. This patent could be valuable for licensing deals or as leverage in future partnerships. Time to update our investor materials with this new asset."
       },
       {
-        title: "Planning our Series A funding strategy",
-        content: "Met with our investment advisor today to discuss raising Series A funding. We need R15 million to scale our engineering team and expand to three new markets. Our current burn rate gives us 8 months of runway, so timing is crucial. We've identified 12 potential investors who focus on B2B SaaS companies at our stage. The pitch deck needs to demonstrate clear product-market fit and a path to R50M ARR within 24 months."
+        content: "Discovered that our head of sales has been sharing confidential client information with his previous employer. Internal investigation revealed he copied our entire customer database and pricing strategies before we hired him. Legal team is exploring options but the damage is already done - competitors now know our weak points and pricing models. This breach of trust is devastating and we need to completely overhaul our data security protocols immediately."
       },
       {
-        title: "Competitor launched similar features to ours",
-        content: "TechCrunch announced that our main competitor just raised R25 million and launched features that are eerily similar to our roadmap. Their marketing team is aggressive and they're already reaching out to our prospects. This validates our product direction but also means we need to move faster. We can't compete on funding, so we need to win on execution speed and customer experience. Time to double down on our unique differentiators."
+        content: "Just returned from the most successful trade show in our company's history. Generated over 300 qualified leads and closed two deals worth R800k right there on the exhibition floor. Our booth was constantly crowded and industry analysts kept mentioning us in their reports. The team did an incredible job preparing interactive demos that really showcased our capabilities. Three international distributors want to partner with us for global expansion. This could be the breakthrough we've been waiting for."
       },
       {
-        title: "Customer churn hit 8% this month - need action plan",
-        content: "Our monthly churn rate jumped from 3% to 8%, which is concerning for our growth projections. Exit interviews reveal that customers are frustrated with our onboarding process and lack of advanced reporting features. Three customers mentioned switching to competitors who offer better analytics dashboards. We need to prioritize the business intelligence module we've been planning and completely redesign the first-week user experience."
+        content: "Workplace accident occurred this morning when a forklift operator injured his back moving inventory. He's been hospitalized and will need surgery followed by months of recovery. I feel terrible about this incident and keep wondering if we could have prevented it somehow. OSHA is investigating and our insurance premiums will likely increase. More importantly, we need to review all safety protocols and invest in better equipment to protect our team. Employee welfare has to be our top priority."
       },
       {
-        title: "Product launch exceeded all expectations! 🚀",
-        content: "Our new mobile app launched yesterday and we already have 2,500 downloads with 4.8 star rating on both app stores. The marketing campaign generated 50,000 website visits and 1,200 trial signups. Social media engagement is through the roof - our announcement post got 500 shares and 2,000 likes. The development team delivered an amazing product and marketing executed flawlessly. This momentum could drive significant growth in Q4."
+        content: "Our subscription model is finally gaining real traction. Monthly recurring revenue hit R450k this month, up from R180k six months ago. The marketing funnel optimization we implemented is working beautifully - conversion rates improved by 60% and customer acquisition costs dropped by 25%. Retention rates are strong at 94% which indicates solid product-market fit. These metrics are exactly what investors want to see for SaaS businesses. Time to start thinking about scaling the sales team."
       },
       {
-        title: "Struggling with work-life balance as CEO",
-        content: "Been working 70-hour weeks for the past month and starting to feel the burnout. Missing family dinners, weekend plans cancelled, and barely sleeping 5 hours a night. The pressure to grow fast and meet investor expectations is overwhelming. I know this pace isn't sustainable but there's so much that needs my direct involvement. Need to hire a COO or delegate more effectively - the company's growth shouldn't depend entirely on me being available 24/7."
+        content: "Environmental compliance officer cited us for improper waste disposal practices. Apparently our manufacturing process produces chemicals that require special handling we weren't aware of. The fine is R75k and we have 30 days to implement proper disposal procedures. This completely blindsided us because we thought we were following all regulations. Hiring an environmental consultant to audit our entire operation and ensure we're compliant going forward. Sustainability isn't just good ethics - it's becoming a business necessity."
       },
       {
-        title: "Government contract opportunity worth R5M",
-        content: "Received an invitation to bid for a 3-year government digitization project worth R5 million. This would be our largest contract ever and provide stable recurring revenue. However, government projects are notorious for slow payments and bureaucratic delays. We'd need to hire 8 additional developers and invest heavily in compliance certifications. The opportunity is massive but the execution risks are equally significant."
+        content: "Board meeting today was intense. Investors are concerned about our burn rate and want to see profitability by Q2 next year. They're not wrong - we're spending R300k monthly and only generating R180k in revenue. The runway gives us 8 months to turn things around. Need to make tough decisions about staff reductions and feature development priorities. Growth at all costs isn't sustainable. Time to focus on unit economics and operational efficiency rather than just user acquisition."
       },
       {
-        title: "Key developer gave 2 weeks notice today",
-        content: "Sarah, our lead frontend developer, handed in her resignation this morning. She's been offered a senior role at Google with 40% higher salary plus equity. Losing her knowledge of our codebase is a major setback - she built most of our user interface components. We have two weeks to transition her responsibilities and find a replacement. The job market is competitive and finding someone with her skills won't be easy or cheap."
+        content: "Breakthrough in our research lab could revolutionize the entire industry. Our team discovered a way to reduce manufacturing costs by 40% while improving product quality. Early tests show this process could be scaled to industrial production within 6 months. The implications are massive - we could undercut competitors while maintaining healthy margins. Filed provisional patents immediately and considering whether to license this technology or build manufacturing capacity ourselves. This could change everything for our company."
       },
       {
-        title: "Exploring partnership with Microsoft Azure",
-        content: "Had promising discussions with Microsoft's partner team about integrating our solution with Azure Active Directory. This could give us access to their enterprise customer base and technical resources. The partnership would require rebuilding parts of our authentication system but could accelerate our enterprise adoption by 12 months. Need to evaluate the technical complexity versus the potential market access benefits."
+        content: "Customer service team is overwhelmed with support tickets following last week's product update. Response times have doubled and satisfaction scores are dropping. The new features work great but the user interface changes confused existing customers. Social media mentions are turning negative and several customers threatened to cancel unless we fix the usability issues. Need to decide whether to roll back the update or push forward with better onboarding materials. Sometimes progress creates temporary setbacks."
       },
       {
-        title: "Revenue grew 45% quarter-over-quarter! 📈",
-        content: "Q3 results are in and we hit R2.1 million in revenue, up 45% from Q2. Our monthly recurring revenue is now R720k with healthy growth across all customer segments. The pricing optimization we implemented in July is paying off - average contract value increased by 30%. Customer acquisition costs are down 15% thanks to improved conversion funnels. These numbers will look great in our Series A pitch deck."
+        content: "Received acquisition offer from a Fortune 500 company for R45 million. This is 3x our annual revenue and would provide immediate liquidity for all shareholders. The acquiring company wants to integrate our technology into their existing platform and keep most of our team. However, accepting means giving up our independence and long-term vision of building something bigger. Co-founders are split on whether to sell now or continue growing independently. Life-changing decision that affects everyone in the company."
       },
       {
-        title: "Debating whether to pivot our business model",
-        content: "Customer feedback suggests our current subscription model isn't ideal for smaller businesses. Many potential clients prefer usage-based pricing rather than fixed monthly fees. We're considering a freemium model with pay-per-transaction pricing for premium features. This would require significant changes to our billing system and revenue forecasting. The risk is cannibalizing existing revenue, but it could open up a much larger market segment."
+        content: "Supply chain costs increased by 30% overnight due to new tariffs on imported components. Our main supplier based in Taiwan can't absorb these costs and passed them directly to us. This hits our margins hard just as we were approaching profitability. Evaluating domestic suppliers but quality and capacity concerns remain. May need to raise prices for customers which could hurt our competitive position. Global trade policies are creating uncertainty that makes business planning nearly impossible."
       },
       {
-        title: "Compliance audit revealed critical security gaps",
-        content: "External security audit identified several vulnerabilities in our data handling processes. We're not fully compliant with POPIA regulations and our API endpoints lack proper rate limiting. Two clients have already asked for compliance certificates we can't provide. We need to invest R200k in security infrastructure and hire a dedicated compliance officer. This wasn't budgeted but it's non-negotiable for enterprise sales."
+        content: "Hired our first Chief Technology Officer today after 4 months of searching. She comes from Google with 15 years of experience building scalable systems. Her starting salary is high but worth it if she can help us avoid the technical debt that's been slowing development. The engineering team is excited to have someone with her caliber of expertise. She's already identified three critical infrastructure improvements that could double our system performance. Great leaders are expensive but invaluable."
       },
       {
-        title: "Team morale survey results are concerning",
-        content: "Anonymous employee survey revealed that 60% of staff feel overworked and underappreciated. Several team members mentioned considering other opportunities due to unclear career progression paths. Communication between departments is poor and many feel their contributions aren't recognized. We need to address these cultural issues immediately before we lose more talent. Planning all-hands meeting and management restructuring."
+        content: "Cybersecurity incident last night exposed customer email addresses. Hackers gained access through an unpatched vulnerability in our payment processing system. No financial data was compromised but 15,000 customer emails are now in unknown hands. Legal team is handling regulatory notifications while we implement additional security measures. This is exactly the kind of incident that destroys customer trust and damages brand reputation. Investing heavily in cybersecurity wasn't optional - it was essential."
       },
       {
-        title: "Successful product demo at industry conference",
-        content: "Our presentation at the FinTech Summit generated incredible interest - collected 180 qualified leads and scheduled 25 follow-up meetings. Three venture capital firms approached us about potential investment opportunities. The live product demonstration went perfectly and several attendees mentioned our solution addressed their exact pain points. This conference exposure could accelerate our sales pipeline by months."
+        content: "Product development milestone achieved 3 weeks ahead of schedule. Version 2.0 includes the machine learning features customers have been requesting for months. Beta testing results exceeded expectations with 95% positive feedback and significant performance improvements. Marketing team is preparing launch campaign while sales prepares outreach to enterprise prospects. This release positions us strongly against competitors who are still using rule-based systems. Innovation speed is our biggest competitive advantage."
+      },
+      {
+        content: "Partnership negotiations with Amazon Web Services hit a roadblock over revenue sharing terms. They want 40% of subscription revenue for marketplace access while we can only afford 25% given our current margins. Access to their customer base would accelerate growth but the economics need to work for both parties. Alternative is building our own distribution channels which takes longer but preserves more margin. Strategic partnerships are complex balancing acts between growth and profitability."
+      },
+      {
+        content: "Employee satisfaction survey revealed declining morale due to unclear career advancement opportunities. 70% of staff feel their growth has stagnated and several top performers are updating their resumes. As a startup, we've been focused on survival rather than career development structures. Need to create promotion pathways, mentorship programs, and skills training immediately. Losing talent to competitors because we failed to invest in people development would be tragic and expensive."
+      },
+      {
+        content: "Market research confirmed that our target demographic is shifting toward mobile-first solutions. Desktop usage among our core customers dropped 40% in the past year while mobile engagement increased 150%. Our current web-based platform isn't optimized for mobile experiences which explains recent user retention challenges. Need to prioritize mobile app development immediately or risk becoming irrelevant. Technology shifts require constant adaptation or businesses get left behind."
+      },
+      {
+        content: "Quality control discovered defects in 12% of last month's production batch. Root cause analysis traced the problem to a new supplier who cut corners on materials to offer lower prices. Customer returns are increasing and brand reputation is at risk if defective products reach market. Implementing additional inspection procedures and returning to our previous supplier despite higher costs. Quality compromises are never worth short-term savings when customer trust is involved."
+      },
+      {
+        content: "Regulatory changes in our industry require significant compliance investments we hadn't budgeted for. New data protection laws mandate infrastructure upgrades worth R200k and annual compliance audits. Three competitors have already announced they're exiting certain markets due to compliance costs. This creates opportunity for companies willing to invest in proper compliance frameworks. Regulation often favors established players who can afford compliance over smaller competitors who cannot."
       }
     ]
     
     try {
-      // Select 10 random entries
+      // Select all 20 entries for comprehensive AI testing
       const shuffled = businessScenarios.sort(() => 0.5 - Math.random())
-      const selectedEntries = shuffled.slice(0, 10)
+      const selectedEntries = shuffled
       
       let added = 0
       for (const entry of selectedEntries) {
         // Generate random date within the last 3 months
         const randomDate = getRandomDateWithin3Months()
         
-        // Only pass title, content, and entry_date - let AI analyze mood, category, and insights
+        // Only pass content and entry_date - let AI generate title, mood, category, and insights
         const textOnlyEntry = {
-          title: entry.title,
+          title: '', // Let AI generate title from content
           content: entry.content,
           entry_date: randomDate.toISOString(),
           tags: [] // Add empty tags array to satisfy TypeScript
@@ -360,8 +360,8 @@ export function JournalPage() {
       queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
       
       toast({
-        title: "Random Samples Added!",
-        description: `${added} diverse business scenarios created with random dates over 3 months for AI analysis testing.`,
+        title: "AI Test Scenarios Added!",
+        description: `${added} diverse real-world business scenarios added without titles or categories - pure AI analysis testing.`,
       })
     } catch (error) {
       toast({
