@@ -800,76 +800,23 @@ export default function CashFlowCalculator({ onClose }: { onClose: () => void })
                     </AlertDialogContent>
                   </AlertDialog>
                 </div>
-                </div>
-              )}
+              </div>
+            )}
 
-              {/* Validation Messages */}
+            {/* Validation Messages */}
             {(cashFlowData.inflows.length === 0 || cashFlowData.outflows.length === 0) && (
               <Card className="p-4 bg-amber-50 dark:bg-amber-900/20 border-amber-300">
-                <div className="text-center">
-                  <AlertTriangle className="w-12 h-12 text-amber-600 mx-auto mb-3" />
-                  <h3 className="text-lg font-semibold text-amber-800 dark:text-amber-200 mb-2">Complete Your Cash Flow Setup</h3>
-                  <div className="text-sm text-amber-600 dark:text-amber-300 space-y-1">
-                    {cashFlowData.inflows.length === 0 && (
-                      <p className="text-red-600">• Add at least one cash inflow</p>
-                    )}
-                    {cashFlowData.outflows.length === 0 && (
-                      <p className="text-red-600">• Add at least one cash outflow</p>
-                    )}
+                <div className="flex items-center gap-3">
+                  <AlertTriangle className="w-6 h-6 text-amber-600" />
+                  <div>
+                    <h4 className="font-semibold text-amber-800 dark:text-amber-200">Get Started</h4>
+                    <p className="text-sm text-amber-600 dark:text-amber-300">
+                      Add some cash inflows and outflows to see your projection and analysis.
+                    </p>
                   </div>
                 </div>
               </Card>
             )}
-
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-3 mt-6">
-              <Button onClick={exportToCSV} className="bg-orange-600 hover:bg-orange-700" disabled={projection.length === 0}>
-                <Download className="w-4 h-4 mr-2" />
-                Export to CSV
-              </Button>
-              
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline">
-                    Reset Calculator
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure you want to reset?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action will permanently delete all your cash flow projection data including inflows, outflows, and notes. This cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction 
-                      onClick={resetTool}
-                      className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
-                    >
-                      Yes, Reset All Data
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-                </div>
-              )}
-
-              {/* Validation Messages */}
-              {(cashFlowData.inflows.length === 0 || cashFlowData.outflows.length === 0) && (
-                <Card className="p-4 bg-amber-50 dark:bg-amber-900/20 border-amber-300">
-                  <div className="flex items-center gap-3">
-                    <AlertTriangle className="w-6 h-6 text-amber-600" />
-                    <div>
-                      <h4 className="font-semibold text-amber-800 dark:text-amber-200">Get Started</h4>
-                      <p className="text-sm text-amber-600 dark:text-amber-300">
-                        Add some cash inflows and outflows to see your projection and analysis.
-                      </p>
-                    </div>
-                  </div>
-                </Card>
-              )}
             </div>
           </div>
         </div>
