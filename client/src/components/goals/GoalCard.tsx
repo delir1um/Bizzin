@@ -185,34 +185,34 @@ export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid' }: GoalCard
     )
   }
 
-  // Grid view - redesigned card layout
+  // Grid view - modern card layout
   return (
-    <Card className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 border-l-4 ${priorityColors[goal.priority]} 
-      hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-900/30
-      hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer group
-      hover:border-slate-300 dark:hover:border-slate-600
-      relative overflow-hidden
+    <Card className={`bg-white dark:bg-slate-800 border-0 shadow-sm hover:shadow-lg 
+      transition-all duration-300 ease-out cursor-pointer group
+      relative overflow-hidden rounded-xl
       ${goal.status === 'completed' ? 'opacity-75' : ''}
     `}>
-      {/* Subtle hover effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-50/30 to-transparent dark:from-slate-900/10 
-        opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      {/* Priority indicator stripe */}
+      <div className={`absolute top-0 left-0 right-0 h-1 ${
+        goal.priority === 'high' ? 'bg-red-500' : 
+        goal.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+      }`} />
       
-      {/* Header with title and actions */}
-      <div className="relative z-10 p-6 pb-4">
+      <div className="p-6">
+        {/* Header */}
         <div className="flex items-start justify-between mb-4">
-          <div className="flex-1 pr-4">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white leading-tight">
+          <div className="flex-1">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 line-clamp-2">
               {goal.title}
             </h3>
           </div>
-          <div className="flex items-center space-x-2 flex-shrink-0">
+          <div className="flex items-center gap-2 ml-4">
             {onEdit && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => onEdit(goal)}
-                className="h-8 w-8 p-0 opacity-60 hover:opacity-100"
+                className="h-9 w-9 p-0 text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
               >
                 <Edit3 className="h-4 w-4" />
               </Button>
@@ -222,7 +222,7 @@ export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid' }: GoalCard
                 variant="ghost"
                 size="sm"
                 onClick={() => onDelete(goal)}
-                className="h-8 w-8 p-0 opacity-60 hover:opacity-100 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950 dark:hover:text-red-400"
+                className="h-9 w-9 p-0 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -232,79 +232,69 @@ export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid' }: GoalCard
         
         {/* Description */}
         {goal.description && (
-          <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-6">
+          <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-6 line-clamp-3">
             {goal.description}
           </p>
         )}
         
-        {/* Meta info row */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="text-sm text-slate-500 dark:text-slate-400">
-            Target Date: {format(deadline, 'MMM d, yyyy')}
+        {/* Progress Section */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Progress</span>
+            <span className="text-2xl font-bold text-slate-900 dark:text-white">{getProgressText()}</span>
           </div>
-          <div className="flex items-center space-x-2">
-            <Badge variant={statusInfo.variant} className={`${statusInfo.className} text-xs`}>
-              <StatusIcon className="w-3 h-3 mr-1" />
-              {statusInfo.label}
-            </Badge>
-            {goal.category && (
-              <Badge variant="outline" className="text-xs border-slate-300 dark:border-slate-600">
-                {goal.category}
-              </Badge>
-            )}
-          </div>
+          <Progress value={goal.progress} className="h-2 bg-slate-100 dark:bg-slate-700" />
         </div>
-      </div>
-      
-      {/* Progress section */}
-      <div className="relative z-10 px-6 pb-6">
-        <div className="space-y-4">
-          {/* Progress bar with better visual hierarchy */}
-          <div>
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Progress</span>
-              <span className="text-lg font-semibold text-slate-900 dark:text-white">{getProgressText()}</span>
-            </div>
-            <Progress value={goal.progress} className="h-3 bg-slate-100 dark:bg-slate-700" />
-          </div>
-          
-          {/* Status indicators */}
-          <div className="flex items-center justify-between text-sm">
+        
+        {/* Bottom row with status and meta info */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
             {timeStatus && (
-              <div className={`flex items-center font-medium ${timeStatus.className}`}>
-                <timeStatus.icon className="w-4 h-4 mr-2" />
+              <div className={`flex items-center text-sm font-medium ${timeStatus.className}`}>
+                <timeStatus.icon className="w-4 h-4 mr-1.5" />
                 {timeStatus.text}
               </div>
             )}
             
             {goal.status === 'in_progress' && !isOverdue && daysRemaining > 7 && (
-              <div className="flex items-center text-green-600 dark:text-green-400 font-medium">
-                <TrendingUp className="w-4 h-4 mr-2" />
+              <div className="flex items-center text-green-600 dark:text-green-400 text-sm font-medium">
+                <TrendingUp className="w-4 h-4 mr-1.5" />
                 On track
-              </div>
-            )}
-            
-            {/* Priority indicator for high priority goals */}
-            {goal.priority === 'high' && goal.status !== 'completed' && (
-              <div className="flex items-center text-red-600 dark:text-red-400 font-medium">
-                <AlertTriangle className="w-4 h-4 mr-2" />
-                High Priority
               </div>
             )}
           </div>
           
-          {/* Reflection section */}
-          {goal.reflection && (
-            <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
-              <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
-                Reflection & Learnings
-              </h4>
-              <blockquote className="border-l-3 border-slate-300 dark:border-slate-600 pl-4 italic text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                {goal.reflection}
-              </blockquote>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            <Badge variant={statusInfo.variant} className={`${statusInfo.className} text-xs font-medium`}>
+              <StatusIcon className="w-3 h-3 mr-1" />
+              {statusInfo.label}
+            </Badge>
+            {goal.category && (
+              <Badge variant="outline" className="text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                {goal.category}
+              </Badge>
+            )}
+          </div>
         </div>
+        
+        {/* Target date - smaller, less prominent */}
+        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="text-xs text-slate-500 dark:text-slate-400">
+            Target: {format(deadline, 'MMM d, yyyy')}
+          </div>
+        </div>
+        
+        {/* Reflection section */}
+        {goal.reflection && (
+          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+            <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Reflection
+            </h4>
+            <blockquote className="border-l-2 border-slate-200 dark:border-slate-700 pl-3 text-sm text-slate-600 dark:text-slate-400 italic line-clamp-3">
+              {goal.reflection}
+            </blockquote>
+          </div>
+        )}
       </div>
     </Card>
   )
