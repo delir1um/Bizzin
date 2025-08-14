@@ -285,23 +285,23 @@ export default function CompoundInterestCalculator({ onClose }: { onClose: () =>
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-slate-900 rounded-xl w-full max-w-7xl h-full max-h-[95vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-700">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+      <div className="bg-white dark:bg-slate-900 rounded-xl w-full max-w-7xl min-h-screen sm:min-h-0 sm:max-h-[95vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-700 my-2 sm:my-4">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Compound Interest Calculator</h2>
-            <p className="text-slate-600 dark:text-slate-300">Calculate long-term investment growth with compound interest and regular contributions</p>
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
+          <div className="min-w-0 flex-1 pr-4">
+            <h2 className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-white">Compound Interest Calculator</h2>
+            <p className="text-sm text-slate-600 dark:text-slate-300 hidden sm:block">Calculate long-term investment growth with compound interest and regular contributions</p>
           </div>
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <Button variant="ghost" size="sm" onClick={onClose} className="flex-shrink-0">
             <X className="w-4 h-4" />
           </Button>
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex overflow-hidden min-h-0">
+        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
           {/* Left Panel - Input */}
-          <div className="lg:w-1/2 border-r border-slate-200 dark:border-slate-700 p-6 overflow-y-auto">
+          <div className="flex-1 lg:w-1/2 lg:border-r border-slate-200 dark:border-slate-700 p-4 sm:p-6 overflow-y-auto">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="setup">Setup</TabsTrigger>
@@ -505,12 +505,12 @@ export default function CompoundInterestCalculator({ onClose }: { onClose: () =>
           </div>
 
           {/* Right Panel - Results */}
-          <div className="lg:w-1/2 p-6 overflow-y-auto flex-shrink-0">
+          <div className="flex-1 lg:w-1/2 p-4 sm:p-6 overflow-y-auto flex-shrink-0">
             {/* Key Results */}
             {compoundData.principal > 0 && compoundData.annualRate > 0 && compoundData.years > 0 && (
               <>
                 {/* Summary Cards */}
-                <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                   {compoundData.calculationType !== 'monthly-contributions' && (
                     <Card className="p-4 text-center bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20">
                       <PiggyBank className="w-8 h-8 text-green-600 mx-auto mb-2" />

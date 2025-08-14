@@ -250,27 +250,29 @@ export default function BreakEvenCalculator({ onClose }: { onClose: () => void }
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658', '#FF7C7C']
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-slate-900 rounded-xl max-w-7xl max-h-[95vh] overflow-hidden mx-4 shadow-2xl border border-slate-200 dark:border-slate-700">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+      <div className="bg-white dark:bg-slate-900 rounded-xl w-full max-w-7xl min-h-screen sm:min-h-0 sm:max-h-[95vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-700 my-2 sm:my-4">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
-              <Calculator className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Break-Even Calculator</h2>
-              <p className="text-sm text-slate-600 dark:text-slate-300">Calculate how many units you need to sell to break even</p>
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
+          <div className="min-w-0 flex-1 pr-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Calculator className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 dark:text-orange-400" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">Break-Even Calculator</h2>
+                <p className="text-sm text-slate-600 dark:text-slate-300 hidden sm:block">Calculate how many units you need to sell to break even</p>
+              </div>
             </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <Button variant="ghost" size="sm" onClick={onClose} className="flex-shrink-0">
             <X className="w-4 h-4" />
           </Button>
         </div>
 
         <div className="flex flex-col lg:flex-row flex-1 overflow-hidden min-h-0">
           {/* Left Panel - Setup */}
-          <div className="lg:w-1/2 p-6 overflow-y-auto border-r border-slate-200 dark:border-slate-700">
+          <div className="flex-1 lg:w-1/2 p-4 sm:p-6 overflow-y-auto lg:border-r border-slate-200 dark:border-slate-700">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="setup">Basic Setup</TabsTrigger>
@@ -362,7 +364,7 @@ export default function BreakEvenCalculator({ onClose }: { onClose: () => void }
                     <CardTitle className="text-lg">Add Fixed Cost</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <Label className={validationErrors.name ? 'text-red-600' : ''}>Cost Name *</Label>
                         <Input
@@ -465,11 +467,11 @@ export default function BreakEvenCalculator({ onClose }: { onClose: () => void }
           </div>
 
           {/* Right Panel - Results */}
-          <div className="lg:w-1/2 p-6 overflow-y-auto flex-shrink-0">
+          <div className="flex-1 lg:w-1/2 p-4 sm:p-6 overflow-y-auto flex-shrink-0">
             {/* Key Metrics */}
             {contributionMargin > 0 && totalFixedCosts > 0 && (
               <>
-                <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                   <Card className="p-4 text-center bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20">
                     <Target className="w-8 h-8 text-orange-600 mx-auto mb-2" />
                     <p className="text-2xl font-bold text-orange-800 dark:text-orange-200">
@@ -517,7 +519,7 @@ export default function BreakEvenCalculator({ onClose }: { onClose: () => void }
                     <CardDescription>How much sales can drop before reaching break-even</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div className="text-center p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
                         <p className="text-lg font-bold text-amber-800 dark:text-amber-200">
                           {marginOfSafetyUnits(recommendedUnits).toLocaleString()}
