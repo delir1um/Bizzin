@@ -244,11 +244,12 @@ export default function LoanAmortisationCalculator({ onClose }: LoanAmortisation
           </Button>
         </div>
 
-        <div className="flex flex-col lg:flex-row flex-1 overflow-hidden min-h-0">
-          {/* Left Panel - Setup */}
-          <div className="flex-1 lg:w-1/2 p-4 sm:p-6 overflow-y-auto lg:border-r border-slate-200 dark:border-slate-700">
+        {/* Single Column Layout with Logical Flow */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="w-full p-4 sm:p-6 max-w-6xl mx-auto">
+            {/* Tabs at the top */}
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-3 mb-6">
                 <TabsTrigger value="setup">Loan Setup</TabsTrigger>
                 <TabsTrigger value="notes">Notes</TabsTrigger>
                 <TabsTrigger value="history">History</TabsTrigger>
@@ -372,12 +373,11 @@ export default function LoanAmortisationCalculator({ onClose }: LoanAmortisation
                 />
               </TabsContent>
             </Tabs>
-          </div>
 
-          {/* Right Panel - Results */}
-          <div className="flex-1 lg:w-1/2 p-4 sm:p-6 overflow-y-auto flex-shrink-0">
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            {/* Results Section - After Inputs */}
+            <div className="mt-8 space-y-6">
+              {/* Summary Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2">
@@ -477,7 +477,45 @@ export default function LoanAmortisationCalculator({ onClose }: LoanAmortisation
                   </CardContent>
                 </Card>
               </div>
-            )}
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap gap-3 mt-6">
+                <Button 
+                  onClick={exportToCSV} 
+                  className="bg-orange-600 hover:bg-orange-700" 
+                  disabled={loanData.loanAmount <= 0 || loanData.annualInterestRate <= 0 || loanData.loanTermMonths <= 0}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Export to CSV
+                </Button>
+                
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline">
+                      Reset Calculator
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure you want to reset?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action will permanently delete all your loan amortisation data. This cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={resetTool}
+                        className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                      >
+                        Yes, Reset All Data
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
           </div>
         </div>
       </div>

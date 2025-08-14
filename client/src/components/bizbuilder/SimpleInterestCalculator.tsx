@@ -246,12 +246,12 @@ export default function SimpleInterestCalculator({ onClose }: { onClose: () => v
           </Button>
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
-          {/* Left Panel - Input */}
-          <div className="flex-1 lg:w-1/2 lg:border-r border-slate-200 dark:border-slate-700 p-4 sm:p-6 overflow-y-auto">
+        {/* Single Column Layout with Logical Flow */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="w-full p-4 sm:p-6 max-w-6xl mx-auto">
+            {/* Tabs at the top */}
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-3 mb-6">
                 <TabsTrigger value="setup">Setup</TabsTrigger>
                 <TabsTrigger value="tax">Tax & Advanced</TabsTrigger>
                 <TabsTrigger value="notes">Notes</TabsTrigger>
@@ -414,15 +414,14 @@ export default function SimpleInterestCalculator({ onClose }: { onClose: () => v
                 </Card>
               </TabsContent>
             </Tabs>
-          </div>
 
-          {/* Right Panel - Results */}
-          <div className="flex-1 lg:w-1/2 p-4 sm:p-6 overflow-y-auto flex-shrink-0">
-            {/* Key Results */}
-            {interestData.principal > 0 && interestData.annualRate > 0 && interestData.termYears > 0 && (
-              <>
-                {/* Summary Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            {/* Results Section - After Inputs */}
+            <div className="mt-8 space-y-6">
+              {/* Key Results */}
+              {interestData.principal > 0 && interestData.annualRate > 0 && interestData.termYears > 0 && (
+                <>
+                  {/* Summary Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                   <Card className="p-4 text-center bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20">
                     <DollarSign className="w-8 h-8 text-green-600 mx-auto mb-2" />
                     <p className="text-2xl font-bold text-green-800 dark:text-green-200">
@@ -608,6 +607,7 @@ export default function SimpleInterestCalculator({ onClose }: { onClose: () => v
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
+              </div>
             </div>
           </div>
         </div>

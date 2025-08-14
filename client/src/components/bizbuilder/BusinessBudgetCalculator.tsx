@@ -317,9 +317,9 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
           </Button>
         </div>
 
-        <div className="flex flex-col lg:flex-row flex-1 overflow-hidden min-h-0">
-          {/* Input Panel */}
-          <div className="flex-1 lg:w-1/2 p-4 sm:p-6 overflow-y-auto lg:border-r border-slate-200 dark:border-slate-700">
+        {/* Single Column Layout with Logical Flow */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="w-full p-4 sm:p-6 max-w-6xl mx-auto">
             {/* Business Info */}
             <div className="mb-6">
               <div className="grid grid-cols-1 gap-4">
@@ -586,12 +586,11 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
                 />
               </TabsContent>
             </Tabs>
-          </div>
 
-          {/* Right Panel - Results */}
-          <div className="lg:w-1/2 p-6 overflow-y-auto flex-shrink-0">
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {/* Results Section - After Inputs */}
+            <div className="mt-8 space-y-6">
+              {/* Summary Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <Card className="bg-gradient-to-r from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900 border-green-200 dark:border-green-800">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -762,6 +761,7 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
+              </div>
             </div>
           </div>
         </div>

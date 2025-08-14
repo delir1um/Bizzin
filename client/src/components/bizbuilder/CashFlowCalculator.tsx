@@ -340,12 +340,12 @@ export default function CashFlowCalculator({ onClose }: { onClose: () => void })
           </Button>
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
-          {/* Input Panel */}
-          <div className="flex-1 lg:w-1/2 lg:border-r border-slate-200 dark:border-slate-700 p-4 sm:p-6 overflow-y-auto">
+        {/* Single Column Layout with Logical Flow */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="w-full p-4 sm:p-6 max-w-6xl mx-auto">
+            {/* Tabs at the top */}
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1 h-auto p-1">
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1 h-auto p-1 mb-6">
                 <TabsTrigger value="setup" className="text-xs sm:text-sm px-2 py-2">Setup</TabsTrigger>
                 <TabsTrigger value="inflows" className="text-xs sm:text-sm px-2 py-2">Inflows</TabsTrigger>
                 <TabsTrigger value="outflows" className="text-xs sm:text-sm px-2 py-2">Outflows</TabsTrigger>
@@ -682,14 +682,13 @@ export default function CashFlowCalculator({ onClose }: { onClose: () => void })
                 />
               </TabsContent>
             </Tabs>
-          </div>
 
-          {/* Results Panel */}
-          <div className="flex-1 lg:w-1/2 p-4 sm:p-6 overflow-y-auto flex-shrink-0 border-t lg:border-t-0 border-slate-200 dark:border-slate-700">
-            {/* Key Metrics */}
-            {projection.length > 0 && (
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            {/* Results Section - After Inputs */}
+            <div className="mt-8 space-y-6">
+              {/* Key Metrics */}
+              {projection.length > 0 && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                   <Card className="p-4 text-center bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20">
                     <TrendingUp className="w-8 h-8 text-green-600 mx-auto mb-2" />
                     <p className="text-2xl font-bold text-green-800 dark:text-green-200">
@@ -768,10 +767,43 @@ export default function CashFlowCalculator({ onClose }: { onClose: () => void })
                     </ResponsiveContainer>
                   </CardContent>
                 </Card>
-              </>
-            )}
 
-            {/* Validation Messages */}
+                {/* Action Buttons */}
+                <div className="flex flex-wrap gap-3 mt-6">
+                  <Button onClick={exportToCSV} className="bg-orange-600 hover:bg-orange-700" disabled={projection.length === 0}>
+                    <Download className="w-4 h-4 mr-2" />
+                    Export to CSV
+                  </Button>
+                  
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline">
+                        Reset Calculator
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure you want to reset?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action will permanently delete all your cash flow projection data including inflows, outflows, and notes. This cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction 
+                          onClick={resetTool}
+                          className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                        >
+                          Yes, Reset All Data
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+                </div>
+              )}
+
+              {/* Validation Messages */}
             {(cashFlowData.inflows.length === 0 || cashFlowData.outflows.length === 0) && (
               <Card className="p-4 bg-amber-50 dark:bg-amber-900/20 border-amber-300">
                 <div className="text-center">
@@ -820,6 +852,24 @@ export default function CashFlowCalculator({ onClose }: { onClose: () => void })
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
+            </div>
+                </div>
+              )}
+
+              {/* Validation Messages */}
+              {(cashFlowData.inflows.length === 0 || cashFlowData.outflows.length === 0) && (
+                <Card className="p-4 bg-amber-50 dark:bg-amber-900/20 border-amber-300">
+                  <div className="flex items-center gap-3">
+                    <AlertTriangle className="w-6 h-6 text-amber-600" />
+                    <div>
+                      <h4 className="font-semibold text-amber-800 dark:text-amber-200">Get Started</h4>
+                      <p className="text-sm text-amber-600 dark:text-amber-300">
+                        Add some cash inflows and outflows to see your projection and analysis.
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              )}
             </div>
           </div>
         </div>
