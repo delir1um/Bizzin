@@ -45,9 +45,9 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
       
       const { JournalService } = await import('@/lib/services/journal')
       const data = await JournalService.createEntry({
-        title: title || generateTitleFromContent(content),
+        title: title.trim() || '', // Let AI generate heading if no title provided
         content: content.trim(),
-        user_id: user.id
+        tags: []
       })
 
       // Update preview with the actual analyzed data
@@ -269,36 +269,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
   }
 
   // Generate a smart title from content
-  const generateTitleFromContent = (text: string): string => {
-    if (!text.trim()) return "Journal Entry"
-    
-    // Remove extra whitespace and get first sentence
-    const cleanText = text.trim().replace(/\s+/g, ' ')
-    const firstSentence = cleanText.split(/[.!?]/)[0]
-    
-    // If first sentence is too long, take first meaningful part
-    if (firstSentence.length > 50) {
-      const words = firstSentence.split(' ')
-      const meaningfulWords = words.filter(word => 
-        word.length > 2 && 
-        !['the', 'and', 'but', 'for', 'are', 'was', 'were', 'been', 'have', 'has', 'had', 'will', 'would', 'could', 'should'].includes(word.toLowerCase())
-      )
-      
-      if (meaningfulWords.length >= 3) {
-        return meaningfulWords.slice(0, 6).join(' ')
-      }
-      
-      return words.slice(0, 8).join(' ')
-    }
-    
-    // Return first sentence if reasonable length
-    if (firstSentence.length >= 10) {
-      return firstSentence
-    }
-    
-    // Fallback to first few words
-    return cleanText.split(' ').slice(0, 6).join(' ')
-  }
+
 
   const getMoodColor = (mood: string | null | undefined) => {
     if (!mood) return 'bg-gray-100 text-gray-600'
