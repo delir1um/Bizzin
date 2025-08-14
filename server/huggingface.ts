@@ -319,7 +319,7 @@ router.post('/analyze', async (req, res) => {
     // Challenge patterns - check FIRST to catch resignations, problems, issues, departures, risks, burnout, work-life balance
     // BUT exclude positive launches/achievements even if they mention challenges
     const challengeKeywords = lowerText.includes('problem') || lowerText.includes('challenge') || lowerText.includes('difficult') ||
-        lowerText.includes('down') || lowerText.includes('outage') || lowerText.includes('issue') ||
+        (lowerText.includes('down') && !lowerText.includes('costs are down') && !lowerText.includes('down 15%') && !lowerText.includes('down by')) || lowerText.includes('outage') || lowerText.includes('issue') ||
         lowerText.includes('error') || lowerText.includes('failed') || lowerText.includes('quit') ||
         lowerText.includes('resigned') || lowerText.includes('resignation') || lowerText.includes('burnout') ||
         lowerText.includes('setback') || lowerText.includes('risk') || lowerText.includes('delays') ||
@@ -337,6 +337,8 @@ router.post('/analyze', async (req, res) => {
     console.log('🔍 Challenge detection debug:', {
       challengeKeywords,
       positiveContext,
+      hasDown: lowerText.includes('down'),
+      hasPositiveDown: lowerText.includes('costs are down') || lowerText.includes('down 15%') || lowerText.includes('down by'),
       pressureFound: lowerText.includes('pressure'),
       hasInvestorExpectations: lowerText.includes('investor expectations'),
       pressureCondition: (lowerText.includes('pressure') && !lowerText.includes('investor expectations'))
