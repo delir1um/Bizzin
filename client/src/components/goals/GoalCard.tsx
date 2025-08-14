@@ -246,31 +246,33 @@ export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid' }: GoalCard
           <Progress value={goal.progress} className="h-2 bg-slate-100 dark:bg-slate-700" />
         </div>
         
-        {/* Bottom row with status and meta info */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        {/* Bottom section with better spacing */}
+        <div className="space-y-3">
+          {/* Status indicators row */}
+          <div className="flex items-center gap-6">
             {timeStatus && (
               <div className={`flex items-center text-sm font-medium ${timeStatus.className}`}>
-                <timeStatus.icon className="w-4 h-4 mr-1.5" />
+                <timeStatus.icon className="w-4 h-4 mr-2" />
                 {timeStatus.text}
               </div>
             )}
             
             {goal.status === 'in_progress' && !isOverdue && daysRemaining > 7 && (
               <div className="flex items-center text-green-600 dark:text-green-400 text-sm font-medium">
-                <TrendingUp className="w-4 h-4 mr-1.5" />
+                <TrendingUp className="w-4 h-4 mr-2" />
                 On track
               </div>
             )}
           </div>
           
-          <div className="flex items-center gap-2">
-            <Badge variant={statusInfo.variant} className={`${statusInfo.className} text-xs font-medium`}>
-              <StatusIcon className="w-3 h-3 mr-1" />
+          {/* Badges row */}
+          <div className="flex items-center justify-end gap-3">
+            <Badge variant={statusInfo.variant} className={`${statusInfo.className} text-xs font-medium px-3 py-1`}>
+              <StatusIcon className="w-3 h-3 mr-1.5" />
               {statusInfo.label}
             </Badge>
             {goal.category && (
-              <Badge variant="outline" className="text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+              <Badge variant="outline" className="text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 px-3 py-1">
                 {goal.category}
               </Badge>
             )}
