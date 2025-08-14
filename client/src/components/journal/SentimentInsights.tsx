@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { Brain, TrendingUp, Zap, Heart, Sparkles } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Brain, TrendingUp, Zap, Heart, Sparkles, Info } from "lucide-react"
 // Simplified mood color mapping for streamlined AI system
 const getMoodColor = (mood: string) => {
   switch (mood?.toLowerCase()) {
@@ -140,6 +141,19 @@ export function SentimentInsights({ entry, className = "" }: SentimentInsightsPr
           <span className="text-xs text-orange-600 font-medium">
             {getVersionDisplayFromSource((sentiment as any)?.analysis_source)} • {sentiment.confidence || 0}% confidence
           </span>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="w-3 h-3 text-orange-500 cursor-help hover:text-orange-600 transition-colors" />
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-xs">
+                <p className="text-sm">
+                  The confidence percentage shows how certain our AI is about reading your mood and business situation correctly. 
+                  Higher percentages (80%+) mean the AI is very confident in its analysis.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           {(sentiment as any).user_learned && (
             <Badge variant="outline" className="bg-purple-100 text-purple-700 border-purple-200 text-xs">
               <Sparkles className="w-3 h-3 mr-1" />
