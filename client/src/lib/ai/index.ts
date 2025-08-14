@@ -39,6 +39,8 @@ export async function analyzeJournalEntry(text: string, userId: string): Promise
         emotions: hfResult.emotions || [hfResult.primary_mood],
         business_category: hfResult.business_category,
         insights: hfResult.insights || [], // Use server-generated insights directly
+        ai_heading: hfResult.ai_heading, // Include AI-generated heading
+        analysis_source: hfResult.analysis_source, // Include analysis source
         rules_matched: [],
         user_learned: false,
         analysis_method: 'hugging-face-ai'
@@ -65,6 +67,16 @@ export async function analyzeJournalEntry(text: string, userId: string): Promise
       "Your business experience is valuable data. Document these moments to build stronger strategic thinking.",
       "Entrepreneurial intuition develops through pattern recognition. Each experience strengthens your judgment."
     ]
+  }
+  
+  // Add basic heading generation for fallback
+  if (!fallbackResult.ai_heading) {
+    const lowerText = text.toLowerCase();
+    if (lowerText.includes('funding') || lowerText.includes('investment')) fallbackResult.ai_heading = 'Funding discussion';
+    else if (lowerText.includes('team') || lowerText.includes('hiring')) fallbackResult.ai_heading = 'Team update';
+    else if (lowerText.includes('product') || lowerText.includes('launch')) fallbackResult.ai_heading = 'Product progress';
+    else if (lowerText.includes('sales') || lowerText.includes('revenue')) fallbackResult.ai_heading = 'Sales update';
+    else fallbackResult.ai_heading = 'Business reflection';
   }
   
   return fallbackResult;
