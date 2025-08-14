@@ -398,6 +398,15 @@ router.post('/analyze', async (req, res) => {
         return 'Financial performance review';
       }
       
+      // Work-life balance and burnout context
+      if (lowerText.includes('burnout') || lowerText.includes('70-hour') || lowerText.includes('working late') || 
+          (lowerText.includes('hours') && (lowerText.includes('week') || lowerText.includes('day'))) ||
+          lowerText.includes('overwhelm') || lowerText.includes('family dinner') || lowerText.includes('weekend plans')) {
+        if (lowerText.includes('coo') || lowerText.includes('delegate') || lowerText.includes('hire')) return 'Addressing burnout through delegation';
+        if (lowerText.includes('sustainable') || lowerText.includes('balance')) return 'Work-life balance reflection';
+        return 'Managing founder burnout';
+      }
+
       // Team/hiring context
       if (lowerText.includes('hiring') || lowerText.includes('team') || lowerText.includes('employee')) {
         if (businessCategory === 'growth') return 'Scaling team for growth';
