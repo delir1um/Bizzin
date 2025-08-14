@@ -1,17 +1,9 @@
-// Autonomous AI System v3.0 - Specification Compliant (Main Entry Point)
-// Implements full PDF specification: TF-IDF+bigrams, rules, negation, mood normalization, production-safe learning
+// Simplified AI System - Hugging Face Primary with Basic Fallback
+// Streamlined architecture using only the working server-side Hugging Face API
 
-export * from './types';
-export * from './negationHandling';  
-export * from './tfidfSimilarity';
-export * from './advancedMoodNormalizer';
-export * from './productionSafeLearning';
+import type { AIAnalysisResult } from './types';
 
-import { analyzeJournalEntryAutonomous, validateAutonomousSystem } from './autonomousAnalyzer';
-import { ProductionSafeLearningSystem } from './productionSafeLearning';
-import type { UserFeedback, AIAnalysisResult } from './types';
-
-// Main AI analysis function - Hugging Face server API first, then autonomous fallback
+// Main AI analysis function - Server-side Hugging Face API with simple fallback
 export async function analyzeJournalEntry(text: string, userId: string): Promise<AIAnalysisResult> {
   try {
     // Primary analysis: Call Hugging Face API endpoint directly
@@ -38,71 +30,90 @@ export async function analyzeJournalEntry(text: string, userId: string): Promise
                        hfResult.primary_mood === 'frustrated' || hfResult.primary_mood === 'stressed' || hfResult.primary_mood === 'concerned' ? 'Negative' : 'Neutral',
         emotions: hfResult.emotions || [hfResult.primary_mood],
         business_category: hfResult.business_category,
-        insights: hfResult.insights || [], // Use server-generated insights directly
-        ai_heading: hfResult.ai_heading, // Include AI-generated heading
-        analysis_source: hfResult.analysis_source, // Include analysis source
+        insights: hfResult.insights || [],
+        ai_heading: hfResult.ai_heading,
+        analysis_source: hfResult.analysis_source,
         rules_matched: [],
         user_learned: false,
         analysis_method: 'hugging-face-ai'
       }
       
       console.log('Hugging Face AI analysis successful:', result)
-      console.log('Hugging Face analysis complete:', result)
-      
       return result
     } else {
-      console.warn('Hugging Face API failed, falling back to local analysis')
+      console.warn('Hugging Face API failed, using simple fallback')
     }
   } catch (error) {
     console.warn('Hugging Face server analysis failed:', error)
   }
   
-  // Fallback to autonomous analyzer with basic insights
-  console.log('Using autonomous analyzer as fallback');
-  const fallbackResult = analyzeJournalEntryAutonomous(text, userId);
-  
-  // Add basic insights for fallback
-  if (!fallbackResult.insights || fallbackResult.insights.length === 0) {
-    fallbackResult.insights = [
-      "Your business experience is valuable data. Document these moments to build stronger strategic thinking.",
-      "Entrepreneurial intuition develops through pattern recognition. Each experience strengthens your judgment."
-    ]
-  }
-  
-  // Add basic heading generation for fallback
-  if (!fallbackResult.ai_heading) {
-    const lowerText = text.toLowerCase();
-    if (lowerText.includes('funding') || lowerText.includes('investment')) fallbackResult.ai_heading = 'Funding discussion';
-    else if (lowerText.includes('team') || lowerText.includes('hiring')) fallbackResult.ai_heading = 'Team update';
-    else if (lowerText.includes('product') || lowerText.includes('launch')) fallbackResult.ai_heading = 'Product progress';
-    else if (lowerText.includes('sales') || lowerText.includes('revenue')) fallbackResult.ai_heading = 'Sales update';
-    else fallbackResult.ai_heading = 'Business reflection';
-  }
-  
-  return fallbackResult;
+  // Simple fallback analysis
+  console.log('Using simple fallback analysis');
+  return generateSimpleFallback(text);
 }
 
-// System validation
-export { validateAutonomousSystem };
-
-// Record user feedback for learning
-export function recordUserCorrection(feedback: UserFeedback): void {
-  ProductionSafeLearningSystem.recordUserFeedback(feedback);
-}
-
-// Initialize autonomous AI system v3.0
-export function initializeEnhancedAI(): boolean {
-  console.log('Autonomous AI System v3.0 initialized with full specification compliance');
-  ProductionSafeLearningSystem.loadUserFeedback();
+// Simple fallback that mirrors the server-side fallback logic
+function generateSimpleFallback(text: string): AIAnalysisResult {
+  const lowerText = text.toLowerCase();
   
-  // Run validation to ensure system is working
-  const isValid = validateAutonomousSystem();
-  if (!isValid) {
-    console.warn('Autonomous AI v3.0: System validation detected issues');
+  // Basic mood detection
+  let primary_mood = 'focused';
+  let energy: 'high' | 'medium' | 'low' = 'medium';
+  let business_category = 'reflection';
+  
+  // Positive indicators
+  if (lowerText.includes('success') || lowerText.includes('excited') || lowerText.includes('achievement')) {
+    primary_mood = 'excited';
+    energy = 'high';
+    business_category = 'achievement';
+  }
+  // Negative indicators
+  else if (lowerText.includes('problem') || lowerText.includes('challenge') || lowerText.includes('difficult')) {
+    primary_mood = 'concerned';
+    energy = 'low';
+    business_category = 'challenge';
+  }
+  // Planning indicators
+  else if (lowerText.includes('plan') || lowerText.includes('strategy') || lowerText.includes('funding') || lowerText.includes('investment')) {
+    primary_mood = 'focused';
+    energy = 'high';
+    business_category = 'planning';
   }
   
-  return isValid;
+  // Generate basic heading
+  let ai_heading = 'Business reflection';
+  if (lowerText.includes('funding') || lowerText.includes('investment')) ai_heading = 'Funding discussion';
+  else if (lowerText.includes('team') || lowerText.includes('hiring')) ai_heading = 'Team update';
+  else if (lowerText.includes('product') || lowerText.includes('launch')) ai_heading = 'Product progress';
+  else if (lowerText.includes('sales') || lowerText.includes('revenue')) ai_heading = 'Sales update';
+  
+  return {
+    primary_mood,
+    confidence: 60, // Lower confidence for fallback
+    energy,
+    mood_polarity: primary_mood === 'excited' ? 'Positive' : primary_mood === 'concerned' ? 'Negative' : 'Neutral',
+    emotions: [primary_mood],
+    business_category,
+    insights: ['Basic analysis available. Full AI insights will resume when server connection is restored.'],
+    ai_heading,
+    analysis_source: 'simple-fallback',
+    rules_matched: [],
+    user_learned: false,
+    analysis_method: 'simple-fallback'
+  };
 }
 
-// Alias for compatibility (exact case match)
-export const initializeAISystem = initializeEnhancedAI;
+// Initialize AI system (simplified)
+export function initializeAISystem(): boolean {
+  console.log('Simplified AI System initialized - using server-side Hugging Face analysis');
+  return true;
+}
+
+// Compatibility aliases
+export const initializeEnhancedAI = initializeAISystem;
+
+// Simplified feedback recording (just logs for now)
+export function recordUserCorrection(feedback: any): void {
+  console.log('User feedback recorded:', feedback);
+  // Could implement localStorage persistence here if needed
+}

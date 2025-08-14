@@ -1,7 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import type { JournalEntry, CreateJournalEntry, UpdateJournalEntry } from '@/types/journal'
 import { analyzeJournalEntry } from '@/lib/ai'
-import { aiBusinessCoach } from '@/lib/aiBusinessCoach'
 import type { AIAnalysisResult } from '@/lib/ai/types'
 
 // Generate contextual business insights based on AI analysis results
@@ -216,15 +215,8 @@ export class JournalService {
         throw new Error(`Failed to create journal entry: ${error.message}`)
       }
 
-      // Initialize and analyze with AI Business Coach
-      try {
-        await aiBusinessCoach.initializeMemory(user.id)
-        await aiBusinessCoach.analyzeEntry(data)
-        console.log('AI Business Coach analysis completed')
-      } catch (coachError) {
-        console.warn('AI Business Coach analysis failed:', coachError)
-        // Don't fail the entry creation if coaching analysis fails
-      }
+      // AI analysis complete - no additional coaching analysis needed
+      console.log('Journal entry created with AI analysis')
 
       return data
     } catch (err) {

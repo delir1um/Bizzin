@@ -1,7 +1,15 @@
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Brain, TrendingUp, Zap, Heart, Sparkles } from "lucide-react"
-import { getMoodColor } from "@/lib/sentimentAnalysis"
+// Simplified mood color mapping for streamlined AI system
+const getMoodColor = (mood: string) => {
+  switch (mood?.toLowerCase()) {
+    case 'excited': case 'confident': case 'optimistic': return 'text-green-600 bg-green-50 border-green-200'
+    case 'frustrated': case 'stressed': case 'concerned': return 'text-red-600 bg-red-50 border-red-200'
+    case 'focused': case 'determined': return 'text-blue-600 bg-blue-50 border-blue-200'
+    default: return 'text-gray-600 bg-gray-50 border-gray-200'
+  }
+}
 import { AIAnalysisIndicator } from "@/components/journal/AIAnalysisIndicator"
 import type { JournalEntry } from "@/types/journal"
 import { getEntryDisplayData } from "@/lib/journalDisplayUtils"
