@@ -379,19 +379,23 @@ router.post('/analyze', async (req, res) => {
       
       // Financial context
       if (lowerText.includes('funding') || lowerText.includes('investment') || lowerText.includes('raised')) {
-        if (businessCategory === 'achievement') return 'Securing funding milestone';
+        if (lowerText.includes('secured') || lowerText.includes('closed') || lowerText.includes('raised')) return 'Funding secured successfully';
+        if (lowerText.includes('pitch') || lowerText.includes('deck') || lowerText.includes('series')) return 'Funding pitch progress';
+        if (businessCategory === 'achievement') return 'Investment milestone reached';
         if (businessCategory === 'challenge') return 'Navigating funding challenges';
         return 'Funding strategy update';
       }
       
       if (lowerText.includes('revenue') || lowerText.includes('sales') || lowerText.includes('profit')) {
-        if (hasSpecificNumbers) {
-          const match = text.match(/\d+[%$]?/);
-          if (match) return `Revenue insights: ${match[0]} growth`;
+        if (lowerText.includes('q1') || lowerText.includes('q2') || lowerText.includes('q3') || lowerText.includes('q4')) {
+          return 'Quarterly results analysis';
+        }
+        if (hasSpecificNumbers && (lowerText.includes('growth') || lowerText.includes('increase'))) {
+          return 'Revenue growth milestone';
         }
         if (businessCategory === 'achievement') return 'Revenue breakthrough achieved';
         if (businessCategory === 'challenge') return 'Revenue challenges addressed';
-        return 'Revenue performance review';
+        return 'Financial performance review';
       }
       
       // Team/hiring context
@@ -416,6 +420,13 @@ router.post('/analyze', async (req, res) => {
         return 'Customer relationship update';
       }
       
+      // Conference/presentation context
+      if (lowerText.includes('presentation') || lowerText.includes('conference') || lowerText.includes('summit') || lowerText.includes('pitch')) {
+        if (lowerText.includes('leads') || lowerText.includes('interest') || lowerText.includes('success')) return 'Conference networking success';
+        if (lowerText.includes('fintech') || lowerText.includes('tech') || lowerText.includes('industry')) return 'Industry event outcomes';
+        return 'Business presentation review';
+      }
+
       // Competition context
       if (lowerText.includes('competitor') || lowerText.includes('competition') || lowerText.includes('market')) {
         if (businessCategory === 'learning') return 'Market intelligence gained';
