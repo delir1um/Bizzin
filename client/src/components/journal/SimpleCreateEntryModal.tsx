@@ -402,6 +402,25 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
 
 
 
+          {/* Saving Status Indicator */}
+          {createEntryMutation.isPending && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <div className="flex items-center gap-3">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="w-5 h-5 flex-shrink-0"
+                >
+                  <Brain className="w-5 h-5 text-blue-600" />
+                </motion.div>
+                <div>
+                  <p className="font-medium text-blue-800">Creating your journal entry...</p>
+                  <p className="text-sm text-blue-600">AI is analyzing your content and generating insights</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="flex justify-end gap-3 pt-4">
             <Button

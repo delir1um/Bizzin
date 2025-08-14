@@ -317,6 +317,19 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
               )}
             </div>
 
+            {/* Saving Status Indicator */}
+            {(editEntryMutation.isPending || isSubmitting) && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                  <div>
+                    <p className="font-medium text-blue-800">Saving your entry...</p>
+                    <p className="text-sm text-blue-600">AI is analyzing your content and updating the entry</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Action Buttons */}
             <div className="flex justify-between items-center pt-4">
               {/* Delete Button */}
@@ -327,6 +340,7 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
                     variant="ghost"
                     size="sm"
                     className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
+                    disabled={editEntryMutation.isPending || isSubmitting}
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
                     Delete Entry
@@ -360,17 +374,17 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
                   type="button"
                   variant="outline"
                   onClick={onClose}
-                  disabled={isSubmitting}
+                  disabled={editEntryMutation.isPending || isSubmitting}
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={editEntryMutation.isPending || isSubmitting}
                   className="bg-orange-600 hover:bg-orange-700 text-white"
                 >
                   <Save className="w-4 h-4 mr-2" />
-                  {isSubmitting ? "Updating..." : "Update Entry"}
+                  {(editEntryMutation.isPending || isSubmitting) ? "Saving..." : "Save Changes"}
                 </Button>
               </div>
             </div>
