@@ -292,6 +292,21 @@ router.post('/analyze', async (req, res) => {
     const lowerText = text.toLowerCase();
     let category = 'reflection';
     
+    // Debug logging for category detection
+    console.log('🔍 Category detection debug:', {
+      text: text.substring(0, 100) + '...',
+      lowerText: lowerText.substring(0, 100) + '...',
+      sentiment: primaryMood,
+      hasRevenue: lowerText.includes('revenue'),
+      hasQ3: lowerText.includes('q3'),
+      hasHit: lowerText.includes('hit'),
+      hasMillion: lowerText.includes('million'),
+      hasUp: lowerText.includes('up'),
+      hasGrowth: lowerText.includes('growth'),
+      hasPressure: lowerText.includes('pressure'),
+      hasInvestorExpectations: lowerText.includes('investor expectations')
+    });
+    
     // Planning patterns - check FIRST to catch business model changes
     if (lowerText.includes('considering') || lowerText.includes('debating') || lowerText.includes('thinking about') ||
         lowerText.includes('pivot') || lowerText.includes('freemium') || lowerText.includes('subscription model') || 
@@ -303,7 +318,7 @@ router.post('/analyze', async (req, res) => {
     
     // Challenge patterns - check FIRST to catch resignations, problems, issues, departures, risks, burnout, work-life balance
     // BUT exclude positive launches/achievements even if they mention challenges
-    if ((lowerText.includes('problem') || lowerText.includes('challenge') || lowerText.includes('difficult') ||
+    const challengeKeywords = lowerText.includes('problem') || lowerText.includes('challenge') || lowerText.includes('difficult') ||
         lowerText.includes('down') || lowerText.includes('outage') || lowerText.includes('issue') ||
         lowerText.includes('error') || lowerText.includes('failed') || lowerText.includes('quit') ||
         lowerText.includes('resigned') || lowerText.includes('resignation') || lowerText.includes('burnout') ||
@@ -314,11 +329,22 @@ router.post('/analyze', async (req, res) => {
         (lowerText.includes('pressure') && !lowerText.includes('investor expectations')) || 
         lowerText.includes('stress') || lowerText.includes('overwhelm') ||
         lowerText.includes('handed in her') || lowerText.includes('handed in his') || lowerText.includes('leaving') ||
-        lowerText.includes('departing') || lowerText.includes('losing her knowledge') || lowerText.includes('major setback')) &&
-        // Don't categorize as challenge if it's clearly a positive launch/achievement context
-        !(lowerText.includes('launched') && (lowerText.includes('success') || lowerText.includes('download') || 
-          lowerText.includes('positive') || lowerText.includes('response') || lowerText.includes('already')))) {
+        lowerText.includes('departing') || lowerText.includes('losing her knowledge') || lowerText.includes('major setback');
+    
+    const positiveContext = lowerText.includes('launched') && (lowerText.includes('success') || lowerText.includes('download') || 
+          lowerText.includes('positive') || lowerText.includes('response') || lowerText.includes('already'));
+    
+    console.log('🔍 Challenge detection debug:', {
+      challengeKeywords,
+      positiveContext,
+      pressureFound: lowerText.includes('pressure'),
+      hasInvestorExpectations: lowerText.includes('investor expectations'),
+      pressureCondition: (lowerText.includes('pressure') && !lowerText.includes('investor expectations'))
+    });
+    
+    if (challengeKeywords && !positiveContext) {
       category = 'challenge';
+      console.log('🔍 Categorized as CHALLENGE');
     }
     // Achievement patterns - success, wins, completions, positive revenue results
     else if ((lowerText.includes('contract') || lowerText.includes('deal') || lowerText.includes('signed') || 
@@ -334,6 +360,7 @@ router.post('/analyze', async (req, res) => {
              // Don't classify as achievement if it's planning/considering context
              !(lowerText.includes('considering') || lowerText.includes('debating') || lowerText.includes('thinking about'))) {
       category = 'achievement';
+      console.log('🔍 Categorized as ACHIEVEMENT');
     }
     // Growth patterns - revenue, scaling, expansion, competition (but not when context is negative)
     else if ((lowerText.includes('revenue') || lowerText.includes('growth') || lowerText.includes('expand') ||
