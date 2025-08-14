@@ -21,6 +21,7 @@ export type JournalEntry = {
     business_category: string
     rules_matched?: string[]
     user_learned?: boolean
+    analysis_method?: string
   }
 }
 

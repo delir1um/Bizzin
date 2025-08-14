@@ -123,6 +123,23 @@ function generateFallbackAnalysis(text: string) {
     business_category = 'Challenge';
   }
   
+  // Generate fallback heading using simple context clues
+  const generateFallbackHeading = (text: string): string => {
+    const lowerText = text.toLowerCase();
+    
+    if (lowerText.includes('funding') || lowerText.includes('investment')) return 'Funding update';
+    if (lowerText.includes('revenue') || lowerText.includes('sales')) return 'Revenue discussion';
+    if (lowerText.includes('team') || lowerText.includes('hiring')) return 'Team development';
+    if (lowerText.includes('product') || lowerText.includes('launch')) return 'Product progress';
+    if (lowerText.includes('client') || lowerText.includes('customer')) return 'Customer insights';
+    if (lowerText.includes('strategy') || lowerText.includes('plan')) return 'Strategic thinking';
+    if (lowerText.includes('challenge') || lowerText.includes('problem')) return 'Business challenges';
+    if (lowerText.includes('success') || lowerText.includes('achievement')) return 'Business achievement';
+    if (lowerText.includes('goal') || lowerText.includes('milestone')) return 'Goal tracking';
+    
+    return 'Business reflection';
+  };
+
   return {
     primary_mood,
     confidence: 60, // Lower confidence for fallback
@@ -130,6 +147,7 @@ function generateFallbackAnalysis(text: string) {
     emotions: [primary_mood.toLowerCase()],
     insights: ['Analysis temporarily using simplified processing. Full AI insights will resume when API access is restored.'],
     business_category,
+    ai_heading: generateFallbackHeading(text),
     analysis_source: 'fallback-system'
   };
 }
@@ -343,6 +361,120 @@ router.post('/analyze', async (req, res) => {
     const rawConfidence = Math.max(sentimentConfidence, emotionConfidence);
     const finalConfidence = Math.round(Math.min(95, Math.max(75, rawConfidence * 100)));
     
+    // Generate AI-powered heading based on content analysis
+    const generateAIHeading = (
+      primaryMood: string,
+      confidence: number,
+      energy: string,
+      businessCategory: string,
+      text: string
+    ): string => {
+      const lowerText = text.toLowerCase();
+      const words = text.split(' ');
+      const isShort = words.length < 20;
+      
+      // Extract key business elements for context
+      const hasMetrics = /\d+[%$]?[\w\s]*(?:increase|decrease|growth|revenue|profit|clients?|users?)/i.test(text);
+      const hasSpecificNumbers = /\d+[%$]/.test(text);
+      
+      // Financial context
+      if (lowerText.includes('funding') || lowerText.includes('investment') || lowerText.includes('raised')) {
+        if (businessCategory === 'achievement') return 'Securing funding milestone';
+        if (businessCategory === 'challenge') return 'Navigating funding challenges';
+        return 'Funding strategy update';
+      }
+      
+      if (lowerText.includes('revenue') || lowerText.includes('sales') || lowerText.includes('profit')) {
+        if (hasSpecificNumbers) {
+          const match = text.match(/\d+[%$]?/);
+          if (match) return `Revenue insights: ${match[0]} growth`;
+        }
+        if (businessCategory === 'achievement') return 'Revenue breakthrough achieved';
+        if (businessCategory === 'challenge') return 'Revenue challenges addressed';
+        return 'Revenue performance review';
+      }
+      
+      // Team/hiring context
+      if (lowerText.includes('hiring') || lowerText.includes('team') || lowerText.includes('employee')) {
+        if (businessCategory === 'growth') return 'Scaling team for growth';
+        if (businessCategory === 'challenge') return 'Team challenges navigated';
+        return 'Team development update';
+      }
+      
+      // Product/launch context
+      if (lowerText.includes('launch') || lowerText.includes('product') || lowerText.includes('feature')) {
+        if (businessCategory === 'achievement') return 'Product launch success';
+        if (businessCategory === 'planning') return 'Product strategy planning';
+        return 'Product development insights';
+      }
+      
+      // Client/customer context
+      if (lowerText.includes('client') || lowerText.includes('customer') || lowerText.includes('user')) {
+        if (hasMetrics) return 'Customer growth metrics';
+        if (businessCategory === 'achievement') return 'Client success story';
+        if (businessCategory === 'challenge') return 'Customer challenge resolved';
+        return 'Customer relationship update';
+      }
+      
+      // Competition context
+      if (lowerText.includes('competitor') || lowerText.includes('competition') || lowerText.includes('market')) {
+        if (businessCategory === 'learning') return 'Market intelligence gained';
+        if (businessCategory === 'challenge') return 'Competitive pressure response';
+        return 'Market positioning insights';
+      }
+      
+      // Strategic context
+      if (lowerText.includes('strategy') || lowerText.includes('plan') || lowerText.includes('goal')) {
+        if (businessCategory === 'planning') return 'Strategic planning session';
+        if (businessCategory === 'achievement') return 'Strategic milestone reached';
+        return 'Strategic thinking update';
+      }
+      
+      // Mood and energy-based headings for general content
+      if (businessCategory === 'achievement') {
+        if (energy === 'high') return 'Major business breakthrough';
+        if (primaryMood === 'excited') return 'Celebrating business wins';
+        return 'Achievement reflection';
+      }
+      
+      if (businessCategory === 'challenge') {
+        if (primaryMood === 'determined') return 'Tackling business obstacles';
+        if (energy === 'low') return 'Working through difficulties';
+        return 'Challenge navigation';
+      }
+      
+      if (businessCategory === 'growth') {
+        if (energy === 'high') return 'Accelerating business growth';
+        if (hasMetrics) return 'Growth metrics analysis';
+        return 'Scaling operations';
+      }
+      
+      if (businessCategory === 'learning') {
+        if (confidence > 85) return 'Key business insights gained';
+        return 'Learning from experience';
+      }
+      
+      if (businessCategory === 'planning') {
+        if (energy === 'high') return 'Strategic vision development';
+        return 'Business planning session';
+      }
+      
+      // Fallback based on mood and content length
+      if (isShort) {
+        if (primaryMood === 'excited') return 'Quick business update';
+        if (primaryMood === 'frustrated') return 'Business challenge note';
+        return 'Business reflection';
+      }
+      
+      // Final fallbacks based on primary mood
+      if (primaryMood === 'excited' || primaryMood === 'optimistic') return 'Positive business momentum';
+      if (primaryMood === 'frustrated' || primaryMood === 'concerned') return 'Business challenge review';
+      if (primaryMood === 'determined') return 'Focused business execution';
+      if (primaryMood === 'reflective') return 'Strategic business thinking';
+      
+      return 'Business journal entry';
+    };
+
     // Generate contextual insights based on content analysis
     const insights: string[] = [];
     
@@ -416,6 +548,9 @@ router.post('/analyze', async (req, res) => {
     const contextualInsights = generateContextualInsights(text, category, primaryMood);
     insights.push(...contextualInsights.slice(0, 2));
 
+    // Generate AI-powered heading
+    const aiHeading = generateAIHeading(primaryMood, finalConfidence, energy, category, text);
+
     const result = {
       primary_mood: primaryMood,
       confidence: finalConfidence,
@@ -423,6 +558,7 @@ router.post('/analyze', async (req, res) => {
       emotions: [primaryMood],
       business_category: category,
       insights,
+      ai_heading: aiHeading,
       analysis_source: 'hugging-face-server'
     };
 
