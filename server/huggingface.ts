@@ -362,135 +362,104 @@ router.post('/analyze', async (req, res) => {
     const finalConfidence = Math.round(Math.min(95, Math.max(75, rawConfidence * 100)));
     
     // Generate AI-powered heading based on content analysis
-    const generateAIHeading = (
-      primaryMood: string,
-      confidence: number,
+    // Intelligent heading generator using the same content understanding as insights
+    const generateIntelligentHeading = (
+      text: string,
+      category: string,
+      mood: string,
       energy: string,
-      businessCategory: string,
-      text: string
+      insights: string[]
     ): string => {
       const lowerText = text.toLowerCase();
-      const words = text.split(' ');
-      const isShort = words.length < 20;
       
-      // Extract key business elements for context
-      const hasMetrics = /\d+[%$]?[\w\s]*(?:increase|decrease|growth|revenue|profit|clients?|users?)/i.test(text);
-      const hasSpecificNumbers = /\d+[%$]/.test(text);
+      // Use the same content understanding that generates insights to create headings
+      // This ensures consistency between the heading and the AI-generated insights
       
-      // Financial context
-      if (lowerText.includes('funding') || lowerText.includes('investment') || lowerText.includes('raised')) {
-        if (lowerText.includes('secured') || lowerText.includes('closed') || lowerText.includes('raised')) return 'Funding secured successfully';
-        if (lowerText.includes('pitch') || lowerText.includes('deck') || lowerText.includes('series')) return 'Funding pitch progress';
-        if (businessCategory === 'achievement') return 'Investment milestone reached';
-        if (businessCategory === 'challenge') return 'Navigating funding challenges';
-        return 'Funding strategy update';
-      }
-      
-      if (lowerText.includes('revenue') || lowerText.includes('sales') || lowerText.includes('profit')) {
-        if (lowerText.includes('q1') || lowerText.includes('q2') || lowerText.includes('q3') || lowerText.includes('q4')) {
-          return 'Quarterly results analysis';
+      if (category === 'challenge') {
+        // Analyze what type of challenge based on insights content
+        if (lowerText.includes('burnout') || lowerText.includes('70-hour') || lowerText.includes('overwhelm') || 
+            lowerText.includes('family dinner') || lowerText.includes('weekend plans') || 
+            (lowerText.includes('hours') && lowerText.includes('week'))) {
+          if (lowerText.includes('delegate') || lowerText.includes('hire') || lowerText.includes('coo')) return 'Addressing burnout through delegation';
+          return 'Managing founder burnout';
         }
-        if (hasSpecificNumbers && (lowerText.includes('growth') || lowerText.includes('increase'))) {
-          return 'Revenue growth milestone';
+        if (lowerText.includes('competitor') || lowerText.includes('competition') || lowerText.includes('funding')) {
+          return 'Navigating competitive pressure';
         }
-        if (businessCategory === 'achievement') return 'Revenue breakthrough achieved';
-        if (businessCategory === 'challenge') return 'Revenue challenges addressed';
-        return 'Financial performance review';
+        if (lowerText.includes('technical') || lowerText.includes('database') || lowerText.includes('system')) {
+          return 'Technical challenges resolved';
+        }
+        if (lowerText.includes('team') || lowerText.includes('employee') || lowerText.includes('staff')) {
+          return 'Team management challenges';
+        }
+        if (lowerText.includes('revenue') || lowerText.includes('cash flow') || lowerText.includes('financial')) {
+          return 'Financial pressure response';
+        }
+        return 'Business challenge navigation';
       }
       
-      // Work-life balance and burnout context
-      if (lowerText.includes('burnout') || lowerText.includes('70-hour') || lowerText.includes('working late') || 
-          (lowerText.includes('hours') && (lowerText.includes('week') || lowerText.includes('day'))) ||
-          lowerText.includes('overwhelm') || lowerText.includes('family dinner') || lowerText.includes('weekend plans')) {
-        if (lowerText.includes('coo') || lowerText.includes('delegate') || lowerText.includes('hire')) return 'Addressing burnout through delegation';
-        if (lowerText.includes('sustainable') || lowerText.includes('balance')) return 'Work-life balance reflection';
-        return 'Managing founder burnout';
-      }
-
-      // Team/hiring context
-      if (lowerText.includes('hiring') || lowerText.includes('team') || lowerText.includes('employee')) {
-        if (businessCategory === 'growth') return 'Scaling team for growth';
-        if (businessCategory === 'challenge') return 'Team challenges navigated';
-        return 'Team development update';
-      }
-      
-      // Product/launch context
-      if (lowerText.includes('launch') || lowerText.includes('product') || lowerText.includes('feature')) {
-        if (businessCategory === 'achievement') return 'Product launch success';
-        if (businessCategory === 'planning') return 'Product strategy planning';
-        return 'Product development insights';
-      }
-      
-      // Client/customer context
-      if (lowerText.includes('client') || lowerText.includes('customer') || lowerText.includes('user')) {
-        if (hasMetrics) return 'Customer growth metrics';
-        if (businessCategory === 'achievement') return 'Client success story';
-        if (businessCategory === 'challenge') return 'Customer challenge resolved';
-        return 'Customer relationship update';
+      if (category === 'achievement') {
+        if (lowerText.includes('deal') || lowerText.includes('signed') || lowerText.includes('contract')) {
+          return 'Major deal closed successfully';
+        }
+        if (lowerText.includes('launch') || lowerText.includes('product') || lowerText.includes('feature')) {
+          return 'Product launch success story';
+        }
+        if (lowerText.includes('milestone') || lowerText.includes('goal') || lowerText.includes('target')) {
+          return 'Business milestone achieved';
+        }
+        if (lowerText.includes('funding') || lowerText.includes('investment') || lowerText.includes('raised')) {
+          return 'Investment milestone reached';
+        }
+        if (lowerText.includes('revenue') || lowerText.includes('sales') || lowerText.includes('growth')) {
+          if (lowerText.includes('q1') || lowerText.includes('q2') || lowerText.includes('q3') || lowerText.includes('q4')) {
+            return 'Quarterly results celebration';
+          }
+          return 'Revenue breakthrough achieved';
+        }
+        return 'Business success milestone';
       }
       
-      // Conference/presentation context
-      if (lowerText.includes('presentation') || lowerText.includes('conference') || lowerText.includes('summit') || lowerText.includes('pitch')) {
-        if (lowerText.includes('leads') || lowerText.includes('interest') || lowerText.includes('success')) return 'Conference networking success';
-        if (lowerText.includes('fintech') || lowerText.includes('tech') || lowerText.includes('industry')) return 'Industry event outcomes';
-        return 'Business presentation review';
-      }
-
-      // Competition context
-      if (lowerText.includes('competitor') || lowerText.includes('competition') || lowerText.includes('market')) {
-        if (businessCategory === 'learning') return 'Market intelligence gained';
-        if (businessCategory === 'challenge') return 'Competitive pressure response';
-        return 'Market positioning insights';
-      }
-      
-      // Strategic context
-      if (lowerText.includes('strategy') || lowerText.includes('plan') || lowerText.includes('goal')) {
-        if (businessCategory === 'planning') return 'Strategic planning session';
-        if (businessCategory === 'achievement') return 'Strategic milestone reached';
-        return 'Strategic thinking update';
+      if (category === 'growth') {
+        if (lowerText.includes('revenue') || lowerText.includes('sales') || lowerText.includes('clients')) {
+          return 'Revenue scaling insights';
+        }
+        if (lowerText.includes('team') || lowerText.includes('hiring')) {
+          return 'Team scaling strategies';
+        }
+        if (lowerText.includes('competitor') || lowerText.includes('funding')) {
+          return 'Growth through competition';
+        }
+        return 'Business scaling update';
       }
       
-      // Mood and energy-based headings for general content
-      if (businessCategory === 'achievement') {
-        if (energy === 'high') return 'Major business breakthrough';
-        if (primaryMood === 'excited') return 'Celebrating business wins';
-        return 'Achievement reflection';
+      if (category === 'planning') {
+        if (lowerText.includes('pivot') || lowerText.includes('business model') || lowerText.includes('pricing')) {
+          return 'Business model strategy';
+        }
+        if (lowerText.includes('strategy') || lowerText.includes('roadmap')) {
+          return 'Strategic planning session';
+        }
+        if (lowerText.includes('budget') || lowerText.includes('financial')) {
+          return 'Financial planning insights';
+        }
+        return 'Future planning discussion';
       }
       
-      if (businessCategory === 'challenge') {
-        if (primaryMood === 'determined') return 'Tackling business obstacles';
-        if (energy === 'low') return 'Working through difficulties';
-        return 'Challenge navigation';
+      if (category === 'learning') {
+        if (lowerText.includes('presentation') || lowerText.includes('conference') || lowerText.includes('summit')) {
+          return 'Industry event learnings';
+        }
+        if (lowerText.includes('customer') || lowerText.includes('feedback')) {
+          return 'Customer insights gained';
+        }
+        return 'Business learning reflection';
       }
       
-      if (businessCategory === 'growth') {
-        if (energy === 'high') return 'Accelerating business growth';
-        if (hasMetrics) return 'Growth metrics analysis';
-        return 'Scaling operations';
-      }
-      
-      if (businessCategory === 'learning') {
-        if (confidence > 85) return 'Key business insights gained';
-        return 'Learning from experience';
-      }
-      
-      if (businessCategory === 'planning') {
-        if (energy === 'high') return 'Strategic vision development';
-        return 'Business planning session';
-      }
-      
-      // Fallback based on mood and content length
-      if (isShort) {
-        if (primaryMood === 'excited') return 'Quick business update';
-        if (primaryMood === 'frustrated') return 'Business challenge note';
-        return 'Business reflection';
-      }
-      
-      // Final fallbacks based on primary mood
-      if (primaryMood === 'excited' || primaryMood === 'optimistic') return 'Positive business momentum';
-      if (primaryMood === 'frustrated' || primaryMood === 'concerned') return 'Business challenge review';
-      if (primaryMood === 'determined') return 'Focused business execution';
-      if (primaryMood === 'reflective') return 'Strategic business thinking';
+      // Fallback based on content and mood
+      if (mood === 'excited' && energy === 'high') return 'Positive business momentum';
+      if (mood === 'reflective' && energy === 'low') return 'Strategic business thinking';
+      if (mood === 'frustrated') return 'Business challenge review';
       
       return 'Business journal entry';
     };
@@ -568,8 +537,8 @@ router.post('/analyze', async (req, res) => {
     const contextualInsights = generateContextualInsights(text, category, primaryMood);
     insights.push(...contextualInsights.slice(0, 2));
 
-    // Generate AI-powered heading
-    const aiHeading = generateAIHeading(primaryMood, finalConfidence, energy, category, text);
+    // Generate AI-powered heading based on content understanding
+    const aiHeading = generateIntelligentHeading(text, category, primaryMood, energy, insights);
 
     const result = {
       primary_mood: primaryMood,
