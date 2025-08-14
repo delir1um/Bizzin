@@ -311,7 +311,8 @@ router.post('/analyze', async (req, res) => {
         lowerText.includes('struggling') || lowerText.includes('work-life balance') || lowerText.includes('overwhelming') ||
         lowerText.includes('exhausted') || lowerText.includes('70-hour') || lowerText.includes('barely sleeping') ||
         lowerText.includes('cancelled') || lowerText.includes('missing family') || lowerText.includes('sustainable') ||
-        lowerText.includes('pressure') || lowerText.includes('stress') || lowerText.includes('overwhelm') ||
+        (lowerText.includes('pressure') && !lowerText.includes('investor expectations')) || 
+        lowerText.includes('stress') || lowerText.includes('overwhelm') ||
         lowerText.includes('handed in her') || lowerText.includes('handed in his') || lowerText.includes('leaving') ||
         lowerText.includes('departing') || lowerText.includes('losing her knowledge') || lowerText.includes('major setback')) &&
         // Don't categorize as challenge if it's clearly a positive launch/achievement context
@@ -319,11 +320,17 @@ router.post('/analyze', async (req, res) => {
           lowerText.includes('positive') || lowerText.includes('response') || lowerText.includes('already')))) {
       category = 'challenge';
     }
-    // Achievement patterns - success, wins, completions (but not when considering/planning)
+    // Achievement patterns - success, wins, completions, positive revenue results
     else if ((lowerText.includes('contract') || lowerText.includes('deal') || lowerText.includes('signed') || 
              lowerText.includes('closed') || lowerText.includes('won') || lowerText.includes('achieved') || 
              lowerText.includes('completed') || lowerText.includes('milestone') || lowerText.includes('breakthrough') ||
-             lowerText.includes('success') || lowerText.includes('record') || lowerText.includes('incredible')) &&
+             lowerText.includes('success') || lowerText.includes('record') || lowerText.includes('incredible') ||
+             // Positive revenue indicators
+             (lowerText.includes('revenue') && (lowerText.includes('hit') || lowerText.includes('up') || 
+              lowerText.includes('growth') || lowerText.includes('million') || /\d+%/.test(text))) ||
+             // Quarterly results with positive metrics
+             ((lowerText.includes('q1') || lowerText.includes('q2') || lowerText.includes('q3') || lowerText.includes('q4')) &&
+              (lowerText.includes('hit') || lowerText.includes('growth') || lowerText.includes('up') || lowerText.includes('million')))) &&
              // Don't classify as achievement if it's planning/considering context
              !(lowerText.includes('considering') || lowerText.includes('debating') || lowerText.includes('thinking about'))) {
       category = 'achievement';
@@ -413,9 +420,15 @@ router.post('/analyze', async (req, res) => {
         }
         if (lowerText.includes('revenue') || lowerText.includes('sales') || lowerText.includes('growth')) {
           if (lowerText.includes('q1') || lowerText.includes('q2') || lowerText.includes('q3') || lowerText.includes('q4')) {
+            if (lowerText.includes('hit') || lowerText.includes('million') || /\d+%/.test(text)) {
+              return 'Outstanding quarterly performance';
+            }
             return 'Quarterly results celebration';
           }
-          return 'Revenue breakthrough achieved';
+          if (lowerText.includes('hit') && lowerText.includes('million')) {
+            return 'Revenue milestone achieved';
+          }
+          return 'Revenue breakthrough success';
         }
         return 'Business success milestone';
       }
