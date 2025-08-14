@@ -322,7 +322,9 @@ router.post('/analyze', async (req, res) => {
                lowerTextForMood.includes('projections') || lowerTextForMood.includes('march') ||
                lowerTextForMood.includes('investment advisor') || lowerTextForMood.includes('series a') ||
                lowerTextForMood.includes('pitch deck') || lowerTextForMood.includes('raising') ||
-               lowerTextForMood.includes('demonstrate')) {
+               lowerTextForMood.includes('investor') || lowerTextForMood.includes('capital') ||
+               lowerTextForMood.includes('burn rate') || lowerTextForMood.includes('scale') ||
+               lowerTextForMood.includes('expand to') || lowerTextForMood.includes('demonstrate')) {
       primaryMood = 'focused';
       energy = 'high';
     }
@@ -353,12 +355,17 @@ router.post('/analyze', async (req, res) => {
       hasInvestorExpectations: lowerText.includes('investor expectations')
     });
     
-    // Planning patterns - check FIRST to catch business model changes
+    // Planning patterns - check FIRST to catch business model changes and funding discussions
     if (lowerText.includes('considering') || lowerText.includes('debating') || lowerText.includes('thinking about') ||
         lowerText.includes('pivot') || lowerText.includes('freemium') || lowerText.includes('subscription model') || 
         lowerText.includes('pricing') || lowerText.includes('business model') || lowerText.includes('plan') || 
         lowerText.includes('strategy') || lowerText.includes('roadmap') || lowerText.includes('timeline') || 
-        lowerText.includes('future') || lowerText.includes('prepare') || lowerText.includes('government') || lowerText.includes('bid')) {
+        lowerText.includes('future') || lowerText.includes('prepare') || lowerText.includes('government') || lowerText.includes('bid') ||
+        // Funding planning patterns
+        lowerText.includes('funding') || lowerText.includes('investment advisor') || lowerText.includes('series a') ||
+        lowerText.includes('series b') || lowerText.includes('raising') || lowerText.includes('pitch deck') ||
+        lowerText.includes('runway') || lowerText.includes('burn rate') || lowerText.includes('capital') ||
+        (lowerText.includes('investor') && (lowerText.includes('meet') || lowerText.includes('discuss') || lowerText.includes('advisor')))) {
       category = 'planning';
     }
     
