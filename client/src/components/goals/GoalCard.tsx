@@ -198,45 +198,55 @@ export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid' }: GoalCard
       <div className="absolute inset-0 bg-gradient-to-br from-green-50/50 to-transparent dark:from-green-900/10 
         opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       <CardHeader className="relative z-10">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-xl text-slate-900 dark:text-white">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1 pr-4">
+            <CardTitle className="text-xl text-slate-900 dark:text-white mb-2">
               {goal.title}
             </CardTitle>
-            <CardDescription className="text-slate-600 dark:text-slate-400 mt-1">
+          </div>
+          <div className="flex items-center space-x-2 flex-shrink-0">
+            {onEdit && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onEdit(goal)}
+                className="h-8 w-8 p-0"
+              >
+                <Edit3 className="h-4 w-4" />
+              </Button>
+            )}
+            {onDelete && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onDelete(goal)}
+                className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950 dark:hover:text-red-400"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </div>
+        
+        {/* Description with full width */}
+        {goal.description && (
+          <div className="mb-3">
+            <CardDescription className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
               {goal.description}
             </CardDescription>
-            <CardDescription className="text-slate-600 dark:text-slate-400">
-              Target Date: {format(deadline, 'MMM d, yyyy')}
-            </CardDescription>
           </div>
-          <div className="flex flex-col items-end space-y-2">
-            <div className="flex items-center space-x-2">
-              {onEdit && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onEdit(goal)}
-                  className="h-8 w-8 p-0"
-                >
-                  <Edit3 className="h-4 w-4" />
-                </Button>
-              )}
-              {onDelete && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onDelete(goal)}
-                  className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950 dark:hover:text-red-400"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              )}
-              <Badge variant={statusInfo.variant} className={statusInfo.className}>
-                <StatusIcon className="w-3 h-3 mr-1" />
-                {statusInfo.label}
-              </Badge>
-            </div>
+        )}
+        
+        {/* Bottom row with target date, status, and category */}
+        <div className="flex items-center justify-between">
+          <CardDescription className="text-slate-600 dark:text-slate-400 text-sm">
+            Target Date: {format(deadline, 'MMM d, yyyy')}
+          </CardDescription>
+          <div className="flex items-center space-x-2">
+            <Badge variant={statusInfo.variant} className={statusInfo.className}>
+              <StatusIcon className="w-3 h-3 mr-1" />
+              {statusInfo.label}
+            </Badge>
             {goal.category && (
               <Badge variant="outline" className="text-xs">
                 {goal.category}
