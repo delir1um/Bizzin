@@ -185,24 +185,26 @@ export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid' }: GoalCard
     )
   }
 
-  // Grid view - original card design
+  // Grid view - redesigned card layout
   return (
     <Card className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 border-l-4 ${priorityColors[goal.priority]} 
-      hover:shadow-lg hover:shadow-green-200/50 dark:hover:shadow-green-900/30
+      hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-900/30
       hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer group
-      hover:border-green-300 dark:hover:border-green-600
+      hover:border-slate-300 dark:hover:border-slate-600
       relative overflow-hidden
       ${goal.status === 'completed' ? 'opacity-75' : ''}
     `}>
-      {/* Animated Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-green-50/50 to-transparent dark:from-green-900/10 
+      {/* Subtle hover effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-50/30 to-transparent dark:from-slate-900/10 
         opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      <CardHeader className="relative z-10">
+      
+      {/* Header with title and actions */}
+      <div className="relative z-10 p-6 pb-4">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1 pr-4">
-            <CardTitle className="text-xl text-slate-900 dark:text-white mb-2">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white leading-tight">
               {goal.title}
-            </CardTitle>
+            </h3>
           </div>
           <div className="flex items-center space-x-2 flex-shrink-0">
             {onEdit && (
@@ -210,7 +212,7 @@ export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid' }: GoalCard
                 variant="ghost"
                 size="sm"
                 onClick={() => onEdit(goal)}
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 opacity-60 hover:opacity-100"
               >
                 <Edit3 className="h-4 w-4" />
               </Button>
@@ -220,7 +222,7 @@ export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid' }: GoalCard
                 variant="ghost"
                 size="sm"
                 onClick={() => onDelete(goal)}
-                className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950 dark:hover:text-red-400"
+                className="h-8 w-8 p-0 opacity-60 hover:opacity-100 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950 dark:hover:text-red-400"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -228,75 +230,82 @@ export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid' }: GoalCard
           </div>
         </div>
         
-        {/* Description with full width */}
+        {/* Description */}
         {goal.description && (
-          <div className="mb-3">
-            <CardDescription className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-              {goal.description}
-            </CardDescription>
-          </div>
+          <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-6">
+            {goal.description}
+          </p>
         )}
         
-        {/* Bottom row with target date, status, and category */}
-        <div className="flex items-center justify-between">
-          <CardDescription className="text-slate-600 dark:text-slate-400 text-sm">
+        {/* Meta info row */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="text-sm text-slate-500 dark:text-slate-400">
             Target Date: {format(deadline, 'MMM d, yyyy')}
-          </CardDescription>
+          </div>
           <div className="flex items-center space-x-2">
-            <Badge variant={statusInfo.variant} className={statusInfo.className}>
+            <Badge variant={statusInfo.variant} className={`${statusInfo.className} text-xs`}>
               <StatusIcon className="w-3 h-3 mr-1" />
               {statusInfo.label}
             </Badge>
             {goal.category && (
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="outline" className="text-xs border-slate-300 dark:border-slate-600">
                 {goal.category}
               </Badge>
             )}
           </div>
         </div>
-      </CardHeader>
-      <CardContent>
+      </div>
+      
+      {/* Progress section */}
+      <div className="relative z-10 px-6 pb-6">
         <div className="space-y-4">
+          {/* Progress bar with better visual hierarchy */}
           <div>
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex justify-between items-center mb-3">
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Progress</span>
-              <span className="text-sm text-slate-600 dark:text-slate-400">{getProgressText()}</span>
+              <span className="text-lg font-semibold text-slate-900 dark:text-white">{getProgressText()}</span>
             </div>
-            <Progress value={goal.progress} className="h-2" />
+            <Progress value={goal.progress} className="h-3 bg-slate-100 dark:bg-slate-700" />
           </div>
-          <div className="flex items-center space-x-4 text-sm">
+          
+          {/* Status indicators */}
+          <div className="flex items-center justify-between text-sm">
             {timeStatus && (
-              <div className={`flex items-center ${timeStatus.className}`}>
-                <timeStatus.icon className="w-4 h-4 mr-1" />
+              <div className={`flex items-center font-medium ${timeStatus.className}`}>
+                <timeStatus.icon className="w-4 h-4 mr-2" />
                 {timeStatus.text}
               </div>
             )}
+            
             {goal.status === 'in_progress' && !isOverdue && daysRemaining > 7 && (
-              <div className="flex items-center text-green-600 dark:text-green-400">
-                <TrendingUp className="w-4 h-4 mr-1" />
+              <div className="flex items-center text-green-600 dark:text-green-400 font-medium">
+                <TrendingUp className="w-4 h-4 mr-2" />
                 On track
               </div>
             )}
+            
+            {/* Priority indicator for high priority goals */}
             {goal.priority === 'high' && goal.status !== 'completed' && (
-              <div className="flex items-center text-red-600 dark:text-red-400">
-                <AlertTriangle className="w-4 h-4 mr-1" />
+              <div className="flex items-center text-red-600 dark:text-red-400 font-medium">
+                <AlertTriangle className="w-4 h-4 mr-2" />
                 High Priority
               </div>
             )}
           </div>
           
+          {/* Reflection section */}
           {goal.reflection && (
-            <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-              <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+              <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
                 Reflection & Learnings
               </h4>
-              <blockquote className="border-l-2 border-slate-300 dark:border-slate-600 pl-4 italic text-sm text-slate-600 dark:text-slate-400">
+              <blockquote className="border-l-3 border-slate-300 dark:border-slate-600 pl-4 italic text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                 {goal.reflection}
               </blockquote>
             </div>
           )}
         </div>
-      </CardContent>
+      </div>
     </Card>
   )
 }
