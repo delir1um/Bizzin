@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Slider } from "@/components/ui/slider"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { GoalsService } from "@/lib/services/goals"
@@ -227,7 +228,23 @@ export function EditGoalModal({ open, onOpenChange, goal, onGoalCompleted }: Edi
                   <FormItem>
                     <FormLabel>Status</FormLabel>
                     <Select
-                      onValueChange={field.onChange}
+                      onValueChange={(value) => {
+                        field.onChange(value)
+                        // Don't auto-update progress when manually setting special statuses
+                        if (value !== 'on_hold' && value !== 'at_risk') {
+                          // For not_started, in_progress, completed - sync with progress slider
+                          const targetValue = form.getValues('target_value') || 0
+                          if (targetValue > 0) {
+                            if (value === 'not_started') {
+                              form.setValue('current_value', 0)
+                              form.setValue('progress', 0)
+                            } else if (value === 'completed') {
+                              form.setValue('current_value', targetValue)
+                              form.setValue('progress', 100)
+                            }
+                          }
+                        }
+                      }}
                       value={field.value}
                       disabled={updateGoalMutation.isPending}
                     >
@@ -244,6 +261,9 @@ export function EditGoalModal({ open, onOpenChange, goal, onGoalCompleted }: Edi
                         ))}
                       </SelectContent>
                     </Select>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">
+                      Auto-updates based on progress. Use "On Hold" or "At Risk" for special cases.
+                    </p>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -299,73 +319,120 @@ export function EditGoalModal({ open, onOpenChange, goal, onGoalCompleted }: Edi
 
             <div className="space-y-4 border rounded-lg p-4 bg-slate-50 dark:bg-slate-900">
               <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">Progress Tracking</h4>
-              <p className="text-xs text-slate-600 dark:text-slate-400">Set target and current values for automatic progress calculation, or manually set progress percentage.</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400">Set your target value, then drag the slider to track your progress.</p>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="current_value"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Current Value</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number"
-                          placeholder="e.g., 3500"
-                          {...field}
-                          onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                          disabled={updateGoalMutation.isPending}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="target_value"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Target Value</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number"
-                          placeholder="e.g., 10000"
-                          {...field}
-                          onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                          disabled={updateGoalMutation.isPending}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
+              {/* Target Value Input */}
               <FormField
                 control={form.control}
-                name="progress"
+                name="target_value"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Progress (%)</FormLabel>
+                    <FormLabel>Target Value</FormLabel>
                     <FormControl>
-                      <Input
+                      <Input 
                         type="number"
-                        min="0"
-                        max="100"
-                        placeholder="0-100"
+                        placeholder="e.g., 100 books, 10000 sales"
                         {...field}
-                        value={field.value}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                        onChange={(e) => {
+                          const newTarget = e.target.value ? Number(e.target.value) : undefined
+                          field.onChange(newTarget)
+                          
+                          // Reset current value if target changes to avoid invalid states
+                          const currentValue = form.getValues('current_value') || 0
+                          if (newTarget && currentValue > newTarget) {
+                            form.setValue('current_value', newTarget)
+                            form.setValue('progress', 100)
+                            form.setValue('status', 'completed')
+                          } else if (newTarget && currentValue > 0) {
+                            // Recalculate progress
+                            const newProgress = Math.round((currentValue / newTarget) * 100)
+                            form.setValue('progress', newProgress)
+                            form.setValue('status', newProgress === 100 ? 'completed' : newProgress === 0 ? 'not_started' : 'in_progress')
+                          }
+                        }}
                         disabled={updateGoalMutation.isPending}
                       />
                     </FormControl>
-                    <p className="text-xs text-slate-600 dark:text-slate-400">Auto-calculated when current/target values are set</p>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              {/* Smart Progress Slider */}
+              {form.watch('target_value') && form.watch('target_value')! > 0 && (
+                <div className="space-y-3">
+                  <FormField
+                    control={form.control}
+                    name="current_value"
+                    render={({ field }) => {
+                      const targetValue = form.watch('target_value') || 0
+                      const currentValue = field.value || 0
+                      const progress = targetValue > 0 ? Math.round((currentValue / targetValue) * 100) : 0
+                      
+                      return (
+                        <FormItem>
+                          <FormLabel className="flex items-center justify-between">
+                            <span>Current Progress</span>
+                            <span className="text-sm font-normal text-slate-600">
+                              {currentValue} of {targetValue} ({progress}%)
+                            </span>
+                          </FormLabel>
+                          <FormControl>
+                            <div className="px-2">
+                              <Slider
+                                value={[currentValue]}
+                                onValueChange={(values) => {
+                                  const newValue = values[0]
+                                  field.onChange(newValue)
+                                  
+                                  // Auto-calculate progress and status
+                                  const newProgress = targetValue > 0 ? Math.round((newValue / targetValue) * 100) : 0
+                                  form.setValue('progress', newProgress)
+                                  
+                                  // Auto-update status based on progress
+                                  if (newProgress === 100) {
+                                    form.setValue('status', 'completed')
+                                  } else if (newProgress === 0) {
+                                    form.setValue('status', 'not_started')
+                                  } else {
+                                    // Only set to in_progress if not already completed or on_hold/at_risk
+                                    const currentStatus = form.getValues('status')
+                                    if (currentStatus === 'not_started' || currentStatus === 'completed') {
+                                      form.setValue('status', 'in_progress')
+                                    }
+                                  }
+                                }}
+                                max={targetValue}
+                                min={0}
+                                step={1}
+                                disabled={updateGoalMutation.isPending}
+                                className="w-full"
+                              />
+                            </div>
+                          </FormControl>
+                          <div className="flex justify-between text-xs text-slate-500">
+                            <span>0</span>
+                            <span>{targetValue}</span>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* Progress Summary */}
+              {form.watch('target_value') && form.watch('target_value')! > 0 && (
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-3 border">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-600 dark:text-slate-400">Progress Summary:</span>
+                    <span className="font-medium text-slate-900 dark:text-slate-100">
+                      {form.watch('current_value') || 0} of {form.watch('target_value')} ({form.watch('progress') || 0}%)
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <FormField
