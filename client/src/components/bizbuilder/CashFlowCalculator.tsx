@@ -332,8 +332,15 @@ export default function CashFlowCalculator({ onClose }: { onClose: () => void })
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
           <div className="min-w-0 flex-1 pr-4">
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Cash Flow Calculator</h2>
-            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 hidden sm:block">Project your business cash flow and identify potential shortfalls</p>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center flex-shrink-0">
+                <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 dark:text-orange-400" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">Cash Flow Calculator</h2>
+                <p className="text-sm text-slate-600 dark:text-slate-300 hidden sm:block">Project your business cash flow and identify potential shortfalls</p>
+              </div>
+            </div>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose} className="flex-shrink-0">
             <X className="w-4 h-4" />
@@ -345,12 +352,12 @@ export default function CashFlowCalculator({ onClose }: { onClose: () => void })
           <div className="w-full p-4 sm:p-6 max-w-6xl mx-auto">
             {/* Tabs at the top */}
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1 h-auto p-1 mb-6">
-                <TabsTrigger value="setup" className="text-xs sm:text-sm px-2 py-2">Setup</TabsTrigger>
-                <TabsTrigger value="inflows" className="text-xs sm:text-sm px-2 py-2">Inflows</TabsTrigger>
-                <TabsTrigger value="outflows" className="text-xs sm:text-sm px-2 py-2">Outflows</TabsTrigger>
-                <TabsTrigger value="notes" className="text-xs sm:text-sm px-2 py-2">Notes</TabsTrigger>
-                <TabsTrigger value="history" className="text-xs sm:text-sm px-2 py-2">History</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 mb-6">
+                <TabsTrigger value="setup">Setup</TabsTrigger>
+                <TabsTrigger value="inflows">Inflows</TabsTrigger>
+                <TabsTrigger value="outflows">Outflows</TabsTrigger>
+                <TabsTrigger value="notes">Notes</TabsTrigger>
+                <TabsTrigger value="history">History</TabsTrigger>
               </TabsList>
 
               <TabsContent value="setup" className="space-y-4">

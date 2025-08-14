@@ -343,10 +343,10 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-3 h-auto p-1">
-                <TabsTrigger value="income" className="text-sm px-3 py-2">Income</TabsTrigger>
-                <TabsTrigger value="expenses" className="text-sm px-3 py-2">Expenses</TabsTrigger>
-                <TabsTrigger value="history" className="text-sm px-3 py-2">History</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-3 mb-6">
+                <TabsTrigger value="income">Income</TabsTrigger>
+                <TabsTrigger value="expenses">Expenses</TabsTrigger>
+                <TabsTrigger value="history">History</TabsTrigger>
               </TabsList>
 
               <TabsContent value="income" className="space-y-4">

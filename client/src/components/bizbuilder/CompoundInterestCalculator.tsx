@@ -290,8 +290,15 @@ export default function CompoundInterestCalculator({ onClose }: { onClose: () =>
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
           <div className="min-w-0 flex-1 pr-4">
-            <h2 className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-white">Compound Interest Calculator</h2>
-            <p className="text-sm text-slate-600 dark:text-slate-300 hidden sm:block">Calculate long-term investment growth with compound interest and regular contributions</p>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center flex-shrink-0">
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 dark:text-orange-400" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">Compound Interest Calculator</h2>
+                <p className="text-sm text-slate-600 dark:text-slate-300 hidden sm:block">Calculate long-term investment growth with compound interest and regular contributions</p>
+              </div>
+            </div>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose} className="flex-shrink-0">
             <X className="w-4 h-4" />

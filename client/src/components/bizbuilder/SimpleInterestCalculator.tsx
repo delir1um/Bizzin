@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 // Dialog components removed - using custom modal instead
-import { X, Download, Calculator, DollarSign, Calendar, TrendingUp, Target } from "lucide-react"
+import { X, Download, Calculator, DollarSign, Calendar, TrendingUp, Target, Percent } from "lucide-react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from "recharts"
 
 
@@ -238,8 +238,15 @@ export default function SimpleInterestCalculator({ onClose }: { onClose: () => v
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
           <div className="min-w-0 flex-1 pr-4">
-            <h2 className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-white">Simple Interest Calculator</h2>
-            <p className="text-sm text-slate-600 dark:text-slate-300 hidden sm:block">Calculate simple interest with monthly compounding for loans and investments</p>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Percent className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 dark:text-orange-400" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">Simple Interest Calculator</h2>
+                <p className="text-sm text-slate-600 dark:text-slate-300 hidden sm:block">Calculate simple interest with monthly compounding for loans and investments</p>
+              </div>
+            </div>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose} className="flex-shrink-0">
             <X className="w-4 h-4" />
