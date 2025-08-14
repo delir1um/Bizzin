@@ -6,7 +6,17 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { X, CreditCard, Download, Calendar, DollarSign, Percent, Clock, Calculator, History } from "lucide-react"
-// Dialog components removed - using custom modal instead
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle, 
+  AlertDialogTrigger 
+} from "@/components/ui/alert-dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts"
 import { CalculationHistory } from "@/components/calculators/CalculationHistory"
@@ -90,6 +100,50 @@ export default function LoanAmortisationCalculator({ onClose }: LoanAmortisation
   const loadCalculation = (data: Record<string, any>) => {
     setLoanData(data as LoanData)
     setActiveTab('setup')
+  }
+
+  // Export to CSV function
+  const exportToCSV = () => {
+    if (calculations.schedule.length === 0) return
+
+    const headers = [
+      'Payment #',
+      'Payment Date', 
+      'Beginning Balance',
+      'Scheduled Payment',
+      'Extra Payment',
+      'Total Payment',
+      'Principal',
+      'Interest',
+      'Ending Balance',
+      'Cumulative Interest'
+    ]
+
+    const csvContent = [
+      headers.join(','),
+      ...calculations.schedule.map(payment => [
+        payment.paymentNumber,
+        payment.paymentDate.toLocaleDateString(),
+        payment.beginningBalance.toFixed(2),
+        payment.scheduledPayment.toFixed(2),
+        payment.extraPayment.toFixed(2),
+        payment.totalPayment.toFixed(2),
+        payment.principal.toFixed(2),
+        payment.interest.toFixed(2),
+        payment.endingBalance.toFixed(2),
+        payment.cumulativeInterest.toFixed(2)
+      ].join(','))
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `loan-amortisation-${loanData.lenderName || 'schedule'}-${new Date().toISOString().split('T')[0]}.csv`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    window.URL.revokeObjectURL(url)
   }
 
   // Calculations
@@ -484,7 +538,7 @@ export default function LoanAmortisationCalculator({ onClose }: LoanAmortisation
                 <Button 
                   onClick={exportToCSV} 
                   className="bg-orange-600 hover:bg-orange-700" 
-                  disabled={loanData.loanAmount <= 0 || loanData.annualInterestRate <= 0 || loanData.loanTermMonths <= 0}
+                  disabled={parseFloat(loanData.loanAmount) <= 0 || parseFloat(loanData.annualInterestRate) <= 0 || parseFloat(loanData.loanTermYears) <= 0}
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Export to CSV
