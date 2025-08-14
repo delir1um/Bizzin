@@ -244,38 +244,7 @@ export default function LoanAmortisationCalculator({ onClose }: LoanAmortisation
     }
   }, [loanData.loanAmount, loanData.annualInterestRate, loanData.loanTermYears, loanData.paymentsPerYear, loanData.startDate, loanData.extraPayment])
 
-  const handleExportCSV = () => {
-    const headers = [
-      'Payment #', 'Payment Date', 'Beginning Balance', 'Scheduled Payment', 
-      'Extra Payment', 'Total Payment', 'Principal', 'Interest', 'Ending Balance', 'Cumulative Interest'
-    ]
-    
-    const csvContent = [
-      headers.join(','),
-      ...calculations.schedule.map(entry => [
-        entry.paymentNumber,
-        entry.paymentDate.toLocaleDateString(),
-        entry.beginningBalance.toFixed(2),
-        entry.scheduledPayment.toFixed(2),
-        entry.extraPayment.toFixed(2),
-        entry.totalPayment.toFixed(2),
-        entry.principal.toFixed(2),
-        entry.interest.toFixed(2),
-        entry.endingBalance.toFixed(2),
-        entry.cumulativeInterest.toFixed(2)
-      ].join(','))
-    ].join('\n')
 
-    const blob = new Blob([csvContent], { type: 'text/csv' })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `loan-amortisation-schedule-${new Date().toISOString().split('T')[0]}.csv`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    window.URL.revokeObjectURL(url)
-  }
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-2 sm:p-4 overflow-y-auto">
@@ -390,16 +359,7 @@ export default function LoanAmortisationCalculator({ onClose }: LoanAmortisation
                   </CardContent>
                 </Card>
 
-                {/* Action Buttons */}
-                <div className="flex gap-2">
-                  <Button onClick={resetTool} variant="outline" size="sm" className="flex-1">
-                    Reset
-                  </Button>
-                  <Button onClick={handleExportCSV} variant="outline" size="sm" className="flex-1">
-                    <Download className="w-4 h-4 mr-2" />
-                    Export CSV
-                  </Button>
-                </div>
+
               </TabsContent>
 
               <TabsContent value="notes" className="space-y-4">

@@ -352,12 +352,12 @@ export default function CashFlowCalculator({ onClose }: { onClose: () => void })
           <div className="w-full p-4 sm:p-6 max-w-6xl mx-auto">
             {/* Tabs at the top */}
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 mb-6">
-                <TabsTrigger value="setup">Setup</TabsTrigger>
-                <TabsTrigger value="inflows">Inflows</TabsTrigger>
-                <TabsTrigger value="outflows">Outflows</TabsTrigger>
-                <TabsTrigger value="notes">Notes</TabsTrigger>
-                <TabsTrigger value="history">History</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-5 mb-6">
+                <TabsTrigger value="setup" className="text-xs sm:text-sm">Setup</TabsTrigger>
+                <TabsTrigger value="inflows" className="text-xs sm:text-sm">Inflows</TabsTrigger>
+                <TabsTrigger value="outflows" className="text-xs sm:text-sm">Outflows</TabsTrigger>
+                <TabsTrigger value="notes" className="text-xs sm:text-sm">Notes</TabsTrigger>
+                <TabsTrigger value="history" className="text-xs sm:text-sm">History</TabsTrigger>
               </TabsList>
 
               <TabsContent value="setup" className="space-y-4">
