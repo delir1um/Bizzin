@@ -447,10 +447,11 @@ export function EditGoalModal({ open, onOpenChange, goal, onGoalCompleted }: Edi
                         <Button
                           variant="outline"
                           className={cn(
-                            "pl-3 text-left font-normal",
+                            "w-full justify-start text-left font-normal",
                             !field.value && "text-muted-foreground"
                           )}
                           disabled={updateGoalMutation.isPending}
+                          onClick={() => setCalendarOpen(!calendarOpen)}
                         >
                           {field.value ? (
                             format(field.value, "PPP")
@@ -461,7 +462,12 @@ export function EditGoalModal({ open, onOpenChange, goal, onGoalCompleted }: Edi
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 z-50" align="start">
+                    <PopoverContent 
+                      className="w-auto p-0 z-[60]" 
+                      align="start" 
+                      sideOffset={4}
+                      style={{ zIndex: 60 }}
+                    >
                       <Calendar
                         mode="single"
                         selected={field.value}
@@ -477,6 +483,7 @@ export function EditGoalModal({ open, onOpenChange, goal, onGoalCompleted }: Edi
                           return date < today
                         }}
                         initialFocus
+                        className="rounded-md border"
                       />
                     </PopoverContent>
                   </Popover>
