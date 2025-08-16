@@ -131,6 +131,7 @@ export type Goal = {
   completion_date?: string;
   reflection?: string; // renamed from notes for consistency
   progress: number; // 0-100
+  progress_type: 'manual' | 'milestone'; // How progress is tracked
   created_at: string;
   updated_at: string;
 };
@@ -220,6 +221,21 @@ export const updateMilestoneSchema = z.object({
   due_date: z.string().optional(),
   weight: z.number().positive().optional(),
   order_index: z.number().int().min(0).optional(),
+});
+
+export const updateGoalSchema = z.object({
+  title: z.string().min(1).optional(),
+  description: z.string().optional(),
+  category: z.string().optional(),
+  priority: z.enum(['low', 'medium', 'high']).optional(),
+  target_value: z.number().positive().optional(),
+  current_value: z.number().min(0).optional(),
+  unit: z.string().optional(),
+  deadline: z.string().optional(), // ISO date string
+  status: z.enum(['not_started', 'in_progress', 'completed', 'on_hold', 'at_risk']).optional(),
+  progress: z.number().min(0).max(100).optional(),
+  progress_type: z.enum(['manual', 'milestone']).optional(),
+  reflection: z.string().optional(),
 });
 
 export const createDocumentSchema = z.object({

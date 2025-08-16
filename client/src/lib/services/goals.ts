@@ -77,16 +77,13 @@ export class GoalsService {
       }
 
       // Remove fields that might not exist in database yet and ensure user_id
-      const { reflection, progress_type, current_value, target_value, unit, ...goalData } = goal
+      const { reflection, current_value, target_value, unit, ...goalData } = goal
       
-      // Store progress_type info for future use but don't send to database if column doesn't exist
-      console.log('Goal creation requested with progress_type:', progress_type)
+      console.log('Goal creation requested with progress_type:', goal.progress_type)
       
-      // For now, we'll store this information in the description to track milestone-based goals
-      if (progress_type === 'milestone') {
-        goalData.description = goalData.description ? 
-          `${goalData.description} [MILESTONE_BASED]` : 
-          '[MILESTONE_BASED]'
+      // Include progress_type in goal data - no longer using description marker
+      if (goal.progress_type) {
+        goalData.progress_type = goal.progress_type
       }
       
       // Auto-calculate progress if current_value and target_value were provided
@@ -137,6 +134,8 @@ export class GoalsService {
 
       // Remove fields that shouldn't be updated or might cause errors
       const { updated_at, created_at, id, user_id, reflection, ...updateData } = updates
+      
+      console.log('Cleaned update data:', updateData)
 
       // Auto-calculate progress if current_value and target_value are provided
       if (updateData.current_value !== undefined && updateData.target_value !== undefined) {
@@ -190,6 +189,69 @@ export class GoalsService {
         throw err
       }
       throw new Error('An unexpected error occurred while updating the goal.')
+    }
+  }
+
+  /**
+   * Convert goal between manual and milestone tracking types
+   */
+  static async convertGoalType(goalId: string, newProgressType: 'manual' | 'milestone'): Promise<Goal> {
+    try {
+      // Get current goal with milestones
+      const currentGoal = await this.getGoalWithMilestones(goalId)
+      if (!currentGoal) {
+        throw new Error('Goal not found')
+      }
+
+      // If already the target type, return as-is
+      if (currentGoal.progress_type === newProgressType) {
+        return currentGoal
+      }
+
+      let updatedGoal: Goal
+
+      if (newProgressType === 'milestone') {
+        // Converting from manual to milestone-based
+        console.log('Converting goal to milestone tracking')
+        updatedGoal = await this.updateGoal(goalId, {
+          progress_type: 'milestone'
+        })
+      } else {
+        // Converting from milestone to manual
+        console.log('Converting goal to manual tracking, deleting milestones')
+        
+        // Calculate current progress from milestones if they exist
+        let currentProgress = currentGoal.progress
+        if (currentGoal.milestones && currentGoal.milestones.length > 0) {
+          const { MilestonesService } = await import('./milestones')
+          const useWeighted = currentGoal.milestones.some(m => m.weight > 1)
+          currentProgress = MilestonesService.calculateMilestoneProgress(currentGoal.milestones, useWeighted)
+        }
+
+        // Delete all milestones first
+        if (currentGoal.milestones && currentGoal.milestones.length > 0) {
+          const { error: deleteError } = await supabase
+            .from('milestones')
+            .delete()
+            .eq('goal_id', goalId)
+
+          if (deleteError) {
+            console.error('Error deleting milestones:', deleteError)
+            throw new Error('Failed to delete existing milestones')
+          }
+        }
+
+        // Update goal to manual tracking with preserved progress
+        updatedGoal = await this.updateGoal(goalId, {
+          progress_type: 'manual',
+          progress: currentProgress
+        })
+      }
+
+      return updatedGoal
+    } catch (err) {
+      console.error('Error converting goal type:', err)
+      throw err
     }
   }
 
