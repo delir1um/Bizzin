@@ -7,6 +7,7 @@ export type Goal = {
   progress_type: 'manual' | 'milestone' // Determines how progress is calculated
   target_value?: number
   current_value?: number
+  unit?: string // Unit for target/current values (e.g., books, lbs, $)
   deadline: string // ISO date string
   created_at?: string
   updated_at?: string

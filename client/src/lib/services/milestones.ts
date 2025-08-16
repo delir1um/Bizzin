@@ -30,9 +30,9 @@ export class MilestonesService {
         .order('order_index', { ascending: true })
 
       if (error) {
-        // If table doesn't exist, return empty array for Phase 1
+        // Handle case where milestones table doesn't exist yet
         if (error.code === '42P01') {
-          console.log('Milestones table not created yet, returning empty array for Phase 1')
+          console.warn('Milestones table not created yet. Please run database setup.')
           return []
         }
         console.error('Error fetching milestones:', error)
@@ -41,8 +41,8 @@ export class MilestonesService {
 
       return data || []
     } catch (err) {
-      console.log('Database error, returning empty milestones for Phase 1:', err)
-      return []
+      console.error('Error in getMilestonesByGoalId:', err)
+      throw err
     }
   }
 
@@ -66,15 +66,9 @@ export class MilestonesService {
         .single()
 
       if (error) {
-        // If table doesn't exist, return a mock milestone for Phase 1 testing
+        // Handle case where milestones table doesn't exist yet
         if (error.code === '42P01') {
-          console.log('Milestones table not created yet, returning mock milestone for Phase 1')
-          return {
-            id: `temp-${Date.now()}`,
-            ...milestoneWithUserId,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }
+          throw new Error('Milestones table not set up. Please run the database setup from MILESTONE_SYSTEM_SETUP.md')
         }
         console.error('Error creating milestone:', error)
         throw new Error(`Failed to create milestone: ${error.message}`)
@@ -97,22 +91,6 @@ export class MilestonesService {
         .single()
 
       if (error) {
-        // If table doesn't exist or temp ID, simulate update for Phase 1
-        if (error.code === '42P01' || id.startsWith('temp-')) {
-          console.log('Milestones table not created yet or temp milestone, simulating update for Phase 1')
-          return {
-            id,
-            goal_id: 'temp',
-            title: updates.title || 'Updated milestone',
-            status: updates.status || 'todo',
-            weight: updates.weight || 1,
-            order_index: updates.order_index || 0,
-            user_id: 'temp',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            ...updates
-          }
-        }
         console.error('Error updating milestone:', error)
         throw new Error(`Failed to update milestone: ${error.message}`)
       }
@@ -132,11 +110,6 @@ export class MilestonesService {
         .eq('id', id)
 
       if (error) {
-        // If table doesn't exist or temp ID, simulate delete for Phase 1
-        if (error.code === '42P01' || id.startsWith('temp-')) {
-          console.log('Milestones table not created yet or temp milestone, simulating delete for Phase 1')
-          return
-        }
         console.error('Error deleting milestone:', error)
         throw new Error(`Failed to delete milestone: ${error.message}`)
       }

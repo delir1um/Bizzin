@@ -29,7 +29,9 @@ const addGoalSchema = z.object({
   category: z.string().max(50, "Category must be less than 50 characters").optional(),
   target_value: z.number().positive().optional(),
   current_value: z.number().min(0).optional(),
+  unit: z.string().optional(),
   progress: z.number().min(0).max(100).optional(),
+  progress_type: z.enum(['manual', 'milestone']).optional(),
 })
 
 type AddGoalFormData = z.infer<typeof addGoalSchema>
@@ -56,7 +58,9 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
       category: "",
       target_value: undefined,
       current_value: undefined,
+      unit: "",
       progress: 0,
+      progress_type: 'manual',
     },
   })
 
@@ -70,7 +74,7 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
         category: data.category || "",
         deadline: data.deadline.toISOString(),
         progress: data.progress || 0,
-        progress_type: 'manual' as const, // Default to manual for Phase 1
+        progress_type: data.progress_type || 'manual',
         user_id: user.id,
       }
       

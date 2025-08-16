@@ -35,19 +35,10 @@ export class GoalsService {
       data.progress_type = 'manual'
     }
 
-    // For Phase 1, we'll simulate milestone functionality by checking if goal description contains "milestone:" keyword
-    const shouldLoadMilestones = data.progress_type === 'milestone' || 
-      (data.description && data.description.toLowerCase().includes('milestone:'))
-
-    if (shouldLoadMilestones) {
-      try {
-        const milestones = await MilestonesService.getMilestonesByGoalId(goalId)
-        data.milestones = milestones
-        data.progress_type = 'milestone' // Ensure this is set for UI
-      } catch (err) {
-        console.log('Milestones table not available yet, continuing without milestones')
-        data.milestones = []
-      }
+    // Fetch milestones if the goal uses milestone-based progress
+    if (data.progress_type === 'milestone') {
+      const milestones = await MilestonesService.getMilestonesByGoalId(goalId)
+      data.milestones = milestones
     }
 
     return data
@@ -59,8 +50,11 @@ export class GoalsService {
       const goal = await this.getGoalWithMilestones(goalId)
       
       if (goal.progress_type === 'milestone' && goal.milestones) {
-        // Calculate progress from milestones
-        const newProgress = MilestonesService.calculateMilestoneProgress(goal.milestones, false)
+        // Check if any milestone has a weight > 1 to determine if weighted calculation should be used
+        const useWeighted = goal.milestones.some(m => m.weight > 1)
+        
+        // Calculate progress from milestones using appropriate method
+        const newProgress = MilestonesService.calculateMilestoneProgress(goal.milestones, useWeighted)
         
         // Update goal progress
         const updatedGoal = await this.updateGoal(goalId, { progress: newProgress })

@@ -1,535 +1,338 @@
-import { useEffect, useState } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { useState, useEffect } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { z } from "zod"
-import { format } from "date-fns"
-import { Calendar as CalendarIcon, Loader2 } from "lucide-react"
-
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Slider } from "@/components/ui/slider"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
-import { cn } from "@/lib/utils"
 import { GoalsService } from "@/lib/services/goals"
-import { useAuth } from "@/hooks/AuthProvider"
 import { Goal } from "@/types/goals"
+import { format } from "date-fns"
+import { Calendar as CalendarIcon, Target, Sliders } from "lucide-react"
 
-const editGoalSchema = z.object({
-  title: z.string().min(1, "Title is required").max(100, "Title must be less than 100 characters"),
-  description: z.string().max(500, "Description must be less than 500 characters").optional(),
-  deadline: z.date({
-    required_error: "Deadline is required",
-  }),
-  status: z.enum(['not_started', 'in_progress', 'completed', 'on_hold', 'at_risk']),
-  priority: z.enum(['low', 'medium', 'high']),
-  category: z.string().max(50, "Category must be less than 50 characters").optional(),
-  target_value: z.number().positive().optional(),
-  current_value: z.number().min(0).optional(),
-  progress: z.number().min(0).max(100),
-  reflection: z.string().max(1000, "Reflection must be less than 1000 characters").optional(),
-})
-
-type EditGoalFormData = z.infer<typeof editGoalSchema>
-
-type EditGoalModalProps = {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+interface EditGoalModalProps {
   goal: Goal | null
-  onGoalCompleted?: (goal: Goal) => void
+  isOpen: boolean
+  onClose: () => void
 }
 
-const statusOptions = [
-  { value: 'not_started', label: 'Not Started' },
-  { value: 'in_progress', label: 'In Progress' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'on_hold', label: 'On Hold' },
-  { value: 'at_risk', label: 'At Risk' },
-]
-
-const priorityOptions = [
-  { value: 'low', label: 'Low Priority' },
-  { value: 'medium', label: 'Medium Priority' },
-  { value: 'high', label: 'High Priority' },
-]
-
-export function EditGoalModal({ open, onOpenChange, goal, onGoalCompleted }: EditGoalModalProps) {
-  const { user } = useAuth()
+export function EditGoalModal({ goal, isOpen, onClose }: EditGoalModalProps) {
   const { toast } = useToast()
   const queryClient = useQueryClient()
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
-
-  const form = useForm<EditGoalFormData>({
-    resolver: zodResolver(editGoalSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      deadline: new Date(),
-      status: 'not_started',
-      priority: 'medium',
-      category: "",
-      target_value: undefined,
-      current_value: undefined,
-      progress: 0,
-      reflection: "",
-    },
+  
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    category: '',
+    priority: 'medium' as 'low' | 'medium' | 'high',
+    progress_type: 'manual' as 'manual' | 'milestone',
+    status: 'not_started' as 'not_started' | 'in_progress' | 'completed' | 'on_hold' | 'at_risk',
+    target_value: '',
+    current_value: '',
+    unit: '',
+    deadline: '',
+    progress: 0,
+    reflection: ''
   })
 
-  // Reset form when goal changes
   useEffect(() => {
     if (goal) {
-      form.reset({
-        title: goal.title,
-        description: goal.description || "",
-        deadline: new Date(goal.deadline),
-        status: goal.status,
-        priority: goal.priority,
-        category: goal.category || "",
-        target_value: goal.target_value,
-        current_value: goal.current_value,
-        progress: goal.progress,
-        reflection: goal.reflection || "",
+      setFormData({
+        title: goal.title || '',
+        description: goal.description || '',
+        category: goal.category || '',
+        priority: goal.priority || 'medium',
+        progress_type: goal.progress_type || 'manual',
+        status: goal.status || 'not_started',
+        target_value: goal.target_value?.toString() || '',
+        current_value: goal.current_value?.toString() || '',
+        unit: goal.unit || '',
+        deadline: goal.deadline ? format(new Date(goal.deadline), 'yyyy-MM-dd') : '',
+        progress: goal.progress || 0,
+        reflection: goal.reflection || ''
       })
     }
-  }, [goal, form])
+  }, [goal])
 
   const updateGoalMutation = useMutation({
-    mutationFn: async (data: EditGoalFormData) => {
-      if (!user || !goal) throw new Error("User not authenticated or goal not found")
-      
-      const updates: Partial<Goal> = {
-        title: data.title,
-        description: data.description || "",
-        status: data.status,
-        target_value: data.target_value,
-        current_value: data.current_value,
-        progress: data.progress,
-        deadline: data.deadline.toISOString(),
-        priority: data.priority,
-        category: data.category || "",
-        reflection: data.reflection || "",
-      }
-      
-      return GoalsService.updateGoal(goal.id, updates)
+    mutationFn: async (updates: Partial<Goal>) => {
+      if (!goal) throw new Error("No goal to update")
+      return await GoalsService.updateGoal(goal.id, updates)
     },
-    onSuccess: (updatedGoal, variables) => {
-      // Check if goal was just completed
-      const wasCompleted = goal?.status !== 'completed' && variables.status === 'completed'
-      
-      // Invalidate and refetch goals
-      queryClient.invalidateQueries({ queryKey: ['goals', user?.id] })
-      // queryClient.invalidateQueries({ queryKey: ['usage-status'] }) // Disabled to prevent HEAD requests
-      
-      // Show success message
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['goals'] })
       toast({
-        title: "Goal updated successfully",
-        description: wasCompleted ? "Congratulations on completing your goal! 🎉" : "Your goal has been updated.",
+        title: "Success",
+        description: "Goal updated successfully!",
       })
-      
-      // Trigger celebration if goal was completed
-      if (wasCompleted && onGoalCompleted) {
-        onGoalCompleted(updatedGoal)
-      }
-      
-      // Close modal
-      onOpenChange(false)
+      onClose()
     },
-    onError: (error: Error) => {
+    onError: (error) => {
+      console.error('Error updating goal:', error)
       toast({
-        title: "Failed to update goal",
-        description: error.message || "Please try again later.",
+        title: "Error",
+        description: "Failed to update goal. Please try again.",
         variant: "destructive",
       })
     },
   })
 
-  const onSubmit = (data: EditGoalFormData) => {
-    updateGoalMutation.mutate(data)
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    const updates: Partial<Goal> = {
+      title: formData.title,
+      description: formData.description,
+      category: formData.category || undefined,
+      priority: formData.priority,
+      progress_type: formData.progress_type,
+      status: formData.status,
+      target_value: formData.target_value ? parseFloat(formData.target_value) : undefined,
+      current_value: formData.current_value ? parseFloat(formData.current_value) : undefined,
+      unit: formData.unit || undefined,
+      deadline: new Date(formData.deadline).toISOString(),
+      reflection: formData.reflection || undefined
+    }
+
+    // Only update progress for manual progress type
+    if (formData.progress_type === 'manual') {
+      updates.progress = formData.progress
+    }
+
+    updateGoalMutation.mutate(updates)
   }
 
-  const handleClose = () => {
-    if (!updateGoalMutation.isPending) {
-      onOpenChange(false)
+  const handleProgressTypeChange = (value: 'manual' | 'milestone') => {
+    setFormData(prev => ({ ...prev, progress_type: value }))
+    
+    // Show information about progress type change
+    if (value === 'milestone') {
+      toast({
+        title: "Milestone Mode Enabled",
+        description: "Progress will be calculated automatically based on milestone completion.",
+      })
     }
   }
 
-  // Watch status changes to auto-update progress
-  const watchedStatus = form.watch("status")
-  useEffect(() => {
-    if (watchedStatus === 'completed') {
-      form.setValue("progress", 100)
-    } else if (watchedStatus === 'not_started') {
-      form.setValue("progress", 0)
+  const getProgressText = () => {
+    if (formData.target_value && formData.current_value) {
+      return `${formData.current_value} / ${formData.target_value} ${formData.unit || ''}`
     }
-  }, [watchedStatus, form])
+    return `${formData.progress}%`
+  }
 
   if (!goal) return null
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="w-[95vw] max-w-[525px] max-h-[90vh] overflow-y-auto">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Goal</DialogTitle>
-          <DialogDescription>
-            Update your goal details and track your progress.
-          </DialogDescription>
+          <DialogTitle className="flex items-center gap-2">
+            <Target className="w-5 h-5 text-orange-600" />
+            Edit Goal
+          </DialogTitle>
         </DialogHeader>
         
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title *</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="e.g., Reach 10,000 monthly users"
-                      {...field}
-                      disabled={updateGoalMutation.isPending}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Describe your goal in detail..."
-                      className="min-h-[80px] resize-none"
-                      {...field}
-                      disabled={updateGoalMutation.isPending}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <Select
-                      onValueChange={(value) => {
-                        field.onChange(value)
-                        // Don't auto-update progress when manually setting special statuses
-                        if (value !== 'on_hold' && value !== 'at_risk') {
-                          // For not_started, in_progress, completed - sync with progress slider
-                          const targetValue = form.getValues('target_value') || 0
-                          if (targetValue > 0) {
-                            if (value === 'not_started') {
-                              form.setValue('current_value', 0)
-                              form.setValue('progress', 0)
-                            } else if (value === 'completed') {
-                              form.setValue('current_value', targetValue)
-                              form.setValue('progress', 100)
-                            }
-                          }
-                        }
-                      }}
-                      value={field.value}
-                      disabled={updateGoalMutation.isPending}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {statusOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-slate-600 dark:text-slate-400">
-                      Auto-updates based on progress. Use "On Hold" or "At Risk" for special cases.
-                    </p>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="priority"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Priority</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                      disabled={updateGoalMutation.isPending}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select priority" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {priorityOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Basic Information */}
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="title">Goal Title</Label>
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="Enter your goal title..."
+                required
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="category"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="e.g., Growth, Product, Marketing"
-                      {...field}
-                      disabled={updateGoalMutation.isPending}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="space-y-4 border rounded-lg p-4 bg-slate-50 dark:bg-slate-900">
-              <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">Progress Tracking</h4>
-              <p className="text-xs text-slate-600 dark:text-slate-400">Set your target value, then drag the slider to track your progress.</p>
-              
-              {/* Target Value Input */}
-              <FormField
-                control={form.control}
-                name="target_value"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Target Value</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number"
-                        placeholder="e.g., 100 books, 10000 sales"
-                        {...field}
-                        onChange={(e) => {
-                          const newTarget = e.target.value ? Number(e.target.value) : undefined
-                          field.onChange(newTarget)
-                          
-                          // Reset current value if target changes to avoid invalid states
-                          const currentValue = form.getValues('current_value') || 0
-                          if (newTarget && currentValue > newTarget) {
-                            form.setValue('current_value', newTarget)
-                            form.setValue('progress', 100)
-                            form.setValue('status', 'completed')
-                          } else if (newTarget && currentValue > 0) {
-                            // Recalculate progress
-                            const newProgress = Math.round((currentValue / newTarget) * 100)
-                            form.setValue('progress', newProgress)
-                            form.setValue('status', newProgress === 100 ? 'completed' : newProgress === 0 ? 'not_started' : 'in_progress')
-                          }
-                        }}
-                        disabled={updateGoalMutation.isPending}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Describe your goal in detail..."
+                rows={3}
               />
+            </div>
 
-              {/* Smart Progress Slider */}
-              {form.watch('target_value') && form.watch('target_value')! > 0 && (
-                <div className="space-y-3">
-                  <FormField
-                    control={form.control}
-                    name="current_value"
-                    render={({ field }) => {
-                      const targetValue = form.watch('target_value') || 0
-                      const currentValue = field.value || 0
-                      const progress = targetValue > 0 ? Math.round((currentValue / targetValue) * 100) : 0
-                      
-                      return (
-                        <FormItem>
-                          <FormLabel className="flex items-center justify-between">
-                            <span>Current Progress</span>
-                            <span className="text-sm font-normal text-slate-600">
-                              {currentValue} of {targetValue} ({progress}%)
-                            </span>
-                          </FormLabel>
-                          <FormControl>
-                            <div className="px-2">
-                              <Slider
-                                value={[currentValue]}
-                                onValueChange={(values) => {
-                                  const newValue = values[0]
-                                  field.onChange(newValue)
-                                  
-                                  // Auto-calculate progress and status
-                                  const newProgress = targetValue > 0 ? Math.round((newValue / targetValue) * 100) : 0
-                                  form.setValue('progress', newProgress)
-                                  
-                                  // Auto-update status based on progress
-                                  if (newProgress === 100) {
-                                    form.setValue('status', 'completed')
-                                  } else if (newProgress === 0) {
-                                    form.setValue('status', 'not_started')
-                                  } else {
-                                    // Only set to in_progress if not already completed or on_hold/at_risk
-                                    const currentStatus = form.getValues('status')
-                                    if (currentStatus === 'not_started' || currentStatus === 'completed') {
-                                      form.setValue('status', 'in_progress')
-                                    }
-                                  }
-                                }}
-                                max={targetValue}
-                                min={0}
-                                step={1}
-                                disabled={updateGoalMutation.isPending}
-                                className="w-full"
-                              />
-                            </div>
-                          </FormControl>
-                          <div className="flex justify-between text-xs text-slate-500">
-                            <span>0</span>
-                            <span>{targetValue}</span>
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )
-                    }}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="category">Category</Label>
+                <Input
+                  id="category"
+                  value={formData.category}
+                  onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                  placeholder="e.g., Business, Health, Learning"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="priority">Priority</Label>
+                <Select value={formData.priority} onValueChange={(value: 'low' | 'medium' | 'high') => 
+                  setFormData(prev => ({ ...prev, priority: value }))
+                }>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Low Priority</SelectItem>
+                    <SelectItem value="medium">Medium Priority</SelectItem>
+                    <SelectItem value="high">High Priority</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          {/* Progress Type Selection - Phase 2 Feature */}
+          <div className="space-y-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+            <Label className="flex items-center gap-2">
+              <Sliders className="w-4 h-4" />
+              Progress Tracking Method
+            </Label>
+            <RadioGroup
+              value={formData.progress_type}
+              onValueChange={handleProgressTypeChange}
+              className="flex gap-6"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="manual" id="manual" />
+                <Label htmlFor="manual" className="cursor-pointer">
+                  Manual Progress
+                  <span className="block text-xs text-slate-600 dark:text-slate-400">
+                    Set progress manually using slider or values
+                  </span>
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="milestone" id="milestone" />
+                <Label htmlFor="milestone" className="cursor-pointer">
+                  Milestone-based
+                  <span className="block text-xs text-slate-600 dark:text-slate-400">
+                    Progress calculated from milestone completion
+                  </span>
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          {/* Progress Configuration */}
+          {formData.progress_type === 'manual' && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="current_value">Current Value</Label>
+                  <Input
+                    id="current_value"
+                    type="number"
+                    value={formData.current_value}
+                    onChange={(e) => setFormData(prev => ({ ...prev, current_value: e.target.value }))}
+                    placeholder="0"
                   />
                 </div>
-              )}
-
-              {/* Progress Summary */}
-              {form.watch('target_value') && form.watch('target_value')! > 0 && (
-                <div className="bg-white dark:bg-slate-800 rounded-lg p-3 border">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-600 dark:text-slate-400">Progress Summary:</span>
-                    <span className="font-medium text-slate-900 dark:text-slate-100">
-                      {form.watch('current_value') || 0} of {form.watch('target_value')} ({form.watch('progress') || 0}%)
-                    </span>
-                  </div>
+                <div>
+                  <Label htmlFor="target_value">Target Value</Label>
+                  <Input
+                    id="target_value"
+                    type="number"
+                    value={formData.target_value}
+                    onChange={(e) => setFormData(prev => ({ ...prev, target_value: e.target.value }))}
+                    placeholder="100"
+                  />
                 </div>
-              )}
+                <div>
+                  <Label htmlFor="unit">Unit</Label>
+                  <Input
+                    id="unit"
+                    value={formData.unit}
+                    onChange={(e) => setFormData(prev => ({ ...prev, unit: e.target.value }))}
+                    placeholder="e.g., books, lbs, $"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="flex items-center justify-between">
+                  <span>Progress: {getProgressText()}</span>
+                  <Badge variant="outline">{formData.progress}%</Badge>
+                </Label>
+                <Slider
+                  value={[formData.progress]}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, progress: value[0] }))}
+                  max={100}
+                  step={1}
+                  className="mt-2"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Status and Deadline */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="status">Status</Label>
+              <Select value={formData.status} onValueChange={(value: any) => 
+                setFormData(prev => ({ ...prev, status: value }))
+              }>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="not_started">Not Started</SelectItem>
+                  <SelectItem value="in_progress">In Progress</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="on_hold">On Hold</SelectItem>
+                  <SelectItem value="at_risk">At Risk</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <FormField
-              control={form.control}
-              name="deadline"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Deadline *</FormLabel>
-                  <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          className={`w-full pl-3 text-left font-normal ${
-                            !field.value && "text-muted-foreground"
-                          }`}
-                          disabled={updateGoalMutation.isPending}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a deadline date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent 
-                      className="w-auto p-0 z-50" 
-                      align="start"
-                      onInteractOutside={(e) => {
-                        e.preventDefault()
-                      }}
-                    >
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={(date) => {
-                          if (date) {
-                            field.onChange(date)
-                            setIsCalendarOpen(false)
-                          }
-                        }}
-                        disabled={(date) =>
-                          date < new Date(new Date().setHours(0, 0, 0, 0))
-                        }
-                        initialFocus
-                        className="pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div>
+              <Label htmlFor="deadline">Deadline</Label>
+              <Input
+                id="deadline"
+                type="date"
+                value={formData.deadline}
+                onChange={(e) => setFormData(prev => ({ ...prev, deadline: e.target.value }))}
+                required
+              />
+            </div>
+          </div>
 
-            <FormField
-              control={form.control}
-              name="reflection"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Reflection & Learnings</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Share your thoughts, challenges, wins, and key learnings from working on this goal..."
-                      className="min-h-[100px] resize-none"
-                      {...field}
-                      disabled={updateGoalMutation.isPending}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+          {/* Reflection */}
+          <div>
+            <Label htmlFor="reflection">Reflection & Notes</Label>
+            <Textarea
+              id="reflection"
+              value={formData.reflection}
+              onChange={(e) => setFormData(prev => ({ ...prev, reflection: e.target.value }))}
+              placeholder="Add your thoughts, learnings, or notes about this goal..."
+              rows={3}
             />
+          </div>
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleClose}
-                disabled={updateGoalMutation.isPending}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={updateGoalMutation.isPending}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                {updateGoalMutation.isPending && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                Update Goal
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3 pt-4">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={updateGoalMutation.isPending}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              {updateGoalMutation.isPending ? "Updating..." : "Update Goal"}
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   )

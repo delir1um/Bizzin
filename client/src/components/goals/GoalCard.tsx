@@ -291,8 +291,7 @@ export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid' }: GoalCard
         </div>
         
         {/* Milestone section - Phase 1 Implementation */}
-        {((goal.progress_type === 'milestone') || 
-          (goal.description && goal.description.toLowerCase().includes('milestone:'))) && (
+        {goal.progress_type === 'milestone' && (
           <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
             <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
               <CollapsibleTrigger asChild>

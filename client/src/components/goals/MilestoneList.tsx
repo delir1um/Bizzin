@@ -9,18 +9,20 @@ import { useToast } from "@/hooks/use-toast"
 import { MilestonesService } from "@/lib/services/milestones"
 import { GoalsService } from "@/lib/services/goals"
 import { Milestone } from "@/types/goals"
-import { Plus, GripVertical, Calendar, Trash2 } from "lucide-react"
+import { Plus, GripVertical, Calendar, Trash2, Weight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
+import { MilestoneTemplates } from "./MilestoneTemplates"
 
 interface MilestoneListProps {
   goalId: string
   milestones: Milestone[]
   isLoading?: boolean
+  useWeightedProgress?: boolean
   onMilestoneUpdate?: () => void
 }
 
-export function MilestoneList({ goalId, milestones, isLoading, onMilestoneUpdate }: MilestoneListProps) {
+export function MilestoneList({ goalId, milestones, isLoading, useWeightedProgress = false, onMilestoneUpdate }: MilestoneListProps) {
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const [newMilestoneTitle, setNewMilestoneTitle] = useState("")
@@ -29,7 +31,7 @@ export function MilestoneList({ goalId, milestones, isLoading, onMilestoneUpdate
   const updateMilestoneMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: { status?: 'todo' | 'in_progress' | 'done' } }) => {
       const updatedMilestone = await MilestonesService.updateMilestone(id, updates)
-      // Update goal progress after milestone status change
+      // Update goal progress after milestone status change using weighted calculation if enabled
       await GoalsService.updateGoalProgress(goalId)
       return updatedMilestone
     },
@@ -179,12 +181,20 @@ export function MilestoneList({ goalId, milestones, isLoading, onMilestoneUpdate
               </div>
             )}
 
-            <Badge 
-              variant={milestone.status === 'done' ? 'default' : milestone.status === 'in_progress' ? 'secondary' : 'outline'}
-              className="text-xs"
-            >
-              {milestone.status === 'done' ? 'Done' : milestone.status === 'in_progress' ? 'In Progress' : 'To Do'}
-            </Badge>
+            <div className="flex items-center gap-2">
+              {useWeightedProgress && (
+                <Badge variant="outline" className="text-xs flex items-center gap-1">
+                  <Weight className="w-3 h-3" />
+                  {milestone.weight}x
+                </Badge>
+              )}
+              <Badge 
+                variant={milestone.status === 'done' ? 'default' : milestone.status === 'in_progress' ? 'secondary' : 'outline'}
+                className="text-xs"
+              >
+                {milestone.status === 'done' ? 'Done' : milestone.status === 'in_progress' ? 'In Progress' : 'To Do'}
+              </Badge>
+            </div>
 
             <Button
               variant="ghost"
@@ -199,7 +209,26 @@ export function MilestoneList({ goalId, milestones, isLoading, onMilestoneUpdate
         ))}
       </AnimatePresence>
 
-      {/* Add new milestone */}
+      {/* Template Selection and Add New Milestone */}
+      <div className="flex gap-2 mt-4">
+        <MilestoneTemplates 
+          goalId={goalId} 
+          onTemplateApplied={() => {
+            onMilestoneUpdate?.()
+          }} 
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsAddingMilestone(true)}
+          className="flex-1 text-slate-600 dark:text-slate-400 border-dashed"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Add milestone
+        </Button>
+      </div>
+
+      {/* Add new milestone form */}
       {isAddingMilestone ? (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
@@ -234,17 +263,7 @@ export function MilestoneList({ goalId, milestones, isLoading, onMilestoneUpdate
             Cancel
           </Button>
         </motion.div>
-      ) : (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsAddingMilestone(true)}
-          className="w-full text-slate-600 dark:text-slate-400 border-dashed"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add milestone
-        </Button>
-      )}
+      ) : null}
 
       {milestones.length === 0 && !isAddingMilestone && (
         <div className="text-center py-4 text-slate-500 dark:text-slate-400">

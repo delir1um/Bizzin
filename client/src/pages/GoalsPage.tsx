@@ -9,8 +9,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
-import { Target, Plus, TrendingUp, CheckCircle, Clock, AlertCircle, Filter, Search, SortAsc, SortDesc, Grid3X3, List, ChevronLeft, ChevronRight } from "lucide-react"
+import { Target, Plus, TrendingUp, CheckCircle, Clock, AlertCircle, Filter, Search, SortAsc, SortDesc, Grid3X3, List, ChevronLeft, ChevronRight, BarChart3 } from "lucide-react"
 import { GoalCard } from "@/components/goals/GoalCard"
+import { MilestoneAnalytics } from "@/components/goals/MilestoneAnalytics"
 import { AddGoalModal } from "@/components/goals/AddGoalModal"
 import { EditGoalModal } from "@/components/goals/EditGoalModal"
 import { GoalsService } from "@/lib/services/goals"
@@ -38,6 +39,7 @@ export function GoalsPage() {
   const [celebrationTrigger, setCelebrationTrigger] = useState(false)
   const [celebrationToastVisible, setCelebrationToastVisible] = useState(false)
   const [completedGoal, setCompletedGoal] = useState<Goal | null>(null)
+  const [showAnalytics, setShowAnalytics] = useState(false)
   
   // Enhanced UI controls for scalability
   const [searchQuery, setSearchQuery] = useState("")
@@ -529,6 +531,15 @@ export function GoalsPage() {
             >
               {viewMode === 'grid' ? <List className="w-4 h-4" /> : <Grid3X3 className="w-4 h-4" />}
             </Button>
+            
+            <Button
+              variant={showAnalytics ? "default" : "outline"}
+              size="icon"
+              onClick={() => setShowAnalytics(!showAnalytics)}
+              className="shrink-0"
+            >
+              <BarChart3 className="w-4 h-4" />
+            </Button>
           </div>
         </div>
 
@@ -774,6 +785,18 @@ export function GoalsPage() {
             </div>
           )}
         </>
+      )}
+
+      {/* Milestone Analytics Dashboard - Phase 3 Feature */}
+      {showAnalytics && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mb-8"
+        >
+          <MilestoneAnalytics goals={goals} />
+        </motion.div>
       )}
 
       {/* Add Goal Modal */}
