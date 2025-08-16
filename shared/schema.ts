@@ -195,13 +195,31 @@ export const createGoalSchema = z.object({
   priority: z.enum(['low', 'medium', 'high']),
   target_value: z.number().positive().optional(),
   current_value: z.number().min(0).optional(),
-  target_value: z.number().positive().optional(),
-  current_value: z.number().min(0).optional(),
   unit: z.string().optional(),
   deadline: z.string(), // ISO date string
   status: z.enum(['not_started', 'in_progress', 'completed', 'on_hold', 'at_risk']),
   progress: z.number().min(0).max(100),
+  progress_type: z.enum(['manual', 'milestone']).default('manual'),
   reflection: z.string().optional(),
+});
+
+export const createMilestoneSchema = z.object({
+  goal_id: z.string().uuid(),
+  title: z.string().min(1).max(200),
+  description: z.string().optional(),
+  status: z.enum(['todo', 'in_progress', 'done']).default('todo'),
+  due_date: z.string().optional(), // ISO date string
+  weight: z.number().positive().default(1),
+  order_index: z.number().int().min(0),
+});
+
+export const updateMilestoneSchema = z.object({
+  title: z.string().min(1).max(200).optional(),
+  description: z.string().optional(),
+  status: z.enum(['todo', 'in_progress', 'done']).optional(),
+  due_date: z.string().optional(),
+  weight: z.number().positive().optional(),
+  order_index: z.number().int().min(0).optional(),
 });
 
 export const createDocumentSchema = z.object({
@@ -270,6 +288,8 @@ export const updateCalculatorHistorySchema = z.object({
 export type CreateUserProfile = z.infer<typeof createUserProfileSchema>;
 export type CreateJournalEntry = z.infer<typeof createJournalEntrySchema>;
 export type CreateGoal = z.infer<typeof createGoalSchema>;
+export type CreateMilestone = z.infer<typeof createMilestoneSchema>;
+export type UpdateMilestone = z.infer<typeof updateMilestoneSchema>;
 export type CreateDocument = z.infer<typeof createDocumentSchema>;
 export type CreateEarlySignup = z.infer<typeof createEarlySignupSchema>;
 export type UpdatePlatformSettings = z.infer<typeof updatePlatformSettingsSchema>;

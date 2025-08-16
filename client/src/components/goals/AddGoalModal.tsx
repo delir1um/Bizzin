@@ -70,6 +70,7 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
         category: data.category || "",
         deadline: data.deadline.toISOString(),
         progress: data.progress || 0,
+        progress_type: 'manual' as const, // Default to manual for Phase 1
         user_id: user.id,
       }
       

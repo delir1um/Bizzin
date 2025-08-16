@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
-import { Goal, GoalStats } from '@/types/goals'
+import { Goal, GoalStats, Milestone } from '@/types/goals'
+import { MilestonesService } from './milestones'
 
 export class GoalsService {
   static async getUserGoals(userId: string): Promise<Goal[]> {
@@ -15,6 +16,62 @@ export class GoalsService {
     }
 
     return data || []
+  }
+
+  static async getGoalWithMilestones(goalId: string): Promise<Goal> {
+    const { data, error } = await supabase
+      .from('goals')
+      .select('*')
+      .eq('id', goalId)
+      .single()
+
+    if (error) {
+      console.error('Error fetching goal:', error)
+      throw new Error(`Failed to fetch goal: ${error.message}`)
+    }
+
+    // Default progress_type to 'manual' if column doesn't exist yet
+    if (!data.progress_type) {
+      data.progress_type = 'manual'
+    }
+
+    // For Phase 1, we'll simulate milestone functionality by checking if goal description contains "milestone:" keyword
+    const shouldLoadMilestones = data.progress_type === 'milestone' || 
+      (data.description && data.description.toLowerCase().includes('milestone:'))
+
+    if (shouldLoadMilestones) {
+      try {
+        const milestones = await MilestonesService.getMilestonesByGoalId(goalId)
+        data.milestones = milestones
+        data.progress_type = 'milestone' // Ensure this is set for UI
+      } catch (err) {
+        console.log('Milestones table not available yet, continuing without milestones')
+        data.milestones = []
+      }
+    }
+
+    return data
+  }
+
+  static async updateGoalProgress(goalId: string): Promise<Goal> {
+    try {
+      // Get the goal and its milestones
+      const goal = await this.getGoalWithMilestones(goalId)
+      
+      if (goal.progress_type === 'milestone' && goal.milestones) {
+        // Calculate progress from milestones
+        const newProgress = MilestonesService.calculateMilestoneProgress(goal.milestones, false)
+        
+        // Update goal progress
+        const updatedGoal = await this.updateGoal(goalId, { progress: newProgress })
+        return updatedGoal
+      }
+      
+      return goal
+    } catch (err) {
+      console.error('Error updating goal progress:', err)
+      throw err
+    }
   }
 
   static async createGoal(goal: Omit<Goal, 'id' | 'created_at' | 'updated_at'>): Promise<Goal> {

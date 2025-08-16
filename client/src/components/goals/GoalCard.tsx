@@ -1,10 +1,14 @@
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Calendar, TrendingUp, Clock, CheckCircle, AlertTriangle, Play, Edit3, Trash2 } from "lucide-react"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { Calendar, TrendingUp, Clock, CheckCircle, AlertTriangle, Play, Edit3, Trash2, ChevronDown, ChevronRight, Target } from "lucide-react"
 import { Goal } from "@/types/goals"
 import { format, differenceInDays, isAfter } from "date-fns"
+import { MilestoneList } from "./MilestoneList"
+import { cn } from "@/lib/utils"
 
 type GoalCardProps = {
   goal: Goal
@@ -53,6 +57,7 @@ const priorityColors = {
 }
 
 export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid' }: GoalCardProps) {
+  const [isExpanded, setIsExpanded] = useState(false)
   const statusInfo = statusConfig[goal.status]
   const StatusIcon = statusInfo.icon
   const deadline = new Date(goal.deadline)
@@ -285,6 +290,43 @@ export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid' }: GoalCard
           </div>
         </div>
         
+        {/* Milestone section - Phase 1 Implementation */}
+        {((goal.progress_type === 'milestone') || 
+          (goal.description && goal.description.toLowerCase().includes('milestone:'))) && (
+          <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+            <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
+              <CollapsibleTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-between p-0 h-auto text-left"
+                >
+                  <div className="flex items-center">
+                    <Target className="w-4 h-4 mr-2 text-orange-600" />
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Milestones ({goal.milestones?.filter(m => m.status === 'done').length || 0}/{goal.milestones?.length || 0})
+                    </span>
+                  </div>
+                  {isExpanded ? (
+                    <ChevronDown className="h-4 w-4 text-slate-500" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 text-slate-500" />
+                  )}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-3">
+                <MilestoneList
+                  goalId={goal.id}
+                  milestones={goal.milestones || []}
+                  onMilestoneUpdate={() => {
+                    // Refresh goal data after milestone updates
+                    // This will be handled by React Query invalidation
+                  }}
+                />
+              </CollapsibleContent>
+            </Collapsible>
+          </div>
+        )}
+
         {/* Reflection section */}
         {goal.reflection && (
           <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
