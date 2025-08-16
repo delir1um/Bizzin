@@ -95,33 +95,33 @@ export function BaseStatsCard({ zones, theme, className, onClick }: BaseStatsCar
         `bg-gradient-to-br from-${theme.primary}-50/50 to-transparent dark:from-${theme.primary}-900/10`
       )} />
 
-      {/* Header Zone - Fixed Height, Centered */}
-      <CardHeader className="flex flex-col items-center justify-center space-y-2 pb-3 min-h-[80px] relative z-10">
-        <div className="flex items-center gap-2">
+      {/* Header Zone - Truly Centered */}
+      <CardHeader className="flex flex-col items-center justify-center space-y-3 pb-4 min-h-[90px] relative z-10 text-center">
+        <div className="flex items-center justify-center gap-2">
           <div className={cn(
             "p-2 rounded-lg",
             `bg-${theme.primary}-500/10 text-${theme.primary}-600 dark:text-${theme.primary}-400`
           )}>
             {zones.header.icon}
           </div>
-          <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+          <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-base">
             {zones.header.title}
           </h3>
         </div>
         {zones.header.badge && (
-          <div className="flex justify-center">
+          <div className="flex justify-center items-center">
             {zones.header.badge}
           </div>
         )}
       </CardHeader>
 
-      <CardContent className="flex flex-col h-full space-y-4 relative z-10 pb-6">
-        {/* Metric Zone - Fixed Height, Aligned Baseline */}
-        <div className="text-center min-h-[100px] flex flex-col justify-center">
-          <div className="text-4xl font-bold text-gray-900 dark:text-gray-100 leading-none mb-2">
+      <CardContent className="flex flex-col h-full space-y-5 relative z-10 pb-6 px-6">
+        {/* Metric Zone - Perfect Baseline Alignment */}
+        <div className="text-center min-h-[110px] flex flex-col justify-center">
+          <div className="text-5xl font-bold text-gray-900 dark:text-gray-100 leading-none mb-3 h-[60px] flex items-center justify-center">
             {zones.metric.primary}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+          <div className="text-sm text-gray-600 dark:text-gray-400 mb-2 font-medium">
             {zones.metric.label}
           </div>
           <div className={cn(
@@ -133,16 +133,16 @@ export function BaseStatsCard({ zones, theme, className, onClick }: BaseStatsCar
           </div>
         </div>
 
-        {/* Progress Zone - Optional, Fixed Height */}
+        {/* Progress Zone - Consistent Height */}
         {zones.progress && (
-          <div className="space-y-2 min-h-[56px]">
+          <div className="space-y-2 min-h-[60px] px-2">
             <div className={cn(
-              "w-full rounded-full h-3",
+              "w-full rounded-full h-2",
               `bg-${theme.primary}-200/50 dark:bg-${theme.primary}-800/30`
             )}>
               <div 
                 className={cn(
-                  "h-3 rounded-full transition-all duration-500",
+                  "h-2 rounded-full transition-all duration-500",
                   `bg-gradient-to-r from-${theme.primary}-400 to-${theme.primary}-500`
                 )}
                 style={{ width: `${Math.min(100, zones.progress.value)}%` }}
@@ -155,48 +155,48 @@ export function BaseStatsCard({ zones, theme, className, onClick }: BaseStatsCar
           </div>
         )}
 
-        {/* Stats Zone - Fixed Height, Consistent Spacing */}
-        <div className="grid grid-cols-2 gap-4 text-sm min-h-[56px] px-2">
+        {/* Stats Zone - Perfect Alignment */}
+        <div className="grid grid-cols-2 gap-6 text-sm min-h-[60px] items-center">
           <div className="text-center">
-            <div className="font-semibold text-gray-900 dark:text-gray-100 text-base">
+            <div className="font-bold text-gray-900 dark:text-gray-100 text-lg mb-1">
               {zones.stats.left.value}
             </div>
-            <div className="text-gray-600 dark:text-gray-400 text-xs leading-tight">
+            <div className="text-gray-600 dark:text-gray-400 text-xs font-medium">
               {zones.stats.left.label}
             </div>
           </div>
           <div className="text-center">
-            <div className="font-semibold text-gray-900 dark:text-gray-100 text-base">
+            <div className="font-bold text-gray-900 dark:text-gray-100 text-lg mb-1">
               {zones.stats.right.value}
             </div>
-            <div className="text-gray-600 dark:text-gray-400 text-xs leading-tight">
+            <div className="text-gray-600 dark:text-gray-400 text-xs font-medium">
               {zones.stats.right.label}
             </div>
           </div>
         </div>
 
-        {/* Insight Zone - Optional, Fixed Height */}
+        {/* Insight Zone - Consistent Styling */}
         {zones.insight && (
           <div className={cn(
-            "text-xs text-center p-3 rounded-lg border min-h-[48px] flex items-center justify-center mx-2",
+            "text-xs text-center p-3 rounded-lg border min-h-[50px] flex items-center justify-center",
             getInsightColors(zones.insight.variant)
           )}>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               {zones.insight.icon}
-              <span className="leading-tight">{zones.insight.text}</span>
+              <span className="leading-tight font-medium">{zones.insight.text}</span>
             </div>
           </div>
         )}
 
-        {/* Spacer - Flexible to push button to bottom */}
-        <div className="flex-1 min-h-[16px]"></div>
+        {/* Spacer - Push button to exact bottom */}
+        <div className="flex-1 min-h-[20px]"></div>
 
-        {/* Action Zone - Fixed Height, Perfect Alignment */}
-        <div className="min-h-[40px] px-2">
+        {/* Action Zone - Perfect Bottom Alignment */}
+        <div className="min-h-[44px]">
           <Button 
             onClick={zones.action.onClick}
             className={cn(
-              "w-full text-white transition-all duration-200 h-9",
+              "w-full text-white transition-all duration-200 h-10 font-medium",
               getActionButtonColors(zones.action.variant)
             )}
           >
