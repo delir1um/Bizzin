@@ -1,0 +1,41 @@
+You're absolutely right about the UI/UX issues. Looking at the dashboard cards, I can see several inconsistencies and layout problems that need addressing:
+
+Current Issues Identified:
+Layout Inconsistencies:
+Header positioning varies - Some have icons/titles left-aligned, others centered
+Info bubbles scattered - "18 this week", "1 milestone", "9 docs" are positioned inconsistently
+Primary numbers misaligned - The big numbers (27%, 25%, 0, 9) aren't on the same visual baseline
+Button placement inconsistent - Some buttons have different spacing from content above
+Spacing & Typography Issues:
+Text cramping - Info text feels squeezed in corners
+Inconsistent hierarchy - Visual weight distribution varies between cards
+Alignment problems - Elements don't line up horizontally across cards
+Breathing room - Some cards feel cluttered while others have too much empty space
+Proposed Standardized Layout Structure:
+Unified Card Architecture:
+┌─────────────────────────┐
+│     [ICON] Title        │ ← Top center, consistent height
+│                         │
+│   Info Bubble(s)        │ ← Secondary metrics, aligned
+│                         │
+│       BIG NUMBER        │ ← Primary metric, same baseline
+│    Descriptive Text     │ ← Context label
+│                         │
+│    Status Indicator     │ ← Progress/status info
+│                         │
+│    [  ACTION BUTTON  ]  │ ← Bottom aligned, same height
+└─────────────────────────┘
+Design System Standards:
+Header zone: Fixed height with centered icon + title
+Info zone: Consistent spacing for secondary metrics
+Primary zone: Large number with standardized typography
+Status zone: Progress bars/indicators at same level
+Action zone: Buttons aligned to bottom with consistent sizing
+Typography Hierarchy:
+Title: Same font size/weight across all cards
+Big numbers: Identical sizing and baseline alignment
+Descriptive text: Consistent secondary text styling
+Info bubbles: Unified badge styling and positioning
+This would create a much cleaner, more professional dashboard where users can quickly scan across cards and compare information without visual friction.
+
+Ready to implement this comprehensive dashboard card standardization?
