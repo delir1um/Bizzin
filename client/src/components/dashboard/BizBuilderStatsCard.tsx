@@ -2,6 +2,7 @@ import React from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/AuthProvider'
 import { BaseStatsCard, CardZones } from './BaseStatsCard'
+import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Calculator, BarChart3, TrendingUp, FileSpreadsheet, Target, Briefcase } from 'lucide-react'
 import { CalculatorHistoryService } from '@/lib/services/calculatorHistory'
@@ -114,10 +115,18 @@ export function BizBuilderStatsCard({ onNavigate }: BizBuilderStatsCardProps) {
     `Last used: ${getCalculatorDisplayName(mostRecentCalc.calculator_type)} ${getTimeSince(mostRecentCalc.created_at)}` :
     '6 powerful calculators to plan and grow your business'
 
+  // Create header badge for consistency
+  const headerBadge = (
+    <Badge variant="secondary" className="bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300 text-xs">
+      {toolsUsed} tools used
+    </Badge>
+  )
+
   const zones: CardZones = {
     header: {
       icon: <Calculator className="w-4 h-4" />,
-      title: 'BizBuilder Tools'
+      title: 'BizBuilder Tools',
+      badge: headerBadge
     },
     metric: {
       primary: totalCalculations,
@@ -126,12 +135,12 @@ export function BizBuilderStatsCard({ onNavigate }: BizBuilderStatsCardProps) {
       statusColor: statusInfo.color,
       statusIcon: hasCalculations ? <Briefcase className="h-3 w-3" /> : <Target className="h-3 w-3" />
     },
-    progress: hasCalculations ? {
-      value: completionPercentage,
+    progress: {
+      value: hasCalculations ? completionPercentage : 0,
       color: 'orange',
       subtitle: '6 tools complete',
       showPercentage: false
-    } : undefined,
+    },
     stats: {
       left: {
         value: toolsUsed,

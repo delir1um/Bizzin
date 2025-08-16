@@ -79,7 +79,7 @@ export function BaseStatsCard({ zones, theme, className, onClick }: BaseStatsCar
     <Card 
       className={cn(
         "relative overflow-hidden group transition-all duration-300 ease-out h-full flex flex-col",
-        "hover:shadow-lg hover:-translate-y-1 min-h-[420px]",
+        "hover:shadow-lg hover:-translate-y-1 min-h-[480px]",
         `bg-gradient-to-br ${theme.gradient} ${theme.darkGradient}`,
         theme.border,
         theme.hover,
@@ -133,27 +133,31 @@ export function BaseStatsCard({ zones, theme, className, onClick }: BaseStatsCar
           </div>
         </div>
 
-        {/* Progress Zone - Consistent Height */}
-        {zones.progress && (
-          <div className="space-y-2 min-h-[60px] px-2">
-            <div className={cn(
-              "w-full rounded-full h-2",
-              `bg-${theme.primary}-200/50 dark:bg-${theme.primary}-800/30`
-            )}>
-              <div 
-                className={cn(
-                  "h-2 rounded-full transition-all duration-500",
-                  `bg-gradient-to-r from-${theme.primary}-400 to-${theme.primary}-500`
-                )}
-                style={{ width: `${Math.min(100, zones.progress.value)}%` }}
-              />
-            </div>
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-              <span>{zones.progress.showPercentage ? '0%' : '0'}</span>
-              <span>{zones.progress.subtitle}</span>
-            </div>
-          </div>
-        )}
+        {/* Progress Zone - Always Present */}
+        <div className="space-y-2 min-h-[60px] px-2">
+          {zones.progress ? (
+            <>
+              <div className={cn(
+                "w-full rounded-full h-2",
+                `bg-${theme.primary}-200/50 dark:bg-${theme.primary}-800/30`
+              )}>
+                <div 
+                  className={cn(
+                    "h-2 rounded-full transition-all duration-500",
+                    `bg-gradient-to-r from-${theme.primary}-400 to-${theme.primary}-500`
+                  )}
+                  style={{ width: `${Math.min(100, zones.progress.value)}%` }}
+                />
+              </div>
+              <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                <span>{zones.progress.showPercentage ? '0%' : '0'}</span>
+                <span>{zones.progress.subtitle}</span>
+              </div>
+            </>
+          ) : (
+            <div className="h-[24px]"></div>
+          )}
+        </div>
 
         {/* Stats Zone - Perfect Alignment */}
         <div className="grid grid-cols-2 gap-6 text-sm min-h-[60px] items-center">
@@ -175,18 +179,22 @@ export function BaseStatsCard({ zones, theme, className, onClick }: BaseStatsCar
           </div>
         </div>
 
-        {/* Insight Zone - Consistent Styling */}
-        {zones.insight && (
-          <div className={cn(
-            "text-xs text-center p-3 rounded-lg border min-h-[50px] flex items-center justify-center",
-            getInsightColors(zones.insight.variant)
-          )}>
-            <div className="flex items-center gap-1.5">
-              {zones.insight.icon}
-              <span className="leading-tight font-medium">{zones.insight.text}</span>
+        {/* Insight Zone - Always Present */}
+        <div className="min-h-[50px] flex items-center justify-center">
+          {zones.insight ? (
+            <div className={cn(
+              "text-xs text-center p-3 rounded-lg border w-full flex items-center justify-center",
+              getInsightColors(zones.insight.variant)
+            )}>
+              <div className="flex items-center gap-1.5">
+                {zones.insight.icon}
+                <span className="leading-tight font-medium">{zones.insight.text}</span>
+              </div>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="h-[50px]"></div>
+          )}
+        </div>
 
         {/* Spacer - Ensures all buttons align at exact same height */}
         <div className="flex-1"></div>
@@ -196,12 +204,14 @@ export function BaseStatsCard({ zones, theme, className, onClick }: BaseStatsCar
           <Button 
             onClick={zones.action.onClick}
             className={cn(
-              "w-full text-white transition-all duration-200 h-[40px] font-medium flex items-center justify-center gap-2",
+              "w-full text-white transition-all duration-200 h-[40px] font-medium",
               getActionButtonColors(zones.action.variant)
             )}
           >
-            {zones.action.icon}
-            <span>{zones.action.text}</span>
+            <div className="flex items-center justify-center gap-2 w-full">
+              {zones.action.icon}
+              <span className="truncate">{zones.action.text}</span>
+            </div>
           </Button>
         </div>
       </CardContent>
