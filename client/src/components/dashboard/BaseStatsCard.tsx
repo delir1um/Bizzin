@@ -79,7 +79,7 @@ export function BaseStatsCard({ zones, theme, className, onClick }: BaseStatsCar
     <Card 
       className={cn(
         "relative overflow-hidden group transition-all duration-300 ease-out h-full flex flex-col",
-        "hover:shadow-lg hover:-translate-y-1 min-h-[480px]",
+        "hover:shadow-lg hover:-translate-y-1 min-h-[520px]",
         `bg-gradient-to-br ${theme.gradient} ${theme.darkGradient}`,
         theme.border,
         theme.hover,
@@ -137,14 +137,15 @@ export function BaseStatsCard({ zones, theme, className, onClick }: BaseStatsCar
         <div className="space-y-2 min-h-[60px] px-2">
           {zones.progress ? (
             <>
-              <div className={cn(
-                "w-full rounded-full h-2",
-                `bg-${theme.primary}-200/50 dark:bg-${theme.primary}-800/30`
-              )}>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div 
                   className={cn(
                     "h-2 rounded-full transition-all duration-500",
-                    `bg-gradient-to-r from-${theme.primary}-400 to-${theme.primary}-500`
+                    theme.primary === 'orange' ? 'bg-gradient-to-r from-orange-400 to-orange-500' :
+                    theme.primary === 'blue' ? 'bg-gradient-to-r from-blue-400 to-blue-500' :
+                    theme.primary === 'purple' ? 'bg-gradient-to-r from-purple-400 to-purple-500' :
+                    theme.primary === 'emerald' ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' :
+                    'bg-gradient-to-r from-gray-400 to-gray-500'
                   )}
                   style={{ width: `${Math.min(100, zones.progress.value)}%` }}
                 />
@@ -180,7 +181,7 @@ export function BaseStatsCard({ zones, theme, className, onClick }: BaseStatsCar
         </div>
 
         {/* Insight Zone - Always Present */}
-        <div className="min-h-[50px] flex items-center justify-center">
+        <div className="min-h-[60px] flex items-center justify-center">
           {zones.insight ? (
             <div className={cn(
               "text-xs text-center p-3 rounded-lg border w-full flex items-center justify-center",
@@ -192,7 +193,7 @@ export function BaseStatsCard({ zones, theme, className, onClick }: BaseStatsCar
               </div>
             </div>
           ) : (
-            <div className="h-[50px]"></div>
+            <div className="h-[60px]"></div>
           )}
         </div>
 

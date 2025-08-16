@@ -24,17 +24,29 @@ export function BizBuilderStatsCard({ onNavigate }: BizBuilderStatsCardProps) {
     const loadingZones: CardZones = {
       header: {
         icon: <Calculator className="w-4 h-4" />,
-        title: 'BizBuilder Tools'
+        title: 'BizBuilder Tools',
+        badge: <Badge variant="secondary" className="bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300 text-xs">Loading...</Badge>
       },
       metric: {
-        primary: <Skeleton className="h-8 w-16 mx-auto" />,
+        primary: '...',
         label: 'Loading...',
         status: 'Loading',
         statusColor: 'text-gray-500'
       },
+      progress: {
+        value: 0,
+        color: 'orange',
+        subtitle: 'Loading...',
+        showPercentage: false
+      },
       stats: {
-        left: { value: <Skeleton className="h-6 w-8" />, label: 'Tools Used' },
-        right: { value: <Skeleton className="h-6 w-8" />, label: 'This Week' }
+        left: { value: '...', label: 'Tools Used' },
+        right: { value: '...', label: 'This Week' }
+      },
+      insight: {
+        icon: <BarChart3 className="h-3 w-3" />,
+        text: 'Loading calculator data...',
+        variant: 'default'
       },
       action: {
         text: 'Loading...',
