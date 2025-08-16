@@ -77,7 +77,10 @@ export class GoalsService {
       }
 
       // Remove fields that might not exist in database yet and ensure user_id
-      const { reflection, ...goalData } = goal
+      const { reflection, progress_type, ...goalData } = goal
+      
+      // Store progress_type info for future use but don't send to database if column doesn't exist
+      console.log('Goal creation requested with progress_type:', progress_type)
       
       // Auto-calculate progress if current_value and target_value are provided
       if (goalData.current_value !== undefined && goalData.target_value !== undefined) {

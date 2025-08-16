@@ -20,6 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Calendar } from "@/components/ui/calendar"
 
+// Simplified schema for current database compatibility
 const addGoalSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title must be less than 100 characters"),
   description: z.string().max(500, "Description must be less than 500 characters").optional(),
@@ -29,11 +30,8 @@ const addGoalSchema = z.object({
   status: z.enum(['not_started', 'in_progress', 'completed', 'on_hold', 'at_risk']),
   priority: z.enum(['low', 'medium', 'high']),
   category: z.string().max(50, "Category must be less than 50 characters").optional(),
-  target_value: z.number().positive().optional(),
-  current_value: z.number().min(0).optional(),
-  unit: z.string().optional(),
   progress: z.number().min(0).max(100).optional(),
-  progress_type: z.enum(['manual', 'milestone']).optional(),
+  progress_type: z.enum(['manual', 'milestone']).optional(), // For UI only, not sent to database yet
 })
 
 type AddGoalFormData = z.infer<typeof addGoalSchema>
@@ -58,9 +56,6 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
       status: 'not_started',
       priority: 'medium',
       category: "",
-      target_value: undefined,
-      current_value: undefined,
-      unit: "",
       progress: 0,
       progress_type: 'manual',
     },
@@ -278,68 +273,8 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
             {progressType === "manual" && (
               <div className="space-y-4 border rounded-lg p-4 bg-slate-50 dark:bg-slate-900">
                 <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">Progress Tracking</h4>
-                <p className="text-xs text-slate-600 dark:text-slate-400">Set target and current values for automatic progress calculation, or manually set progress percentage.</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400">Set your current progress percentage manually.</p>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="current_value"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Current Value</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number"
-                            placeholder="e.g., 3500"
-                            {...field}
-                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                            disabled={createGoalMutation.isPending}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="target_value"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Target Value</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number"
-                            placeholder="e.g., 10000"
-                            {...field}
-                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                            disabled={createGoalMutation.isPending}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="unit"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Unit (Optional)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="e.g., users, books, pounds, dollars"
-                          {...field}
-                          disabled={createGoalMutation.isPending}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
                 <FormField
                   control={form.control}
                   name="progress"
@@ -357,7 +292,7 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
                           disabled={createGoalMutation.isPending}
                         />
                       </FormControl>
-                      <p className="text-xs text-slate-600 dark:text-slate-400">Auto-calculated when current/target values are set</p>
+                      <p className="text-xs text-slate-600 dark:text-slate-400">Enter percentage from 0 to 100</p>
                       <FormMessage />
                     </FormItem>
                   )}
