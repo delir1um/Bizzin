@@ -71,9 +71,11 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
   const updateGoalMutation = useMutation({
     mutationFn: async (updates: Partial<Goal>) => {
       if (!goal) throw new Error("No goal to update")
+      goalLogger.logUpdate(goal.id, updates, goal.user_id, 'EditGoalModal: Starting goal update mutation')
       return await GoalsService.updateGoal(goal.id, updates)
     },
     onSuccess: (updatedGoal) => {
+      goalLogger.logUpdate(updatedGoal.id, updatedGoal, updatedGoal.user_id, 'EditGoalModal: Goal update mutation successful')
       queryClient.invalidateQueries({ queryKey: ['goals'] })
       toast({
         title: "Success",
@@ -82,12 +84,14 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
       
       // Check if goal was just completed
       if (updatedGoal.status === 'completed' && goal?.status !== 'completed' && onGoalCompleted) {
+        goalLogger.logUpdate(updatedGoal.id, { status_change: 'completed' }, updatedGoal.user_id, 'EditGoalModal: Goal marked as completed')
         onGoalCompleted(updatedGoal)
       }
       
       onOpenChange(false)
     },
     onError: (error) => {
+      goalLogger.logError('UPDATE_GOAL_UI', error, goal?.id, goal?.user_id, 'EditGoalModal: Goal update mutation failed')
       console.error('Error updating goal:', error)
       toast({
         title: "Error",
@@ -101,9 +105,11 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
   const convertGoalTypeMutation = useMutation({
     mutationFn: async (newProgressType: 'manual' | 'milestone') => {
       if (!goal) throw new Error("No goal to convert")
+      goalLogger.logConvert(goal.id, formData.progress_type, newProgressType, goal.user_id, { UI: 'EditGoalModal', action: 'starting_conversion' })
       return await GoalsService.convertGoalType(goal.id, newProgressType)
     },
     onSuccess: (updatedGoal) => {
+      goalLogger.logConvert(updatedGoal.id, formData.progress_type, updatedGoal.progress_type, updatedGoal.user_id, { UI: 'EditGoalModal', action: 'conversion_successful' })
       queryClient.invalidateQueries({ queryKey: ['goals'] })
       setFormData(prev => ({ ...prev, progress_type: updatedGoal.progress_type }))
       setConversionDialog({ open: false, from: 'manual', to: 'manual' })
@@ -113,6 +119,7 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
       })
     },
     onError: (error) => {
+      goalLogger.logError('CONVERT_GOAL_UI', error, goal?.id, goal?.user_id, 'EditGoalModal: Goal conversion mutation failed')
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to convert goal type",
@@ -125,7 +132,14 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
   const handleGoalTypeChange = async (newProgressType: 'manual' | 'milestone') => {
     const currentProgressType = formData.progress_type
     
+    goalLogger.logUpdate(goal?.id || '', { 
+      UI_event: 'goal_type_dropdown_change', 
+      from: currentProgressType, 
+      to: newProgressType 
+    }, goal?.user_id || '', 'EditGoalModal: Goal type dropdown changed')
+    
     if (currentProgressType === newProgressType) {
+      goalLogger.logUpdate(goal?.id || '', { UI_event: 'goal_type_no_change' }, goal?.user_id || '', 'EditGoalModal: Goal type unchanged, no action needed')
       return // No change needed
     }
 
@@ -134,6 +148,12 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
       const goalWithMilestones = await GoalsService.getGoalWithMilestones(goal!.id)
       const milestoneCount = goalWithMilestones.milestones?.length || 0
       
+      goalLogger.logUpdate(goal!.id, { 
+        UI_event: 'conversion_dialog_open', 
+        type: 'milestone_to_manual', 
+        milestones_to_delete: milestoneCount 
+      }, goal!.user_id, 'EditGoalModal: Opening milestone-to-manual conversion dialog')
+      
       setConversionDialog({
         open: true,
         from: 'milestone',
@@ -141,6 +161,10 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
         milestoneCount
       })
     } else if (newProgressType === 'milestone' && currentProgressType === 'manual') {
+      goalLogger.logUpdate(goal!.id, { 
+        UI_event: 'conversion_dialog_open', 
+        type: 'manual_to_milestone' 
+      }, goal!.user_id, 'EditGoalModal: Opening manual-to-milestone conversion dialog')
       setConversionDialog({
         open: true,
         from: 'manual',
@@ -151,7 +175,21 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
 
   // Confirm conversion
   const confirmConversion = () => {
+    goalLogger.logConvert(goal?.id || '', conversionDialog.from, conversionDialog.to, goal?.user_id || '', { 
+      UI_event: 'conversion_confirmed', 
+      milestone_count: conversionDialog.milestoneCount 
+    })
     convertGoalTypeMutation.mutate(conversionDialog.to)
+  }
+
+  // Cancel conversion
+  const cancelConversion = () => {
+    goalLogger.logUpdate(goal?.id || '', { 
+      UI_event: 'conversion_cancelled', 
+      from: conversionDialog.from, 
+      to: conversionDialog.to 
+    }, goal?.user_id || '', 'EditGoalModal: Goal type conversion cancelled')
+    setConversionDialog({ open: false, from: 'manual', to: 'manual' })
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -167,7 +205,25 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
       progress: formData.progress
     }
 
+    goalLogger.logUpdate(goal?.id || '', { 
+      UI_event: 'form_submit', 
+      updates, 
+      form_data: formData 
+    }, goal?.user_id || '', 'EditGoalModal: Form submitted')
+
     updateGoalMutation.mutate(updates)
+  }
+
+  // Track form field changes
+  const handleFormDataChange = (field: string, value: any) => {
+    goalLogger.logUpdate(goal?.id || '', { 
+      UI_event: 'form_field_change', 
+      field, 
+      old_value: (formData as any)[field], 
+      new_value: value 
+    }, goal?.user_id || '', `EditGoalModal: ${field} changed`)
+    
+    setFormData(prev => ({ ...prev, [field]: value }))
   }
 
   const handleProgressChange = (value: number[]) => {
@@ -194,7 +250,7 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
               <Input
                 id="title"
                 value={formData.title}
-                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                onChange={(e) => handleFormDataChange('title', e.target.value)}
                 placeholder="Enter your goal title..."
                 required
               />
@@ -205,7 +261,7 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={(e) => handleFormDataChange('description', e.target.value)}
                 placeholder="Describe your goal in detail..."
                 rows={3}
               />
@@ -225,7 +281,7 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
               <div>
                 <Label htmlFor="priority">Priority</Label>
                 <Select value={formData.priority} onValueChange={(value: any) => 
-                  setFormData(prev => ({ ...prev, priority: value }))
+                  handleFormDataChange('priority', value)
                 }>
                   <SelectTrigger>
                     <SelectValue />
