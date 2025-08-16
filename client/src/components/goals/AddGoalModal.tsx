@@ -62,7 +62,6 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
 
   const createGoalMutation = useMutation({
     mutationFn: async (data: AddGoalFormData) => {
-      console.log('AddGoalModal: Starting goal creation with data:', data)
       if (!user) throw new Error("User not authenticated")
       
       const goalData = {
@@ -74,13 +73,9 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
         user_id: user.id,
       }
       
-      console.log('AddGoalModal: Calling GoalsService.createGoal with:', goalData)
-      const result = await GoalsService.createGoal(goalData)
-      console.log('AddGoalModal: Goal created successfully:', result)
-      return result
+      return await GoalsService.createGoal(goalData)
     },
-    onSuccess: (createdGoal) => {
-      console.log('AddGoalModal: Goal creation successful, invalidating queries')
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['goals'] })
       toast({
         title: "Success",
@@ -90,7 +85,7 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
       onOpenChange(false)
     },
     onError: (error) => {
-      console.error('AddGoalModal: Error creating goal:', error)
+      console.error('Error creating goal:', error)
       toast({
         title: "Error",
         description: "Failed to create goal. Please try again.",

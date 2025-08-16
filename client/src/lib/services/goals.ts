@@ -3,22 +3,6 @@ import { Goal, GoalStats } from '@/types/goals'
 
 export class GoalsService {
   static async getUserGoals(userId: string): Promise<Goal[]> {
-    console.log('GoalsService: Attempting to fetch goals for user:', userId)
-    
-    // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError) {
-      console.error('Auth error:', authError)
-      throw new Error(`Authentication error: ${authError.message}`)
-    }
-    
-    if (!user) {
-      console.error('No authenticated user found')
-      throw new Error('User not authenticated')
-    }
-    
-    console.log('Authenticated user:', user.id)
-
     const { data, error } = await supabase
       .from('goals')
       .select('*')
@@ -27,11 +11,9 @@ export class GoalsService {
 
     if (error) {
       console.error('Error fetching goals:', error)
-      console.error('Error details:', { code: error.code, message: error.message, details: error.details })
       throw new Error(`Failed to fetch goals: ${error.message}`)
     }
 
-    console.log('Goals fetched successfully:', data?.length || 0, 'goals')
     return data || []
   }
 

@@ -1,0 +1,215 @@
+Awesome — here’s a crisp, developer-ready spec for your Goals → Milestones (checklist) → Progress tracking feature. I kept it practical, so they can build straight from this.
+
+Goals & Progress — Feature Spec (Bizzin)
+
+1) Core Concepts
+	•	Goal: A desired outcome with a title, due date, owner, and status.
+	•	Milestones (Checklist items): Actionable steps under a goal. Each has its own status, optional due date, effort/weight, notes, and attachments.
+	•	Progress: Auto-calculated from completed milestones (supports weighted and unweighted).
+	•	Nudges: Smart reminders when milestones/goal due dates approach or slip.
+	•	Activity Log: Timeline of changes for accountability and coaching.
+
+⸻
+
+2) UX Flows
+
+2.1 Create a Goal
+	•	Fields: Title (required), Description, Due date (required), Priority (Low/Med/High), Category/Tag(s), Visibility (Private/Team), Owner (defaults to self).
+	•	Optional toggles:
+	•	“Use template” (preloaded milestone sets)
+	•	“Enable weighted milestones”
+	•	“Auto-schedule nudges”
+
+Acceptance: Goal saved → user lands on Goal Detail with empty checklist prompt.
+
+2.2 Add Milestones (Checklist)
+	•	Inline Add Row with [ ] checkbox, title (required), optional due date, notes, effort/weight, assignee (if team), attachments.
+	•	Tap to open Milestone Drawer (edit fields + add sub-notes).
+	•	Swipe left/right (mobile) → quick actions: Edit, Duplicate, Delete.
+
+Acceptance: New item appears instantly; progress bar recalculates.
+
+2.3 Update Progress
+	•	Checking a box updates progress in real-time.
+	•	Progress bar shows X of Y (and %). If weighted: Σ(weights completed)/Σ(all weights).
+	•	Show Projected on-track/at-risk label based on trajectory (see Smart Nudges).
+
+2.4 Reminders & Nudges
+	•	In milestone row: “Remind me” quick set (Today PM, Tomorrow 9:00, Next week, Custom).
+	•	Smart nudges (see logic below) push notifications + in-app banners.
+	•	Snooze options (2h, 1 day, next Monday).
+
+2.5 Goal Completion
+	•	When all milestones complete (or user taps Mark Goal Done):
+	•	Prompt: “Celebrate + Write a quick reflection?” (stores in Journal)
+	•	Archive goal or keep visible (toggle “Show in Completed”).
+
+2.6 Lists & Filters
+	•	My Goals: Active | Due This Week | Overdue | Completed
+	•	Sort by: Due date, Priority, Progress %, Recently updated
+	•	Quick filter: With reminders today | Needs milestones | At risk
+
+⸻
+
+3) Data Model (lean + extendable)
+
+3.1 Goal
+
+{
+  "id": "goal_123",
+  "ownerUserId": "user_456",
+  "title": "Launch podcast",
+  "description": "Bizzin pilot series",
+  "status": "active",            // active | completed | archived
+  "priority": "high",            // low | medium | high
+  "dueDate": "2025-09-30",
+  "createdAt": "2025-08-16T10:12:00Z",
+  "updatedAt": "2025-08-16T10:12:00Z",
+  "isWeighted": true,
+  "progressPct": 40.0,           // denormalized for fast list views
+  "tags": ["marketing","podcast"],
+  "visibility": "private",       // private | team
+  "assigneeIds": ["user_456"],   // support shared goals
+  "reminderPolicy": "smart",     // off | manual | smart
+  "activityLogId": "al_789"
+}
+
+3.2 Milestone
+
+{
+  "id": "ms_001",
+  "goalId": "goal_123",
+  "title": "Choose podcast name",
+  "notes": "Short, memorable",
+  "status": "done",              // todo | in_progress | done
+  "dueDate": "2025-08-25",
+  "weight": 2,                   // default 1; sum used when isWeighted=true
+  "assigneeId": "user_456",
+  "attachments": [{"id":"file_abc","name":"ideas.pdf"}],
+  "reminders": [
+    {"at":"2025-08-23T09:00:00+02:00","channel":"push"}
+  ],
+  "createdAt": "2025-08-16T10:12:00Z",
+  "updatedAt": "2025-08-16T10:12:00Z",
+  "orderIndex": 1
+}
+
+3.3 Activity Log (immutable append)
+
+{
+  "id": "al_789",
+  "items": [
+    {"ts":"2025-08-16T10:12:00Z","actor":"user_456","type":"goal_created"},
+    {"ts":"2025-08-16T10:14:32Z","actor":"user_456","type":"milestone_added","milestoneId":"ms_001"}
+  ]
+}
+
+
+⸻
+
+4) Progress Calculation
+	•	Unweighted: progress = completedMilestones / totalMilestones.
+	•	Weighted: progress = sum(weight of completed) / sum(all weights).
+	•	Edge cases:
+	•	0 milestones → show “Add steps to start tracking” instead of 0%.
+	•	Hidden/archived milestones don’t count in denominator.
+	•	Partially complete (future feature): allow % at milestone level (0–100).
+
+⸻
+
+5) Smart Nudges (recommended defaults)
+
+Goal-level:
+	•	7 days before due: “You’re at X%. On track?” (based on slope over last 7 days)
+	•	2 days before due: if <80%, mark At Risk banner.
+	•	On due date + incomplete: Overdue badge + daily gentle nudge for 3 days.
+
+Milestone-level:
+	•	If milestone has its own due date: nudge 24h before and at due time.
+	•	If no due date: suggest one when goal hits T–10 days.
+
+Behavioral:
+	•	Stalled detection: no activity for 5 days + not completed → “Nudge”.
+	•	Momentum boost: when user completes 2+ milestones in 24h → “You’re on a roll—schedule the next one?”
+
+Users can switch ReminderPolicy: Off | Manual | Smart.
+
+⸻
+
+6) Permissions & Collaboration (future-friendly)
+	•	Private by default. Sharing a goal invites collaborators (view/comment or edit).
+	•	Only owner can complete/archived by default (configurable).
+	•	Activity log shows who changed what.
+
+⸻
+
+7) Integrations (nice wins)
+	•	Journal: On completion, prompt a short reflection; store under “Wins”.
+	•	Calendar (optional): Export milestone due dates as calendar events.
+	•	Notifications: Push + email (digest option: daily 08:00 “Today’s 3 milestones”).
+
+⸻
+
+8) Offline & Sync
+	•	Local cache for goals/milestones with optimistic updates.
+	•	Conflict policy: last-write-wins + activity log diff for transparency.
+
+⸻
+
+9) Analytics (for you)
+	•	Per-user: Goals created, completion rate, average time to complete, average milestones/goal.
+	•	Funnel: Created → has milestones → progress>50% → completed.
+	•	Nudge effectiveness: completion rate within 48h after nudge.
+	•	Heatmaps: completion by weekday/time to tune default reminder times.
+
+⸻
+
+10) Error States & Edge Cases
+	•	No milestones: Empty checklist state with “Add first step” template suggestions.
+	•	Past due: Red badge + “Shift due date?” quick action.
+	•	Too many reminders: throttle; surface a single consolidated banner.
+	•	Deleted milestone: Progress recalculates; log the deletion.
+
+⸻
+
+11) Templates (starter packs)
+	•	“Launch a podcast” → 6–10 milestones prefilled (research format, choose name, buy gear, record pilot, edit, artwork, host setup, publish, promo plan).
+	•	“Hire first employee”, “File VAT return”, “Monthly management pack” (SA-context friendly).
+	•	Users can save their own templates.
+
+⸻
+
+12) API Endpoints (example)
+
+POST   /goals
+GET    /goals?status=active&sort=dueDate
+GET    /goals/{goalId}
+PATCH  /goals/{goalId}
+POST   /goals/{goalId}/milestones
+PATCH  /milestones/{milestoneId}
+DELETE /milestones/{milestoneId}
+POST   /milestones/{milestoneId}/reminders
+GET    /goals/{goalId}/activity
+
+
+⸻
+
+13) Minimal Acceptance Criteria (MVP)
+	•	Create/edit/delete a goal with due date.
+	•	Add/edit/reorder/delete milestones under a goal.
+	•	Tick to complete; progress bar updates instantly.
+	•	Smart nudge toggles (Off/Manual/Smart) + at least one nudge rule live.
+	•	List view with filters (Active/Overdue/Completed).
+	•	Activity log (basic: created, updated, completed).
+
+⸻
+
+14) UI Notes (mobile-first, matches your style)
+	•	Goal Card: Title, due date pill, progress bar, “X/Y done”.
+	•	Checklist: bordered list with clear tick boxes (your preference), drag handles for reordering, subtle sub-deadline text.
+	•	Empty States: friendly copy + “use template” quick actions.
+	•	Colors: neutral progress bar with success highlight at 100%. At-risk uses an amber pill; overdue uses red pill (avoid shouting).
+
+⸻
+
+If you want, I can package this as a one-pager PDF with the mock and this spec so you can forward it to your dev as-is.
