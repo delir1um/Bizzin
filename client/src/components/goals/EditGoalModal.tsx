@@ -167,7 +167,7 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
           </div>
 
           {/* Progress Tracking - Show different UI based on goal type */}
-          {goal.progress_type === 'milestone' ? (
+          {(goal.progress_type === 'milestone' || goal.description?.includes('[MILESTONE_BASED]')) ? (
             <div className="space-y-4">
               <Label>Milestone Progress Management</Label>
               <MilestoneManager 

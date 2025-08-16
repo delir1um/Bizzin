@@ -36,7 +36,7 @@ export class GoalsService {
     }
 
     // Fetch milestones if the goal uses milestone-based progress
-    if (data.progress_type === 'milestone') {
+    if (data.progress_type === 'milestone' || data.description?.includes('[MILESTONE_BASED]')) {
       const milestones = await MilestonesService.getMilestonesByGoalId(goalId)
       data.milestones = milestones
     }
