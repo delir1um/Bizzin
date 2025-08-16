@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import * as React from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
@@ -436,48 +437,46 @@ export function EditGoalModal({ open, onOpenChange, goal, onGoalCompleted }: Edi
             <FormField
               control={form.control}
               name="deadline"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Deadline *</FormLabel>
-                  <div className="relative">
-                    {/* Hidden native date input */}
-                    <input
-                      ref={(ref) => {
-                        if (ref && showDatePicker) {
-                          ref.showPicker?.()
-                          setShowDatePicker(false)
-                        }
-                      }}
-                      type="date"
-                      value={field.value ? field.value.toISOString().split('T')[0] : ''}
-                      onChange={(e) => {
-                        if (e.target.value) {
-                          field.onChange(new Date(e.target.value))
-                        }
-                      }}
-                      min={new Date().toISOString().split('T')[0]}
-                      disabled={updateGoalMutation.isPending}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                    />
-                    
-                    {/* Custom styled date button */}
-                    <div
-                      className="relative z-0 w-full h-10 px-3 py-2 text-sm border border-input bg-background rounded-md flex items-center justify-between cursor-pointer hover:bg-accent"
-                      onClick={() => setShowDatePicker(true)}
-                    >
-                      <span className={field.value ? "text-foreground" : "text-muted-foreground"}>
-                        {field.value ? (
-                          format(field.value, "EEEE, MMMM do, yyyy")
-                        ) : (
-                          "Select deadline date"
-                        )}
-                      </span>
-                      <CalendarIcon className="h-4 w-4 opacity-50" />
+              render={({ field }) => {
+                const dateInputRef = React.useRef<HTMLInputElement>(null)
+                
+                return (
+                  <FormItem>
+                    <FormLabel>Deadline *</FormLabel>
+                    <div className="relative">
+                      {/* Hidden native date input */}
+                      <input
+                        ref={dateInputRef}
+                        type="date"
+                        value={field.value ? field.value.toISOString().split('T')[0] : ''}
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            field.onChange(new Date(e.target.value))
+                          }
+                        }}
+                        min={new Date().toISOString().split('T')[0]}
+                        disabled={updateGoalMutation.isPending}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      />
+                      
+                      {/* Custom styled date button */}
+                      <div
+                        className="relative z-0 w-full h-10 px-3 py-2 text-sm border border-input bg-background rounded-md flex items-center justify-between cursor-pointer hover:bg-accent pointer-events-none"
+                      >
+                        <span className={field.value ? "text-foreground" : "text-muted-foreground"}>
+                          {field.value ? (
+                            format(field.value, "EEEE, MMMM do, yyyy")
+                          ) : (
+                            "Select deadline date"
+                          )}
+                        </span>
+                        <CalendarIcon className="h-4 w-4 opacity-50" />
+                      </div>
                     </div>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
+                    <FormMessage />
+                  </FormItem>
+                )
+              }}
             />
 
             <FormField
