@@ -83,8 +83,9 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
     onSuccess: (goal) => {
       queryClient.invalidateQueries({ queryKey: ['goals'] })
       
-      // Check if this is a milestone-based goal
-      if (data.progress_type === 'milestone') {
+      // Check if this is a milestone-based goal by checking the data from form
+      const formData = form.getValues()
+      if (formData.progress_type === 'milestone') {
         setCreatedGoal(goal)
         setShowMilestoneSetup(true)
         // Don't close the modal yet - milestone setup will handle it
@@ -99,9 +100,10 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
     },
     onError: (error) => {
       console.error('Error creating goal:', error)
+      console.error('Error details:', JSON.stringify(error, null, 2))
       toast({
         title: "Error",
-        description: "Failed to create goal. Please try again.",
+        description: error.message || "Failed to create goal. Please try again.",
         variant: "destructive",
       })
     },

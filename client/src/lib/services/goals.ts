@@ -77,7 +77,7 @@ export class GoalsService {
       }
 
       // Remove fields that might not exist in database yet and ensure user_id
-      const { reflection, progress_type, ...goalData } = goal
+      const { reflection, progress_type, current_value, target_value, unit, ...goalData } = goal
       
       // Store progress_type info for future use but don't send to database if column doesn't exist
       console.log('Goal creation requested with progress_type:', progress_type)
@@ -89,10 +89,8 @@ export class GoalsService {
           '[MILESTONE_BASED]'
       }
       
-      // Auto-calculate progress if current_value and target_value are provided
-      if (goalData.current_value !== undefined && goalData.target_value !== undefined) {
-        const { current_value, target_value } = goalData
-        
+      // Auto-calculate progress if current_value and target_value were provided
+      if (current_value !== undefined && target_value !== undefined) {
         if (target_value > 0) {
           // Standard "higher is better" calculation
           const calculatedProgress = Math.min(100, Math.max(0, (current_value / target_value) * 100))
@@ -116,6 +114,7 @@ export class GoalsService {
 
       if (error) {
         console.error('Error creating goal:', error)
+        console.error('Goal data that failed:', goalWithUserId)
         throw new Error(`Failed to create goal: ${error.message}`)
       }
 
