@@ -173,16 +173,25 @@ export function MilestoneManager({ goal, onProgressUpdate }: MilestoneManagerPro
       return
     }
     
-    // FIX #4: Validate total weight before adding
+    // FIX #4: Validate milestone weight logic
     const currentTotal = totalWeight
     const newTotal = currentTotal + newMilestone.weight
+    
     if (newTotal > 100) {
       toast({
-        title: "Weight Limit Exceeded",
+        title: "Weight Limit Exceeded", 
         description: `Adding this milestone would make total weight ${newTotal}%. Maximum allowed is 100%.`,
         variant: "destructive",
       })
       return
+    }
+    
+    // Allow adding milestones that get us closer to 100%, but warn about the goal
+    if (newTotal < 100 && milestones.length > 0) {
+      toast({
+        title: "Milestone Added",
+        description: `Milestone added. Total weight is now ${newTotal}%. You'll need more milestones to reach 100% for accurate progress tracking.`,
+      })
     }
     
     addMilestoneMutation.mutate()
@@ -375,14 +384,30 @@ export function MilestoneManager({ goal, onProgressUpdate }: MilestoneManagerPro
             />
           </div>
           
-          {/* Weight validation */}
-          {totalWeight > 100 && (
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg dark:bg-amber-950 dark:border-amber-800">
-              <p className="text-sm text-amber-700 dark:text-amber-300">
-                Warning: Total milestone weight is {totalWeight}%. Consider adjusting weights to total 100% for accurate progress tracking.
-              </p>
+          {/* Weight validation display */}
+          <div className="p-3 rounded-lg border">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">Total Weight:</span>
+              <Badge variant={totalWeight === 100 ? "default" : totalWeight < 100 ? "secondary" : "destructive"}>
+                {totalWeight}%
+              </Badge>
             </div>
-          )}
+            {totalWeight === 100 && (
+              <p className="text-sm text-green-700 dark:text-green-300">
+                ✓ Perfect! Your milestones total 100% for accurate progress tracking.
+              </p>
+            )}
+            {totalWeight < 100 && (
+              <p className="text-sm text-amber-700 dark:text-amber-300">
+                ⚠️ Total is {totalWeight}%. You need {100 - totalWeight}% more weight to reach 100% for accurate progress.
+              </p>
+            )}
+            {totalWeight > 100 && (
+              <p className="text-sm text-red-700 dark:text-red-300">
+                ❌ Total exceeds 100%! Reduce weights by {totalWeight - 100}% to fix progress calculation.
+              </p>
+            )}
+          </div>
 
           <Button 
             onClick={handleAddMilestone} 

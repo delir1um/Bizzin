@@ -214,13 +214,23 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
         totalWeight += parseInt(el.getAttribute('data-milestone-weight') || '0')
       })
       
+      // Only require 100% if there are milestones, otherwise show warning
       if (milestoneElements.length > 0 && totalWeight !== 100) {
         toast({
-          title: "Invalid Milestone Weights",
-          description: `Milestone weights must total 100%. Current total: ${totalWeight}%`,
+          title: "Milestone Weight Warning",
+          description: `Current milestone weights total ${totalWeight}%. For accurate progress tracking, milestones should total 100%. You can still save but progress calculations may be inaccurate.`,
           variant: "destructive"
         })
-        return
+        // Don't return - allow saving but warn user
+      }
+      
+      // If no milestones exist for milestone-based goal, warn user
+      if (milestoneElements.length === 0) {
+        toast({
+          title: "No Milestones Found", 
+          description: "This is a milestone-based goal but has no milestones. Add milestones to track progress effectively.",
+        })
+        // Don't return - allow saving but warn user
       }
     }
     
