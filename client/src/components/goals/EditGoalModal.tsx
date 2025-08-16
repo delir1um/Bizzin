@@ -15,6 +15,7 @@ import { Goal } from "@/types/goals"
 import { format } from "date-fns"
 import { Target, AlertTriangle, CheckSquare } from "lucide-react"
 import { MilestoneManager } from "@/components/goals/MilestoneManager"
+import { goalLogger } from '@/lib/logger'
 
 interface EditGoalModalProps {
   goal: Goal | null
@@ -49,6 +50,8 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
 
   useEffect(() => {
     if (goal) {
+      goalLogger.logUpdate(goal.id, { action: 'OPEN_EDIT_MODAL' }, goal.user_id, 'EditGoalModal opened')
+      
       // Detect current progress type from goal data
       const progressType = goal.progress_type || 'manual'
       

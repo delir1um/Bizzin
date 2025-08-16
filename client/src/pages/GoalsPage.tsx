@@ -21,6 +21,7 @@ import { ConfettiCelebration, CelebrationToast } from "@/components/ConfettiCele
 import { StandardPageLayout, createStatCard } from "@/components/layout/StandardPageLayout"
 import { AnimatedCard, AnimatedGrid, AnimatedItem } from "@/components/ui/animated-card"
 import { motion, AnimatePresence } from "framer-motion"
+import { LoggerDebugPanel } from "@/components/debug/LoggerDebugPanel"
 
 type FilterStatus = 'all' | 'active' | 'completed' | 'at_risk'
 type FilterPriority = 'all' | 'high' | 'medium' | 'low'
@@ -842,6 +843,9 @@ export function GoalsPage() {
         goalTitle={completedGoal?.title || ""}
         onComplete={handleCelebrationComplete}
       />
+
+      {/* Debug Panel */}
+      <LoggerDebugPanel />
     </motion.div>
   )
 }
