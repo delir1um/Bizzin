@@ -1,9 +1,10 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { z } from "zod"
-import { Loader2 } from "lucide-react"
+import { format } from "date-fns"
+import { Calendar as CalendarIcon, Loader2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -12,6 +13,8 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { GoalsService } from "@/lib/services/goals"
@@ -60,6 +63,7 @@ export function EditGoalModal({ open, onOpenChange, goal, onGoalCompleted }: Edi
   const { user } = useAuth()
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
 
   const form = useForm<EditGoalFormData>({
     resolver: zodResolver(editGoalSchema),
@@ -435,22 +439,42 @@ export function EditGoalModal({ open, onOpenChange, goal, onGoalCompleted }: Edi
               control={form.control}
               name="deadline"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>Deadline *</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="date"
-                      value={field.value ? field.value.toISOString().split('T')[0] : ''}
-                      onChange={(e) => {
-                        if (e.target.value) {
-                          field.onChange(new Date(e.target.value))
+                  <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={`w-full pl-3 text-left font-normal ${
+                            !field.value && "text-muted-foreground"
+                          }`}
+                          disabled={updateGoalMutation.isPending}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Pick a deadline date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={(date) => {
+                          field.onChange(date)
+                          setIsCalendarOpen(false)
+                        }}
+                        disabled={(date) =>
+                          date < new Date(new Date().setHours(0, 0, 0, 0))
                         }
-                      }}
-                      min={new Date().toISOString().split('T')[0]}
-                      disabled={updateGoalMutation.isPending}
-                      className="w-full h-10 px-3 py-2 text-sm border border-input bg-background hover:bg-accent hover:text-accent-foreground placeholder:text-muted-foreground focus:bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-md cursor-pointer"
-                    />
-                  </FormControl>
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )}
