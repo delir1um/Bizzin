@@ -6,12 +6,11 @@ import { z } from "zod"
 import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
-
-import { Button } from "@/components/ui/button"
-import { useAuth } from "@/hooks/AuthProvider"
 import { useToast } from "@/hooks/use-toast"
 import { GoalsService } from "@/lib/services/goals"
+import { useAuth } from "@/hooks/AuthProvider"
 
+import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
@@ -104,8 +103,6 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
   const onSubmit = (data: AddGoalFormData) => {
     createGoalMutation.mutate(data)
   }
-
-  const progressType = form.watch("progress_type")
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -275,106 +272,94 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
             />
 
             {/* Progress Tracking Section - Only show for manual progress type */}
-            {progressType === "manual" && (
+            {form.watch("progress_type") === "manual" && (
               <div className="space-y-4 border rounded-lg p-4 bg-slate-50 dark:bg-slate-900">
-                <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">Progress Tracking</h4>
-                <p className="text-xs text-slate-600 dark:text-slate-400">Set target and current values for automatic progress calculation, or manually set progress percentage.</p>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="current_value"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Current Value</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number"
-                            placeholder="e.g., 3500"
-                            {...field}
-                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                            disabled={createGoalMutation.isPending}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="target_value"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Target Value</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number"
-                            placeholder="e.g., 10000"
-                            {...field}
-                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                            disabled={createGoalMutation.isPending}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
+              <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">Progress Tracking</h4>
+              <p className="text-xs text-slate-600 dark:text-slate-400">Set target and current values for automatic progress calculation, or manually set progress percentage.</p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="unit"
+                  name="current_value"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Unit (Optional)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="e.g., users, books, pounds, dollars"
-                          {...field}
-                          disabled={createGoalMutation.isPending}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="progress"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Progress (%)</FormLabel>
+                      <FormLabel>Current Value</FormLabel>
                       <FormControl>
                         <Input 
                           type="number"
-                          min="0"
-                          max="100"
-                          placeholder="0"
+                          placeholder="e.g., 3500"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : 0)}
+                          onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
                           disabled={createGoalMutation.isPending}
                         />
                       </FormControl>
-                      <p className="text-xs text-slate-600 dark:text-slate-400">Auto-calculated when current/target values are set</p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="target_value"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Target Value</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number"
+                          placeholder="e.g., 10000"
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                          disabled={createGoalMutation.isPending}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
-            )}
 
-            {/* Milestone Information - Show when milestone-based is selected */}
-            {progressType === "milestone" && (
-              <div className="space-y-4 border rounded-lg p-4 bg-orange-50 dark:bg-orange-950 border-orange-200 dark:border-orange-800">
-                <h4 className="text-sm font-medium text-orange-700 dark:text-orange-300">Milestone-based Progress</h4>
-                <p className="text-xs text-orange-600 dark:text-orange-400">
-                  After creating this goal, you'll be able to add milestones that automatically calculate progress as you complete them. 
-                  You can also use pre-built templates for common business scenarios.
-                </p>
-              </div>
-            )}
+              <FormField
+                control={form.control}
+                name="unit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Unit (Optional)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="e.g., users, books, pounds, dollars"
+                        {...field}
+                        disabled={createGoalMutation.isPending}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="progress"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Progress (%)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number"
+                        min="0"
+                        max="100"
+                        placeholder="0"
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : 0)}
+                        disabled={createGoalMutation.isPending}
+                      />
+                    </FormControl>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">Auto-calculated when current/target values are set</p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}
