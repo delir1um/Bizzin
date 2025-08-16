@@ -195,6 +195,35 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
+    // FIX #1: Validate status vs progress consistency
+    if (formData.progress > 0 && formData.status === 'not_started') {
+      toast({
+        title: "Invalid Status",
+        description: "Status cannot be 'Not Started' when progress is greater than 0%",
+        variant: "destructive"
+      })
+      return
+    }
+
+    // FIX #4: Validate milestone weights total 100% for milestone-based goals
+    if (formData.progress_type === 'milestone') {
+      // Get milestones from the MilestoneManager component
+      const milestoneElements = document.querySelectorAll('[data-milestone-weight]')
+      let totalWeight = 0
+      milestoneElements.forEach(el => {
+        totalWeight += parseInt(el.getAttribute('data-milestone-weight') || '0')
+      })
+      
+      if (milestoneElements.length > 0 && totalWeight !== 100) {
+        toast({
+          title: "Invalid Milestone Weights",
+          description: `Milestone weights must total 100%. Current total: ${totalWeight}%`,
+          variant: "destructive"
+        })
+        return
+      }
+    }
+    
     const updates: Partial<Goal> = {
       title: formData.title,
       description: formData.description,
@@ -452,7 +481,7 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
                   <p>You're about to convert this regular goal to milestone-based tracking.</p>
                   <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                     <div className="text-sm text-blue-700 dark:text-blue-300">
-                      <div>✓ Your current progress will be preserved</div>
+                      <div>⚠️ Your current progress will be reset to 0%</div>
                       <div>✓ You can then create milestones to structure your goal</div>
                       <div>✓ Progress will be calculated automatically from milestone completion</div>
                     </div>

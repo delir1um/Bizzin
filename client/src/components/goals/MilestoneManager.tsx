@@ -41,12 +41,12 @@ export function MilestoneManager({ goal, onProgressUpdate }: MilestoneManagerPro
     return calculateProgressFromMilestones(milestones)
   }
 
-  const calculateProgressFromMilestones = (milestonesList) => {
+  const calculateProgressFromMilestones = (milestonesList: Milestone[]) => {
     if (!milestonesList || milestonesList.length === 0) return 0
-    const totalWeight = milestonesList.reduce((sum, m) => sum + (m.weight || 0), 0)
+    const totalWeight = milestonesList.reduce((sum: number, m: Milestone) => sum + (m.weight || 0), 0)
     const completedWeight = milestonesList
-      .filter(m => m.completed)
-      .reduce((sum, m) => sum + (m.weight || 0), 0)
+      .filter((m: Milestone) => m.status === 'done')
+      .reduce((sum: number, m: Milestone) => sum + (m.weight || 0), 0)
     return totalWeight > 0 ? Math.round((completedWeight / totalWeight) * 100) : 0
   }
 
@@ -73,8 +73,7 @@ export function MilestoneManager({ goal, onProgressUpdate }: MilestoneManagerPro
   const toggleMilestoneMutation = useMutation({
     mutationFn: async ({ milestoneId, completed }: { milestoneId: string, completed: boolean }) => {
       return await MilestonesService.updateMilestone(milestoneId, { 
-        completed,
-        completed_at: completed ? new Date().toISOString() : null
+        status: completed ? 'done' : 'todo'
       })
     },
     onSuccess: () => {
@@ -156,11 +155,15 @@ export function MilestoneManager({ goal, onProgressUpdate }: MilestoneManagerPro
   const handleToggleMilestone = (milestone: Milestone) => {
     toggleMilestoneMutation.mutate({
       milestoneId: milestone.id,
-      completed: !milestone.completed
+      completed: milestone.status !== 'done'
     })
   }
 
-  const handleAddMilestone = () => {
+  const handleAddMilestone = (e?: React.MouseEvent) => {
+    // FIX #3: Prevent modal from closing when adding milestone
+    e?.preventDefault()
+    e?.stopPropagation()
+    
     if (!newMilestone.title.trim()) {
       toast({
         title: "Error",
@@ -169,6 +172,19 @@ export function MilestoneManager({ goal, onProgressUpdate }: MilestoneManagerPro
       })
       return
     }
+    
+    // FIX #4: Validate total weight before adding
+    const currentTotal = totalWeight
+    const newTotal = currentTotal + newMilestone.weight
+    if (newTotal > 100) {
+      toast({
+        title: "Weight Limit Exceeded",
+        description: `Adding this milestone would make total weight ${newTotal}%. Maximum allowed is 100%.`,
+        variant: "destructive",
+      })
+      return
+    }
+    
     addMilestoneMutation.mutate()
   }
 
@@ -215,7 +231,7 @@ export function MilestoneManager({ goal, onProgressUpdate }: MilestoneManagerPro
               />
             </div>
             <div className="text-sm text-slate-600 dark:text-slate-400">
-              {milestones.filter(m => m.completed).length} of {milestones.length} milestones completed
+              {milestones.filter(m => m.status === 'done').length} of {milestones.length} milestones completed
             </div>
           </div>
         </CardContent>
@@ -233,43 +249,44 @@ export function MilestoneManager({ goal, onProgressUpdate }: MilestoneManagerPro
           {milestones.map((milestone) => (
             <div
               key={milestone.id}
+              data-milestone-weight={milestone.weight || 0}
               className={`p-4 border rounded-lg transition-all duration-200 ${
-                milestone.completed
+                milestone.status === 'done'
                   ? 'bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800'
                   : 'bg-slate-50 border-slate-200 dark:bg-slate-800 dark:border-slate-700'
               }`}
             >
               <div className="flex items-start gap-3">
                 <Checkbox
-                  checked={milestone.completed}
+                  checked={milestone.status === 'done'}
                   onCheckedChange={() => handleToggleMilestone(milestone)}
                   className="mt-1"
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <h4 className={`font-medium ${
-                      milestone.completed 
+                      milestone.status === 'done' 
                         ? 'line-through text-slate-500' 
                         : 'text-slate-900 dark:text-slate-100'
                     }`}>
                       {milestone.title}
                     </h4>
-                    <Badge variant="outline" size="sm">
+                    <Badge variant="outline">
                       {milestone.weight || 0}%
                     </Badge>
                   </div>
                   {milestone.description && (
                     <p className={`text-sm mt-1 ${
-                      milestone.completed 
+                      milestone.status === 'done' 
                         ? 'line-through text-slate-400' 
                         : 'text-slate-600 dark:text-slate-300'
                     }`}>
                       {milestone.description}
                     </p>
                   )}
-                  {milestone.completed && milestone.completed_at && (
+                  {milestone.status === 'done' && milestone.updated_at && (
                     <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                      Completed {new Date(milestone.completed_at).toLocaleDateString()}
+                      Completed {new Date(milestone.updated_at).toLocaleDateString()}
                     </p>
                   )}
                 </div>
@@ -277,7 +294,12 @@ export function MilestoneManager({ goal, onProgressUpdate }: MilestoneManagerPro
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setEditingMilestone(milestone.id)}
+                    onClick={(e) => {
+                      // FIX #5: Prevent modal from closing when clicking edit
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setEditingMilestone(milestone.id)
+                    }}
                     className="h-8 w-8 p-0"
                   >
                     <Edit3 className="w-3 h-3" />
@@ -285,7 +307,14 @@ export function MilestoneManager({ goal, onProgressUpdate }: MilestoneManagerPro
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => deleteMilestoneMutation.mutate(milestone.id)}
+                    onClick={(e) => {
+                      // FIX #6: Prevent modal from closing and add confirmation
+                      e.preventDefault()
+                      e.stopPropagation()
+                      if (window.confirm(`Are you sure you want to delete "${milestone.title}"? This action cannot be undone.`)) {
+                        deleteMilestoneMutation.mutate(milestone.id)
+                      }
+                    }}
                     className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
                   >
                     <Trash2 className="w-3 h-3" />
