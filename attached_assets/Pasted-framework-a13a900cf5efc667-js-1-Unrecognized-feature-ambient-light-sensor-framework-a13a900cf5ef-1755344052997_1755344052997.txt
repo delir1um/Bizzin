@@ -1,0 +1,39 @@
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'ambient-light-sensor'.
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'battery'.
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'execution-while-not-rendered'.
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'execution-while-out-of-viewport'.
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'layout-animations'.
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'legacy-image-formats'.
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'navigation-override'.
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'oversized-images'.
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'publickey-credentials'.
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'speaker-selection'.
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'unoptimized-images'.
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'unsized-media'.
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'pointer-lock'.
+framework-a13a900cf5efc667.js:1 Allow attribute will take precedence over 'allowfullscreen'.
+framework-a13a900cf5efc667.js:1 Allow attribute will take precedence over 'allowpaymentrequest'.
+workspace_iframe.htm…2F&id=%3Ar14e%3A:32 Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.htm…2F&id=%3Ar14e%3A:32 Unrecognized feature: 'battery'.
+workspace_iframe.htm…2F&id=%3Ar14e%3A:32 Unrecognized feature: 'execution-while-not-rendered'.
+workspace_iframe.htm…2F&id=%3Ar14e%3A:32 Unrecognized feature: 'execution-while-out-of-viewport'.
+workspace_iframe.htm…2F&id=%3Ar14e%3A:32 Unrecognized feature: 'layout-animations'.
+workspace_iframe.htm…2F&id=%3Ar14e%3A:32 Unrecognized feature: 'legacy-image-formats'.
+workspace_iframe.htm…2F&id=%3Ar14e%3A:32 Unrecognized feature: 'navigation-override'.
+workspace_iframe.htm…2F&id=%3Ar14e%3A:32 Unrecognized feature: 'oversized-images'.
+workspace_iframe.htm…2F&id=%3Ar14e%3A:32 Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.htm…2F&id=%3Ar14e%3A:32 Unrecognized feature: 'speaker-selection'.
+workspace_iframe.htm…2F&id=%3Ar14e%3A:32 Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.htm…2F&id=%3Ar14e%3A:32 Unrecognized feature: 'unsized-media'.
+workspace_iframe.htm…2F&id=%3Ar14e%3A:32 Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.htm…2F&id=%3Ar14e%3A:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+Console.js:61 Calculated stats: 
+Object
+giahpkiwivxpocikndix…_status=eq.active:1 
+ Failed to load resource: the server responded with a status of 400 ()
+giahpkiwivxpocikndix…_status=eq.active:1 
+ Failed to load resource: the server responded with a status of 400 ()
+giahpkiwivxpocikndix…_status=eq.active:1 
+ Failed to load resource: the server responded with a status of 400 ()
+giahpkiwivxpocikndix…_status=eq.active:1 
+ Failed to load resource: the server responded with a status of 400 ()
