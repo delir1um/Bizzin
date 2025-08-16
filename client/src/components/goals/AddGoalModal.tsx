@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from "@/hooks/AuthProvider"
 import { useToast } from "@/hooks/use-toast"
 import { GoalsService } from "@/lib/services/goals"
+import { MilestoneSetup } from "@/components/goals/MilestoneSetup"
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
@@ -46,6 +47,8 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const [showCalendar, setShowCalendar] = useState(false)
+  const [showMilestoneSetup, setShowMilestoneSetup] = useState(false)
+  const [createdGoal, setCreatedGoal] = useState<any>(null)
 
   const form = useForm<AddGoalFormData>({
     resolver: zodResolver(addGoalSchema),
@@ -77,14 +80,22 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
       
       return await GoalsService.createGoal(goalData)
     },
-    onSuccess: () => {
+    onSuccess: (goal) => {
       queryClient.invalidateQueries({ queryKey: ['goals'] })
-      toast({
-        title: "Success",
-        description: "Goal created successfully!",
-      })
-      form.reset()
-      onOpenChange(false)
+      
+      // Check if this is a milestone-based goal
+      if (data.progress_type === 'milestone') {
+        setCreatedGoal(goal)
+        setShowMilestoneSetup(true)
+        // Don't close the modal yet - milestone setup will handle it
+      } else {
+        toast({
+          title: "Success",
+          description: "Goal created successfully!",
+        })
+        form.reset()
+        onOpenChange(false)
+      }
     },
     onError: (error) => {
       console.error('Error creating goal:', error)
@@ -393,6 +404,24 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
           </form>
         </Form>
       </DialogContent>
+
+      {/* Milestone Setup Modal */}
+      {createdGoal && (
+        <MilestoneSetup
+          goal={createdGoal}
+          open={showMilestoneSetup}
+          onOpenChange={setShowMilestoneSetup}
+          onComplete={() => {
+            toast({
+              title: "Goal Created",
+              description: "Goal and milestones created successfully!",
+            })
+            form.reset()
+            setCreatedGoal(null)
+            onOpenChange(false)
+          }}
+        />
+      )}
     </Dialog>
   )
 }

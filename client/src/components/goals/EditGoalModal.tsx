@@ -13,6 +13,7 @@ import { GoalsService } from "@/lib/services/goals"
 import { Goal } from "@/types/goals"
 import { format } from "date-fns"
 import { Target } from "lucide-react"
+import { MilestoneManager } from "@/components/goals/MilestoneManager"
 
 interface EditGoalModalProps {
   goal: Goal | null
@@ -165,23 +166,35 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
             </div>
           </div>
 
-          {/* Progress Tracking */}
-          <div className="space-y-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-            <Label className="flex items-center justify-between">
-              <span>Progress</span>
-              <Badge variant="outline">{formData.progress}%</Badge>
-            </Label>
-            <Slider
-              value={[formData.progress]}
-              onValueChange={handleProgressChange}
-              max={100}
-              step={1}
-              className="mt-2"
-            />
-            <p className="text-xs text-slate-600 dark:text-slate-400">
-              Drag the slider to update your progress percentage
-            </p>
-          </div>
+          {/* Progress Tracking - Show different UI based on goal type */}
+          {goal.progress_type === 'milestone' ? (
+            <div className="space-y-4">
+              <Label>Milestone Progress Management</Label>
+              <MilestoneManager 
+                goal={goal} 
+                onProgressUpdate={(newProgress) => {
+                  setFormData(prev => ({ ...prev, progress: newProgress }))
+                }}
+              />
+            </div>
+          ) : (
+            <div className="space-y-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+              <Label className="flex items-center justify-between">
+                <span>Progress</span>
+                <Badge variant="outline">{formData.progress}%</Badge>
+              </Label>
+              <Slider
+                value={[formData.progress]}
+                onValueChange={handleProgressChange}
+                max={100}
+                step={1}
+                className="mt-2"
+              />
+              <p className="text-xs text-slate-600 dark:text-slate-400">
+                Drag the slider to update your progress percentage
+              </p>
+            </div>
+          )}
 
           {/* Status and Deadline */}
           <div className="grid grid-cols-2 gap-4">

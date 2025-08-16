@@ -21,6 +21,91 @@ type UpdateMilestone = {
 }
 
 export class MilestonesService {
+  static async createMultipleMilestones(milestones: Array<{
+    goal_id: string
+    title: string
+    description: string
+    weight: number
+    order_index: number
+    completed: boolean
+    due_date: string | null
+  }>): Promise<Milestone[]> {
+    try {
+      // Check authentication
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        throw new Error('User not authenticated')
+      }
+
+      const milestonesWithUserId = milestones.map(milestone => ({
+        ...milestone,
+        user_id: user.id
+      }))
+
+      const { data, error } = await supabase
+        .from('milestones')
+        .insert(milestonesWithUserId)
+        .select()
+
+      if (error) {
+        if (error.code === '42P01') {
+          throw new Error('Milestones table not set up. Please run the database setup from MILESTONE_SYSTEM_SETUP.md')
+        }
+        console.error('Error creating milestones:', error)
+        throw new Error(`Failed to create milestones: ${error.message}`)
+      }
+
+      return data || []
+    } catch (err) {
+      console.error('Error in createMultipleMilestones:', err)
+      throw err
+    }
+  }
+
+  static async updateMilestone(milestoneId: string, updates: {
+    title?: string
+    description?: string
+    completed?: boolean
+    completed_at?: string | null
+    weight?: number
+    status?: 'todo' | 'in_progress' | 'done'
+  }): Promise<Milestone> {
+    try {
+      const { data, error } = await supabase
+        .from('milestones')
+        .update(updates)
+        .eq('id', milestoneId)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error updating milestone:', error)
+        throw new Error(`Failed to update milestone: ${error.message}`)
+      }
+
+      return data
+    } catch (err) {
+      console.error('Error in updateMilestone:', err)
+      throw err
+    }
+  }
+
+  static async deleteMilestone(milestoneId: string): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('milestones')
+        .delete()
+        .eq('id', milestoneId)
+
+      if (error) {
+        console.error('Error deleting milestone:', error)
+        throw new Error(`Failed to delete milestone: ${error.message}`)
+      }
+    } catch (err) {
+      console.error('Error in deleteMilestone:', err)
+      throw err
+    }
+  }
   static async getMilestonesByGoalId(goalId: string): Promise<Milestone[]> {
     try {
       const { data, error } = await supabase
