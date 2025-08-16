@@ -202,7 +202,8 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
       priority: formData.priority,
       status: formData.status,
       deadline: new Date(formData.deadline).toISOString(),
-      progress: formData.progress
+      progress: formData.progress,
+      progress_type: formData.progress_type  // CRITICAL FIX: Include progress_type in updates
     }
 
     goalLogger.logUpdate(goal?.id || '', { 
@@ -227,7 +228,7 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
   }
 
   const handleProgressChange = (value: number[]) => {
-    setFormData(prev => ({ ...prev, progress: value[0] }))
+    handleFormDataChange('progress', value[0])
   }
 
   if (!goal) return null
@@ -273,7 +274,7 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
                 <Input
                   id="category"
                   value={formData.category}
-                  onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                  onChange={(e) => handleFormDataChange('category', e.target.value)}
                   placeholder="e.g., Business, Health, Learning"
                 />
               </div>
@@ -369,7 +370,7 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
             <div>
               <Label htmlFor="status">Status</Label>
               <Select value={formData.status} onValueChange={(value: any) => 
-                setFormData(prev => ({ ...prev, status: value }))
+                handleFormDataChange('status', value)
               }>
                 <SelectTrigger>
                   <SelectValue />
@@ -390,7 +391,7 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
                 id="deadline"
                 type="date"
                 value={formData.deadline}
-                onChange={(e) => setFormData(prev => ({ ...prev, deadline: e.target.value }))}
+                onChange={(e) => handleFormDataChange('deadline', e.target.value)}
                 required
               />
             </div>
