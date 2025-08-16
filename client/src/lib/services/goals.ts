@@ -81,12 +81,9 @@ export class GoalsService {
       
       console.log('Goal creation requested with progress_type:', goal.progress_type)
       
-      // TODO: Include progress_type in goal data once database column is added
-      // For now, we'll store this information in the description to track milestone-based goals
-      if (goal.progress_type === 'milestone') {
-        goalData.description = goalData.description ? 
-          `${goalData.description} [MILESTONE_BASED]` : 
-          '[MILESTONE_BASED]'
+      // Include progress_type in goal data
+      if (goal.progress_type) {
+        goalData.progress_type = goal.progress_type
       }
       
       // Auto-calculate progress if current_value and target_value were provided
@@ -136,12 +133,7 @@ export class GoalsService {
       console.log('Updating goal:', goalId, 'for user:', user.id)
 
       // Remove fields that shouldn't be updated or might cause errors
-      const { updated_at, created_at, id, user_id, reflection, progress_type, ...updateData } = updates
-      
-      // TODO: Re-enable progress_type once database column is added
-      if (progress_type) {
-        console.log('Note: progress_type field will be saved once database migration is complete')
-      }
+      const { updated_at, created_at, id, user_id, reflection, ...updateData } = updates
       
       console.log('Cleaned update data:', updateData)
 

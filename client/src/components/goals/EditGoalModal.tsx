@@ -50,12 +50,11 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
   useEffect(() => {
     if (goal) {
       // Detect current progress type from goal data
-      const progressType = goal.progress_type || 
-        (goal.description?.includes('[MILESTONE_BASED]') ? 'milestone' : 'manual')
+      const progressType = goal.progress_type || 'manual'
       
       setFormData({
         title: goal.title || '',
-        description: goal.description?.replace(' [MILESTONE_BASED]', '') || '',
+        description: goal.description || '',
         category: goal.category || '',
         priority: goal.priority || 'medium',
         status: goal.status || 'not_started',
@@ -95,22 +94,19 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
     },
   })
 
-  // Goal type conversion mutation (temporarily disabled until database migration)
+  // Goal type conversion mutation
   const convertGoalTypeMutation = useMutation({
     mutationFn: async (newProgressType: 'manual' | 'milestone') => {
       if (!goal) throw new Error("No goal to convert")
-      
-      // TODO: Re-enable once database migration is complete
-      // For now, just update the form state and show a message
-      setFormData(prev => ({ ...prev, progress_type: newProgressType }))
-      return goal
+      return await GoalsService.convertGoalType(goal.id, newProgressType)
     },
     onSuccess: (updatedGoal) => {
       queryClient.invalidateQueries({ queryKey: ['goals'] })
+      setFormData(prev => ({ ...prev, progress_type: updatedGoal.progress_type }))
       setConversionDialog({ open: false, from: 'manual', to: 'manual' })
       toast({
-        title: "Goal Type Updated",
-        description: "Goal type changed in UI. Database migration needed for persistence.",
+        title: "Success",
+        description: "Goal type converted successfully!",
       })
     },
     onError: (error) => {
