@@ -79,7 +79,7 @@ export function BaseStatsCard({ zones, theme, className, onClick }: BaseStatsCar
     <Card 
       className={cn(
         "relative overflow-hidden group transition-all duration-300 ease-out h-full flex flex-col",
-        "hover:shadow-lg hover:-translate-y-1",
+        "hover:shadow-lg hover:-translate-y-1 min-h-[420px]",
         `bg-gradient-to-br ${theme.gradient} ${theme.darkGradient}`,
         theme.border,
         theme.hover,
@@ -115,7 +115,7 @@ export function BaseStatsCard({ zones, theme, className, onClick }: BaseStatsCar
         )}
       </CardHeader>
 
-      <CardContent className="flex flex-col h-full space-y-5 relative z-10 pb-6 px-6">
+      <CardContent className="flex flex-col h-full space-y-4 relative z-10 pb-4 px-6">
         {/* Metric Zone - Perfect Baseline Alignment */}
         <div className="text-center min-h-[110px] flex flex-col justify-center">
           <div className="text-5xl font-bold text-gray-900 dark:text-gray-100 leading-none mb-3 h-[60px] flex items-center justify-center">
@@ -188,20 +188,20 @@ export function BaseStatsCard({ zones, theme, className, onClick }: BaseStatsCar
           </div>
         )}
 
-        {/* Spacer - Push button to exact bottom */}
-        <div className="flex-1 min-h-[20px]"></div>
+        {/* Spacer - Ensures all buttons align at exact same height */}
+        <div className="flex-1"></div>
 
         {/* Action Zone - Perfect Bottom Alignment */}
-        <div className="min-h-[44px]">
+        <div className="h-[44px] flex items-end">
           <Button 
             onClick={zones.action.onClick}
             className={cn(
-              "w-full text-white transition-all duration-200 h-10 font-medium",
+              "w-full text-white transition-all duration-200 h-[40px] font-medium flex items-center justify-center gap-2",
               getActionButtonColors(zones.action.variant)
             )}
           >
             {zones.action.icon}
-            {zones.action.text}
+            <span>{zones.action.text}</span>
           </Button>
         </div>
       </CardContent>
