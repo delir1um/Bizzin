@@ -95,19 +95,22 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
     },
   })
 
-  // Goal type conversion mutation
+  // Goal type conversion mutation (temporarily disabled until database migration)
   const convertGoalTypeMutation = useMutation({
     mutationFn: async (newProgressType: 'manual' | 'milestone') => {
       if (!goal) throw new Error("No goal to convert")
-      return await GoalsService.convertGoalType(goal.id, newProgressType)
+      
+      // TODO: Re-enable once database migration is complete
+      // For now, just update the form state and show a message
+      setFormData(prev => ({ ...prev, progress_type: newProgressType }))
+      return goal
     },
     onSuccess: (updatedGoal) => {
       queryClient.invalidateQueries({ queryKey: ['goals'] })
-      setFormData(prev => ({ ...prev, progress_type: updatedGoal.progress_type }))
       setConversionDialog({ open: false, from: 'manual', to: 'manual' })
       toast({
-        title: "Success",
-        description: "Goal type converted successfully!",
+        title: "Goal Type Updated",
+        description: "Goal type changed in UI. Database migration needed for persistence.",
       })
     },
     onError: (error) => {
@@ -375,12 +378,12 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
                   <p>You're about to convert this milestone-based goal to a regular goal.</p>
                   {conversionDialog.milestoneCount && conversionDialog.milestoneCount > 0 ? (
                     <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
-                      <p className="font-medium text-amber-800 dark:text-amber-200">
+                      <div className="font-medium text-amber-800 dark:text-amber-200">
                         ⚠️ This will permanently delete {conversionDialog.milestoneCount} milestone{conversionDialog.milestoneCount > 1 ? 's' : ''}
-                      </p>
-                      <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                      </div>
+                      <div className="text-sm text-amber-700 dark:text-amber-300 mt-1">
                         Your current progress percentage will be preserved, but milestone structure will be lost.
-                      </p>
+                      </div>
                     </div>
                   ) : (
                     <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -392,11 +395,11 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
                 <div className="space-y-2">
                   <p>You're about to convert this regular goal to milestone-based tracking.</p>
                   <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <p className="text-sm text-blue-700 dark:text-blue-300">
-                      ✓ Your current progress will be preserved<br/>
-                      ✓ You can then create milestones to structure your goal<br/>
-                      ✓ Progress will be calculated automatically from milestone completion
-                    </p>
+                    <div className="text-sm text-blue-700 dark:text-blue-300">
+                      <div>✓ Your current progress will be preserved</div>
+                      <div>✓ You can then create milestones to structure your goal</div>
+                      <div>✓ Progress will be calculated automatically from milestone completion</div>
+                    </div>
                   </div>
                 </div>
               )}
