@@ -1,6 +1,5 @@
 import React from 'react'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { BaseStatsCard, CardZones } from './BaseStatsCard'
 import { Badge } from '@/components/ui/badge'
 import { Target, Plus, AlertTriangle, CheckSquare, BarChart3, Zap, Calendar, Clock } from 'lucide-react'
 import { Goal } from '@/types/goals'
@@ -146,173 +145,103 @@ export function GoalsStatsCard({ goals, onNavigate }: GoalsStatsCardProps) {
   
   const progressInfo = getProgressStatus(stats.averageProgress, stats.urgentCount, stats.milestoneStats, stats.hasAnyMilestoneGoals)
   const actionText = getSmartActionText(stats)
-  
-  return (
-    <Card className="relative overflow-hidden group 
-      hover:shadow-lg hover:shadow-blue-200/50 dark:hover:shadow-blue-900/30
-      hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer
-      hover:border-blue-300 dark:hover:border-blue-600
-      bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 
-      border-blue-200 dark:border-blue-800 h-full flex flex-col"
-      onClick={() => onNavigate('/goals')}
-    >
-      {/* Animated Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-900/10 
-        opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 min-h-[50px] relative z-10">
-        <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
-            <Target className="h-4 w-4" />
-          </div>
-          <h3 className="font-semibold text-gray-900 dark:text-gray-100">Goals</h3>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Goal Type Indicators */}
-          {stats.hasAnyMilestoneGoals && (
-            <Badge variant="outline" className="bg-orange-50 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300 text-xs">
-              <CheckSquare className="h-3 w-3 mr-1" />
-              {stats.milestoneGoalsCount} milestone
-            </Badge>
-          )}
-          
-          {stats.urgentCount > 0 && (
-            <Badge variant="destructive" className="bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300">
-              <AlertTriangle className="h-3 w-3 mr-1" />
-              {stats.urgentCount} urgent
-            </Badge>
-          )}
-          
-          {stats.milestoneStats.stalledGoals > 0 && (
-            <Badge variant="outline" className="bg-amber-50 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300 text-xs">
-              <Clock className="h-3 w-3 mr-1" />
-              {stats.milestoneStats.stalledGoals} stalled
-            </Badge>
-          )}
-          
-          <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
-            {stats.completedThisMonth} completed
-          </Badge>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="flex flex-col h-full space-y-4">
-        {/* Primary Metrics */}
-        <div className="text-center space-y-1">
-          <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-            {stats.averageProgress}%
-          </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            {stats.hasAnyMilestoneGoals ? 'Weighted Progress' : 'Average Progress'}
-          </div>
-          <div className={`text-xs font-medium flex items-center justify-center gap-1 ${progressInfo.color}`}>
-            <progressInfo.icon className="h-3 w-3" />
-            {progressInfo.status}
-          </div>
-        </div>
-        
-        {/* Progress Bar */}
-        <div className="space-y-2">
-          <div className="w-full bg-blue-200/50 dark:bg-blue-800/30 rounded-full h-3">
-            <div 
-              className="bg-gradient-to-r from-blue-400 to-blue-500 h-3 rounded-full transition-all duration-500"
-              style={{ width: `${stats.averageProgress}%` }}
-            />
-          </div>
-          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-            <span>0%</span>
-            <span>100% complete</span>
-          </div>
-        </div>
-        
-        {/* Enhanced Secondary Stats */}
-        {stats.hasAnyMilestoneGoals ? (
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div className="text-center">
-              <div className="font-semibold text-gray-900 dark:text-gray-100">
-                {stats.milestoneStats.completedMilestones}
-              </div>
-              <div className="text-gray-600 dark:text-gray-400 text-xs">
-                of {stats.milestoneStats.totalMilestones} milestones
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="font-semibold text-gray-900 dark:text-gray-100">{stats.activeCount}</div>
-              <div className="text-gray-600 dark:text-gray-400">Active Goals</div>
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div className="text-center">
-              <div className="font-semibold text-gray-900 dark:text-gray-100">{stats.activeCount}</div>
-              <div className="text-gray-600 dark:text-gray-400">Active Goals</div>
-            </div>
-            <div className="text-center">
-              <div className="font-semibold text-gray-900 dark:text-gray-100">{stats.highPriorityCount}</div>
-              <div className="text-gray-600 dark:text-gray-400">High Priority</div>
-            </div>
-          </div>
-        )}
-        
-        {/* Smart Insights */}
-        {stats.hasAnyMilestoneGoals && stats.milestoneStats.pendingMilestones > 0 && (
-          <div className="text-xs text-center p-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
-            <div className="font-medium text-orange-700 dark:text-orange-300">
-              {stats.milestoneStats.pendingMilestones} milestones pending
-            </div>
-            <div className="text-orange-600 dark:text-orange-400">
-              Complete them to boost progress
-            </div>
-          </div>
-        )}
-        
-        {/* Next Milestone */}
-        {stats.upcomingGoal && !stats.hasAnyMilestoneGoals && (
-          <div className="text-xs text-gray-600 dark:text-gray-400 text-center">
-            Next: {stats.upcomingGoal.title.substring(0, 30)}
-            {stats.upcomingGoal.title.length > 30 ? '...' : ''} 
-            <br />
-            Due: {format(new Date(stats.upcomingGoal.deadline), 'MMM d')}
-          </div>
-        )}
-        
-        {/* Milestone-specific next item */}
-        {stats.upcomingGoal && stats.hasAnyMilestoneGoals && (
-          <div className="text-xs text-gray-600 dark:text-gray-400 text-center">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <CheckSquare className="h-3 w-3" />
-              Next Goal: {stats.upcomingGoal.title.substring(0, 25)}
-              {stats.upcomingGoal.title.length > 25 ? '...' : ''}
-            </div>
-            <div className="flex items-center justify-center gap-1 text-xs">
-              <Calendar className="h-3 w-3" />
-              Due: {format(new Date(stats.upcomingGoal.deadline), 'MMM d')}
-            </div>
-          </div>
-        )}
-        
-        {/* Spacer to push button to bottom */}
-        <div className="flex-1"></div>
-        
-        {/* Smart Action Button */}
-        <Button 
-          onClick={() => onNavigate('/goals')}
-          className={`w-full text-white transition-all duration-200 ${
-            stats.milestoneStats.pendingMilestones > 0 
-              ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700' 
-              : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700'
-          }`}
-          size="sm"
-        >
-          {stats.milestoneStats.pendingMilestones > 0 ? (
-            <CheckSquare className="h-4 w-4 mr-2" />
-          ) : (
-            <Plus className="h-4 w-4 mr-2" />
-          )}
-          {actionText}
-        </Button>
-        
 
-      </CardContent>
-    </Card>
+  // Create badge content for header
+  const headerBadges = (
+    <div className="flex items-center gap-1 flex-wrap justify-center">
+      {stats.hasAnyMilestoneGoals && (
+        <Badge variant="outline" className="bg-orange-50 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300 text-xs">
+          <CheckSquare className="h-3 w-3 mr-1" />
+          {stats.milestoneGoalsCount} milestone
+        </Badge>
+      )}
+      {stats.completedThisMonth > 0 && (
+        <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 text-xs">
+          {stats.completedThisMonth} completed
+        </Badge>
+      )}
+    </div>
+  )
+
+  // Create insight content
+  let insightContent = null
+  let insightVariant: 'default' | 'warning' | 'success' | 'info' = 'default'
+
+  if (stats.urgentCount > 0) {
+    insightContent = `${stats.urgentCount} urgent deadlines approaching`
+    insightVariant = 'warning'
+  } else if (stats.hasAnyMilestoneGoals && stats.milestoneStats.pendingMilestones > 0) {
+    insightContent = `${stats.milestoneStats.pendingMilestones} milestones pending completion`
+    insightVariant = 'info'
+  } else if (stats.milestoneStats.stalledGoals > 0) {
+    insightContent = `${stats.milestoneStats.stalledGoals} goals need attention`
+    insightVariant = 'warning'
+  } else if (stats.upcomingGoal) {
+    insightContent = `Next: ${stats.upcomingGoal.title.substring(0, 35)}${stats.upcomingGoal.title.length > 35 ? '...' : ''}`
+    insightVariant = 'default'
+  }
+
+  const zones: CardZones = {
+    header: {
+      icon: <Target className="h-4 w-4" />,
+      title: 'Goals',
+      badge: headerBadges
+    },
+    metric: {
+      primary: `${stats.averageProgress}%`,
+      label: stats.hasAnyMilestoneGoals ? 'Weighted Progress' : 'Average Progress',
+      status: progressInfo.status,
+      statusColor: progressInfo.color,
+      statusIcon: <progressInfo.icon className="h-3 w-3" />
+    },
+    progress: {
+      value: stats.averageProgress,
+      color: 'blue',
+      subtitle: '100% complete',
+      showPercentage: true
+    },
+    stats: {
+      left: {
+        value: stats.hasAnyMilestoneGoals ? stats.milestoneStats.completedMilestones : stats.activeCount,
+        label: stats.hasAnyMilestoneGoals ? `of ${stats.milestoneStats.totalMilestones} milestones` : 'Active Goals'
+      },
+      right: {
+        value: stats.hasAnyMilestoneGoals ? stats.activeCount : stats.highPriorityCount,
+        label: stats.hasAnyMilestoneGoals ? 'Active Goals' : 'High Priority'
+      }
+    },
+    insight: insightContent ? {
+      icon: stats.urgentCount > 0 ? <AlertTriangle className="h-3 w-3" /> : 
+            stats.milestoneStats.pendingMilestones > 0 ? <CheckSquare className="h-3 w-3" /> : 
+            stats.milestoneStats.stalledGoals > 0 ? <Clock className="h-3 w-3" /> : 
+            <Calendar className="h-3 w-3" />,
+      text: insightContent,
+      variant: insightVariant
+    } : undefined,
+    action: {
+      text: actionText,
+      icon: stats.milestoneStats.pendingMilestones > 0 ? 
+            <CheckSquare className="h-4 w-4 mr-2" /> : 
+            <Plus className="h-4 w-4 mr-2" />,
+      onClick: () => onNavigate('/goals'),
+      variant: stats.milestoneStats.pendingMilestones > 0 ? 'warning' : 'primary'
+    }
+  }
+
+  const theme = {
+    primary: 'blue',
+    gradient: 'from-blue-50 to-blue-100',
+    darkGradient: 'dark:from-blue-950/20 dark:to-blue-900/20',
+    border: 'border-blue-200 dark:border-blue-800',
+    hover: 'hover:shadow-blue-200/50 dark:hover:shadow-blue-900/30',
+    hoverBorder: 'hover:border-blue-300 dark:hover:border-blue-600'
+  }
+
+  return (
+    <BaseStatsCard 
+      zones={zones} 
+      theme={theme} 
+      onClick={() => onNavigate('/goals')}
+    />
   )
 }

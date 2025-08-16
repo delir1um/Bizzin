@@ -1,0 +1,213 @@
+import React, { ReactNode } from 'react'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
+
+export interface CardZones {
+  header: {
+    icon: ReactNode
+    title: string
+    badge?: ReactNode
+  }
+  metric: {
+    primary: string | number
+    label: string
+    status: string
+    statusColor: string
+    statusIcon?: ReactNode
+  }
+  progress?: {
+    value: number
+    color: string
+    subtitle: string
+    showPercentage?: boolean
+  }
+  stats: {
+    left: { value: string | number; label: string }
+    right: { value: string | number; label: string }
+  }
+  insight?: {
+    icon: ReactNode
+    text: string
+    variant?: 'default' | 'warning' | 'success' | 'info'
+  }
+  action: {
+    text: string
+    icon: ReactNode
+    onClick: () => void
+    variant?: 'default' | 'primary' | 'success' | 'warning'
+  }
+}
+
+interface BaseStatsCardProps {
+  zones: CardZones
+  theme: {
+    primary: string // e.g., 'blue', 'orange', 'purple'
+    gradient: string // e.g., 'from-blue-50 to-blue-100'
+    darkGradient: string // e.g., 'dark:from-blue-950/20 dark:to-blue-900/20'
+    border: string // e.g., 'border-blue-200 dark:border-blue-800'
+    hover: string // e.g., 'hover:shadow-blue-200/50 dark:hover:shadow-blue-900/30'
+    hoverBorder: string // e.g., 'hover:border-blue-300 dark:hover:border-blue-600'
+  }
+  className?: string
+  onClick?: () => void
+}
+
+export function BaseStatsCard({ zones, theme, className, onClick }: BaseStatsCardProps) {
+  const getActionButtonColors = (variant: string = 'default') => {
+    const variants = {
+      default: `bg-gradient-to-r from-${theme.primary}-500 to-${theme.primary}-600 hover:from-${theme.primary}-600 hover:to-${theme.primary}-700`,
+      primary: `bg-gradient-to-r from-${theme.primary}-500 to-${theme.primary}-600 hover:from-${theme.primary}-600 hover:to-${theme.primary}-700`,
+      success: 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700',
+      warning: 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700'
+    }
+    return variants[variant as keyof typeof variants] || variants.default
+  }
+
+  const getInsightColors = (variant: string = 'default') => {
+    const variants = {
+      default: `bg-${theme.primary}-50 dark:bg-${theme.primary}-900/20 border-${theme.primary}-200 dark:border-${theme.primary}-800 text-${theme.primary}-700 dark:text-${theme.primary}-300`,
+      warning: 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300',
+      success: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300',
+      info: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300'
+    }
+    return variants[variant as keyof typeof variants] || variants.default
+  }
+
+  return (
+    <Card 
+      className={cn(
+        "relative overflow-hidden group transition-all duration-300 ease-out h-full flex flex-col",
+        "hover:shadow-lg hover:-translate-y-1",
+        `bg-gradient-to-br ${theme.gradient} ${theme.darkGradient}`,
+        theme.border,
+        theme.hover,
+        theme.hoverBorder,
+        onClick && "cursor-pointer",
+        className
+      )}
+      onClick={onClick}
+    >
+      {/* Animated Background Gradient */}
+      <div className={cn(
+        "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300",
+        `bg-gradient-to-br from-${theme.primary}-50/50 to-transparent dark:from-${theme.primary}-900/10`
+      )} />
+
+      {/* Header Zone - Fixed Height */}
+      <CardHeader className="flex flex-row items-center justify-center space-y-0 pb-3 min-h-[64px] relative z-10">
+        <div className="flex flex-col items-center gap-2 flex-1">
+          <div className="flex items-center gap-2">
+            <div className={cn(
+              "p-2 rounded-lg",
+              `bg-${theme.primary}-500/10 text-${theme.primary}-600 dark:text-${theme.primary}-400`
+            )}>
+              {zones.header.icon}
+            </div>
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-center">
+              {zones.header.title}
+            </h3>
+          </div>
+          {zones.header.badge && (
+            <div className="flex justify-center">
+              {zones.header.badge}
+            </div>
+          )}
+        </div>
+      </CardHeader>
+
+      <CardContent className="flex flex-col h-full space-y-4 relative z-10 pb-6">
+        {/* Metric Zone - Fixed Height */}
+        <div className="text-center space-y-1 min-h-[80px] flex flex-col justify-center">
+          <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+            {zones.metric.primary}
+          </div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">
+            {zones.metric.label}
+          </div>
+          <div className={cn(
+            "text-xs font-medium flex items-center justify-center gap-1",
+            zones.metric.statusColor
+          )}>
+            {zones.metric.statusIcon}
+            {zones.metric.status}
+          </div>
+        </div>
+
+        {/* Progress Zone - Optional, Fixed Height */}
+        {zones.progress && (
+          <div className="space-y-2 min-h-[56px]">
+            <div className={cn(
+              "w-full rounded-full h-3",
+              `bg-${theme.primary}-200/50 dark:bg-${theme.primary}-800/30`
+            )}>
+              <div 
+                className={cn(
+                  "h-3 rounded-full transition-all duration-500",
+                  `bg-gradient-to-r from-${theme.primary}-400 to-${theme.primary}-500`
+                )}
+                style={{ width: `${Math.min(100, zones.progress.value)}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+              <span>{zones.progress.showPercentage ? '0%' : '0'}</span>
+              <span>{zones.progress.subtitle}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Stats Zone - Fixed Height */}
+        <div className="grid grid-cols-2 gap-3 text-sm min-h-[48px]">
+          <div className="text-center">
+            <div className="font-semibold text-gray-900 dark:text-gray-100">
+              {zones.stats.left.value}
+            </div>
+            <div className="text-gray-600 dark:text-gray-400 text-xs">
+              {zones.stats.left.label}
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="font-semibold text-gray-900 dark:text-gray-100">
+              {zones.stats.right.value}
+            </div>
+            <div className="text-gray-600 dark:text-gray-400 text-xs">
+              {zones.stats.right.label}
+            </div>
+          </div>
+        </div>
+
+        {/* Insight Zone - Optional, Fixed Height */}
+        {zones.insight && (
+          <div className={cn(
+            "text-xs text-center p-2 rounded-lg border min-h-[40px] flex items-center justify-center",
+            getInsightColors(zones.insight.variant)
+          )}>
+            <div className="flex items-center gap-1">
+              {zones.insight.icon}
+              <span>{zones.insight.text}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Spacer - Flexible */}
+        <div className="flex-1 min-h-[8px]"></div>
+
+        {/* Action Zone - Fixed Height */}
+        <div className="min-h-[36px]">
+          <Button 
+            onClick={zones.action.onClick}
+            className={cn(
+              "w-full text-white transition-all duration-200",
+              getActionButtonColors(zones.action.variant)
+            )}
+            size="sm"
+          >
+            {zones.action.icon}
+            {zones.action.text}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}

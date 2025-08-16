@@ -1,8 +1,7 @@
 import React from 'react'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { BaseStatsCard, CardZones } from './BaseStatsCard'
 import { Badge } from '@/components/ui/badge'
-import { Notebook, Plus, TrendingUp, Info } from 'lucide-react'
+import { Notebook, Plus, TrendingUp, Zap, Flame } from 'lucide-react'
 import { JournalEntry } from '@/types/journal'
 import { getMoodEmoji } from '@/lib/journalDisplayUtils'
 import { isToday, isThisWeek, differenceInDays, format } from 'date-fns'
@@ -97,86 +96,77 @@ export function JournalStatsCard({ journalEntries, onNavigate }: JournalStatsCar
   }
   
   const streakInfo = getStreakStatus(stats.streak)
-  
-  return (
-    <Card className="relative overflow-hidden group 
-      hover:shadow-lg hover:shadow-orange-200/50 dark:hover:shadow-orange-900/30
-      transition-all duration-300 ease-out cursor-pointer
-      hover:border-orange-300 dark:hover:border-orange-600
-      bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/20 dark:to-orange-900/20 
-      border-orange-200 dark:border-orange-800 h-full flex flex-col"
-      onClick={() => onNavigate('/journal')}
-    >
-      {/* Animated Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-orange-50/50 to-transparent dark:from-orange-900/10 
-        opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 min-h-[50px] relative z-10">
-        <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-orange-500/10 text-orange-600 dark:text-orange-400">
-            <Notebook className="h-4 w-4" />
-          </div>
-          <h3 className="font-semibold text-gray-900 dark:text-gray-100">Journal</h3>
-        </div>
-        <Badge variant="secondary" className="bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300">
-          {stats.thisWeekCount} this week
-        </Badge>
-      </CardHeader>
-      
-      <CardContent className="flex flex-col h-full space-y-4 relative z-10">
-        {/* Primary Metrics */}
-        <div className="text-center space-y-1">
-          <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-            {stats.streak}
-          </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Day Writing Streak</div>
-          <div className={`text-xs font-medium ${streakInfo.color}`}>
-            {streakInfo.status}
-          </div>
-        </div>
-        
-        {/* Progress Bar */}
-        <div className="space-y-2">
-          <div className="w-full bg-orange-200/50 dark:bg-orange-800/30 rounded-full h-3">
-            <div 
-              className="bg-gradient-to-r from-orange-400 to-orange-500 h-3 rounded-full transition-all duration-500"
-              style={{ width: `${Math.min(100, (stats.streak / 30) * 100)}%` }}
-            />
-          </div>
-          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-            <span>0 days</span>
-            <span>30 day goal</span>
-          </div>
-        </div>
-        
-        {/* Secondary Stats */}
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div className="text-center">
-            <div className="font-semibold text-gray-900 dark:text-gray-100">{stats.totalEntries}</div>
-            <div className="text-gray-600 dark:text-gray-400">Total Entries</div>
-          </div>
-          <div className="text-center">
-            <div className="font-semibold text-gray-900 dark:text-gray-100 flex items-center justify-center gap-1">
-              {getMoodEmoji(stats.dominantMood)} {stats.dominantMood}
-            </div>
-            <div className="text-gray-600 dark:text-gray-400">Weekly Mood</div>
-          </div>
-        </div>
-        
-        {/* Spacer to push button to bottom */}
-        <div className="flex-1"></div>
-        
-        {/* Action Button */}
-        <Button 
-          onClick={() => onNavigate('/journal')}
-          className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
-          size="sm"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Entry
-        </Button>
-        
 
-      </CardContent>
-    </Card>
+  // Create header badge
+  const headerBadge = (
+    <Badge variant="secondary" className="bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300 text-xs">
+      {stats.thisWeekCount} this week
+    </Badge>
+  )
+
+  // Create insight content
+  const insightText = stats.dominantMood && stats.dominantMood !== 'Neutral' ? 
+    `Weekly mood: ${getMoodEmoji(stats.dominantMood)} ${stats.dominantMood}` :
+    'Keep building your writing habit'
+
+  const zones: CardZones = {
+    header: {
+      icon: <Notebook className="h-4 w-4" />,
+      title: 'Journal',
+      badge: headerBadge
+    },
+    metric: {
+      primary: stats.streak,
+      label: 'Day Writing Streak',
+      status: streakInfo.status,
+      statusColor: streakInfo.color,
+      statusIcon: stats.streak >= 7 ? <Flame className="h-3 w-3" /> : 
+                  stats.streak >= 3 ? <Zap className="h-3 w-3" /> : 
+                  <TrendingUp className="h-3 w-3" />
+    },
+    progress: {
+      value: Math.min(100, (stats.streak / 30) * 100), // 30-day goal
+      color: 'orange',
+      subtitle: '30 day goal',
+      showPercentage: false
+    },
+    stats: {
+      left: {
+        value: stats.totalEntries,
+        label: 'Total Entries'
+      },
+      right: {
+        value: `${stats.aiAnalysisRate}%`,
+        label: 'AI Enhanced'
+      }
+    },
+    insight: {
+      icon: <TrendingUp className="h-3 w-3" />,
+      text: insightText,
+      variant: 'default'
+    },
+    action: {
+      text: 'Add Entry',
+      icon: <Plus className="h-4 w-4 mr-2" />,
+      onClick: () => onNavigate('/journal'),
+      variant: 'primary'
+    }
+  }
+
+  const theme = {
+    primary: 'orange',
+    gradient: 'from-orange-50 to-orange-100',
+    darkGradient: 'dark:from-orange-950/20 dark:to-orange-900/20',
+    border: 'border-orange-200 dark:border-orange-800',
+    hover: 'hover:shadow-orange-200/50 dark:hover:shadow-orange-900/30',
+    hoverBorder: 'hover:border-orange-300 dark:hover:border-orange-600'
+  }
+
+  return (
+    <BaseStatsCard 
+      zones={zones} 
+      theme={theme} 
+      onClick={() => onNavigate('/journal')}
+    />
   )
 }

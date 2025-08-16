@@ -27,6 +27,18 @@ All data access is centralized through `@/lib/supabase` using the Supabase clien
 ### Business Model & Calculator Features
 Operates on a unified subscription model with a 14-day free trial followed by a monthly fee for full access. BizBuilder Tools include professional financial calculators (Cash Flow Projection, Break-Even Analysis, Business Budget, Loan Amortisation) with history functionality for saving and managing calculation scenarios.
 
+**Comprehensive Dashboard Card System Redesign (Aug 16, 2025)**: Implemented unified BaseStatsCard component with standardized layout zones for consistent UI/UX across all dashboard cards. Enhanced features include:
+
+**Standardized Layout Architecture**: Created BaseStatsCard component with fixed-height zones (header, metric, progress, stats, insight, action) ensuring perfect horizontal alignment across all cards. Eliminates text cramping and positioning inconsistencies.
+
+**Unified Typography & Spacing System**: Consistent font sizing, spacing tokens (8px, 16px, 24px, 32px), and visual hierarchy across all dashboard cards. Icon + title centered in header with info badges below, big numbers on same baseline, aligned action buttons.
+
+**Theme-Based Design System**: Configurable color themes (blue, orange, purple, emerald) with consistent gradient patterns, hover states, and visual feedback. Each card maintains brand identity while following unified design principles.
+
+**Enhanced Content Zones**: Header zone with centered icon/title/badges, metric zone with primary number/label/status, optional progress zone, stats grid, insight zone for contextual information, and action zone with consistent button styling.
+
+**Professional Visual Alignment**: All dashboard cards now have elements on same horizontal lines, consistent spacing, proper breathing room, and no text overlap. Creates cohesive, scannable dashboard experience with improved information hierarchy.
+
 ### Component Architecture
 Features a modular component structure with reusable shadcn/ui components. Business logic is separated into services (e.g., `PlansService`, `PodcastService`) and hooks (e.g., `usePlans`). The layout uses a consistent header/navigation system with theme support.
 

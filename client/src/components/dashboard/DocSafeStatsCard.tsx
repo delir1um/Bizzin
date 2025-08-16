@@ -1,8 +1,7 @@
 import React from 'react'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { BaseStatsCard, CardZones } from './BaseStatsCard'
 import { Badge } from '@/components/ui/badge'
-import { File, Upload, Database, Info } from 'lucide-react'
+import { File, Upload, Database, Shield, Archive } from 'lucide-react'
 
 interface DocSafeStatsCardProps {
   storageStats: {
@@ -50,94 +49,79 @@ export function DocSafeStatsCard({ storageStats, onNavigate }: DocSafeStatsCardP
   
   // Calculate recent activity - show actual recent documents
   const recentUploads = stats.total_documents // Show all documents for now
-  
-  return (
-    <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/20 dark:to-emerald-900/20 border-emerald-200 dark:border-emerald-800 h-full flex flex-col">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 min-h-[50px]">
-        <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-            <File className="h-4 w-4" />
-          </div>
-          <h3 className="font-semibold text-gray-900 dark:text-gray-100">DocSafe</h3>
-        </div>
-        <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 text-xs">
-          {stats.total_documents} docs
-        </Badge>
-      </CardHeader>
-      
-      <CardContent className="flex flex-col h-full space-y-4">
-        {/* Primary Metrics */}
-        <div className="text-center space-y-1">
-          <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-            {stats.total_documents}
-          </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Documents Stored</div>
-          <div className={`text-xs font-medium ${storageInfo.color}`}>
-            {storageInfo.status}
-          </div>
-        </div>
-        
-        {/* Organization Progress */}
-        <div className="space-y-2">
-          <div className="w-full bg-emerald-200/50 dark:bg-emerald-800/30 rounded-full h-3">
-            <div 
-              className="h-3 rounded-full transition-all duration-500 bg-gradient-to-r from-emerald-400 to-emerald-500"
-              style={{ width: `${Math.min(100, (stats.total_documents / 50) * 100)}%` }}
-            />
-          </div>
-          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-            <span>0 docs</span>
-            <span>Well organized</span>
-          </div>
-        </div>
-        
-        {/* Secondary Stats */}
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div className="text-center">
-            <div className="font-semibold text-gray-900 dark:text-gray-100">{formatStorageSize(stats.storage_used)}</div>
-            <div className="text-gray-600 dark:text-gray-400">Space Used</div>
-          </div>
-          <div className="text-center">
-            <div className="font-semibold text-gray-900 dark:text-gray-100">{recentUploads}</div>
-            <div className="text-gray-600 dark:text-gray-400">Recent</div>
-          </div>
-        </div>
-        
-        {/* Storage Insight */}
-        <div className="text-xs text-gray-600 dark:text-gray-400 text-center">
-          {stats.total_documents >= 10 ? (
-            <>
-              <Database className="h-3 w-3 inline mr-1" />
-              Your document library is well organized
-            </>
-          ) : stats.total_documents > 0 ? (
-            <>
-              <Upload className="h-3 w-3 inline mr-1" />
-              Keep building your secure collection
-            </>
-          ) : (
-            <>
-              <Upload className="h-3 w-3 inline mr-1" />
-              Start storing your documents securely
-            </>
-          )}
-        </div>
-        
-        {/* Spacer to push button to bottom */}
-        <div className="flex-1"></div>
-        
-        {/* Action Button */}
-        <Button 
-          onClick={() => onNavigate('/docsafe')}
-          className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white"
-          size="sm"
-        >
-          <Upload className="h-4 w-4 mr-2" />
-          {stats.total_documents > 0 ? 'Manage Docs' : 'Upload Docs'}
-        </Button>
-        
 
-      </CardContent>
-    </Card>
+  // Create header badge
+  const headerBadge = (
+    <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 text-xs">
+      {stats.total_documents} docs
+    </Badge>
+  )
+
+  // Create insight text
+  const insightText = stats.total_documents >= 10 ? 
+    'Your document library is well organized' :
+    stats.total_documents > 0 ? 
+    'Keep building your secure collection' :
+    'Start storing your documents securely'
+
+  const zones: CardZones = {
+    header: {
+      icon: <File className="h-4 w-4" />,
+      title: 'DocSafe',
+      badge: headerBadge
+    },
+    metric: {
+      primary: stats.total_documents,
+      label: 'Documents Stored',
+      status: storageInfo.status,
+      statusColor: storageInfo.color,
+      statusIcon: stats.total_documents >= 10 ? <Database className="h-3 w-3" /> : 
+                  stats.total_documents > 0 ? <Archive className="h-3 w-3" /> : 
+                  <Shield className="h-3 w-3" />
+    },
+    progress: {
+      value: Math.min(100, (stats.total_documents / 50) * 100),
+      color: 'emerald',
+      subtitle: 'Well organized',
+      showPercentage: false
+    },
+    stats: {
+      left: {
+        value: formatStorageSize(stats.storage_used),
+        label: 'Space Used'
+      },
+      right: {
+        value: recentUploads,
+        label: 'Recent'
+      }
+    },
+    insight: {
+      icon: stats.total_documents >= 10 ? <Database className="h-3 w-3" /> : <Upload className="h-3 w-3" />,
+      text: insightText,
+      variant: 'default'
+    },
+    action: {
+      text: stats.total_documents > 0 ? 'Manage Docs' : 'Upload Docs',
+      icon: stats.total_documents > 0 ? <Database className="h-4 w-4 mr-2" /> : <Upload className="h-4 w-4 mr-2" />,
+      onClick: () => onNavigate('/docsafe'),
+      variant: 'primary'
+    }
+  }
+
+  const theme = {
+    primary: 'emerald',
+    gradient: 'from-emerald-50 to-emerald-100',
+    darkGradient: 'dark:from-emerald-950/20 dark:to-emerald-900/20',
+    border: 'border-emerald-200 dark:border-emerald-800',
+    hover: 'hover:shadow-emerald-200/50 dark:hover:shadow-emerald-900/30',
+    hoverBorder: 'hover:border-emerald-300 dark:hover:border-emerald-600'
+  }
+
+  return (
+    <BaseStatsCard 
+      zones={zones} 
+      theme={theme} 
+      onClick={() => onNavigate('/docsafe')}
+    />
   )
 }

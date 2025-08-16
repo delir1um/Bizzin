@@ -1,11 +1,9 @@
 import React from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/AuthProvider'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { BaseStatsCard, CardZones } from './BaseStatsCard'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Progress } from '@/components/ui/progress'
-import { Calculator, BarChart3, TrendingUp, FileSpreadsheet } from 'lucide-react'
+import { Calculator, BarChart3, TrendingUp, FileSpreadsheet, Target, Briefcase } from 'lucide-react'
 import { CalculatorHistoryService } from '@/lib/services/calculatorHistory'
 
 interface BizBuilderStatsCardProps {
@@ -22,35 +20,39 @@ export function BizBuilderStatsCard({ onNavigate }: BizBuilderStatsCardProps) {
   })
 
   if (isLoading) {
-    return (
-      <Card className="relative overflow-hidden group bg-gradient-to-br from-orange-50 to-amber-100 dark:from-orange-950/20 dark:to-amber-900/20 border-orange-200 dark:border-orange-800 h-full flex flex-col">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 min-h-[50px]">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-orange-500/10 text-orange-600 dark:text-orange-400">
-              <Calculator className="w-5 h-5" />
-            </div>
-            <CardTitle className="text-base font-semibold text-orange-900 dark:text-orange-100">
-              BizBuilder Tools
-            </CardTitle>
-          </div>
-        </CardHeader>
-        
-        <CardContent className="flex-1 flex flex-col justify-between pb-12">
-          <div className="space-y-4">
-            <div className="text-center">
-              <Skeleton className="h-8 w-16 mx-auto mb-2" />
-              <Skeleton className="h-4 w-20 mx-auto" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-            </div>
-            <Skeleton className="h-2 w-full" />
-          </div>
-          <Skeleton className="h-9 w-full mt-4" />
-        </CardContent>
-      </Card>
-    )
+    const loadingZones: CardZones = {
+      header: {
+        icon: <Calculator className="w-4 h-4" />,
+        title: 'BizBuilder Tools'
+      },
+      metric: {
+        primary: <Skeleton className="h-8 w-16 mx-auto" />,
+        label: 'Loading...',
+        status: 'Loading',
+        statusColor: 'text-gray-500'
+      },
+      stats: {
+        left: { value: <Skeleton className="h-6 w-8" />, label: 'Tools Used' },
+        right: { value: <Skeleton className="h-6 w-8" />, label: 'This Week' }
+      },
+      action: {
+        text: 'Loading...',
+        icon: <Calculator className="h-4 w-4 mr-2" />,
+        onClick: () => {},
+        variant: 'default'
+      }
+    }
+
+    const theme = {
+      primary: 'orange',
+      gradient: 'from-orange-50 to-amber-100',
+      darkGradient: 'dark:from-orange-950/20 dark:to-amber-900/20',
+      border: 'border-orange-200 dark:border-orange-800',
+      hover: 'hover:shadow-orange-200/50 dark:hover:shadow-orange-900/30',
+      hoverBorder: 'hover:border-orange-300 dark:hover:border-orange-600'
+    }
+
+    return <BaseStatsCard zones={loadingZones} theme={theme} />
   }
 
   const totalCalculations = calculations.length
@@ -97,90 +99,76 @@ export function BizBuilderStatsCard({ onNavigate }: BizBuilderStatsCardProps) {
   const hasCalculations = totalCalculations > 0
   const hasRecentActivity = recentCalculations > 0
 
+  // Determine status
+  const getStatus = () => {
+    if (completionPercentage >= 80) return { status: 'Tool Master', color: 'text-green-600' }
+    if (completionPercentage >= 50) return { status: 'Strategic Planning', color: 'text-blue-600' }
+    if (hasCalculations) return { status: 'Getting Started', color: 'text-orange-600' }
+    return { status: 'Ready to Plan', color: 'text-gray-500' }
+  }
+
+  const statusInfo = getStatus()
+
+  // Create insight text
+  const insightText = mostRecentCalc ? 
+    `Last used: ${getCalculatorDisplayName(mostRecentCalc.calculator_type)} ${getTimeSince(mostRecentCalc.created_at)}` :
+    '6 powerful calculators to plan and grow your business'
+
+  const zones: CardZones = {
+    header: {
+      icon: <Calculator className="w-4 h-4" />,
+      title: 'BizBuilder Tools'
+    },
+    metric: {
+      primary: totalCalculations,
+      label: hasCalculations ? 'Saved Scenarios' : 'Start Planning',
+      status: statusInfo.status,
+      statusColor: statusInfo.color,
+      statusIcon: hasCalculations ? <Briefcase className="h-3 w-3" /> : <Target className="h-3 w-3" />
+    },
+    progress: hasCalculations ? {
+      value: completionPercentage,
+      color: 'orange',
+      subtitle: '6 tools complete',
+      showPercentage: false
+    } : undefined,
+    stats: {
+      left: {
+        value: toolsUsed,
+        label: 'Tools Used'
+      },
+      right: {
+        value: recentCalculations,
+        label: 'This Week'
+      }
+    },
+    insight: {
+      icon: <BarChart3 className="h-3 w-3" />,
+      text: insightText,
+      variant: 'default'
+    },
+    action: {
+      text: hasCalculations ? 'View Scenarios' : 'Start Planning',
+      icon: hasCalculations ? <FileSpreadsheet className="h-4 w-4 mr-2" /> : <Calculator className="h-4 w-4 mr-2" />,
+      onClick: () => onNavigate('/bizbuilder'),
+      variant: 'primary'
+    }
+  }
+
+  const theme = {
+    primary: 'orange',
+    gradient: 'from-orange-50 to-amber-100',
+    darkGradient: 'dark:from-orange-950/20 dark:to-amber-900/20',
+    border: 'border-orange-200 dark:border-orange-800',
+    hover: 'hover:shadow-orange-200/50 dark:hover:shadow-orange-900/30',
+    hoverBorder: 'hover:border-orange-300 dark:hover:border-orange-600'
+  }
+
   return (
-    <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-orange-50 to-amber-100 dark:from-orange-950/20 dark:to-amber-900/20 border-orange-200 dark:border-orange-800 h-full flex flex-col">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 min-h-[50px]">
-        <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-orange-500/10 text-orange-600 dark:text-orange-400">
-            <Calculator className="w-5 h-5" />
-          </div>
-          <h3 className="font-semibold text-gray-900 dark:text-gray-100">BizBuilder Tools</h3>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="flex flex-col h-full space-y-4">
-        {/* Primary Metrics */}
-        <div className="text-center space-y-1">
-          <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-            {totalCalculations}
-          </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            {hasCalculations ? 'Saved Scenarios' : 'Start Planning'}
-          </div>
-          <div className="text-xs font-medium text-orange-600 dark:text-orange-400">
-            {hasCalculations ? 'Planning' : 'Getting Started'}
-          </div>
-        </div>
-        
-        {/* Progress Bar */}
-        <div className="space-y-2">
-            <div className="w-full bg-orange-200/50 dark:bg-orange-800/30 rounded-full h-3">
-              <div 
-                className="bg-gradient-to-r from-orange-400 to-orange-500 h-3 rounded-full transition-all duration-500"
-                style={{ width: `${completionPercentage}%` }}
-              />
-            </div>
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-              <span>0 tools</span>
-              <span>6 tools complete</span>
-            </div>
-          </div>
-
-        {/* Secondary Stats */}
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div className="text-center">
-            <div className="font-semibold text-gray-900 dark:text-gray-100">{toolsUsed}</div>
-            <div className="text-gray-600 dark:text-gray-400">Tools Used</div>
-          </div>
-          <div className="text-center">
-            <div className="font-semibold text-gray-900 dark:text-gray-100">{recentCalculations}</div>
-            <div className="text-gray-600 dark:text-gray-400">This Week</div>
-          </div>
-        </div>
-
-        {/* Status Information */}
-        <div className="text-xs text-gray-600 dark:text-gray-400 text-center">
-          {hasRecentActivity ? (
-            <>
-              <FileSpreadsheet className="h-3 w-3 inline mr-1" />
-              Last: {getCalculatorDisplayName(mostRecentCalc.calculator_type)} {getTimeSince(mostRecentCalc.created_at)}
-            </>
-          ) : hasCalculations ? (
-            <>
-              <FileSpreadsheet className="h-3 w-3 inline mr-1" />
-              Last calculation: {getTimeSince(mostRecentCalc.created_at)}
-            </>
-          ) : (
-            <>
-              <FileSpreadsheet className="h-3 w-3 inline mr-1" />
-              6 powerful calculators to plan and grow your business
-            </>
-          )}
-        </div>
-
-        {/* Spacer to push button to bottom */}
-        <div className="flex-1"></div>
-        
-        {/* Action Button */}
-        <Button 
-          onClick={() => onNavigate('/bizbuilder')}
-          className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
-          size="sm"
-        >
-          <FileSpreadsheet className="w-4 h-4 mr-2" />
-          {hasCalculations ? 'Continue Planning' : 'Start Planning'}
-        </Button>
-      </CardContent>
-    </Card>
+    <BaseStatsCard 
+      zones={zones} 
+      theme={theme} 
+      onClick={() => onNavigate('/bizbuilder')}
+    />
   )
 }
