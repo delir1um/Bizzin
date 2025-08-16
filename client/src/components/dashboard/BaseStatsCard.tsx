@@ -56,9 +56,16 @@ interface BaseStatsCardProps {
 
 export function BaseStatsCard({ zones, theme, className, onClick }: BaseStatsCardProps) {
   const getActionButtonColors = (variant: string = 'default') => {
+    // Use static classes based on theme primary color
+    const baseStyle = theme.primary === 'orange' ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700' :
+                     theme.primary === 'blue' ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700' :
+                     theme.primary === 'purple' ? 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700' :
+                     theme.primary === 'emerald' ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700' :
+                     'bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700'
+    
     const variants = {
-      default: `bg-gradient-to-r from-${theme.primary}-500 to-${theme.primary}-600 hover:from-${theme.primary}-600 hover:to-${theme.primary}-700`,
-      primary: `bg-gradient-to-r from-${theme.primary}-500 to-${theme.primary}-600 hover:from-${theme.primary}-600 hover:to-${theme.primary}-700`,
+      default: baseStyle,
+      primary: baseStyle,
       success: 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700',
       warning: 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700'
     }
@@ -66,8 +73,15 @@ export function BaseStatsCard({ zones, theme, className, onClick }: BaseStatsCar
   }
 
   const getInsightColors = (variant: string = 'default') => {
+    // Use static classes based on theme primary color
+    const baseStyle = theme.primary === 'orange' ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300' :
+                     theme.primary === 'blue' ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300' :
+                     theme.primary === 'purple' ? 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300' :
+                     theme.primary === 'emerald' ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300' :
+                     'bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300'
+    
     const variants = {
-      default: `bg-${theme.primary}-50 dark:bg-${theme.primary}-900/20 border-${theme.primary}-200 dark:border-${theme.primary}-800 text-${theme.primary}-700 dark:text-${theme.primary}-300`,
+      default: baseStyle,
       warning: 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300',
       success: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300',
       info: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300'
