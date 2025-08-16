@@ -82,6 +82,13 @@ export class GoalsService {
       // Store progress_type info for future use but don't send to database if column doesn't exist
       console.log('Goal creation requested with progress_type:', progress_type)
       
+      // For now, we'll store this information in the description to track milestone-based goals
+      if (progress_type === 'milestone') {
+        goalData.description = goalData.description ? 
+          `${goalData.description} [MILESTONE_BASED]` : 
+          '[MILESTONE_BASED]'
+      }
+      
       // Auto-calculate progress if current_value and target_value are provided
       if (goalData.current_value !== undefined && goalData.target_value !== undefined) {
         const { current_value, target_value } = goalData
