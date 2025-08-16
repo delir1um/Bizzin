@@ -95,35 +95,33 @@ export function BaseStatsCard({ zones, theme, className, onClick }: BaseStatsCar
         `bg-gradient-to-br from-${theme.primary}-50/50 to-transparent dark:from-${theme.primary}-900/10`
       )} />
 
-      {/* Header Zone - Fixed Height */}
-      <CardHeader className="flex flex-row items-center justify-center space-y-0 pb-3 min-h-[64px] relative z-10">
-        <div className="flex flex-col items-center gap-2 flex-1">
-          <div className="flex items-center gap-2">
-            <div className={cn(
-              "p-2 rounded-lg",
-              `bg-${theme.primary}-500/10 text-${theme.primary}-600 dark:text-${theme.primary}-400`
-            )}>
-              {zones.header.icon}
-            </div>
-            <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-center">
-              {zones.header.title}
-            </h3>
+      {/* Header Zone - Fixed Height, Centered */}
+      <CardHeader className="flex flex-col items-center justify-center space-y-2 pb-3 min-h-[80px] relative z-10">
+        <div className="flex items-center gap-2">
+          <div className={cn(
+            "p-2 rounded-lg",
+            `bg-${theme.primary}-500/10 text-${theme.primary}-600 dark:text-${theme.primary}-400`
+          )}>
+            {zones.header.icon}
           </div>
-          {zones.header.badge && (
-            <div className="flex justify-center">
-              {zones.header.badge}
-            </div>
-          )}
+          <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+            {zones.header.title}
+          </h3>
         </div>
+        {zones.header.badge && (
+          <div className="flex justify-center">
+            {zones.header.badge}
+          </div>
+        )}
       </CardHeader>
 
       <CardContent className="flex flex-col h-full space-y-4 relative z-10 pb-6">
-        {/* Metric Zone - Fixed Height */}
-        <div className="text-center space-y-1 min-h-[80px] flex flex-col justify-center">
-          <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+        {/* Metric Zone - Fixed Height, Aligned Baseline */}
+        <div className="text-center min-h-[100px] flex flex-col justify-center">
+          <div className="text-4xl font-bold text-gray-900 dark:text-gray-100 leading-none mb-2">
             {zones.metric.primary}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
             {zones.metric.label}
           </div>
           <div className={cn(
@@ -157,21 +155,21 @@ export function BaseStatsCard({ zones, theme, className, onClick }: BaseStatsCar
           </div>
         )}
 
-        {/* Stats Zone - Fixed Height */}
-        <div className="grid grid-cols-2 gap-3 text-sm min-h-[48px]">
+        {/* Stats Zone - Fixed Height, Consistent Spacing */}
+        <div className="grid grid-cols-2 gap-4 text-sm min-h-[56px] px-2">
           <div className="text-center">
-            <div className="font-semibold text-gray-900 dark:text-gray-100">
+            <div className="font-semibold text-gray-900 dark:text-gray-100 text-base">
               {zones.stats.left.value}
             </div>
-            <div className="text-gray-600 dark:text-gray-400 text-xs">
+            <div className="text-gray-600 dark:text-gray-400 text-xs leading-tight">
               {zones.stats.left.label}
             </div>
           </div>
           <div className="text-center">
-            <div className="font-semibold text-gray-900 dark:text-gray-100">
+            <div className="font-semibold text-gray-900 dark:text-gray-100 text-base">
               {zones.stats.right.value}
             </div>
-            <div className="text-gray-600 dark:text-gray-400 text-xs">
+            <div className="text-gray-600 dark:text-gray-400 text-xs leading-tight">
               {zones.stats.right.label}
             </div>
           </div>
@@ -180,28 +178,27 @@ export function BaseStatsCard({ zones, theme, className, onClick }: BaseStatsCar
         {/* Insight Zone - Optional, Fixed Height */}
         {zones.insight && (
           <div className={cn(
-            "text-xs text-center p-2 rounded-lg border min-h-[40px] flex items-center justify-center",
+            "text-xs text-center p-3 rounded-lg border min-h-[48px] flex items-center justify-center mx-2",
             getInsightColors(zones.insight.variant)
           )}>
             <div className="flex items-center gap-1">
               {zones.insight.icon}
-              <span>{zones.insight.text}</span>
+              <span className="leading-tight">{zones.insight.text}</span>
             </div>
           </div>
         )}
 
-        {/* Spacer - Flexible */}
-        <div className="flex-1 min-h-[8px]"></div>
+        {/* Spacer - Flexible to push button to bottom */}
+        <div className="flex-1 min-h-[16px]"></div>
 
-        {/* Action Zone - Fixed Height */}
-        <div className="min-h-[36px]">
+        {/* Action Zone - Fixed Height, Perfect Alignment */}
+        <div className="min-h-[40px] px-2">
           <Button 
             onClick={zones.action.onClick}
             className={cn(
-              "w-full text-white transition-all duration-200",
+              "w-full text-white transition-all duration-200 h-9",
               getActionButtonColors(zones.action.variant)
             )}
-            size="sm"
           >
             {zones.action.icon}
             {zones.action.text}
