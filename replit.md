@@ -27,6 +27,18 @@ Animation preferences: Sequential top-to-bottom animations for clean, profession
 
 **Complete Milestone System Implementation (Aug 16, 2025)**: Successfully implemented comprehensive milestone system with full workflow integration. Features include:
 
+**Dashboard Goal Card Intelligence Optimization (Aug 16, 2025)**: Completely redesigned dashboard goal card with milestone-aware intelligence system. Enhanced features include:
+
+**Milestone-Based Analytics**: Dashboard now distinguishes between milestone-based and manual goals, providing weighted progress calculations and milestone completion statistics. Shows "3 of 6 milestones completed" vs traditional progress tracking.
+
+**Smart Status Indicators**: Context-aware status badges showing goal types (milestone vs manual), stalled milestone alerts, and progress momentum indicators. Visual hierarchy helps users understand their goal composition at a glance.
+
+**Intelligent Action Buttons**: Context-sensitive call-to-action buttons that adapt based on goal states - "Complete 3 Milestones" for pending milestone work, "Set Up Milestone Plans" for manual goals, or "Review Milestone Progress" for active milestone tracking.
+
+**Enhanced Progress Intelligence**: Weighted progress calculation for milestone-based goals provides more accurate overall progress representation. Status indicators now include "Strong Momentum" and "Stalled Milestones" for better actionable insights.
+
+**Mixed Goal Type Support**: Seamlessly handles users with both milestone-based and manual goals, providing appropriate metrics and actions for each scenario. Maintains backward compatibility while adding intelligent enhancements.
+
 **MilestoneSetup Component**: Modal that opens after creating milestone-based goals, offering 5 pre-built business templates (Product Launch, Business Expansion, Skill Mastery, E-commerce Store, Health & Fitness) with weighted milestones totaling 100%. Custom milestone creation with weight validation ensures accurate progress calculation.
 
 **MilestoneManager Component**: Integrated into EditGoalModal for milestone-based goals, replacing progress slider with milestone checklist. Real-time progress updates as milestones are completed, with automatic goal progress synchronization. Milestone CRUD operations with weight-based progress calculation.
