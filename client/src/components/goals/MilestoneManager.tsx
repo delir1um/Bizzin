@@ -23,6 +23,11 @@ export function MilestoneManager({ goal, onProgressUpdate }: MilestoneManagerPro
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const [editingMilestone, setEditingMilestone] = useState<string | null>(null)
+  const [editData, setEditData] = useState({
+    title: '',
+    description: '',
+    weight: 10
+  })
   const [newMilestone, setNewMilestone] = useState({
     title: '',
     description: '',
@@ -126,6 +131,34 @@ export function MilestoneManager({ goal, onProgressUpdate }: MilestoneManagerPro
       toast({
         title: "Error",
         description: "Failed to create milestone. Please try again.",
+        variant: "destructive",
+      })
+    }
+  })
+
+  // Edit milestone
+  const editMilestoneMutation = useMutation({
+    mutationFn: async () => {
+      if (!editingMilestone) throw new Error('No milestone selected for editing')
+      return await MilestonesService.updateMilestone(editingMilestone, {
+        title: editData.title,
+        description: editData.description,
+        weight: editData.weight
+      })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['milestones', goal.id] })
+      setEditingMilestone(null)
+      setEditData({ title: '', description: '', weight: 10 })
+      toast({
+        title: "Milestone Updated",
+        description: "Milestone updated successfully!",
+      })
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update milestone. Please try again.",
         variant: "destructive",
       })
     }
@@ -265,71 +298,150 @@ export function MilestoneManager({ goal, onProgressUpdate }: MilestoneManagerPro
                   : 'bg-slate-50 border-slate-200 dark:bg-slate-800 dark:border-slate-700'
               }`}
             >
-              <div className="flex items-start gap-3">
-                <Checkbox
-                  checked={milestone.status === 'done'}
-                  onCheckedChange={() => handleToggleMilestone(milestone)}
-                  className="mt-1"
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h4 className={`font-medium ${
-                      milestone.status === 'done' 
-                        ? 'line-through text-slate-500' 
-                        : 'text-slate-900 dark:text-slate-100'
-                    }`}>
-                      {milestone.title}
-                    </h4>
-                    <Badge variant="outline">
-                      {milestone.weight || 0}%
-                    </Badge>
+              {editingMilestone === milestone.id ? (
+                // Edit mode
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="md:col-span-2">
+                      <Label htmlFor={`edit-title-${milestone.id}`}>Title</Label>
+                      <Input
+                        id={`edit-title-${milestone.id}`}
+                        value={editData.title}
+                        onChange={(e) => setEditData(prev => ({ ...prev, title: e.target.value }))}
+                        placeholder="Milestone title"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor={`edit-weight-${milestone.id}`}>Weight (%)</Label>
+                      <Input
+                        id={`edit-weight-${milestone.id}`}
+                        type="number"
+                        min="1"
+                        max="100"
+                        value={editData.weight}
+                        onChange={(e) => setEditData(prev => ({ ...prev, weight: parseInt(e.target.value) || 1 }))}
+                      />
+                    </div>
                   </div>
-                  {milestone.description && (
-                    <p className={`text-sm mt-1 ${
-                      milestone.status === 'done' 
-                        ? 'line-through text-slate-400' 
-                        : 'text-slate-600 dark:text-slate-300'
-                    }`}>
-                      {milestone.description}
-                    </p>
-                  )}
-                  {milestone.status === 'done' && milestone.updated_at && (
-                    <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                      Completed {new Date(milestone.updated_at).toLocaleDateString()}
-                    </p>
-                  )}
+                  <div>
+                    <Label htmlFor={`edit-description-${milestone.id}`}>Description</Label>
+                    <Textarea
+                      id={`edit-description-${milestone.id}`}
+                      value={editData.description}
+                      onChange={(e) => setEditData(prev => ({ ...prev, description: e.target.value }))}
+                      placeholder="Optional description"
+                      rows={2}
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setEditingMilestone(null)
+                        setEditData({ title: '', description: '', weight: 10 })
+                      }}
+                      disabled={editMilestoneMutation.isPending}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        if (!editData.title.trim()) {
+                          toast({
+                            title: "Error",
+                            description: "Please enter a milestone title.",
+                            variant: "destructive",
+                          })
+                          return
+                        }
+                        editMilestoneMutation.mutate()
+                      }}
+                      disabled={editMilestoneMutation.isPending}
+                      className="bg-orange-600 hover:bg-orange-700 text-white"
+                    >
+                      {editMilestoneMutation.isPending ? "Saving..." : "Save"}
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      // FIX #5: Prevent modal from closing when clicking edit
-                      e.preventDefault()
-                      e.stopPropagation()
-                      setEditingMilestone(milestone.id)
-                    }}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Edit3 className="w-3 h-3" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      // FIX #6: Prevent modal from closing and add confirmation
-                      e.preventDefault()
-                      e.stopPropagation()
-                      if (window.confirm(`Are you sure you want to delete "${milestone.title}"? This action cannot be undone.`)) {
-                        deleteMilestoneMutation.mutate(milestone.id)
-                      }
-                    }}
-                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </Button>
+              ) : (
+                // View mode
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    checked={milestone.status === 'done'}
+                    onCheckedChange={() => handleToggleMilestone(milestone)}
+                    className="mt-1"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h4 className={`font-medium ${
+                        milestone.status === 'done' 
+                          ? 'line-through text-slate-500' 
+                          : 'text-slate-900 dark:text-slate-100'
+                      }`}>
+                        {milestone.title}
+                      </h4>
+                      <Badge variant="outline">
+                        {milestone.weight || 0}%
+                      </Badge>
+                    </div>
+                    {milestone.description && (
+                      <p className={`text-sm mt-1 ${
+                        milestone.status === 'done' 
+                          ? 'line-through text-slate-400' 
+                          : 'text-slate-600 dark:text-slate-300'
+                      }`}>
+                        {milestone.description}
+                      </p>
+                    )}
+                    {milestone.status === 'done' && milestone.updated_at && (
+                      <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                        Completed {new Date(milestone.updated_at).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        // FIX #5: Prevent modal from closing when clicking edit
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setEditingMilestone(milestone.id)
+                        setEditData({
+                          title: milestone.title,
+                          description: milestone.description || '',
+                          weight: milestone.weight || 10
+                        })
+                      }}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Edit3 className="w-3 h-3" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        // FIX #6: Prevent modal from closing and add confirmation
+                        e.preventDefault()
+                        e.stopPropagation()
+                        if (window.confirm(`Are you sure you want to delete "${milestone.title}"? This action cannot be undone.`)) {
+                          deleteMilestoneMutation.mutate(milestone.id)
+                        }
+                      }}
+                      className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           ))}
 
