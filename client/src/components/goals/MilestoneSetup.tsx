@@ -106,6 +106,8 @@ export function MilestoneSetup({ goal, open, onOpenChange, onComplete }: Milesto
     description: '',
     weight: 10
   })
+  const [editableMilestones, setEditableMilestones] = useState<any[]>([])
+  const [editingField, setEditingField] = useState<{ index: number, field: string } | null>(null)
 
   const createMilestonesMutation = useMutation({
     mutationFn: async (milestones: Array<{name: string, description: string, weight: number, order: number}>) => {
@@ -145,6 +147,8 @@ export function MilestoneSetup({ goal, open, onOpenChange, onComplete }: Milesto
     setSelectedTemplate(templateName)
     setCustomMilestones([])
     setShowCustomForm(false)
+    // Initialize editable milestones with template data
+    setEditableMilestones([...MILESTONE_TEMPLATES[templateName].milestones])
   }
 
   const handleCustomMode = () => {
@@ -170,17 +174,39 @@ export function MilestoneSetup({ goal, open, onOpenChange, onComplete }: Milesto
   }
 
   const getTotalWeight = () => {
-    if (selectedTemplate) {
+    if (selectedTemplate && editableMilestones.length > 0) {
+      return editableMilestones.reduce((sum: number, m: any) => sum + m.weight, 0)
+    } else if (selectedTemplate) {
       return MILESTONE_TEMPLATES[selectedTemplate].milestones.reduce((sum: number, m: any) => sum + m.weight, 0)
     }
     return customMilestones.reduce((sum: number, m: any) => sum + m.weight, 0)
   }
 
   const getMilestonesToCreate = () => {
-    if (selectedTemplate) {
+    if (selectedTemplate && editableMilestones.length > 0) {
+      return editableMilestones
+    } else if (selectedTemplate) {
       return MILESTONE_TEMPLATES[selectedTemplate].milestones
     }
     return customMilestones
+  }
+
+  const handleMilestoneEdit = (index: number, field: string, value: string) => {
+    const updatedMilestones = [...editableMilestones]
+    if (field === 'weight') {
+      updatedMilestones[index] = { ...updatedMilestones[index], [field]: parseInt(value) || 0 }
+    } else {
+      updatedMilestones[index] = { ...updatedMilestones[index], [field]: value }
+    }
+    setEditableMilestones(updatedMilestones)
+  }
+
+  const startEditing = (index: number, field: string) => {
+    setEditingField({ index, field })
+  }
+
+  const stopEditing = () => {
+    setEditingField(null)
   }
 
   const handleCreateMilestones = () => {
@@ -348,31 +374,98 @@ export function MilestoneSetup({ goal, open, onOpenChange, onComplete }: Milesto
             </Card>
           )}
 
-          {/* Selected Template Preview */}
+          {/* Selected Template Preview - Now Editable */}
           {selectedTemplate && (
             <Card className={MILESTONE_TEMPLATES[selectedTemplate].color}>
               <CardHeader>
                 <CardTitle className="text-base flex items-center justify-between">
                   {selectedTemplate} Plan
                   <Badge variant="outline">
-                    {MILESTONE_TEMPLATES[selectedTemplate].milestones.length} milestones
+                    {(editableMilestones.length > 0 ? editableMilestones : MILESTONE_TEMPLATES[selectedTemplate].milestones).length} milestones
                   </Badge>
                 </CardTitle>
                 <CardDescription>
                   {MILESTONE_TEMPLATES[selectedTemplate].description}
+                  <div className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                    💡 Click on any text to customize before creating
+                  </div>
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                {MILESTONE_TEMPLATES[selectedTemplate].milestones.map((milestone: any, index: number) => (
-                  <div key={index} className="flex items-center justify-between p-2 bg-white/50 dark:bg-slate-900/50 rounded">
-                    <div className="flex items-center gap-3">
+                {(editableMilestones.length > 0 ? editableMilestones : MILESTONE_TEMPLATES[selectedTemplate].milestones).map((milestone: any, index: number) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-white/50 dark:bg-slate-900/50 rounded-lg border border-transparent hover:border-orange-200 dark:hover:border-orange-800 transition-all duration-200">
+                    <div className="flex items-center gap-3 flex-1">
                       <span className="text-sm font-medium text-slate-500">#{index + 1}</span>
-                      <div>
-                        <div className="font-medium">{milestone.name}</div>
-                        <div className="text-sm text-slate-600 dark:text-slate-300">{milestone.description}</div>
+                      <div className="flex-1 space-y-1">
+                        {/* Editable Title */}
+                        {editingField?.index === index && editingField?.field === 'name' ? (
+                          <Input
+                            value={milestone.name}
+                            onChange={(e) => handleMilestoneEdit(index, 'name', e.target.value)}
+                            onBlur={stopEditing}
+                            onKeyDown={(e) => e.key === 'Enter' && stopEditing()}
+                            className="font-medium text-sm h-8"
+                            autoFocus
+                          />
+                        ) : (
+                          <div 
+                            className="font-medium cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900 px-2 py-1 rounded transition-colors"
+                            onClick={() => startEditing(index, 'name')}
+                            title="Click to edit milestone title"
+                          >
+                            {milestone.name}
+                          </div>
+                        )}
+                        
+                        {/* Editable Description */}
+                        {editingField?.index === index && editingField?.field === 'description' ? (
+                          <Textarea
+                            value={milestone.description}
+                            onChange={(e) => handleMilestoneEdit(index, 'description', e.target.value)}
+                            onBlur={stopEditing}
+                            className="text-sm min-h-[60px] resize-none"
+                            autoFocus
+                          />
+                        ) : (
+                          <div 
+                            className="text-sm text-slate-600 dark:text-slate-300 cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900 px-2 py-1 rounded transition-colors"
+                            onClick={() => startEditing(index, 'description')}
+                            title="Click to edit milestone description"
+                          >
+                            {milestone.description}
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <Badge variant="secondary">{milestone.weight}%</Badge>
+                    
+                    {/* Editable Weight */}
+                    <div className="flex items-center gap-2">
+                      {editingField?.index === index && editingField?.field === 'weight' ? (
+                        <div className="flex items-center gap-1">
+                          <Input
+                            type="number"
+                            value={milestone.weight}
+                            onChange={(e) => handleMilestoneEdit(index, 'weight', e.target.value)}
+                            onBlur={stopEditing}
+                            onKeyDown={(e) => e.key === 'Enter' && stopEditing()}
+                            className="w-16 h-8 text-center text-sm"
+                            min="1"
+                            max="100"
+                            autoFocus
+                          />
+                          <span className="text-sm text-slate-500">%</span>
+                        </div>
+                      ) : (
+                        <Badge 
+                          variant="secondary" 
+                          className="cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900 transition-colors"
+                          onClick={() => startEditing(index, 'weight')}
+                          title="Click to edit milestone weight"
+                        >
+                          {milestone.weight}%
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 ))}
               </CardContent>
