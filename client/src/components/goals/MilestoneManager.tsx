@@ -38,9 +38,13 @@ export function MilestoneManager({ goal, onProgressUpdate }: MilestoneManagerPro
 
   // Calculate progress from completed milestones
   const calculateProgress = () => {
-    if (milestones.length === 0) return 0
-    const totalWeight = milestones.reduce((sum, m) => sum + (m.weight || 0), 0)
-    const completedWeight = milestones
+    return calculateProgressFromMilestones(milestones)
+  }
+
+  const calculateProgressFromMilestones = (milestonesList) => {
+    if (!milestonesList || milestonesList.length === 0) return 0
+    const totalWeight = milestonesList.reduce((sum, m) => sum + (m.weight || 0), 0)
+    const completedWeight = milestonesList
       .filter(m => m.completed)
       .reduce((sum, m) => sum + (m.weight || 0), 0)
     return totalWeight > 0 ? Math.round((completedWeight / totalWeight) * 100) : 0
@@ -52,7 +56,18 @@ export function MilestoneManager({ goal, onProgressUpdate }: MilestoneManagerPro
     if (onProgressUpdate) {
       onProgressUpdate(newProgress)
     }
-  }, [milestones])
+    
+    // Also update the goal in the database to keep them in sync
+    if (milestones.length > 0) {
+      GoalsService.updateGoal(goal.id, { progress: newProgress })
+        .then(() => {
+          console.log(`Goal progress synced: ${newProgress}%`)
+        })
+        .catch(error => {
+          console.error('Failed to sync goal progress:', error)
+        })
+    }
+  }, [milestones, goal.id])
 
   // Toggle milestone completion
   const toggleMilestoneMutation = useMutation({
@@ -64,10 +79,20 @@ export function MilestoneManager({ goal, onProgressUpdate }: MilestoneManagerPro
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['milestones', goal.id] })
-      // Update goal progress
-      const newProgress = calculateProgress()
-      GoalsService.updateGoal(goal.id, { progress: newProgress })
-      queryClient.invalidateQueries({ queryKey: ['goals'] })
+      
+      // Calculate and update goal progress immediately
+      setTimeout(() => {
+        // Use a small delay to ensure milestone data is updated first
+        const { data: updatedMilestones } = queryClient.getQueryData(['milestones', goal.id]) || { data: [] }
+        const milestonesList = updatedMilestones || milestones
+        const newProgress = calculateProgressFromMilestones(milestonesList)
+        
+        GoalsService.updateGoal(goal.id, { progress: newProgress })
+          .then(() => {
+            queryClient.invalidateQueries({ queryKey: ['goals'] })
+            console.log(`Goal progress updated to ${newProgress}% after milestone toggle`)
+          })
+      }, 100)
     },
     onError: (error) => {
       toast({

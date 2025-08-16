@@ -174,6 +174,14 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
                 goal={goal} 
                 onProgressUpdate={(newProgress) => {
                   setFormData(prev => ({ ...prev, progress: newProgress }))
+                  // Force re-render to show updated progress
+                  const updatedGoal = { ...goal, progress: newProgress }
+                  // Trigger parent component update if needed
+                  setTimeout(() => {
+                    window.dispatchEvent(new CustomEvent('goalProgressUpdated', { 
+                      detail: { goalId: goal.id, progress: newProgress } 
+                    }))
+                  }, 100)
                 }}
               />
             </div>
