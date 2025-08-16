@@ -694,7 +694,16 @@ export function GoalsPage() {
             <AnimatedGrid 
             className={
               viewMode === 'grid' 
-                ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8"
+                ? (() => {
+                    const goalCount = paginatedGoals.length;
+                    if (goalCount === 1) {
+                      return "grid grid-cols-1 gap-6 mb-8"; // Single goal takes full width
+                    } else if (goalCount === 2) {
+                      return "grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8"; // Two goals side by side on large screens
+                    } else {
+                      return "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8"; // Three+ goals use standard responsive grid
+                    }
+                  })()
                 : "space-y-4 mb-8"
             }
             stagger={0.1}
