@@ -460,18 +460,27 @@ export function EditGoalModal({ open, onOpenChange, goal, onGoalCompleted }: Edi
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent 
+                      className="w-auto p-0 z-50" 
+                      align="start"
+                      onInteractOutside={(e) => {
+                        e.preventDefault()
+                      }}
+                    >
                       <Calendar
                         mode="single"
                         selected={field.value}
                         onSelect={(date) => {
-                          field.onChange(date)
-                          setIsCalendarOpen(false)
+                          if (date) {
+                            field.onChange(date)
+                            setIsCalendarOpen(false)
+                          }
                         }}
                         disabled={(date) =>
                           date < new Date(new Date().setHours(0, 0, 0, 0))
                         }
                         initialFocus
+                        className="pointer-events-auto"
                       />
                     </PopoverContent>
                   </Popover>
