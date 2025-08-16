@@ -55,7 +55,13 @@ export function GoalsPage() {
     refetch
   } = useQuery({
     queryKey: ['goals', user?.id],
-    queryFn: () => user ? GoalsService.getUserGoals(user.id) : Promise.resolve([]),
+    queryFn: async () => {
+      if (!user) return []
+      console.log('Fetching goals for user:', user.id)
+      const result = await GoalsService.getUserGoals(user.id)
+      console.log('Goals fetched:', result.length, 'goals')
+      return result
+    },
     enabled: !!user
   })
 
