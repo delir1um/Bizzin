@@ -99,9 +99,8 @@ export function MilestoneManager({ goal, onProgressUpdate }: MilestoneManagerPro
       // Calculate and update goal progress immediately
       setTimeout(() => {
         // Use a small delay to ensure milestone data is updated first
-        const { data: updatedMilestones } = queryClient.getQueryData(['milestones', goal.id]) || { data: [] }
-        const milestonesList = updatedMilestones || milestones
-        const newProgress = calculateProgressFromMilestones(milestonesList)
+        const updatedMilestones = queryClient.getQueryData(['milestones', goal.id]) as Milestone[] || milestones
+        const newProgress = calculateProgressFromMilestones(updatedMilestones)
         
         GoalsService.updateGoal(goal.id, { progress: newProgress })
           .then(() => {
