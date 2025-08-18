@@ -205,34 +205,9 @@ export function EditGoalModal({ goal, open, onOpenChange, onGoalCompleted }: Edi
       return
     }
 
-    // FIX #4: Validate milestone weights total 100% for milestone-based goals
-    if (formData.progress_type === 'milestone') {
-      // Get milestones from the MilestoneManager component
-      const milestoneElements = document.querySelectorAll('[data-milestone-weight]')
-      let totalWeight = 0
-      milestoneElements.forEach(el => {
-        totalWeight += parseInt(el.getAttribute('data-milestone-weight') || '0')
-      })
-      
-      // Only require 100% if there are milestones, otherwise show warning
-      if (milestoneElements.length > 0 && totalWeight !== 100) {
-        toast({
-          title: "Milestone Weight Warning",
-          description: `Current milestone weights total ${totalWeight}%. For accurate progress tracking, milestones should total 100%. You can still save but progress calculations may be inaccurate.`,
-          variant: "destructive"
-        })
-        // Don't return - allow saving but warn user
-      }
-      
-      // If no milestones exist for milestone-based goal, warn user
-      if (milestoneElements.length === 0) {
-        toast({
-          title: "No Milestones Found", 
-          description: "This is a milestone-based goal but has no milestones. Add milestones to track progress effectively.",
-        })
-        // Don't return - allow saving but warn user
-      }
-    }
+    // FIX #4: Check milestone weights for milestone-based goals (but don't show warning on save)
+    // The MilestoneManager already shows real-time validation warnings
+    // No need to show additional warnings during save since we allow flexible saving
     
     const updates: Partial<Goal> = {
       title: formData.title,
