@@ -76,7 +76,15 @@ export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid' }: GoalCard
       .filter(milestone => milestone.status === 'done')
       .reduce((sum, milestone) => sum + (milestone.weight || 0), 0)
     
-    return Math.round((completedWeight / totalWeight) * 100)
+    // Normalize progress based on current total weight (handles partial milestone setups)
+    const normalizedProgress = Math.round((completedWeight / totalWeight) * 100)
+    
+    // If milestones don't total 100%, show proportional progress
+    if (totalWeight < 100) {
+      return Math.round((normalizedProgress * totalWeight) / 100)
+    }
+    
+    return normalizedProgress
   }
 
   const getActualProgress = () => {

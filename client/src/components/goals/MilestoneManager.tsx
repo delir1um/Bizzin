@@ -48,11 +48,23 @@ export function MilestoneManager({ goal, onProgressUpdate }: MilestoneManagerPro
 
   const calculateProgressFromMilestones = (milestonesList: Milestone[]) => {
     if (!milestonesList || milestonesList.length === 0) return 0
+    
     const totalWeight = milestonesList.reduce((sum: number, m: Milestone) => sum + (m.weight || 0), 0)
+    if (totalWeight === 0) return 0
+    
     const completedWeight = milestonesList
       .filter((m: Milestone) => m.status === 'done')
       .reduce((sum: number, m: Milestone) => sum + (m.weight || 0), 0)
-    return totalWeight > 0 ? Math.round((completedWeight / totalWeight) * 100) : 0
+    
+    // Normalize progress based on current total weight (handles partial milestone setups)
+    const normalizedProgress = Math.round((completedWeight / totalWeight) * 100)
+    
+    // If milestones don't total 100%, show proportional progress
+    if (totalWeight < 100) {
+      return Math.round((normalizedProgress * totalWeight) / 100)
+    }
+    
+    return normalizedProgress
   }
 
   // Update goal progress when milestones change
