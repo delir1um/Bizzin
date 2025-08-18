@@ -64,11 +64,35 @@ export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid' }: GoalCard
   const daysRemaining = differenceInDays(deadline, new Date())
   const isOverdue = isAfter(new Date(), deadline) && goal.status !== 'completed'
 
+  const calculateMilestoneProgress = () => {
+    if (!goal.milestones || goal.milestones.length === 0) {
+      return 0
+    }
+    
+    const totalWeight = goal.milestones.reduce((sum, milestone) => sum + (milestone.weight || 0), 0)
+    if (totalWeight === 0) return 0
+    
+    const completedWeight = goal.milestones
+      .filter(milestone => milestone.status === 'done')
+      .reduce((sum, milestone) => sum + (milestone.weight || 0), 0)
+    
+    return Math.round((completedWeight / totalWeight) * 100)
+  }
+
+  const getActualProgress = () => {
+    if (goal.progress_type === 'milestone') {
+      return calculateMilestoneProgress()
+    }
+    return goal.progress || 0
+  }
+
   const getProgressText = () => {
+    const actualProgress = getActualProgress()
+    
     if (goal.target_value && goal.current_value) {
       return `${goal.current_value.toLocaleString()} / ${goal.target_value.toLocaleString()}`
     }
-    return `${goal.progress}%`
+    return `${actualProgress}%`
   }
 
   const getTimeStatus = () => {
@@ -145,7 +169,7 @@ export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid' }: GoalCard
                     {getProgressText()}
                   </span>
                 </div>
-                <Progress value={goal.progress} className="h-2" />
+                <Progress value={getActualProgress()} className="h-2" />
               </div>
 
               <div className="text-center min-w-0">
@@ -259,7 +283,7 @@ export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid' }: GoalCard
             <span className="text-2xl font-bold text-slate-900 dark:text-white">{getProgressText()}</span>
           </div>
           <div className="relative">
-            <Progress value={goal.progress} className="h-2 bg-slate-100 dark:bg-slate-700" />
+            <Progress value={getActualProgress()} className="h-2 bg-slate-100 dark:bg-slate-700" />
             {/* Milestone Indicators - Option 2 Implementation */}
             {goal.progress_type === 'milestone' && goal.milestones && goal.milestones.length > 0 && (
               <div className="mt-2">
