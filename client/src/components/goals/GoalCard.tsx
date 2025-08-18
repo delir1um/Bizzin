@@ -258,7 +258,43 @@ export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid' }: GoalCard
             <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Progress</span>
             <span className="text-2xl font-bold text-slate-900 dark:text-white">{getProgressText()}</span>
           </div>
-          <Progress value={goal.progress} className="h-2 bg-slate-100 dark:bg-slate-700" />
+          <div className="relative">
+            <Progress value={goal.progress} className="h-2 bg-slate-100 dark:bg-slate-700" />
+            {/* Milestone Indicators - Option 2 Implementation */}
+            {goal.progress_type === 'milestone' && goal.milestones && goal.milestones.length > 0 && (
+              <div className="mt-2">
+                <div className="flex items-center justify-between relative h-1">
+                  {(() => {
+                    let cumulativeWeight = 0
+                    return goal.milestones.map((milestone, index) => {
+                      const position = cumulativeWeight
+                      cumulativeWeight += milestone.weight || 0
+                      const isCompleted = milestone.status === 'done'
+                      return (
+                        <div
+                          key={milestone.id}
+                          className={`absolute w-2 h-2 rounded-full border-2 transform -translate-x-1 -translate-y-0.5 transition-colors duration-200 ${
+                            isCompleted 
+                              ? 'bg-green-500 border-green-600 dark:bg-green-400 dark:border-green-500' 
+                              : 'bg-slate-300 border-slate-400 dark:bg-slate-600 dark:border-slate-500'
+                          }`}
+                          style={{ 
+                            left: `${Math.min(position, 98)}%`,
+                            zIndex: 10 
+                          }}
+                          title={`${milestone.title} (${milestone.weight}%) - ${isCompleted ? 'Completed' : 'Pending'}`}
+                        />
+                      )
+                    })
+                  })()}
+                </div>
+                <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  <span>{goal.milestones.filter(m => m.status === 'done').length} of {goal.milestones.length} milestones completed</span>
+                  <span>Total: {goal.milestones.reduce((sum, m) => sum + (m.weight || 0), 0)}%</span>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
         
         {/* Bottom section with reorganized layout */}

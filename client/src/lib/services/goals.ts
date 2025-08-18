@@ -17,8 +17,22 @@ export class GoalsService {
         throw new Error(`Failed to fetch goals: ${error.message}`)
       }
 
-      console.log(`[GOALS_FETCH] Retrieved ${data?.length || 0} goals for user ${userId}`)
-      return data || []
+      const goals = data || []
+      
+      // Fetch milestones for each milestone-based goal
+      for (const goal of goals) {
+        if (goal.progress_type === 'milestone') {
+          try {
+            goal.milestones = await MilestonesService.getMilestonesByGoalId(goal.id)
+          } catch (milestoneError) {
+            console.warn(`Failed to fetch milestones for goal ${goal.id}:`, milestoneError)
+            goal.milestones = []
+          }
+        }
+      }
+
+      console.log(`[GOALS_FETCH] Retrieved ${goals.length} goals for user ${userId}`)
+      return goals
     } catch (error) {
       goalLogger.logError('FETCH_GOALS', error, undefined, userId, 'Exception in getUserGoals')
       throw error
