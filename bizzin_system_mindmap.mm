@@ -178,7 +178,7 @@
 <node COLOR="#000000" CREATED="1692000000000" ID="favorites" MODIFIED="1692000000000" TEXT="Favorites System">
 <edge COLOR="#800080" STYLE="bezier" WIDTH="1"/>
 </node>
-<node COLOR="#000000" CREATED="1692000000000" ID="plan_limits" MODIFIED="1692000000000" TEXT="Plan-based Limits (free vs premium)">
+<node COLOR="#000000" CREATED="1692000000000" ID="subscription_model" MODIFIED="1692000000000" TEXT="Subscription Model (14-day trial → Full access)">
 <edge COLOR="#800080" STYLE="bezier" WIDTH="1"/>
 </node>
 </node>
