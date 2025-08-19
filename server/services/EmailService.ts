@@ -17,7 +17,7 @@ export class EmailService {
       port: parseInt(process.env.SMTP_PORT || '2525'),
       secure: false, // Use STARTTLS
       auth: {
-        user: process.env.SMTP_USER || process.env.EMAIL_USER,
+        user: process.env.SMTP_USER || 'bizzin',  // Keep original working username
         pass: process.env.SMTP_PASSWORD || process.env.EMAIL_APP_PASSWORD,
       },
     });
@@ -371,7 +371,7 @@ export class EmailService {
       });
 
       const mailOptions = {
-        from: `"Bizzin Daily Insights" <bizzin@bizzin.co.za>`,
+        from: `"Bizzin Daily Insights" <notifications@bizzin.co.za>`,
         to: userEmail,
         subject: `Your Daily Business Insights - ${new Date().toLocaleDateString()}`,
         html: htmlContent,
