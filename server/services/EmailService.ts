@@ -579,25 +579,9 @@ export class EmailService {
         return false;
       }
 
-      // Generate enhanced content on-the-fly for demonstration
-      const { profile, goals, recentEntries } = await this.getUserDataForEmail(emailContent.user_id);
-      const sentimentTrend = JSON.parse(emailContent.sentiment_trend || '{"overall":"neutral","trend":"stable"}');
-      
-      const enhancedContent = {
-        actionable_insights: this.generateActionableInsights(profile, goals, recentEntries, sentimentTrend),
-        gamification_data: this.generateGamificationData(profile, goals, recentEntries),
-        weekly_challenge: this.generateWeeklyChallenge(profile, goals, sentimentTrend),
-        smart_recommendations: this.generateSmartRecommendations(profile, goals, recentEntries)
-      };
-
       const htmlContent = template({
         ...emailContent,
-        personalization: {
-          ...emailContent.personalization_data,
-          journalStreak: this.calculateJournalStreak(recentEntries),
-          weeklyProgress: this.calculateWeeklyProgress(goals),
-        },
-        ...enhancedContent,
+        personalization: emailContent.personalization_data,
         baseUrl: process.env.BASE_URL || 'https://bizzin.co.za',
         unsubscribeUrl: `${process.env.BASE_URL || 'https://bizzin.co.za'}/unsubscribe?token=${this.generateUnsubscribeToken(emailContent.user_id)}`
       });
