@@ -255,10 +255,14 @@
                     📊 Your Business Mood Trend
                 </h2>
                 <div class="section-content">
-                    Your recent journal entries show a 
-                    <span class="sentiment-indicator sentiment-positive">Positive</span>
-                    business mindset with a 
-                    <strong>improving trend</strong> 📈
+                    {{#if personalization.recentEntryCount}}
+                        Your recent journal entries show a 
+                        <span class="sentiment-indicator sentiment-positive">Positive</span>
+                        business mindset with a 
+                        <strong>improving trend</strong> 📈
+                    {{else}}
+                        Start journaling to track your business mood and get personalized insights!
+                    {{/if}}
                 </div>
             </div>
 

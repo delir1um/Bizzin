@@ -63,49 +63,41 @@ export class EmailService {
         .eq('user_id', userId)
         .single();
 
-      // If no profile in user_profiles, get from auth.users
-      if (!profile) {
-        const { data: authData } = await supabase.auth.admin.getUserById(userId);
-        if (authData?.user) {
-          profile = {
-            user_id: userId,
-            email: authData.user.email || 'anton@cloudfusion.co.za',
-            full_name: authData.user.user_metadata?.full_name || authData.user.email?.split('@')[0] || 'User',
-            business_type: authData.user.user_metadata?.business_type || 'Business',
-            business_name: authData.user.user_metadata?.business_name || '',
-            first_name: authData.user.user_metadata?.first_name || '',
-            last_name: authData.user.user_metadata?.last_name || '',
-            phone: null,
-            bio: null,
-            avatar_url: null,
-            created_at: authData.user.created_at,
-            updated_at: authData.user.updated_at || authData.user.created_at
-          };
-        } else {
-          // Final fallback for testing
-          profile = {
-            user_id: userId,
-            email: 'anton@cloudfusion.co.za',
-            full_name: 'Anton Bosch',
-            business_type: 'Technology Solutions',
-            business_name: 'CloudFusion',
-            first_name: 'Anton',
-            last_name: 'Bosch',
-            phone: null,
-            bio: null,
-            avatar_url: null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          };
+      // If profile doesn't exist or has null/empty essential fields, enhance with fallbacks
+      if (!profile || !profile.full_name || profile.full_name === null || !profile.business_type || profile.business_type === null) {
+        let authData = null;
+        try {
+          const authResult = await supabase.auth.admin.getUserById(userId);
+          authData = authResult.data?.user;
+        } catch (error) {
+          console.log('Auth admin access not available, using fallback');
         }
+
+        // Create enhanced profile
+        const enhancedProfile = {
+          user_id: userId,
+          email: profile?.email || authData?.email || 'anton@cloudfusion.co.za',
+          full_name: profile?.full_name || authData?.user_metadata?.full_name || authData?.email?.split('@')[0] || 'Anton Bosch',
+          business_type: profile?.business_type || authData?.user_metadata?.business_type || 'Technology Solutions',
+          business_name: profile?.business_name || authData?.user_metadata?.business_name || 'CloudFusion',
+          first_name: profile?.first_name || authData?.user_metadata?.first_name || 'Anton',
+          last_name: profile?.last_name || authData?.user_metadata?.last_name || 'Bosch',
+          phone: profile?.phone || null,
+          bio: profile?.bio || null,
+          avatar_url: profile?.avatar_url || null,
+          created_at: profile?.created_at || authData?.created_at || new Date().toISOString(),
+          updated_at: profile?.updated_at || authData?.updated_at || new Date().toISOString()
+        };
+        
+        profile = enhancedProfile;
       }
 
-      console.log('Profile retrieved for email:', {
+      console.log('Enhanced profile for email:', {
         name: profile.full_name,
         business_type: profile.business_type,
         email: profile.email,
         user_id: profile.user_id,
-        source: profileError ? 'fallback' : 'database'
+        source: profileError ? 'fallback' : (profile.full_name ? 'database' : 'enhanced')
       });
 
       // Get user's goals and recent progress
@@ -414,7 +406,15 @@ export class EmailService {
       const htmlContent = template({
         ...emailContent,
         personalization: emailContent.personalization_data,
-        unsubscribeUrl: `${process.env.BASE_URL}/unsubscribe?token=${this.generateUnsubscribeToken(emailContent.user_id)}`
+        baseUrl: process.env.BASE_URL || 'https://bizzin.co.za',
+        unsubscribeUrl: `${process.env.BASE_URL || 'https://bizzin.co.za'}/unsubscribe?token=${this.generateUnsubscribeToken(emailContent.user_id)}`
+      });
+
+      console.log('Email template data:', {
+        hasPersonalization: !!emailContent.personalization_data,
+        userName: emailContent.personalization_data?.userName,
+        totalGoals: emailContent.personalization_data?.totalGoals,
+        recentEntryCount: emailContent.personalization_data?.recentEntryCount
       });
 
       const mailOptions = {
