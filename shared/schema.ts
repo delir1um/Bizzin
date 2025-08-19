@@ -67,6 +67,11 @@ export type DailyEmailContent = {
   sentiment_trend: string;
   milestone_reminders: string;
   personalization_data: Record<string, any>;
+  // Enhanced content fields
+  actionable_insights?: string;
+  gamification_data?: string; // JSON string
+  weekly_challenge?: string;
+  smart_recommendations?: string; // JSON string
   sent_at?: string;
   opened_at?: string;
   clicked_at?: string;

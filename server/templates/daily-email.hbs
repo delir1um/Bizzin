@@ -119,6 +119,62 @@
             border-radius: 0 8px 8px 0;
             color: #1f2937 !important;
         }
+        .actionable-insights {
+            background: #f0f9ff !important;
+            border-left: 4px solid #0ea5e9;
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            color: #1f2937 !important;
+        }
+        .weekly-challenge {
+            background: #fef3c7 !important;
+            border-left: 4px solid #f59e0b;
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            color: #1f2937 !important;
+            font-weight: 500;
+        }
+        .gamification-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 16px 0;
+        }
+        .badge {
+            background: #EA7A57 !important;
+            color: white !important;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .recommendation-card {
+            background: #f8fafc !important;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 12px 0;
+        }
+        .recommendation-title {
+            font-weight: 600;
+            color: #1f2937 !important;
+            margin-bottom: 8px;
+        }
+        .recommendation-description {
+            color: #6b7280 !important;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        .recommendation-action {
+            display: inline-block;
+            background: #EA7A57 !important;
+            color: white !important;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+        }
         .cta-button {
             display: inline-block;
             background: linear-gradient(135deg, #EA7A57 0%, #f97316 100%);
@@ -136,8 +192,8 @@
         }
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 16px;
             margin: 24px 0;
         }
         .stat-card {
@@ -220,11 +276,19 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <span class="stat-number">{{personalization.totalGoals}}</span>
-                    <div class="stat-label">Active Goals</div>
+                    <div class="stat-label">Total Goals</div>
                 </div>
                 <div class="stat-card">
                     <span class="stat-number">{{personalization.recentEntryCount}}</span>
                     <div class="stat-label">Journal Entries (7d)</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">{{personalization.journalStreak}}</span>
+                    <div class="stat-label">Day Streak</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">{{personalization.weeklyProgress}}%</span>
+                    <div class="stat-label">Weekly Progress</div>
                 </div>
             </div>
 
@@ -263,6 +327,35 @@
                 </div>
             </div>
 
+            <!-- Actionable Insights -->
+            {{#if actionable_insights}}
+            <div class="section">
+                <h2 class="section-title">
+                    🎯 Actionable Insights
+                </h2>
+                <div class="actionable-insights">
+                    {{actionable_insights}}
+                </div>
+            </div>
+            {{/if}}
+
+            <!-- Weekly Challenge -->
+            {{#if weekly_challenge}}
+            <div class="section">
+                <h2 class="section-title">
+                    🏆 This Week's Challenge
+                </h2>
+                <div class="weekly-challenge">
+                    {{weekly_challenge}}
+                </div>
+                <div style="text-align: center; margin-top: 16px;">
+                    <a href="{{baseUrl}}/journal/new?challenge={{weekly_challenge}}" class="cta-button" style="font-size: 14px; padding: 12px 24px;">
+                        Accept Challenge
+                    </a>
+                </div>
+            </div>
+            {{/if}}
+
             <!-- Milestone Reminders -->
             {{#if milestone_reminders}}
             <div class="section">
@@ -272,6 +365,40 @@
                 <div class="milestone-reminders">
                     {{{milestone_reminders}}}
                 </div>
+            </div>
+            {{/if}}
+
+            <!-- Gamification & Progress -->
+            <div class="section">
+                <h2 class="section-title">
+                    🏅 Your Achievement Progress
+                </h2>
+                <div class="section-content">
+                    <p><strong>Journal Streak:</strong> {{personalization.journalStreak}} days</p>
+                    {{#if gamification_data.badges}}
+                    <div class="gamification-badges">
+                        {{#each gamification_data.badges}}
+                        <span class="badge">{{this}}</span>
+                        {{/each}}
+                    </div>
+                    {{/if}}
+                    <p style="font-style: italic; color: #6b7280 !important;">{{gamification_data.nextMilestone}}</p>
+                </div>
+            </div>
+
+            <!-- Smart Recommendations -->
+            {{#if smart_recommendations}}
+            <div class="section">
+                <h2 class="section-title">
+                    🚀 Recommended Actions
+                </h2>
+                {{#each smart_recommendations}}
+                <div class="recommendation-card">
+                    <div class="recommendation-title">{{this.title}}</div>
+                    <div class="recommendation-description">{{this.description}}</div>
+                    <a href="{{../baseUrl}}{{this.url}}" class="recommendation-action">{{this.action}}</a>
+                </div>
+                {{/each}}
             </div>
             {{/if}}
 

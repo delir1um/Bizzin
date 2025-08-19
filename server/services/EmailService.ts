@@ -212,18 +212,30 @@ export class EmailService {
     // Create milestone reminders
     const milestoneReminders = this.generateMilestoneReminders(goals);
 
+    // Generate additional enhanced content
+    const actionableInsights = this.generateActionableInsights(profile, goals, recentEntries, sentimentTrend);
+    const gamificationData = this.generateGamificationData(profile, goals, recentEntries);
+    const weeklyChallenge = this.generateWeeklyChallenge(profile, goals, sentimentTrend);
+    const smartRecommendations = this.generateSmartRecommendations(profile, goals, recentEntries);
+
     return {
       journalPrompt,
       goalSummary,
       businessInsights,
       sentimentTrend: JSON.stringify(sentimentTrend),
       milestoneReminders,
+      actionableInsights,
+      gamificationData,
+      weeklyChallenge,
+      smartRecommendations,
       personalizationData: {
         userName,
         currentDate,
         totalGoals: totalGoals || goals?.length || 0,
         recentEntryCount: recentEntries?.length || 0,
         businessType: profile.business_type,
+        journalStreak: this.calculateJournalStreak(recentEntries),
+        weeklyProgress: this.calculateWeeklyProgress(goals),
       }
     };
   }
@@ -398,6 +410,166 @@ export class EmailService {
       .join('\n');
   }
 
+  // Generate actionable insights based on user data
+  private generateActionableInsights(profile: any, goals: any[], recentEntries: any[], sentimentTrend: any) {
+    const insights = [];
+
+    // Energy pattern insights
+    if (recentEntries && recentEntries.length >= 3) {
+      const energyLevels = recentEntries.map(entry => entry.sentiment_analysis?.energy_level).filter(Boolean);
+      if (energyLevels.length > 0) {
+        const highEnergyDays = energyLevels.filter(level => level === 'high').length;
+        if (highEnergyDays >= 2) {
+          insights.push("Your energy levels have been high recently - perfect time to tackle your most challenging business tasks!");
+        }
+      }
+    }
+
+    // Goal momentum insights
+    if (goals && goals.length > 0) {
+      const recentlyUpdatedGoals = goals.filter(g => {
+        const updated = new Date(g.updated_at);
+        const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        return updated > weekAgo;
+      });
+
+      if (recentlyUpdatedGoals.length === 0 && goals.length > 0) {
+        insights.push("Your goals haven't been updated this week. Consider reviewing and updating progress to maintain momentum.");
+      }
+    }
+
+    // Business focus recommendations
+    if (profile.business_type === 'Technology Solutions') {
+      insights.push("As a tech entrepreneur, consider documenting technical decisions and market research in your journal for better strategic clarity.");
+    }
+
+    return insights.join('\n\n') || "Keep building consistent habits - small daily actions lead to big business results!";
+  }
+
+  // Generate gamification data for user engagement
+  private generateGamificationData(profile: any, goals: any[], recentEntries: any[]) {
+    const journalStreak = this.calculateJournalStreak(recentEntries);
+    const goalCompletionRate = goals?.length ? (goals.filter(g => g.status === 'completed').length / goals.length) * 100 : 0;
+    
+    const badges = [];
+    if (journalStreak >= 7) badges.push("Weekly Warrior");
+    if (journalStreak >= 30) badges.push("Monthly Master");
+    if (goalCompletionRate >= 80) badges.push("Goal Crusher");
+    if (recentEntries?.length >= 10) badges.push("Insight Generator");
+
+    return {
+      journalStreak,
+      goalCompletionRate: Math.round(goalCompletionRate),
+      badges,
+      nextMilestone: journalStreak < 7 ? `${7 - journalStreak} days to Weekly Warrior badge` : 
+                    journalStreak < 30 ? `${30 - journalStreak} days to Monthly Master badge` :
+                    "Keep up the amazing consistency!"
+    };
+  }
+
+  // Calculate journal streak
+  private calculateJournalStreak(recentEntries: any[]) {
+    if (!recentEntries || recentEntries.length === 0) return 0;
+
+    const sortedEntries = recentEntries.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    let streak = 0;
+    let currentDate = new Date();
+    
+    for (const entry of sortedEntries) {
+      const entryDate = new Date(entry.created_at);
+      const daysDiff = Math.floor((currentDate.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (daysDiff === streak) {
+        streak++;
+        currentDate = entryDate;
+      } else {
+        break;
+      }
+    }
+    
+    return streak;
+  }
+
+  // Calculate weekly progress
+  private calculateWeeklyProgress(goals: any[]) {
+    if (!goals || goals.length === 0) return 0;
+    
+    const activeGoals = goals.filter(g => g.status === 'active');
+    const totalProgress = activeGoals.reduce((sum, g) => sum + (g.progress || 0), 0);
+    return Math.round(totalProgress / activeGoals.length);
+  }
+
+  // Generate weekly challenge
+  private generateWeeklyChallenge(profile: any, goals: any[], sentimentTrend: any) {
+    const challenges = [
+      "Document one key business decision and its reasoning",
+      "Identify and journal about your biggest business bottleneck",
+      "Write about three potential opportunities you see in your market",
+      "Analyze one customer feedback and plan actionable improvements",
+      "Set aside 30 minutes daily for strategic thinking and journal the insights",
+      "Review your business goals and adjust timelines based on current progress"
+    ];
+
+    // Customize based on sentiment
+    if (sentimentTrend.overall === 'positive') {
+      challenges.push("Channel your positive energy into planning your next big business move");
+    } else if (sentimentTrend.overall === 'negative') {
+      challenges.push("Focus on identifying three things going well in your business despite current challenges");
+    }
+
+    return challenges[Math.floor(Math.random() * challenges.length)];
+  }
+
+  // Generate smart recommendations
+  private generateSmartRecommendations(profile: any, goals: any[], recentEntries: any[]) {
+    const recommendations = [];
+
+    // Goal-based recommendations
+    if (!goals || goals.length === 0) {
+      recommendations.push({
+        title: "Start Goal Tracking",
+        description: "Set your first business goal to unlock progress insights and milestone tracking",
+        action: "Create Goal",
+        url: "/goals/new"
+      });
+    } else {
+      const staleGoals = goals.filter(g => {
+        const updated = new Date(g.updated_at);
+        const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+        return updated < twoWeeksAgo;
+      });
+
+      if (staleGoals.length > 0) {
+        recommendations.push({
+          title: "Update Goal Progress",
+          description: `${staleGoals.length} goals need progress updates to stay on track`,
+          action: "Review Goals",
+          url: "/goals"
+        });
+      }
+    }
+
+    // Journal-based recommendations
+    if (!recentEntries || recentEntries.length < 3) {
+      recommendations.push({
+        title: "Build Journal Habit",
+        description: "Regular journaling unlocks deeper business insights and trend analysis",
+        action: "Write Entry",
+        url: "/journal/new"
+      });
+    }
+
+    // Business tool recommendations
+    recommendations.push({
+      title: "Financial Planning",
+      description: "Use business calculators to model growth scenarios and cash flow",
+      action: "Open Tools",
+      url: "/tools"
+    });
+
+    return recommendations.slice(0, 2); // Return top 2 recommendations
+  }
+
   // Send daily email to user
   async sendDailyEmail(emailContent: DailyEmailContent, userEmail: string): Promise<boolean> {
     try {
@@ -407,9 +579,25 @@ export class EmailService {
         return false;
       }
 
+      // Generate enhanced content on-the-fly for demonstration
+      const { profile, goals, recentEntries } = await this.getUserDataForEmail(emailContent.user_id);
+      const sentimentTrend = JSON.parse(emailContent.sentiment_trend || '{"overall":"neutral","trend":"stable"}');
+      
+      const enhancedContent = {
+        actionable_insights: this.generateActionableInsights(profile, goals, recentEntries, sentimentTrend),
+        gamification_data: this.generateGamificationData(profile, goals, recentEntries),
+        weekly_challenge: this.generateWeeklyChallenge(profile, goals, sentimentTrend),
+        smart_recommendations: this.generateSmartRecommendations(profile, goals, recentEntries)
+      };
+
       const htmlContent = template({
         ...emailContent,
-        personalization: emailContent.personalization_data,
+        personalization: {
+          ...emailContent.personalization_data,
+          journalStreak: this.calculateJournalStreak(recentEntries),
+          weeklyProgress: this.calculateWeeklyProgress(goals),
+        },
+        ...enhancedContent,
         baseUrl: process.env.BASE_URL || 'https://bizzin.co.za',
         unsubscribeUrl: `${process.env.BASE_URL || 'https://bizzin.co.za'}/unsubscribe?token=${this.generateUnsubscribeToken(emailContent.user_id)}`
       });
