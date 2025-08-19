@@ -6,6 +6,8 @@ import { supabase } from '../lib/supabase.js';
 export class DailyEmailScheduler {
   private emailService: EmailService;
   private isRunning: boolean = false;
+  private lastTestEmailTime: number = 0;
+  private readonly TEST_EMAIL_COOLDOWN = 5000; // 5 seconds cooldown between test emails
 
   constructor() {
     this.emailService = new EmailService();
@@ -120,7 +122,16 @@ export class DailyEmailScheduler {
   // Manual trigger for testing
   async sendTestEmail(userId: string) {
     try {
-      console.log(`Sending test email for user ${userId}`);
+      // Prevent rapid test email sending
+      const now = Date.now();
+      if (now - this.lastTestEmailTime < this.TEST_EMAIL_COOLDOWN) {
+        const remainingTime = Math.ceil((this.TEST_EMAIL_COOLDOWN - (now - this.lastTestEmailTime)) / 1000);
+        console.log(`Test email cooldown active. Please wait ${remainingTime} seconds.`);
+        return false;
+      }
+      
+      this.lastTestEmailTime = now;
+      console.log(`=== SINGLE TEST EMAIL REQUEST for user ${userId} ===`);
       
       // Get user email from auth.users table (not user_profiles)
       const { data: user, error: userError } = await supabase.auth.admin.getUserById(userId);
@@ -130,13 +141,19 @@ export class DailyEmailScheduler {
         return false;
       }
 
+      console.log(`Found user email: ${user.user.email}`);
+
       // First clear any existing content for today to avoid duplicate key constraint
       const today = new Date().toISOString().split('T')[0];
-      await supabase
+      const { error: deleteError } = await supabase
         .from('daily_email_content')
         .delete()
         .eq('user_id', userId)
         .eq('email_date', today);
+      
+      if (deleteError) {
+        console.log('Delete error (might be expected):', deleteError.message);
+      }
 
       // Fetch additional data needed for enhanced digest
       const [profileResult, goalsResult, entriesResult] = await Promise.all([
@@ -167,19 +184,22 @@ export class DailyEmailScheduler {
       const recentEntries = entriesResult.data || [];
 
       // Generate content
+      console.log('=== GENERATING EMAIL CONTENT ===');
       const emailContent = await this.emailService.generateDailyEmailContent(userId);
       if (!emailContent) {
         console.error('Failed to generate email content');
         return false;
       }
+      console.log('=== EMAIL CONTENT GENERATED SUCCESSFULLY ===');
 
       // Send email with enhanced digest data
+      console.log('=== SENDING SINGLE EMAIL ===');
       const sent = await this.emailService.sendDailyEmail(emailContent, user.user.email, {
         profile,
         goals,
         recentEntries
       });
-      console.log(`Test email ${sent ? 'sent successfully' : 'failed'} to ${user.user.email}`);
+      console.log(`=== TEST EMAIL ${sent ? 'COMPLETED SUCCESSFULLY' : 'FAILED'} to ${user.user.email} ===`);
       
       return sent;
     } catch (error) {
