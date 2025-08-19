@@ -11,12 +11,14 @@ export class EmailService {
   private templates: Map<string, HandlebarsTemplateDelegate> = new Map();
 
   constructor() {
-    // Initialize email transporter (using Gmail/SMTP - you'll need to provide credentials)
+    // Initialize email transporter with SMTP2GO
     this.transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: process.env.SMTP_HOST || 'mail.smtp2go.com',
+      port: parseInt(process.env.SMTP_PORT || '2525'),
+      secure: false, // Use STARTTLS
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_APP_PASSWORD, // App-specific password
+        user: process.env.SMTP_USER || process.env.EMAIL_USER,
+        pass: process.env.SMTP_PASSWORD || process.env.EMAIL_APP_PASSWORD,
       },
     });
   }
@@ -326,7 +328,7 @@ export class EmailService {
       });
 
       const mailOptions = {
-        from: `"Bizzin Daily Insights" <${process.env.EMAIL_USER}>`,
+        from: `"Bizzin Daily Insights" <${process.env.SMTP_USER || process.env.EMAIL_USER}>`,
         to: userEmail,
         subject: `Your Daily Business Insights - ${new Date().toLocaleDateString()}`,
         html: htmlContent,
