@@ -901,7 +901,14 @@ export class EmailService {
   }
 
   private getTimeOfDayGreeting() {
-    const hour = new Date().getHours();
+    // Get current time in South Africa timezone (SAST - UTC+2)
+    const now = new Date();
+    const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const southAfricaTime = new Date(utcTime + (2 * 60 * 60 * 1000)); // UTC+2
+    const hour = southAfricaTime.getHours();
+    
+    console.log(`Server UTC time: ${now.toISOString()}`);
+    console.log(`South Africa time: ${southAfricaTime.toISOString()}, Hour: ${hour}`);
     
     if (hour < 12) {
       return {
