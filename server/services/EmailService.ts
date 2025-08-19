@@ -851,6 +851,7 @@ export class EmailService {
           month: 'long', 
           day: 'numeric' 
         }),
+        ...this.getTimeOfDayGreeting(),
         stats: {
           totalGoals: emailContent.personalization_data?.totalGoals || 0,
           journalEntries: emailContent.personalization_data?.recentEntryCount || 0,
@@ -896,6 +897,27 @@ export class EmailService {
     } catch (error) {
       console.error('Error sending daily email:', error);
       return false;
+    }
+  }
+
+  private getTimeOfDayGreeting() {
+    const hour = new Date().getHours();
+    
+    if (hour < 12) {
+      return {
+        timeOfDayGreeting: "Good morning",
+        greetingEmoji: "☀️"
+      };
+    } else if (hour < 17) {
+      return {
+        timeOfDayGreeting: "Good afternoon", 
+        greetingEmoji: "🌤️"
+      };
+    } else {
+      return {
+        timeOfDayGreeting: "Good evening",
+        greetingEmoji: "🌙"
+      };
     }
   }
 

@@ -129,7 +129,7 @@
                     <tr>
                         <td class="header-bg" style="background-color: #EA580C; padding: 30px; text-align: center;">
                             <h1 style="margin: 0; font-size: 24px; font-weight: bold; color: #ffffff !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;">
-                                Good morning, {{personalization.userName}}! ☀️
+                                {{timeOfDayGreeting}}, {{personalization.userName}}! {{greetingEmoji}}
                             </h1>
                             <p style="margin: 8px 0 0 0; font-size: 16px; color: #ffffff !important; opacity: 0.9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;">
                                 Your daily business digest for {{formattedDate}}
@@ -286,8 +286,8 @@
                                         <p style="margin: 0 0 15px 0; font-style: italic; color: #555555; line-height: 1.6; font-size: 14px;">{{journal_prompt}}</p>
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                                             <tr>
-                                                <td class="bright-orange-btn" style="border-radius: 8px; background: linear-gradient(135deg, #EA580C 0%, #dc2626 100%); box-shadow: 0 2px 4px rgba(234, 88, 12, 0.25);">
-                                                    <a href="{{baseUrl}}/journal" style="display: inline-block; padding: 14px 28px; color: #ffffff; text-decoration: none; font-weight: 600; font-size: 14px; letter-spacing: 0.025em;">Write Your Entry</a>
+                                                <td class="bright-orange-btn" style="border-radius: 10px; background: linear-gradient(135deg, #EA580C 0%, #dc2626 100%); box-shadow: 0 3px 8px rgba(234, 88, 12, 0.3); transition: transform 0.2s ease;">
+                                                    <a href="{{baseUrl}}/journal" style="display: inline-block; padding: 16px 32px; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 15px; letter-spacing: 0.025em; border-radius: 10px; text-align: center; min-width: 140px;">✍️ Write Your Entry</a>
                                                 </td>
                                             </tr>
                                         </table>
