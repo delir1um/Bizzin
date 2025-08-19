@@ -42,6 +42,10 @@ app.use((req, res, next) => {
   // Add Hugging Face API routes
   app.use('/api/huggingface', huggingfaceRouter);
   
+  // Add Email API routes
+  const emailRoutes = await import('./routes/email.js');
+  app.use('/api/email', emailRoutes.default);
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

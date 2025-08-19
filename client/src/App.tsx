@@ -20,6 +20,7 @@ import { AdminVideoPage } from "@/pages/AdminVideoPage"
 import AuthPage from "@/pages/AuthPage"
 import ProfilePage from "@/pages/ProfilePage"
 import { PrivacyPage } from "@/pages/PrivacyPage"
+import NotificationSettings from "@/pages/NotificationSettings"
 import { AuthProvider, useAuth } from "@/hooks/AuthProvider"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
 import { PreviewOrProtected } from "@/components/PreviewOrProtected"
@@ -108,6 +109,7 @@ function App() {
                 <Route path="/docsafe" component={() => <PreviewOrProtected protectedComponent={DocSafePage} previewComponent={DocSafePreviewPage} />} />
                 <Route path="/admin" component={() => <ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
                 <Route path="/admin/videos" component={() => <ProtectedRoute><AdminVideoPage /></ProtectedRoute>} />
+                <Route path="/settings/notifications" component={() => <ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
                 <Route path="/privacy" component={PrivacyPage} />
               </Layout>
             </Router>

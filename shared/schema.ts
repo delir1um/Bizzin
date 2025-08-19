@@ -31,6 +31,60 @@ export type UserProfile = {
   last_login?: string;
   created_at: string;
   updated_at: string;
+  // Email preferences
+  email_notifications?: boolean;
+  daily_email?: boolean;
+  daily_email_time?: string; // HH:MM format in user's timezone
+  timezone?: string;
+};
+
+// Daily Email Settings Table
+export type DailyEmailSettings = {
+  id: string;
+  user_id: string;
+  enabled: boolean;
+  send_time: string; // HH:MM format
+  timezone: string;
+  content_preferences: {
+    journal_prompts: boolean;
+    goal_summaries: boolean;
+    business_insights: boolean;
+    milestone_reminders: boolean;
+  };
+  last_sent_at?: string;
+  created_at: string;
+  updated_at: string;
+};
+
+// Daily Email Content Table - stores generated content
+export type DailyEmailContent = {
+  id: string;
+  user_id: string;
+  email_date: string; // YYYY-MM-DD
+  journal_prompt: string;
+  goal_summary: string;
+  business_insights: string;
+  sentiment_trend: string;
+  milestone_reminders: string;
+  personalization_data: Record<string, any>;
+  sent_at?: string;
+  opened_at?: string;
+  clicked_at?: string;
+  created_at: string;
+};
+
+// Email Analytics Table
+export type EmailAnalytics = {
+  id: string;
+  user_id: string;
+  email_type: 'daily_digest' | 'goal_reminder' | 'milestone_alert';
+  sent_at: string;
+  opened_at?: string;
+  clicked_at?: string;
+  unsubscribed_at?: string;
+  engagement_score: number; // 0-100
+  content_preferences?: Record<string, any>;
+  created_at: string;
 };
 
 // Admin Users Table
