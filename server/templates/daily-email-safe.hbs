@@ -133,14 +133,73 @@
                                 Good morning, {{personalization.userName}}! ☀️
                             </h1>
                             <p style="margin: 8px 0 0 0; font-size: 16px; color: #ffffff !important; opacity: 0.9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;">
-                                Your daily business insights for {{formattedDate}}
+                                Your daily business digest for {{formattedDate}}
                             </p>
                         </td>
                     </tr>
                     
                     <!-- Content -->
                     <tr>
-                        <td class="content-bg content-padding" style="background-color: #ffffff; padding: 30px;">
+                        <td class="content-bg content-padding" style="background-color: #ffffff; padding: 30px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;">
+                            
+                            {{#if motivation_quote}}
+                            <!-- Daily Motivation -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 25px;">
+                                <tr>
+                                    <td style="padding: 20px; background: linear-gradient(135deg, #fef3e2 0%, #fef7ed 100%); border-left: 4px solid #EA580C; border-radius: 0 12px 12px 0; text-align: center;">
+                                        <p style="margin: 0; font-size: 18px; font-style: italic; color: #1f2937; line-height: 1.6; font-weight: 500;">"{{motivation_quote}}"</p>
+                                        <div style="margin-top: 10px; font-size: 14px; color: #6b7280; font-weight: 600;">💪 Your Daily Business Fuel</div>
+                                    </td>
+                                </tr>
+                            </table>
+                            {{/if}}
+                            
+                            {{#if top_goal}}
+                            <!-- Top Goal Focus -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 25px;">
+                                <tr>
+                                    <td style="padding: 20px; background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px;">
+                                        <h3 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 700; color: #1f2937;">🎯 Your Priority Focus</h3>
+                                        <div style="font-size: 15px; color: #374151; margin-bottom: 8px; font-weight: 600;">{{top_goal.title}}</div>
+                                        <div style="background-color: #e5e7eb; border-radius: 8px; height: 8px; overflow: hidden; margin-bottom: 8px;">
+                                            <div style="background: linear-gradient(90deg, #EA580C 0%, #dc2626 100%); height: 100%; width: {{top_goal.progress}}%; transition: width 0.3s ease;"></div>
+                                        </div>
+                                        <div style="font-size: 13px; color: #6b7280;">{{top_goal.progress}}% complete • {{top_goal.days_remaining}} days remaining</div>
+                                    </td>
+                                </tr>
+                            </table>
+                            {{/if}}
+                            
+                            {{#if journal_snapshot}}
+                            <!-- Journal Snapshot -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 25px;">
+                                <tr>
+                                    <td style="padding: 20px; background-color: #fef7ed; border: 1px solid #fed7aa; border-radius: 12px;">
+                                        <h3 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 700; color: #1f2937;">📝 Journal Progress</h3>
+                                        <div style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">{{journal_snapshot.message}}</div>
+                                        {{#if journal_snapshot.streak_message}}
+                                        <div style="font-size: 13px; color: #EA580C; font-weight: 600;">🔥 {{journal_snapshot.streak_message}}</div>
+                                        {{/if}}
+                                    </td>
+                                </tr>
+                            </table>
+                            {{/if}}
+                            
+                            {{#if business_health}}
+                            <!-- Business Health Indicators -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 25px;">
+                                <tr>
+                                    <td style="padding: 20px; background-color: #f0f9ff; border: 1px solid #bae6fd; border-radius: 12px;">
+                                        <h3 style="margin: 0 0 15px 0; font-size: 16px; font-weight: 700; color: #1f2937;">📊 Business Health Check</h3>
+                                        {{#each business_health}}
+                                        <div style="font-size: 14px; color: #374151; margin-bottom: 8px;">
+                                            <strong>{{this.label}}:</strong> {{this.value}}
+                                        </div>
+                                        {{/each}}
+                                    </td>
+                                </tr>
+                            </table>
+                            {{/if}}
                             
                             <!-- Stats Grid -->
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="stats-table">
@@ -148,13 +207,13 @@
                                     <td class="stat-cell stat-card-enhanced" style="width: 25%; padding: 20px 15px; text-align: center; border: 1px solid #e2e8f0; border-radius: 12px; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); position: relative; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);">
                                         <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #EA580C 0%, #dc2626 100%); border-radius: 12px 12px 0 0;"></div>
                                         <div style="font-size: 28px; font-weight: 700; color: #EA580C; margin-bottom: 8px; letter-spacing: -0.025em;">{{stats.totalGoals}}</div>
-                                        <div style="font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">TOTAL GOALS</div>
+                                        <div style="font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">ACTIVE GOALS</div>
                                     </td>
                                     <td style="width: 12px;"></td>
                                     <td class="stat-cell stat-card-enhanced" style="width: 25%; padding: 20px 15px; text-align: center; border: 1px solid #e2e8f0; border-radius: 12px; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); position: relative; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);">
                                         <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #EA580C 0%, #dc2626 100%); border-radius: 12px 12px 0 0;"></div>
                                         <div style="font-size: 28px; font-weight: 700; color: #EA580C; margin-bottom: 8px; letter-spacing: -0.025em;">{{stats.journalEntries}}</div>
-                                        <div style="font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">JOURNAL ENTRIES (7D)</div>
+                                        <div style="font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">JOURNAL ENTRIES</div>
                                     </td>
                                     <td style="width: 12px;"></td>
                                     <td class="stat-cell stat-card-enhanced" style="width: 25%; padding: 20px 15px; text-align: center; border: 1px solid #e2e8f0; border-radius: 12px; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); position: relative; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);">
@@ -176,13 +235,56 @@
                                 <tr><td style="height: 30px;"></td></tr>
                             </table>
                             
+                            {{#if action_nudges}}
+                            <!-- Action Nudges -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 25px;">
+                                <tr>
+                                    <td style="padding: 20px; background: linear-gradient(135deg, #fef3e2 0%, #fef7ed 100%); border: 1px solid #fed7aa; border-radius: 12px;">
+                                        <h3 style="margin: 0 0 15px 0; font-size: 16px; font-weight: 700; color: #1f2937;">⚡ Today's Action Items</h3>
+                                        {{#each action_nudges}}
+                                        <div style="font-size: 14px; color: #374151; margin-bottom: 10px; padding: 12px; background-color: #ffffff; border-radius: 8px; border-left: 3px solid #EA580C;">
+                                            {{this.message}}
+                                            {{#if this.link}}
+                                            <div style="margin-top: 8px;">
+                                                <a href="{{../baseUrl}}{{this.link}}" style="color: #EA580C; text-decoration: none; font-weight: 600; font-size: 13px;">{{this.action_text}} →</a>
+                                            </div>
+                                            {{/if}}
+                                        </div>
+                                        {{/each}}
+                                    </td>
+                                </tr>
+                            </table>
+                            {{/if}}
+                            
+                            {{#if smart_suggestions}}
+                            <!-- Smart Suggestions -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 25px;">
+                                <tr>
+                                    <td style="padding: 20px; background-color: #f3f4f6; border: 1px solid #d1d5db; border-radius: 12px;">
+                                        <h3 style="margin: 0 0 15px 0; font-size: 16px; font-weight: 700; color: #1f2937;">💡 Smart Suggestions</h3>
+                                        {{#each smart_suggestions}}
+                                        <div style="font-size: 14px; color: #374151; margin-bottom: 12px;">
+                                            <div style="font-weight: 600; margin-bottom: 4px;">{{this.title}}</div>
+                                            <div>{{this.description}}</div>
+                                            {{#if this.link}}
+                                            <div style="margin-top: 6px;">
+                                                <a href="{{../baseUrl}}{{this.link}}" style="color: #EA580C; text-decoration: none; font-weight: 500; font-size: 13px;">Explore Now →</a>
+                                            </div>
+                                            {{/if}}
+                                        </div>
+                                        {{/each}}
+                                    </td>
+                                </tr>
+                            </table>
+                            {{/if}}
+                            
                             {{#if journal_prompt}}
                             <!-- Journal Prompt Section -->
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 25px;">
                                 <tr>
-                                    <td style="padding: 20px; background-color: #f0f9ff; border-left: 4px solid #EA580C; border-radius: 0 8px 8px 0;">
-                                        <h3 style="margin: 0 0 15px 0; font-size: 18px; font-weight: 600; color: #333333;">📝 Today's Journal Prompt</h3>
-                                        <p style="margin: 0 0 15px 0; font-style: italic; color: #555555; line-height: 1.6;">{{journal_prompt}}</p>
+                                    <td style="padding: 20px; background-color: #f0f9ff; border-left: 4px solid #EA580C; border-radius: 0 12px 12px 0;">
+                                        <h3 style="margin: 0 0 15px 0; font-size: 16px; font-weight: 700; color: #1f2937;">📝 Today's Journal Prompt</h3>
+                                        <p style="margin: 0 0 15px 0; font-style: italic; color: #555555; line-height: 1.6; font-size: 14px;">{{journal_prompt}}</p>
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                                             <tr>
                                                 <td class="bright-orange-btn" style="border-radius: 8px; background: linear-gradient(135deg, #EA580C 0%, #dc2626 100%); box-shadow: 0 2px 4px rgba(234, 88, 12, 0.25);">
@@ -192,11 +294,6 @@
                                         </table>
                                     </td>
                                 </tr>
-                            </table>
-                            
-                            <!-- Spacer -->
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-                                <tr><td style="height: 20px;"></td></tr>
                             </table>
                             {{/if}}
                             
