@@ -62,6 +62,62 @@ router.get('/debug/profile/:userId', async (req, res) => {
   }
 });
 
+// Enable daily emails for a user (quick setup)
+router.post('/enable', async (req, res) => {
+  try {
+    const { userId, sendTime = '08:00', timezone = 'Africa/Johannesburg' } = req.body;
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    // Create or update daily email settings
+    const { data: existingSetting } = await supabase
+      .from('daily_email_settings')
+      .select('id')
+      .eq('user_id', userId)
+      .single();
+
+    if (existingSetting) {
+      // Update existing
+      const { error } = await supabase
+        .from('daily_email_settings')
+        .update({
+          enabled: true,
+          send_time: sendTime,
+          timezone: timezone,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', userId);
+      
+      if (error) throw error;
+    } else {
+      // Create new
+      const { error } = await supabase
+        .from('daily_email_settings')
+        .insert({
+          user_id: userId,
+          enabled: true,
+          send_time: sendTime,
+          timezone: timezone,
+          content_preferences: {
+            journal_prompts: true,
+            goal_summaries: true,
+            business_insights: true,
+            milestone_reminders: true
+          }
+        });
+      
+      if (error) throw error;
+    }
+
+    res.json({ message: 'Daily emails enabled successfully', sendTime, timezone });
+  } catch (error) {
+    console.error('Enable daily emails error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Send test email
 router.post('/test', async (req, res) => {
   try {
