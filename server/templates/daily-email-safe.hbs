@@ -40,6 +40,9 @@
                 color: #333333 !important;
                 background-color: transparent !important;
             }
+            .email-wrapper {
+                background-color: #f1f5f9 !important;
+            }
             .main-container {
                 background-color: #ffffff !important;
             }
@@ -53,17 +56,44 @@
         
         /* Gmail-specific overrides */
         u + .body .main-container { background-color: #ffffff !important; }
-        .ExternalClass { background-color: #ffffff !important; }
-        .ExternalClass * { background-color: #ffffff !important; color: #333333 !important; }
+        u + .body .email-wrapper { background-color: #f1f5f9 !important; }
+        .ExternalClass { background-color: #f1f5f9 !important; }
+        .ExternalClass * { background-color: transparent !important; color: #333333 !important; }
         
         /* Fallback font stack */
         .font-primary {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif !important;
         }
         
+        /* Enhanced card styling */
+        .main-container {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+            border-radius: 16px !important;
+        }
+        
+        .bright-orange-btn {
+            background: linear-gradient(135deg, #EA7A57 0%, #f97316 100%) !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            transition: all 0.2s ease !important;
+            box-shadow: 0 2px 4px rgba(234, 122, 87, 0.2) !important;
+        }
+        
+        .bright-orange-btn:hover {
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 8px rgba(234, 122, 87, 0.3) !important;
+        }
+        
+        .stat-card-enhanced {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+            position: relative !important;
+        }
+        
         /* Responsive */
         @media only screen and (max-width: 600px) {
-            .main-container { width: 100% !important; }
+            .main-container { width: 100% !important; margin: 10px !important; }
             .content-padding { padding: 20px !important; }
             .stats-table { width: 100% !important; }
             .stat-cell { display: block !important; width: 100% !important; padding: 10px 0 !important; }
@@ -72,11 +102,11 @@
 </head>
 <body style="margin: 0; padding: 0; background-color: #f8fafc;" class="font-primary">
     <!-- Wrapper table for Outlook -->
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f8fafc;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="email-wrapper" style="background-color: #f1f5f9;">
         <tr>
-            <td align="center" style="padding: 20px 0;">
+            <td align="center" style="padding: 40px 20px;">
                 <!-- Main container -->
-                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="main-container" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="main-container" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.05);">
                     <!-- Header -->
                     <tr>
                         <td class="header-bg" style="background-color: #EA7A57; padding: 30px; text-align: center;">
@@ -96,24 +126,28 @@
                             <!-- Stats Grid -->
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="stats-table">
                                 <tr>
-                                    <td class="stat-cell" style="width: 25%; padding: 15px; text-align: center; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #f8fafc;">
-                                        <div style="font-size: 24px; font-weight: bold; color: #EA7A57; margin-bottom: 5px;">{{stats.totalGoals}}</div>
-                                        <div style="font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">TOTAL GOALS</div>
+                                    <td class="stat-cell stat-card-enhanced" style="width: 25%; padding: 20px 15px; text-align: center; border: 1px solid #e2e8f0; border-radius: 12px; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); position: relative; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);">
+                                        <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #EA7A57 0%, #f97316 100%); border-radius: 12px 12px 0 0;"></div>
+                                        <div style="font-size: 28px; font-weight: 700; color: #EA7A57; margin-bottom: 8px; letter-spacing: -0.025em;">{{stats.totalGoals}}</div>
+                                        <div style="font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">TOTAL GOALS</div>
                                     </td>
-                                    <td style="width: 8px;"></td>
-                                    <td class="stat-cell" style="width: 25%; padding: 15px; text-align: center; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #f8fafc;">
-                                        <div style="font-size: 24px; font-weight: bold; color: #EA7A57; margin-bottom: 5px;">{{stats.journalEntries}}</div>
-                                        <div style="font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">JOURNAL ENTRIES (7D)</div>
+                                    <td style="width: 12px;"></td>
+                                    <td class="stat-cell stat-card-enhanced" style="width: 25%; padding: 20px 15px; text-align: center; border: 1px solid #e2e8f0; border-radius: 12px; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); position: relative; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);">
+                                        <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #EA7A57 0%, #f97316 100%); border-radius: 12px 12px 0 0;"></div>
+                                        <div style="font-size: 28px; font-weight: 700; color: #EA7A57; margin-bottom: 8px; letter-spacing: -0.025em;">{{stats.journalEntries}}</div>
+                                        <div style="font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">JOURNAL ENTRIES (7D)</div>
                                     </td>
-                                    <td style="width: 8px;"></td>
-                                    <td class="stat-cell" style="width: 25%; padding: 15px; text-align: center; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #f8fafc;">
-                                        <div style="font-size: 24px; font-weight: bold; color: #EA7A57; margin-bottom: 5px;">{{stats.streak}}</div>
-                                        <div style="font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">DAY STREAK</div>
+                                    <td style="width: 12px;"></td>
+                                    <td class="stat-cell stat-card-enhanced" style="width: 25%; padding: 20px 15px; text-align: center; border: 1px solid #e2e8f0; border-radius: 12px; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); position: relative; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);">
+                                        <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #EA7A57 0%, #f97316 100%); border-radius: 12px 12px 0 0;"></div>
+                                        <div style="font-size: 28px; font-weight: 700; color: #EA7A57; margin-bottom: 8px; letter-spacing: -0.025em;">{{stats.streak}}</div>
+                                        <div style="font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">DAY STREAK</div>
                                     </td>
-                                    <td style="width: 8px;"></td>
-                                    <td class="stat-cell" style="width: 25%; padding: 15px; text-align: center; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #f8fafc;">
-                                        <div style="font-size: 24px; font-weight: bold; color: #EA7A57; margin-bottom: 5px;">{{stats.weeklyProgress}}%</div>
-                                        <div style="font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">WEEKLY PROGRESS</div>
+                                    <td style="width: 12px;"></td>
+                                    <td class="stat-cell stat-card-enhanced" style="width: 25%; padding: 20px 15px; text-align: center; border: 1px solid #e2e8f0; border-radius: 12px; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); position: relative; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);">
+                                        <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #EA7A57 0%, #f97316 100%); border-radius: 12px 12px 0 0;"></div>
+                                        <div style="font-size: 28px; font-weight: 700; color: #EA7A57; margin-bottom: 8px; letter-spacing: -0.025em;">{{stats.weeklyProgress}}%</div>
+                                        <div style="font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">WEEKLY PROGRESS</div>
                                     </td>
                                 </tr>
                             </table>
@@ -132,8 +166,8 @@
                                         <p style="margin: 0 0 15px 0; font-style: italic; color: #555555; line-height: 1.6;">{{journal_prompt}}</p>
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                                             <tr>
-                                                <td style="border-radius: 6px; background-color: #EA7A57;">
-                                                    <a href="{{baseUrl}}/journal" style="display: inline-block; padding: 12px 24px; color: #ffffff; text-decoration: none; font-weight: 500; font-size: 14px;">Write Your Entry</a>
+                                                <td class="bright-orange-btn" style="border-radius: 8px; background: linear-gradient(135deg, #EA7A57 0%, #f97316 100%); box-shadow: 0 2px 4px rgba(234, 122, 87, 0.2);">
+                                                    <a href="{{baseUrl}}/journal" style="display: inline-block; padding: 14px 28px; color: #ffffff; text-decoration: none; font-weight: 600; font-size: 14px; letter-spacing: 0.025em;">Write Your Entry</a>
                                                 </td>
                                             </tr>
                                         </table>
@@ -238,8 +272,8 @@
                                     <td align="center">
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                                             <tr>
-                                                <td style="border-radius: 8px; background-color: #EA7A57;">
-                                                    <a href="{{baseUrl}}/dashboard" style="display: inline-block; padding: 16px 32px; color: #ffffff; text-decoration: none; font-weight: 600; font-size: 16px;">Open Your Dashboard</a>
+                                                <td class="bright-orange-btn" style="border-radius: 8px; background: linear-gradient(135deg, #EA7A57 0%, #f97316 100%); box-shadow: 0 4px 8px rgba(234, 122, 87, 0.25);">
+                                                    <a href="{{baseUrl}}/dashboard" style="display: inline-block; padding: 18px 36px; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 16px; letter-spacing: 0.025em;">Open Your Dashboard</a>
                                                 </td>
                                             </tr>
                                         </table>
