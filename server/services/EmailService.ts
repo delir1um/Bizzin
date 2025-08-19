@@ -100,7 +100,7 @@ export class EmailService {
         source: profileError ? 'fallback' : (profile.full_name ? 'database' : 'enhanced')
       });
 
-      // Get user's goals and recent progress
+      // Get user's goals and recent progress (all statuses to get accurate count)
       const { data: goals } = await supabase
         .from('goals')
         .select(`
@@ -108,10 +108,13 @@ export class EmailService {
           milestones (*)
         `)
         .eq('user_id', userId)
-        .eq('status', 'active')
         .order('created_at', { ascending: false });
 
-      console.log(`Found ${goals?.length || 0} active goals for user`);
+      // Filter active goals for email content
+      const activeGoals = goals?.filter(g => g.status === 'active') || [];
+      const totalGoals = goals?.length || 0;
+
+      console.log(`Found ${totalGoals} total goals (${activeGoals.length} active) for user`);
 
       // Get recent journal entries for sentiment analysis
       const { data: recentEntries } = await supabase
@@ -123,8 +126,8 @@ export class EmailService {
 
       console.log(`Found ${recentEntries?.length || 0} recent journal entries for user`);
 
-      // Generate personalized content
-      const content = await this.generatePersonalizedContent(profile, goals || [], recentEntries || []);
+      // Generate personalized content using total goals for stats
+      const content = await this.generatePersonalizedContent(profile, goals || [], recentEntries || [], totalGoals);
       
       // Store generated content in database 
       const today = new Date().toISOString().split('T')[0];
@@ -183,7 +186,8 @@ export class EmailService {
   private async generatePersonalizedContent(
     profile: any, 
     goals: any[], 
-    recentEntries: any[]
+    recentEntries: any[],
+    totalGoals?: number
   ) {
     const userName = profile.full_name?.split(' ')[0] || profile.full_name || 'there';
     const currentDate = new Date().toLocaleDateString('en-US', { 
@@ -217,7 +221,7 @@ export class EmailService {
       personalizationData: {
         userName,
         currentDate,
-        totalGoals: goals?.length || 0,
+        totalGoals: totalGoals || goals?.length || 0,
         recentEntryCount: recentEntries?.length || 0,
         businessType: profile.business_type,
       }

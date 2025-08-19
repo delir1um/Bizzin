@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light only">
+    <meta name="supported-color-schemes" content="light">
     <title>Your Daily Business Insights</title>
     <style>
         body {
@@ -14,6 +16,30 @@
             padding: 20px;
             background-color: #ffffff !important;
         }
+        
+        /* Force light theme for all email clients */
+        [data-ogsc] * {
+            color: #333333 !important;
+            background-color: #ffffff !important;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            body, * {
+                color: #333333 !important;
+                background-color: #ffffff !important;
+            }
+            .container {
+                background: #ffffff !important;
+            }
+            .content {
+                background: #ffffff !important;
+            }
+        }
+        
+        /* Gmail and other specific email client overrides */
+        u + .body .container { background-color: #ffffff !important; }
+        .ExternalClass { background-color: #ffffff !important; }
+        .ExternalClass * { background-color: #ffffff !important; color: #333333 !important; }
         .container {
             background: #ffffff !important;
             border-radius: 12px;
