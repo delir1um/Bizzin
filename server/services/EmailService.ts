@@ -44,7 +44,7 @@ export class EmailService {
         });
       });
 
-      const templatePath = path.join(process.cwd(), 'server', 'templates', 'daily-email.hbs');
+      const templatePath = path.join(process.cwd(), 'server', 'templates', 'daily-email-safe.hbs');
       const templateSource = await fs.readFile(templatePath, 'utf-8');
       this.templates.set('daily-email', handlebars.compile(templateSource));
       console.log('Email templates loaded successfully');
