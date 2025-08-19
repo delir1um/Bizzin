@@ -144,6 +144,7 @@ export class EmailService {
           sentiment_trend: content.sentimentTrend,
           milestone_reminders: content.milestoneReminders,
           personalization_data: content.personalizationData,
+          // Skip enhanced digest fields - will generate fresh for each email
         })
         .select()
         .single();
@@ -160,6 +161,7 @@ export class EmailService {
             milestone_reminders: content.milestoneReminders,
             personalization_data: content.personalizationData,
             created_at: new Date().toISOString(), // Update timestamp
+            // Skip enhanced digest fields - will generate fresh for each email
           })
           .eq('user_id', userId)
           .eq('email_date', today)
@@ -826,7 +828,11 @@ export class EmailService {
   }
 
   // Send daily email to user
-  async sendDailyEmail(emailContent: DailyEmailContent, userEmail: string): Promise<boolean> {
+  async sendDailyEmail(emailContent: DailyEmailContent, userEmail: string, additionalData?: {
+    profile?: any,
+    goals?: any[],
+    recentEntries?: any[]
+  }): Promise<boolean> {
     try {
       const template = this.templates.get('daily-email');
       if (!template) {
@@ -851,12 +857,13 @@ export class EmailService {
           streak: emailContent.personalization_data?.journalStreak || 0,
           weeklyProgress: emailContent.personalization_data?.weeklyProgress || 0
         },
-        motivation_quote: emailContent.motivationQuote,
-        top_goal: emailContent.topGoal,
-        journal_snapshot: emailContent.journalSnapshot,
-        business_health: emailContent.businessHealth,
-        action_nudges: emailContent.actionNudges,
-        smart_suggestions: emailContent.smartSuggestions
+        // Generate fresh enhanced digest content for each email
+        motivation_quote: this.generateMotivationQuote(),
+        top_goal: this.getTopPriorityGoal(additionalData?.goals || []),
+        journal_snapshot: this.generateJournalSnapshot(additionalData?.recentEntries || []),
+        business_health: this.generateBusinessHealth(additionalData?.profile, additionalData?.goals || [], additionalData?.recentEntries || []),
+        action_nudges: this.generateActionNudges(additionalData?.profile, additionalData?.goals || [], additionalData?.recentEntries || []),
+        smart_suggestions: this.generateSmartSuggestions(additionalData?.profile, additionalData?.goals || [], additionalData?.recentEntries || [])
       };
 
       const htmlContent = template(templateData);

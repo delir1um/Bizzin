@@ -138,6 +138,34 @@ export class DailyEmailScheduler {
         .eq('user_id', userId)
         .eq('email_date', today);
 
+      // Fetch additional data needed for enhanced digest
+      const [profileResult, goalsResult, entriesResult] = await Promise.all([
+        // Get user profile
+        supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('user_id', userId)
+          .single(),
+        
+        // Get user's goals  
+        supabase
+          .from('goals')
+          .select(`*, milestones(*)`)
+          .eq('user_id', userId),
+          
+        // Get recent journal entries
+        supabase
+          .from('journal_entries')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(10)
+      ]);
+
+      const profile = profileResult.data;
+      const goals = goalsResult.data || [];
+      const recentEntries = entriesResult.data || [];
+
       // Generate content
       const emailContent = await this.emailService.generateDailyEmailContent(userId);
       if (!emailContent) {
@@ -145,8 +173,12 @@ export class DailyEmailScheduler {
         return false;
       }
 
-      // Send email
-      const sent = await this.emailService.sendDailyEmail(emailContent, user.user.email);
+      // Send email with enhanced digest data
+      const sent = await this.emailService.sendDailyEmail(emailContent, user.user.email, {
+        profile,
+        goals,
+        recentEntries
+      });
       console.log(`Test email ${sent ? 'sent successfully' : 'failed'} to ${user.user.email}`);
       
       return sent;

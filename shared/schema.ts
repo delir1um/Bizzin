@@ -72,6 +72,13 @@ export type DailyEmailContent = {
   gamification_data?: string; // JSON string
   weekly_challenge?: string;
   smart_recommendations?: string; // JSON string
+  // New enhanced digest fields
+  motivation_quote?: string;
+  top_goal?: string; // JSON string
+  journal_snapshot?: string; // JSON string  
+  business_health?: string; // JSON string
+  action_nudges?: string; // JSON string
+  smart_suggestions?: string; // JSON string
   sent_at?: string;
   opened_at?: string;
   clicked_at?: string;
