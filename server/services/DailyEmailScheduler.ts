@@ -18,19 +18,21 @@ export class DailyEmailScheduler {
     // Load email templates
     await this.emailService.loadTemplates();
 
-    // Schedule daily email checks every hour
-    cron.schedule('0 * * * *', async () => {
-      if (!this.isRunning) {
-        console.log('Running daily email check...');
-        await this.processDailyEmails();
-      }
-    });
-
-    // Also run immediately on startup for testing
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Development mode: Running initial email check...');
-      setTimeout(() => this.processDailyEmails(), 5000);
+    // Schedule daily email checks only in production (8 AM daily)
+    if (process.env.NODE_ENV === 'production') {
+      cron.schedule('0 8 * * *', async () => {
+        if (!this.isRunning) {
+          console.log('Running scheduled daily email check...');
+          await this.processDailyEmails();
+        }
+      });
+      console.log('Daily email cron job scheduled for 8:00 AM');
+    } else {
+      console.log('Development mode: Automatic email scheduling disabled');
     }
+
+    // Development mode: Don't auto-send emails on startup
+    // Only send emails when explicitly requested via test button or scheduled cron
 
     console.log('Daily Email Scheduler initialized successfully');
   }
