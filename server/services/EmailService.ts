@@ -328,7 +328,7 @@ export class EmailService {
       });
 
       const mailOptions = {
-        from: `"Bizzin Daily Insights" <${process.env.SMTP_USER || process.env.EMAIL_USER}>`,
+        from: `"Bizzin Daily Insights" <noreply@bizzin.app>`,
         to: userEmail,
         subject: `Your Daily Business Insights - ${new Date().toLocaleDateString()}`,
         html: htmlContent,

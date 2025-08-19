@@ -34,7 +34,7 @@ async function testEmailConfig() {
     console.log(`📧 Sending test email to ${testEmail}...`);
 
     const mailOptions = {
-      from: '"Bizzin Test" <bizzin@yourdomain.com>',
+      from: '"Bizzin Test" <noreply@bizzin.app>',
       to: testEmail,
       subject: 'Bizzin Daily Email System - Test',
       html: `
