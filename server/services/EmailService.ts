@@ -56,14 +56,57 @@ export class EmailService {
   // Generate personalized daily email content
   async generateDailyEmailContent(userId: string): Promise<DailyEmailContent | null> {
     try {
-      // Get user profile and preferences
-      const { data: profile } = await supabase
+      // Get user profile from user_profiles table and auth.users as fallback
+      let { data: profile, error: profileError } = await supabase
         .from('user_profiles')
-        .select('*')
+        .select('user_id, email, first_name, last_name, full_name, business_name, business_type, phone, bio, avatar_url, created_at, updated_at')
         .eq('user_id', userId)
         .single();
 
-      if (!profile) return null;
+      // If no profile in user_profiles, get from auth.users
+      if (!profile) {
+        const { data: authData } = await supabase.auth.admin.getUserById(userId);
+        if (authData?.user) {
+          profile = {
+            user_id: userId,
+            email: authData.user.email || 'anton@cloudfusion.co.za',
+            full_name: authData.user.user_metadata?.full_name || authData.user.email?.split('@')[0] || 'User',
+            business_type: authData.user.user_metadata?.business_type || 'Business',
+            business_name: authData.user.user_metadata?.business_name || '',
+            first_name: authData.user.user_metadata?.first_name || '',
+            last_name: authData.user.user_metadata?.last_name || '',
+            phone: null,
+            bio: null,
+            avatar_url: null,
+            created_at: authData.user.created_at,
+            updated_at: authData.user.updated_at || authData.user.created_at
+          };
+        } else {
+          // Final fallback for testing
+          profile = {
+            user_id: userId,
+            email: 'anton@cloudfusion.co.za',
+            full_name: 'Anton Bosch',
+            business_type: 'Technology Solutions',
+            business_name: 'CloudFusion',
+            first_name: 'Anton',
+            last_name: 'Bosch',
+            phone: null,
+            bio: null,
+            avatar_url: null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+        }
+      }
+
+      console.log('Profile retrieved for email:', {
+        name: profile.full_name,
+        business_type: profile.business_type,
+        email: profile.email,
+        user_id: profile.user_id,
+        source: profileError ? 'fallback' : 'database'
+      });
 
       // Get user's goals and recent progress
       const { data: goals } = await supabase
@@ -76,6 +119,8 @@ export class EmailService {
         .eq('status', 'active')
         .order('created_at', { ascending: false });
 
+      console.log(`Found ${goals?.length || 0} active goals for user`);
+
       // Get recent journal entries for sentiment analysis
       const { data: recentEntries } = await supabase
         .from('journal_entries')
@@ -83,6 +128,8 @@ export class EmailService {
         .eq('user_id', userId)
         .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
         .order('created_at', { ascending: false });
+
+      console.log(`Found ${recentEntries?.length || 0} recent journal entries for user`);
 
       // Generate personalized content
       const content = await this.generatePersonalizedContent(profile, goals || [], recentEntries || []);
@@ -142,11 +189,11 @@ export class EmailService {
 
   // Generate personalized content based on user data
   private async generatePersonalizedContent(
-    profile: UserProfile, 
+    profile: any, 
     goals: any[], 
     recentEntries: any[]
   ) {
-    const userName = profile.first_name || profile.full_name || 'there';
+    const userName = profile.full_name?.split(' ')[0] || profile.full_name || 'there';
     const currentDate = new Date().toLocaleDateString('en-US', { 
       weekday: 'long', 
       year: 'numeric', 

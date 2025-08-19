@@ -35,6 +35,33 @@ router.delete('/content/cleanup', async (req, res) => {
   }
 });
 
+// Debug profile endpoint  
+router.get('/debug/profile/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    console.log('Debugging profile for user:', userId);
+
+    // Test direct database query
+    const { data: profileData, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    console.log('Direct profile query result:', { data: !!profileData, error: profileError?.message });
+
+    res.json({
+      userId,
+      profile: profileData,
+      profileError: profileError?.message,
+      hasProfile: !!profileData
+    });
+  } catch (error) {
+    console.error('Debug profile error:', error);
+    res.status(500).json({ error: 'Debug failed' });
+  }
+});
+
 // Send test email
 router.post('/test', async (req, res) => {
   try {
