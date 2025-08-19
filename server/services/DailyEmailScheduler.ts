@@ -120,17 +120,21 @@ export class DailyEmailScheduler {
     try {
       console.log(`Sending test email for user ${userId}`);
       
-      // Get user email
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('email')
-        .eq('user_id', userId)
-        .single();
+      // Get user email from auth.users table (not user_profiles)
+      const { data: user, error: userError } = await supabase.auth.admin.getUserById(userId);
 
-      if (!profile?.email) {
-        console.error('User email not found');
+      if (userError || !user?.user?.email) {
+        console.error('User email not found:', userError);
         return false;
       }
+
+      // First clear any existing content for today to avoid duplicate key constraint
+      const today = new Date().toISOString().split('T')[0];
+      await supabase
+        .from('daily_email_content')
+        .delete()
+        .eq('user_id', userId)
+        .eq('email_date', today);
 
       // Generate content
       const emailContent = await this.emailService.generateDailyEmailContent(userId);
@@ -140,8 +144,8 @@ export class DailyEmailScheduler {
       }
 
       // Send email
-      const sent = await this.emailService.sendDailyEmail(emailContent, profile.email);
-      console.log(`Test email ${sent ? 'sent successfully' : 'failed'} to ${profile.email}`);
+      const sent = await this.emailService.sendDailyEmail(emailContent, user.user.email);
+      console.log(`Test email ${sent ? 'sent successfully' : 'failed'} to ${user.user.email}`);
       
       return sent;
     } catch (error) {

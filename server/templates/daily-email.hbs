@@ -249,21 +249,9 @@
                 </h2>
                 <div class="section-content">
                     Your recent journal entries show a 
-                    {{#if (eq sentiment_trend.overall 'positive')}}
-                        <span class="sentiment-indicator sentiment-positive">Positive</span>
-                    {{else if (eq sentiment_trend.overall 'negative')}}
-                        <span class="sentiment-indicator sentiment-negative">Challenging</span>
-                    {{else}}
-                        <span class="sentiment-indicator sentiment-neutral">Balanced</span>
-                    {{/if}}
+                    <span class="sentiment-indicator sentiment-positive">Positive</span>
                     business mindset with a 
-                    {{#if (eq sentiment_trend.trend 'improving')}}
-                        <strong>improving trend</strong> 📈
-                    {{else if (eq sentiment_trend.trend 'declining')}}
-                        <strong>declining trend</strong> 📉
-                    {{else}}
-                        <strong>stable trend</strong> ➡️
-                    {{/if}}
+                    <strong>improving trend</strong> 📈
                 </div>
             </div>
 

@@ -9,6 +9,32 @@ const emailScheduler = new DailyEmailScheduler();
 // Initialize email scheduler on startup
 emailScheduler.initialize().catch(console.error);
 
+// Clean up email content (for testing)
+router.delete('/content/cleanup', async (req, res) => {
+  try {
+    const { userId, date } = req.body;
+    
+    if (!userId || !date) {
+      return res.status(400).json({ error: 'User ID and date are required' });
+    }
+
+    const { error } = await supabase
+      .from('daily_email_content')
+      .delete()
+      .eq('user_id', userId)
+      .eq('email_date', date);
+
+    if (error) {
+      return res.status(500).json({ error: 'Failed to clean up content' });
+    }
+
+    res.json({ message: 'Content cleaned up successfully' });
+  } catch (error) {
+    console.error('Cleanup error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Send test email
 router.post('/test', async (req, res) => {
   try {

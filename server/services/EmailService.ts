@@ -26,6 +26,24 @@ export class EmailService {
   // Load and compile email templates
   async loadTemplates() {
     try {
+      // Register Handlebars helpers
+      handlebars.registerHelper('eq', function(a, b) {
+        return a === b;
+      });
+      
+      handlebars.registerHelper('gt', function(a, b) {
+        return a > b;
+      });
+
+      handlebars.registerHelper('formatDate', function(date) {
+        return new Date(date).toLocaleDateString('en-US', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
+      });
+
       const templatePath = path.join(process.cwd(), 'server', 'templates', 'daily-email.hbs');
       const templateSource = await fs.readFile(templatePath, 'utf-8');
       this.templates.set('daily-email', handlebars.compile(templateSource));
@@ -69,12 +87,15 @@ export class EmailService {
       // Generate personalized content
       const content = await this.generatePersonalizedContent(profile, goals || [], recentEntries || []);
       
-      // Store generated content in database
-      const { data: emailContent, error } = await supabase
+      // Store generated content in database 
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Try insert first, if duplicate then update
+      let { data: emailContent, error } = await supabase
         .from('daily_email_content')
         .insert({
           user_id: userId,
-          email_date: new Date().toISOString().split('T')[0],
+          email_date: today,
           journal_prompt: content.journalPrompt,
           goal_summary: content.goalSummary,
           business_insights: content.businessInsights,
@@ -84,6 +105,28 @@ export class EmailService {
         })
         .select()
         .single();
+
+      // If duplicate key error, update existing record instead
+      if (error && error.code === '23505') {
+        const { data: updatedContent, error: updateError } = await supabase
+          .from('daily_email_content')
+          .update({
+            journal_prompt: content.journalPrompt,
+            goal_summary: content.goalSummary,
+            business_insights: content.businessInsights,
+            sentiment_trend: content.sentimentTrend,
+            milestone_reminders: content.milestoneReminders,
+            personalization_data: content.personalizationData,
+            created_at: new Date().toISOString(), // Update timestamp
+          })
+          .eq('user_id', userId)
+          .eq('email_date', today)
+          .select()
+          .single();
+
+        emailContent = updatedContent;
+        error = updateError;
+      }
 
       if (error) {
         console.error('Error storing email content:', error);
@@ -328,7 +371,7 @@ export class EmailService {
       });
 
       const mailOptions = {
-        from: `"Bizzin Daily Insights" <noreply@bizzin.app>`,
+        from: `"Bizzin Daily Insights" <${process.env.SMTP_USER}>`,
         to: userEmail,
         subject: `Your Daily Business Insights - ${new Date().toLocaleDateString()}`,
         html: htmlContent,
