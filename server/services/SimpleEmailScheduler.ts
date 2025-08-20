@@ -67,7 +67,8 @@ export class SimpleEmailScheduler {
 
       console.log(`⏰ Checking for emails to send at ${currentHour}:00 SA time`);
 
-      // Get all users with daily email settings enabled
+      // OPTIMIZATION: Only query users scheduled for THIS hour
+      const currentTimeSlot = `${currentHour.toString().padStart(2, '0')}:00`;
       const { data: emailSettings, error } = await supabase
         .from('daily_email_settings')
         .select(`
@@ -76,13 +77,14 @@ export class SimpleEmailScheduler {
           enabled,
           timezone,
           content_preferences,
-          user_profiles!daily_email_settings_user_id_fkey (
+          user_profiles (
             email,
             name,
             business_type
           )
         `)
-        .eq('enabled', true);
+        .eq('enabled', true)
+        .eq('send_time', currentTimeSlot);
 
       if (error) {
         console.error('❌ Error fetching email settings:', error);
@@ -90,92 +92,54 @@ export class SimpleEmailScheduler {
       }
 
       if (!emailSettings || emailSettings.length === 0) {
-        console.log('📭 No users with email settings enabled');
+        console.log(`📭 No users scheduled for ${currentTimeSlot}`);
         return;
       }
 
-      let sentCount = 0;
-      let errorCount = 0;
-
-      // Process each user
-      for (const setting of emailSettings) {
-        try {
-          // Parse the user's preferred send time
-          const [sendHour, sendMinute] = setting.send_time.split(':').map(Number);
-          
-          // Check if it's time to send this user's email
-          if (currentHour === sendHour) {
-            console.log(`📧 Sending email to user ${setting.user_id} at their preferred time ${setting.send_time}`);
-            
-            // Check if email was already sent today
-            const today = southAfricaTime.toISOString().split('T')[0];
-            const { data: existingEmail } = await supabase
-              .from('email_delivery_log')
-              .select('id')
-              .eq('user_id', setting.user_id)
-              .eq('email_type', 'daily_digest')
-              .gte('sent_at', `${today}T00:00:00.000Z`)
-              .limit(1);
-
-            if (existingEmail && existingEmail.length > 0) {
-              console.log(`⚠️ Email already sent today for user ${setting.user_id}`);
-              continue;
-            }
-
-            // Send the email
-            const userProfile = Array.isArray(setting.user_profiles) ? setting.user_profiles[0] : setting.user_profiles;
-            const result = await this.emailService.sendDailyEmail(
-              setting.user_id,
-              {
-                profile: {
-                  name: userProfile?.name || 'Entrepreneur',
-                  business_type: userProfile?.business_type || 'Business',
-                  email: userProfile?.email || '',
-                  user_id: setting.user_id
-                }
-              }
-            );
-
-            if (result) {
-              // Log successful delivery
-              await supabase
-                .from('email_delivery_log')
-                .insert({
-                  user_id: setting.user_id,
-                  email_type: 'daily_digest',
-                  email_address: userProfile?.email,
-                  sent_at: new Date().toISOString(),
-                  status: 'sent'
-                });
-
-              sentCount++;
-              console.log(`✅ Email sent successfully to ${userProfile?.email}`);
+      console.log(`📊 Processing ${emailSettings.length} users scheduled for ${currentTimeSlot}`);
+      
+      // BATCH PROCESSING: Process emails in parallel batches for scalability
+      const BATCH_SIZE = 20; // Process 20 emails simultaneously
+      const batches = this.chunkArray(emailSettings, BATCH_SIZE);
+      
+      let totalSent = 0;
+      let totalErrors = 0;
+      
+      for (let i = 0; i < batches.length; i++) {
+        const batch = batches[i];
+        console.log(`🔄 Processing batch ${i + 1}/${batches.length} (${batch.length} users)`);
+        
+        const batchResults = await Promise.allSettled(
+          batch.map(setting => this.processSingleUser(setting, southAfricaTime))
+        );
+        
+        // Count results
+        const batchStats = batchResults.reduce((stats, result) => {
+          if (result.status === 'fulfilled') {
+            if (result.value.success) {
+              stats.sent++;
             } else {
-              errorCount++;
-              console.error(`❌ Failed to send email to ${userProfile?.email}`);
-              
-              // Log failed delivery
-              await supabase
-                .from('email_delivery_log')
-                .insert({
-                  user_id: setting.user_id,
-                  email_type: 'daily_digest',
-                  email_address: userProfile?.email,
-                  sent_at: new Date().toISOString(),
-                  status: 'failed',
-                  error_message: 'Email send failed'
-                });
+              stats.errors++;
             }
+          } else {
+            stats.errors++;
+            console.error('❌ Batch processing error:', result.reason);
           }
-        } catch (userError) {
-          errorCount++;
-          console.error(`❌ Error processing user ${setting.user_id}:`, userError);
+          return stats;
+        }, { sent: 0, errors: 0 });
+        
+        totalSent += batchStats.sent;
+        totalErrors += batchStats.errors;
+        
+        console.log(`📈 Batch ${i + 1} complete: ${batchStats.sent} sent, ${batchStats.errors} errors`);
+        
+        // Small delay between batches to prevent overwhelming email service
+        if (i < batches.length - 1) {
+          await this.delay(1000); // 1 second delay between batches
         }
       }
 
-      if (sentCount > 0 || errorCount > 0) {
-        console.log(`📊 Email batch complete: ${sentCount} sent, ${errorCount} errors`);
-      }
+      console.log(`📊 All batches complete: ${totalSent} sent, ${totalErrors} errors`);
 
     } catch (error) {
       console.error('❌ Critical error in email scheduler:', error);
@@ -192,7 +156,7 @@ export class SimpleEmailScheduler {
         .from('daily_email_settings')
         .select(`
           user_id,
-          user_profiles!daily_email_settings_user_id_fkey (
+          user_profiles (
             email,
             name,
             business_type
@@ -207,8 +171,12 @@ export class SimpleEmailScheduler {
       }
 
       const userProfile = Array.isArray(setting.user_profiles) ? setting.user_profiles[0] : setting.user_profiles;
+      // Generate email content first
+      const emailContent = await this.emailService.generateDailyEmailContent(userId);
+      
       const result = await this.emailService.sendDailyEmail(
-        userId,
+        emailContent,
+        userProfile?.email || '',
         {
           profile: {
             name: userProfile?.name || 'Entrepreneur',
@@ -230,6 +198,106 @@ export class SimpleEmailScheduler {
       console.error('❌ Error sending test email:', error);
       return false;
     }
+  }
+
+  // Helper method to process a single user with retry logic
+  private async processSingleUser(setting: any, southAfricaTime: Date, retryCount = 0): Promise<{success: boolean, userId: string}> {
+    const MAX_RETRIES = 3;
+    
+    try {
+      // Check if email was already sent today
+      const today = southAfricaTime.toISOString().split('T')[0];
+      const { data: existingEmail } = await supabase
+        .from('email_delivery_log')
+        .select('id')
+        .eq('user_id', setting.user_id)
+        .eq('email_type', 'daily_digest')
+        .gte('sent_at', `${today}T00:00:00.000Z`)
+        .limit(1);
+
+      if (existingEmail && existingEmail.length > 0) {
+        console.log(`⚠️ Email already sent today for user ${setting.user_id}`);
+        return { success: true, userId: setting.user_id }; // Not an error, just already sent
+      }
+
+      // Send the email
+      const userProfile = Array.isArray(setting.user_profiles) ? setting.user_profiles[0] : setting.user_profiles;
+      
+      // Generate email content first
+      const emailContent = await this.emailService.generateDailyEmailContent(setting.user_id);
+      
+      const result = await this.emailService.sendDailyEmail(
+        emailContent,
+        userProfile?.email || '',
+        {
+          profile: {
+            name: userProfile?.name || 'Entrepreneur',
+            business_type: userProfile?.business_type || 'Business',
+            email: userProfile?.email || '',
+            user_id: setting.user_id
+          }
+        }
+      );
+
+      if (result) {
+        // Log successful delivery
+        await supabase
+          .from('email_delivery_log')
+          .insert({
+            user_id: setting.user_id,
+            email_type: 'daily_digest',
+            email_address: userProfile?.email,
+            sent_at: new Date().toISOString(),
+            status: 'sent',
+            retry_count: retryCount
+          });
+
+        console.log(`✅ Email sent successfully to ${userProfile?.email}${retryCount > 0 ? ` (retry ${retryCount})` : ''}`);
+        return { success: true, userId: setting.user_id };
+      } else {
+        throw new Error('Email service returned false');
+      }
+    } catch (error: any) {
+      console.error(`❌ Error sending email to user ${setting.user_id} (attempt ${retryCount + 1}):`, error);
+      
+      // RETRY LOGIC: Retry failed emails with exponential backoff
+      if (retryCount < MAX_RETRIES) {
+        const delayMs = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s delays
+        console.log(`🔄 Retrying in ${delayMs}ms for user ${setting.user_id}`);
+        await this.delay(delayMs);
+        return this.processSingleUser(setting, southAfricaTime, retryCount + 1);
+      }
+      
+      // Log final failure after all retries
+      const userProfile = Array.isArray(setting.user_profiles) ? setting.user_profiles[0] : setting.user_profiles;
+      await supabase
+        .from('email_delivery_log')
+        .insert({
+          user_id: setting.user_id,
+          email_type: 'daily_digest',
+          email_address: userProfile?.email,
+          sent_at: new Date().toISOString(),
+          status: 'failed',
+          error_message: `Failed after ${MAX_RETRIES} retries: ${error.message}`,
+          retry_count: retryCount
+        });
+
+      return { success: false, userId: setting.user_id };
+    }
+  }
+
+  // Helper method to chunk array into batches
+  private chunkArray<T>(array: T[], size: number): T[][] {
+    const chunks = [];
+    for (let i = 0; i < array.length; i += size) {
+      chunks.push(array.slice(i, i + size));
+    }
+    return chunks;
+  }
+
+  // Helper method for delays
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   getStatus() {
