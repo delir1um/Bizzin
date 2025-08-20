@@ -50,7 +50,17 @@ app.use((req, res, next) => {
   const emailQueueRoutes = await import('./routes/email-queue.js');
   app.use('/api/email-queue', emailQueueRoutes.default);
   
+  // Add Simple Email API routes
+  const simpleEmailRoutes = await import('./routes/simple-email.js');
+  app.use('/api/simple-email', simpleEmailRoutes.default);
+  
   const server = await registerRoutes(app);
+  
+  // Initialize Simple Email Scheduler
+  const { simpleEmailScheduler } = await import('./services/SimpleEmailScheduler.js');
+  simpleEmailScheduler.start().catch(error => {
+    console.error('❌ Failed to start email scheduler:', error);
+  });
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
