@@ -140,6 +140,30 @@ router.post('/test', async (req, res) => {
   }
 });
 
+// Manual trigger for daily emails (admin only)
+router.post('/trigger-daily', async (req, res) => {
+  try {
+    console.log('=== MANUAL DAILY EMAIL TRIGGER ===');
+    // Trigger daily emails by calling public methods
+    const users = await emailScheduler['emailService'].getUsersForDailyEmails();
+    console.log(`Found ${users.length} eligible users for daily emails`);
+    
+    let successCount = 0;
+    for (const user of users) {
+      const success = await emailScheduler.sendTestEmail(user.userId);
+      if (success) successCount++;
+    }
+    
+    res.json({ 
+      message: `Daily emails processed: ${successCount}/${users.length} sent successfully`,
+      eligibleUsers: users.length
+    });
+  } catch (error) {
+    console.error('Manual trigger error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Get email analytics (admin only)
 router.get('/analytics', async (req, res) => {
   try {
