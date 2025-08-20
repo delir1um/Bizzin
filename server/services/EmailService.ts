@@ -237,11 +237,12 @@ export class EmailService {
       personalizationData: {
         userName,
         currentDate,
-        totalGoals: totalGoals || goals?.length || 0,
-        recentEntryCount: recentEntries?.length || 0,
+        totalGoals: goals?.filter(g => g.status === 'active')?.length || 0, // Only count active goals
+        recentEntryCount: recentEntries?.length || 0, // Total entries (for context)
+        thisWeekEntryCount: this.getEntriesThisWeek(recentEntries).length, // This week specifically
         businessType: profile.business_type,
         journalStreak: this.calculateJournalStreak(recentEntries),
-        weeklyProgress: this.calculateWeeklyProgress(goals),
+        weeklyProgress: this.calculateWeeklyProgress(goals?.filter(g => g.status === 'active') || []),
       }
     };
   }
@@ -530,16 +531,28 @@ export class EmailService {
   private generateSmartRecommendations(profile: any, goals: any[], recentEntries: any[]) {
     const recommendations = [];
 
-    // Goal-based recommendations
+    // Goal-based recommendations - contextual based on actual state
+    const activeGoals = goals?.filter(g => g.status === 'active') || [];
+    
     if (!goals || goals.length === 0) {
+      // Truly no goals at all
       recommendations.push({
         title: "Start Goal Tracking",
         description: "Set your first business goal to unlock progress insights and milestone tracking",
         action: "Create Goal",
         url: "/goals/new"
       });
+    } else if (activeGoals.length === 0 && goals.length > 0) {
+      // Has goals but none are active
+      recommendations.push({
+        title: "Reactivate Your Goals",
+        description: "You have existing goals that could be reactivated to drive business momentum",
+        action: "Review Goals",
+        url: "/goals"
+      });
     } else {
-      const staleGoals = goals.filter(g => {
+      // Has active goals - check for stale ones
+      const staleGoals = activeGoals.filter(g => {
         const updated = new Date(g.updated_at);
         const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
         return updated < twoWeeksAgo;
@@ -547,8 +560,8 @@ export class EmailService {
 
       if (staleGoals.length > 0) {
         recommendations.push({
-          title: "Update Goal Progress",
-          description: `${staleGoals.length} goals need progress updates to stay on track`,
+          title: "Update Goal Progress", 
+          description: `${staleGoals.length} goal${staleGoals.length > 1 ? 's' : ''} need progress updates to stay on track`,
           action: "Review Goals",
           url: "/goals"
         });
@@ -669,12 +682,15 @@ export class EmailService {
     return { message, streak_message: streakMessage };
   }
 
-  // Generate business health indicators
+  // Generate business health indicators with accurate data
   private generateBusinessHealth(profile: any, goals: any[], recentEntries: any[]) {
     const indicators = [];
     
-    // Goal progress health
+    // Calculate ACTUAL this week entries (not all recent entries)
+    const thisWeekEntries = this.getEntriesThisWeek(recentEntries);
     const activeGoals = goals?.filter(g => g.status === 'active') || [];
+    
+    // Goal progress health
     if (activeGoals.length > 0) {
       const onTrackGoals = activeGoals.filter(g => {
         if (g.goal_type === 'milestone' && g.milestones?.length) {
@@ -682,7 +698,7 @@ export class EmailService {
           const progress = (completedMilestones / g.milestones.length) * 100;
           return progress > 25; // Consider 25%+ progress as "on track"
         }
-        return true;
+        return g.current_value && g.target_value ? (g.current_value / g.target_value) > 0.25 : false;
       }).length;
       
       indicators.push({
@@ -691,28 +707,45 @@ export class EmailService {
       });
     }
     
-    // Journal consistency health
-    if (recentEntries && recentEntries.length > 0) {
-      const weeklyEntries = recentEntries.length;
-      const consistency = weeklyEntries >= 3 ? "Strong" : weeklyEntries >= 1 ? "Good" : "Needs attention";
-      indicators.push({
-        label: "Reflection Consistency",
-        value: `${consistency} - ${weeklyEntries} entries this week`
-      });
-    }
+    // Journal consistency health - using ACTUAL this week count
+    const weeklyEntries = thisWeekEntries.length;
+    const consistency = weeklyEntries >= 3 ? "Strong" : weeklyEntries >= 1 ? "Good" : "Needs attention";
+    indicators.push({
+      label: "Reflection Consistency", 
+      value: `${consistency} - ${weeklyEntries} entries this week`
+    });
     
-    // Sentiment health
-    if (recentEntries && recentEntries.length > 0) {
-      const positiveEntries = recentEntries.filter(e => 
+    // Sentiment health - based on this week's entries only
+    if (thisWeekEntries.length > 0) {
+      const positiveEntries = thisWeekEntries.filter(e => 
         e.sentiment_analysis?.sentiment === 'positive').length;
-      const sentimentHealth = positiveEntries > recentEntries.length / 2 ? "Positive trend" : "Mixed signals";
+      const sentimentHealth = positiveEntries > thisWeekEntries.length / 2 ? "Positive trend" : "Mixed signals";
       indicators.push({
         label: "Business Sentiment",
         value: sentimentHealth
       });
+    } else {
+      indicators.push({
+        label: "Business Sentiment", 
+        value: "No recent reflections to analyze"
+      });
     }
     
     return indicators.length > 0 ? indicators : null;
+  }
+  
+  // Helper function to get entries from this week only
+  private getEntriesThisWeek(recentEntries: any[]): any[] {
+    if (!recentEntries) return [];
+    
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - 7); // Last 7 days
+    
+    return recentEntries.filter(entry => {
+      const entryDate = new Date(entry.created_at || entry.entry_date);
+      return entryDate >= startOfWeek;
+    });
   }
 
   // Generate action nudges for platform engagement
