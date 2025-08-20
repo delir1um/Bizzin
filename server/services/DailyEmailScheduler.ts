@@ -20,15 +20,15 @@ export class DailyEmailScheduler {
     // Load email templates
     await this.emailService.loadTemplates();
 
-    // Schedule daily email checks only in production (8 AM daily)
+    // Schedule hourly email checks only in production (every hour at minute 0)
     if (process.env.NODE_ENV === 'production') {
-      cron.schedule('0 8 * * *', async () => {
+      cron.schedule('0 * * * *', async () => {
         if (!this.isRunning) {
-          console.log('Running scheduled daily email check...');
+          console.log('Running hourly email check...');
           await this.processDailyEmails();
         }
       });
-      console.log('Daily email cron job scheduled for 8:00 AM');
+      console.log('Hourly email cron job scheduled (every hour at :00)');
     } else {
       console.log('Development mode: Automatic email scheduling disabled');
     }
@@ -40,15 +40,24 @@ export class DailyEmailScheduler {
   }
 
   // Process daily emails for eligible users
-  private async processDailyEmails() {
+  public async processDailyEmails() {
     try {
       this.isRunning = true;
-      console.log('Processing daily emails...');
+      const currentHour = new Date().getHours();
+      console.log(`Processing hourly email check for ${currentHour}:00...`);
 
-      // Get users ready for daily emails
+      // Get users ready for daily emails (filtered by current hour)
       const eligibleUsers = await this.emailService.getUsersForDailyEmails();
-      console.log(`Found ${eligibleUsers.length} users eligible for daily emails`);
+      
+      if (eligibleUsers.length === 0) {
+        console.log(`No users scheduled for ${currentHour}:00 - skipping email processing`);
+        this.isRunning = false;
+        return;
+      }
 
+      console.log(`Processing ${eligibleUsers.length} users scheduled for ${currentHour}:00`);
+
+      let emailsSent = 0;
       for (const user of eligibleUsers) {
         try {
           // Check if email already sent today
@@ -75,6 +84,7 @@ export class DailyEmailScheduler {
           const sent = await this.emailService.sendDailyEmail(emailContent, user.email);
           if (sent) {
             console.log(`Daily email sent successfully to ${user.email}`);
+            emailsSent++;
             
             // Track analytics
             await this.trackEmailAnalytics(user.userId, 'daily_digest', true);
@@ -90,7 +100,7 @@ export class DailyEmailScheduler {
         }
       }
 
-      console.log('Daily email processing completed');
+      console.log(`Hourly email processing complete: ${emailsSent}/${eligibleUsers.length} emails sent successfully for ${currentHour}:00`);
     } catch (error) {
       console.error('Error in daily email processing:', error);
     } finally {

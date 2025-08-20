@@ -959,9 +959,10 @@ Visit Bizzin to add your journal entry and update your goals!
     try {
       const currentTime = new Date();
       const currentHour = currentTime.getHours();
-      const currentMinute = currentTime.getMinutes();
       
-      // Get users whose send time matches current time (with 1-hour window)
+      console.log(`Checking for users scheduled for ${currentHour}:00 emails...`);
+      
+      // Get users whose send time matches current hour exactly
       const { data: settings } = await supabase
         .from('daily_email_settings')
         .select(`
@@ -972,17 +973,20 @@ Visit Bizzin to add your journal entry and update your goals!
 
       if (!settings) return [];
 
-      return settings
+      // Filter users whose scheduled hour matches current hour
+      const eligibleUsers = settings
         .filter((setting: any) => {
-          const [sendHour, sendMinute] = setting.send_time.split(':').map(Number);
-          // Allow 1-hour window for sending
-          return Math.abs(currentHour - sendHour) <= 1 && Math.abs(currentMinute - sendMinute) <= 30;
+          const [sendHour] = setting.send_time.split(':').map(Number);
+          return sendHour === currentHour;
         })
         .map((setting: any) => ({
           userId: setting.user_id,
           email: (setting as any).user_profiles.email,
           settings: setting
         }));
+
+      console.log(`Found ${eligibleUsers.length} users scheduled for ${currentHour}:00`);
+      return eligibleUsers;
     } catch (error) {
       console.error('Error getting users for daily emails:', error);
       return [];
