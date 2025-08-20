@@ -157,13 +157,26 @@ function generateBusinessInsights(text: string, mood: string, category: string, 
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Health check endpoint at root path for deployment health checks
-  app.get('/', (req, res) => {
-    res.status(200).json({ 
-      status: 'healthy', 
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime() 
-    });
+  // Health check endpoint at root path for deployment health checks (only for non-browser requests)
+  app.get('/', (req, res, next) => {
+    // Only respond with health check for monitoring tools, not browsers
+    const userAgent = req.get('User-Agent') || '';
+    const isHealthCheck = userAgent.includes('curl') || 
+                         userAgent.includes('wget') || 
+                         userAgent.includes('monitoring') ||
+                         userAgent.includes('uptime') ||
+                         req.query.health === 'true';
+    
+    if (isHealthCheck) {
+      return res.status(200).json({ 
+        status: 'healthy', 
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime() 
+      });
+    }
+    
+    // Let browser requests continue to Vite frontend
+    next();
   });
 
   // Explicit health check endpoint for monitoring
