@@ -26,6 +26,9 @@ export class EmailService {
   // Load and compile email templates
   async loadTemplates() {
     try {
+      console.log('🔄 Loading email templates...');
+      console.log('Current working directory:', process.cwd());
+      
       // Register Handlebars helpers
       handlebars.registerHelper('eq', function(a, b) {
         return a === b;
@@ -44,12 +47,31 @@ export class EmailService {
         });
       });
 
-      const templatePath = path.join(process.cwd(), 'server', 'templates', 'daily-email-modern.hbs');
+      // Try to load the safe template (most compatible)
+      const templatePath = path.join(process.cwd(), 'server', 'templates', 'daily-email-safe.hbs');
+      console.log('📍 Template path:', templatePath);
+      
+      // Check if file exists first
+      try {
+        await fs.access(templatePath);
+        console.log('✅ Template file exists');
+      } catch (accessError) {
+        console.error('❌ Template file access error:', accessError);
+        throw new Error(`Template file not accessible: ${templatePath}`);
+      }
+      
       const templateSource = await fs.readFile(templatePath, 'utf-8');
-      this.templates.set('daily-email', handlebars.compile(templateSource));
-      console.log('Email templates loaded successfully');
+      console.log('📝 Template source length:', templateSource.length);
+      
+      const compiledTemplate = handlebars.compile(templateSource);
+      this.templates.set('daily-email', compiledTemplate);
+      
+      console.log('✅ Email templates loaded successfully');
+      console.log('📋 Available templates:', Array.from(this.templates.keys()));
+      
     } catch (error) {
-      console.error('Failed to load email templates:', error);
+      console.error('❌ Failed to load email templates:', error);
+      throw error; // Re-throw to ensure calling code knows template loading failed
     }
   }
 

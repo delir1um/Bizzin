@@ -31,6 +31,9 @@ export class EmailQueueService {
   private async initializeWorker() {
     console.log(`🟢 EmailQueueService worker ${this.workerId} initializing...`);
     
+    // Initialize email templates for this worker
+    await this.emailService.loadTemplates();
+    
     // Register worker in database
     await this.registerWorker();
     
