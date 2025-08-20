@@ -988,10 +988,10 @@ Visit Bizzin to add your journal entry and update your goals!
   }
 
   // Get users ready for daily emails (based on their timezone and preferences)
-  async getUsersForDailyEmails(): Promise<{ userId: string, email: string, settings: DailyEmailSettings }[]> {
+  async getUsersForDailyEmails(southAfricaHour?: number): Promise<{ userId: string, email: string, settings: DailyEmailSettings }[]> {
     try {
-      const currentTime = new Date();
-      const currentHour = currentTime.getHours();
+      // Use provided hour (from South Africa timezone) or calculate local hour
+      const currentHour = southAfricaHour ?? new Date().getHours();
       
       console.log(`Checking for users scheduled for ${currentHour}:00 emails...`);
       

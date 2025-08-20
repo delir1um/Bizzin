@@ -43,11 +43,19 @@ export class DailyEmailScheduler {
   public async processDailyEmails() {
     try {
       this.isRunning = true;
-      const currentHour = new Date().getHours();
+      
+      // Convert server time to South Africa timezone (UTC+2)
+      const now = new Date();
+      const southAfricaTime = new Date(now.getTime() + (2 * 60 * 60 * 1000)); // UTC+2
+      const currentHour = southAfricaTime.getHours();
+      
+      console.log(`Running hourly email check...`);
+      console.log(`Server UTC time: ${now.toISOString()}`);
+      console.log(`South Africa time: ${southAfricaTime.toISOString()}, Hour: ${currentHour}`);
       console.log(`Processing hourly email check for ${currentHour}:00...`);
 
-      // Get users ready for daily emails (filtered by current hour)
-      const eligibleUsers = await this.emailService.getUsersForDailyEmails();
+      // Get users ready for daily emails (filtered by current South Africa hour)
+      const eligibleUsers = await this.emailService.getUsersForDailyEmails(currentHour);
       
       if (eligibleUsers.length === 0) {
         console.log(`No users scheduled for ${currentHour}:00 - skipping email processing`);
