@@ -132,8 +132,8 @@ export class EmailService {
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
-      // Filter active goals for email content
-      const activeGoals = goals?.filter(g => g.status === 'active') || [];
+      // Filter active goals for email content (matching dashboard logic)
+      const activeGoals = goals?.filter(g => ['in_progress', 'not_started'].includes(g.status)) || [];
       const totalGoals = goals?.length || 0;
 
       console.log(`Found ${totalGoals} total goals (${activeGoals.length} active) for user`);
@@ -259,12 +259,12 @@ export class EmailService {
       personalizationData: {
         userName,
         currentDate,
-        totalGoals: goals?.filter(g => g.status === 'active')?.length || 0, // Only count active goals
+        totalGoals: goals?.filter(g => ['in_progress', 'not_started'].includes(g.status))?.length || 0, // Only count active goals
         recentEntryCount: recentEntries?.length || 0, // Total entries (for context)
         thisWeekEntryCount: this.getEntriesThisWeek(recentEntries).length, // This week specifically
         businessType: profile.business_type,
         journalStreak: this.calculateJournalStreak(recentEntries),
-        weeklyProgress: this.calculateWeeklyProgress(goals?.filter(g => g.status === 'active') || []),
+        weeklyProgress: this.calculateWeeklyProgress(goals?.filter(g => ['in_progress', 'not_started'].includes(g.status)) || []),
       }
     };
   }
@@ -397,8 +397,8 @@ export class EmailService {
       insights.push("💪 Consider focusing on self-care and smaller wins to rebuild momentum. Remember, every successful entrepreneur faces tough periods.");
     }
 
-    // Business category insights - only analyze ACTIVE goals
-    const activeGoals = goals?.filter(g => g.status === 'active') || [];
+    // Business category insights - only analyze ACTIVE goals (matching dashboard logic)
+    const activeGoals = goals?.filter(g => ['in_progress', 'not_started'].includes(g.status)) || [];
     if (activeGoals.length > 0) {
       const categories = activeGoals.reduce((acc: any, goal: any) => {
         acc[goal.category] = (acc[goal.category] || 0) + 1;
@@ -524,7 +524,7 @@ export class EmailService {
   private calculateWeeklyProgress(goals: any[]) {
     if (!goals || goals.length === 0) return 0;
     
-    const activeGoals = goals.filter(g => g.status === 'active');
+    const activeGoals = goals.filter(g => ['in_progress', 'not_started'].includes(g.status));
     const totalProgress = activeGoals.reduce((sum, g) => sum + (g.progress || 0), 0);
     return Math.round(totalProgress / activeGoals.length);
   }
@@ -555,7 +555,7 @@ export class EmailService {
     const recommendations = [];
 
     // Goal-based recommendations - contextual based on actual state
-    const activeGoals = goals?.filter(g => g.status === 'active') || [];
+    const activeGoals = goals?.filter(g => ['in_progress', 'not_started'].includes(g.status)) || [];
     
     if (!goals || goals.length === 0) {
       // Truly no goals at all
