@@ -230,7 +230,7 @@ export default function EmailQueueDashboard() {
             <CardDescription>Queue processing efficiency metrics</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {stats?.queue?.total > 0 && (
+            {stats?.queue?.total && stats.queue.total > 0 && (
               <>
                 <div>
                   <div className="flex justify-between text-sm mb-2">
@@ -243,10 +243,10 @@ export default function EmailQueueDashboard() {
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span>Queue Progress</span>
-                    <span>{stats.queue.completed + stats.queue.failed}/{stats.queue.total}</span>
+                    <span>{(stats.queue.completed || 0) + (stats.queue.failed || 0)}/{stats.queue.total}</span>
                   </div>
                   <Progress 
-                    value={((stats.queue.completed + stats.queue.failed) / stats.queue.total) * 100} 
+                    value={((((stats.queue.completed || 0) + (stats.queue.failed || 0)) / stats.queue.total) * 100)} 
                     className="h-2" 
                   />
                 </div>

@@ -150,7 +150,7 @@ router.post('/trigger-daily', async (req, res) => {
     
     let successCount = 0;
     for (const user of users) {
-      const success = await emailScheduler.sendTestEmail(user.userId);
+      const success = await emailScheduler.queueSingleUserEmail(user.userId, 'daily_digest');
       if (success) successCount++;
     }
     
@@ -168,7 +168,7 @@ router.post('/trigger-daily', async (req, res) => {
 router.get('/analytics', async (req, res) => {
   try {
     const { days = '30' } = req.query;
-    const analytics = await emailScheduler.getEmailAnalytics(parseInt(days as string));
+    const analytics = await emailScheduler.getSystemStats();
     res.json(analytics);
   } catch (error) {
     console.error('Analytics error:', error);
