@@ -397,15 +397,16 @@ export class EmailService {
       insights.push("💪 Consider focusing on self-care and smaller wins to rebuild momentum. Remember, every successful entrepreneur faces tough periods.");
     }
 
-    // Business category insights
-    if (goals) {
-      const categories = goals.reduce((acc: any, goal: any) => {
+    // Business category insights - only analyze ACTIVE goals
+    const activeGoals = goals?.filter(g => g.status === 'active') || [];
+    if (activeGoals.length > 0) {
+      const categories = activeGoals.reduce((acc: any, goal: any) => {
         acc[goal.category] = (acc[goal.category] || 0) + 1;
         return acc;
       }, {});
       
       const topCategory = Object.entries(categories).sort(([,a], [,b]) => (b as number) - (a as number))[0];
-      if (topCategory) {
+      if (topCategory && (topCategory[1] as number) > 0) {
         insights.push(`🎯 You're heavily focused on ${topCategory[0]} - consider if this balance aligns with your business priorities.`);
       }
     }
@@ -673,7 +674,7 @@ export class EmailService {
   private generateJournalSnapshot(recentEntries: any[]) {
     if (!recentEntries || recentEntries.length === 0) {
       return {
-        message: "Start your journey with your first journal entry today!",
+        message: "Ready to start capturing your business insights? Create your first journal entry today!",
         streak_message: null
       };
     }
