@@ -31,7 +31,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
   const recognitionRef = useRef<any>(null)
   const finalTranscriptRef = useRef<string>("")
   const [networkErrorCount, setNetworkErrorCount] = useState(0)
-  const [speechSupported, setSpeechSupported] = useState(true)
+  const [speechSupported, setSpeechSupported] = useState(true) // Start optimistic - show button by default
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const { toast } = useToast()
 
@@ -117,10 +117,16 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
       const isHTTPS = window.location.protocol === 'https:'
       
       // Speech recognition requires HTTPS in most browsers, except localhost
-      if (!SpeechRecognition || (!isHTTPS && !isLocalhost)) {
-        console.log('Speech recognition not available: Missing HTTPS or API support')
+      if (!SpeechRecognition) {
+        console.log('Speech recognition not available: API not supported')
         setSpeechSupported(false)
         return
+      }
+      
+      // For non-HTTPS environments, still show the button but it may not work
+      if (!isHTTPS && !isLocalhost) {
+        console.log('Speech recognition may not work: HTTPS required for most browsers')
+        // Still set supported to true, let user try
       }
 
       // Test speech recognition availability with a timeout
@@ -132,21 +138,23 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
         testRecognition.lang = 'en-US'
         testRecognition.maxAlternatives = 1
 
-        // Test timeout to detect if service works
+        // Test timeout to detect if service works - be more permissive
         const testTimeout = setTimeout(() => {
-          console.log('Speech recognition test timeout - service likely unavailable')
-          setSpeechSupported(false)
+          console.log('Speech recognition test timeout - assuming available but slow')
+          clearTimeout(testTimeout)
+          setSpeechSupported(true) // Assume it works even if test is slow
           try {
             testRecognition?.abort()
           } catch (e) {
             // Ignore cleanup errors
           }
-        }, 3000)
+        }, 2000) // Reduced timeout to 2 seconds
 
         testRecognition.onstart = () => {
           console.log('Speech recognition test successful')
           clearTimeout(testTimeout)
           testRecognition.stop()
+          setSpeechSupported(true) // Confirm it works
           
           // Service works, set up the actual recognition
           const recognition = new SpeechRecognition()
@@ -228,7 +236,13 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
         testRecognition.onerror = (event: any) => {
           console.log('Speech recognition test failed:', event.error)
           clearTimeout(testTimeout)
-          setSpeechSupported(false)
+          // Only disable for critical errors, not network/service issues
+          if (event.error === 'not-allowed' || event.error === 'audio-capture') {
+            setSpeechSupported(false)
+          } else {
+            console.log('Non-critical error during test, keeping button available')
+            setSpeechSupported(true)
+          }
         }
 
         // Start the test
