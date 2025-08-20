@@ -60,6 +60,26 @@ export function EmailPreferencesCard() {
     return `${displayHour}:${minute} ${ampm}`;
   };
 
+  const getNextEmailDay = (sendTime: string, timezone: string) => {
+    const now = new Date();
+    const [hour, minute] = sendTime.split(':');
+    const sendHour = parseInt(hour);
+    const sendMinute = parseInt(minute);
+    
+    // For South Africa timezone (UTC+2)
+    const southAfricaTime = new Date(now.getTime() + (2 * 60 * 60 * 1000));
+    const currentHour = southAfricaTime.getHours();
+    const currentMinute = southAfricaTime.getMinutes();
+    
+    // If current time is before send time today, next email is today
+    if (currentHour < sendHour || (currentHour === sendHour && currentMinute < sendMinute)) {
+      return "Today";
+    }
+    
+    // Otherwise, next email is tomorrow
+    return "Tomorrow";
+  };
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -127,7 +147,7 @@ export function EmailPreferencesCard() {
         {/* Next Email Info */}
         {emailSettings.enabled && (
           <div className="text-xs text-gray-500">
-            Next email: Tomorrow at {formatTime(emailSettings.send_time)} ({emailSettings.timezone})
+            Next email: {getNextEmailDay(emailSettings.send_time, emailSettings.timezone)} at {formatTime(emailSettings.send_time)} ({emailSettings.timezone})
           </div>
         )}
 
