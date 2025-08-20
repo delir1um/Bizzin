@@ -46,6 +46,10 @@ app.use((req, res, next) => {
   const emailRoutes = await import('./routes/email.js');
   app.use('/api/email', emailRoutes.default);
   
+  // Add Email Queue API routes
+  const emailQueueRoutes = await import('./routes/email-queue.js');
+  app.use('/api/email-queue', emailQueueRoutes.default);
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

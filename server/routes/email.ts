@@ -1,10 +1,10 @@
 // Email API Routes
 import express from 'express';
-import { DailyEmailScheduler } from '../services/DailyEmailScheduler.js';
+import { ScalableEmailScheduler } from '../services/ScalableEmailScheduler.js';
 import { supabase } from '../lib/supabase.js';
 
 const router = express.Router();
-const emailScheduler = new DailyEmailScheduler();
+const emailScheduler = new ScalableEmailScheduler();
 
 // Initialize email scheduler on startup
 emailScheduler.initialize().catch(console.error);
@@ -127,7 +127,7 @@ router.post('/test', async (req, res) => {
       return res.status(400).json({ error: 'User ID is required' });
     }
 
-    const success = await emailScheduler.sendTestEmail(userId);
+    const success = await emailScheduler.queueSingleUserEmail(userId, 'daily_digest');
     
     if (success) {
       res.json({ message: 'Test email sent successfully' });
