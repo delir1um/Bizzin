@@ -711,7 +711,7 @@ export class EmailService {
     
     // Calculate ACTUAL this week entries (not all recent entries)
     const thisWeekEntries = this.getEntriesThisWeek(recentEntries);
-    const activeGoals = goals?.filter(g => g.status === 'active') || [];
+    const activeGoals = goals?.filter(g => ['in_progress', 'not_started'].includes(g.status)) || [];
     
     // Goal progress health
     if (activeGoals.length > 0) {
@@ -741,7 +741,8 @@ export class EmailService {
     // Sentiment health - based on this week's entries only
     if (thisWeekEntries.length > 0) {
       const positiveEntries = thisWeekEntries.filter(e => 
-        e.sentiment_analysis?.sentiment === 'positive').length;
+        e.sentiment_data?.mood_polarity === 'Positive' || 
+        ['optimistic', 'excited', 'confident', 'accomplished'].includes(e.sentiment_data?.primary_mood?.toLowerCase())).length;
       const sentimentHealth = positiveEntries > thisWeekEntries.length / 2 ? "Positive trend" : "Mixed signals";
       indicators.push({
         label: "Business Sentiment",
@@ -776,7 +777,7 @@ export class EmailService {
     const nudges = [];
     
     // Goal-based nudges
-    const activeGoals = goals?.filter(g => g.status === 'active') || [];
+    const activeGoals = goals?.filter(g => ['in_progress', 'not_started'].includes(g.status)) || [];
     if (activeGoals.length === 0) {
       nudges.push({
         message: "Set your first business goal to unlock progress tracking and milestone management.",
