@@ -1,6 +1,16 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+// Temporarily bypass vite import to debug dependency issue
+// import { setupVite, serveStatic, log } from "./vite";
+function log(message: string, source = "express") {
+  const formattedTime = new Date().toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit", 
+    second: "2-digit",
+    hour12: true,
+  });
+  console.log(`${formattedTime} [${source}] ${message}`);
+}
 import huggingfaceRouter from "./huggingface";
 
 const app = express();
@@ -70,14 +80,20 @@ app.use((req, res, next) => {
     throw err;
   });
 
+  // TODO: Re-enable vite setup once dependency issue is resolved
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
-  }
+  // if (app.get("env") === "development") {
+  //   await setupVite(app, server);
+  // } else {
+  //   serveStatic(app);
+  // }
+  
+  // Temporary: Serve a simple message until vite is working
+  app.get("*", (req, res) => {
+    res.send("<h1>Server is running! Working on dependency issues...</h1>");
+  });
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
   // Other ports are firewalled. Default to 5000 if not specified.
