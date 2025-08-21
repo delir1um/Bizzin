@@ -305,12 +305,21 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
     }
 
     try {
-      // Create new recognition instance with simpler settings
+      // Create new recognition instance with extended timeout settings
       const recognition = new SpeechRecognition()
-      recognition.continuous = false  // Start with single-shot recognition
-      recognition.interimResults = false  // Only final results for now
+      recognition.continuous = true  // Use continuous to prevent auto-timeout
+      recognition.interimResults = true  // Show interim results for feedback
       recognition.lang = 'en-US'
       recognition.maxAlternatives = 1
+      
+      // Set longer timeout values if supported
+      if ('speechTimeouts' in recognition) {
+        (recognition as any).speechTimeouts = {
+          speechStart: 10000,  // 10 seconds to start speaking
+          speechEnd: 5000,     // 5 seconds of silence to end
+          noSpeech: 15000      // 15 seconds total timeout
+        }
+      }
 
       recognition.onstart = () => {
         console.log('🎤 ACTIVE SPEECH RECOGNITION STARTED - SPEAK NOW!')
@@ -327,25 +336,43 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
       recognition.onresult = (event: any) => {
         console.log('🎯 SPEECH CAPTURED! Results:', event.results.length)
         
-        // Simple approach - just take the first final result
-        if (event.results && event.results.length > 0) {
-          const transcript = event.results[0][0].transcript
-          console.log('📝 TRANSCRIPT:', transcript)
+        let interimTranscript = ""
+        let finalTranscript = ""
+        
+        // Process all results from the current batch
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript
+          console.log(`📝 Result ${i}: "${transcript}" (final: ${event.results[i].isFinal})`)
           
-          if (transcript && transcript.trim()) {
-            setContent(prev => {
-              const currentContent = prev.trim()
-              const newContent = currentContent + (currentContent ? ' ' : '') + transcript.trim()
-              console.log('✅ ADDED TO CONTENT:', newContent)
-              return newContent
-            })
-            
-            toast({
-              title: "✅ Voice captured!",
-              description: `Added: "${transcript.trim()}"`,
-              className: "border-green-200 bg-green-50 text-green-800"
-            })
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript
+          } else {
+            interimTranscript += transcript
           }
+        }
+        
+        // Show interim results in real-time
+        if (interimTranscript) {
+          setInterimTranscript(interimTranscript)
+          console.log('👁️ INTERIM TEXT:', interimTranscript)
+        }
+        
+        // Add final results to content
+        if (finalTranscript && finalTranscript.trim()) {
+          console.log('✅ FINAL TRANSCRIPT:', finalTranscript)
+          setContent(prev => {
+            const currentContent = prev.trim()
+            const newContent = currentContent + (currentContent ? ' ' : '') + finalTranscript.trim()
+            console.log('✅ ADDED TO CONTENT:', newContent)
+            return newContent
+          })
+          setInterimTranscript("")  // Clear interim when we get final
+          
+          toast({
+            title: "✅ Voice captured!",
+            description: `Added: "${finalTranscript.trim()}"`,
+            className: "border-green-200 bg-green-50 text-green-800"
+          })
         }
       }
 
@@ -361,11 +388,18 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
             variant: "destructive"
           })
         } else if (event.error === 'no-speech') {
-          toast({
-            title: "No speech detected",
-            description: "Try speaking louder or closer to your microphone",
-            variant: "destructive"
-          })
+          console.log('⚠️ No speech detected, but keeping microphone active')
+          // Don't show error for no-speech, just restart automatically
+          setTimeout(() => {
+            if (isListening && speechSupported) {
+              try {
+                recognition.start()
+                console.log('🔄 Restarted after no-speech timeout')
+              } catch (e) {
+                console.log('Failed to restart after no-speech:', e)
+              }
+            }
+          }, 100)
         } else if (event.error === 'audio-capture') {
           toast({
             title: "Microphone not found",
@@ -389,8 +423,25 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
 
       recognition.onend = () => {
         console.log('🛑 SPEECH RECOGNITION ENDED')
-        setIsListening(false)
         setInterimTranscript("")
+        
+        // Auto-restart if user is still listening (keep microphone active)
+        if (isListening && speechSupported) {
+          console.log('🔄 Auto-restarting speech recognition...')
+          setTimeout(() => {
+            if (isListening && speechSupported && recognitionRef.current) {
+              try {
+                recognitionRef.current.start()
+                console.log('✅ Successfully restarted speech recognition')
+              } catch (e) {
+                console.log('❌ Failed to restart speech recognition:', e)
+                setIsListening(false)
+              }
+            }
+          }, 500)
+        } else {
+          setIsListening(false)
+        }
       }
 
       // Store the active recognition and start
