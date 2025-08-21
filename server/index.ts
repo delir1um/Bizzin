@@ -1,6 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-// Temporarily bypass vite import to debug dependency issue
+// Temporarily commented out due to vite dependency issue
 // import { setupVite, serveStatic, log } from "./vite";
 function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
@@ -80,19 +80,20 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // TODO: Re-enable vite setup once dependency issue is resolved
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  // if (app.get("env") === "development") {
-  //   await setupVite(app, server);
-  // } else {
-  //   serveStatic(app);
-  // }
+  // Temporary frontend serving solution while fixing vite dependency
+  const path = await import('path');
   
-  // Temporary: Serve a simple message until vite is working
-  app.get("*", (req, res) => {
-    res.send("<h1>Server is running! Working on dependency issues...</h1>");
+  // Serve static files from client directory in development
+  app.use(express.static(path.resolve(import.meta.dirname, '..', 'client')));
+  
+  // Serve a simple loading page for all non-API routes until we fix the build system
+  app.get('*', async (req, res) => {
+    try {
+      const simpleIndexPath = path.resolve(import.meta.dirname, '..', 'client', 'simple-index.html');
+      res.sendFile(simpleIndexPath);
+    } catch (error) {
+      res.status(500).send('<h1>Frontend loading error. Please check console for details.</h1>');
+    }
   });
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
