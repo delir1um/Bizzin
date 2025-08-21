@@ -596,36 +596,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
                   autoFocus
                 />
                 
-                {/* Voice Input Button - Only show when supported */}
-                {speechSupported && (
-                  <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={isListening ? "destructive" : "outline"}
-                      onClick={isListening ? stopListening : startListening}
-                      className={`w-8 h-8 sm:w-10 sm:h-10 p-0 transition-all duration-200 relative ${
-                        isListening 
-                          ? 'bg-red-500 hover:bg-red-600 border-red-300 shadow-lg' 
-                          : 'hover:bg-orange-50 border-orange-200 text-orange-600'
-                      }`}
-                      title={isListening ? "Stop recording" : "Start voice input"}
-                      disabled={createEntryMutation.isPending}
-                    >
-                      {isListening ? (
-                        <div className="relative flex items-center justify-center">
-                          {/* Pulsing recording animation */}
-                          <div className="absolute inset-0 bg-red-400 rounded-full animate-ping opacity-75"></div>
-                          <div className="absolute inset-1 bg-red-300 rounded-full animate-pulse"></div>
-                          {/* Recording dot */}
-                          <div className="relative w-2 h-2 sm:w-3 sm:h-3 bg-white rounded-full z-10"></div>
-                        </div>
-                      ) : (
-                        <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
-                      )}
-                    </Button>
-                  </div>
-                )}
+{/* Voice input temporarily disabled due to browser compatibility issues */}
               </div>
               
               {/* Voice Status Indicator - Only show when supported and listening */}
