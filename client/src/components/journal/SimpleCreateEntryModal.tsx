@@ -296,16 +296,115 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
       return
     }
     
-    if (!recognitionRef.current) {
-      console.log('Speech recognition not initialized')
+    // Create a fresh recognition instance each time to avoid conflicts
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      console.log('Speech recognition not available')
       return
     }
 
     try {
+      // Create new recognition instance
+      const recognition = new SpeechRecognition()
+      recognition.continuous = true
+      recognition.interimResults = true
+      recognition.lang = 'en-US'
+      recognition.maxAlternatives = 1
+
+      recognition.onstart = () => {
+        console.log('Active speech recognition started')
+        setNetworkErrorCount(0)
+      }
+
+      recognition.onresult = (event: any) => {
+        console.log('Speech recognition event received:', event.results.length, 'results')
+        
+        let interimTranscript = ""
+        let finalTranscript = ""
+        
+        // Process all results
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript
+          console.log(`Result ${i}: "${transcript}" (final: ${event.results[i].isFinal})`)
+          
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript
+          } else {
+            interimTranscript += transcript
+          }
+        }
+        
+        // Update interim results for real-time feedback
+        if (interimTranscript) {
+          setInterimTranscript(interimTranscript)
+        }
+        
+        // Add final results to content
+        if (finalTranscript && finalTranscript.trim()) {
+          console.log('Adding final transcript:', finalTranscript)
+          setContent(prev => {
+            const currentContent = prev.trim()
+            const newContent = currentContent + (currentContent ? ' ' : '') + finalTranscript.trim()
+            return newContent
+          })
+          setInterimTranscript("") // Clear interim when we have final
+          setNetworkErrorCount(0)
+        }
+      }
+
+      recognition.onerror = (event: any) => {
+        console.log('Active speech recognition error:', event.error)
+        
+        if (event.error === 'not-allowed') {
+          setIsListening(false)
+          setSpeechSupported(false)
+          toast({
+            title: "Microphone permission needed",
+            description: "Click the microphone icon in your browser's address bar to enable voice input",
+            variant: "destructive"
+          })
+        } else if (event.error === 'network' || event.error === 'service-not-allowed') {
+          setIsListening(false)
+          console.log('Voice input disabled due to service limitations')
+        } else if (event.error === 'audio-capture') {
+          setIsListening(false)
+          toast({
+            title: "Microphone not available",
+            description: "No microphone detected. Please connect a microphone to use voice input.",
+            variant: "destructive"
+          })
+        } else {
+          console.log(`Active speech error: ${event.error}, continuing...`)
+        }
+      }
+
+      recognition.onend = () => {
+        console.log('Active speech recognition ended')
+        setInterimTranscript("")
+        
+        // Only restart if user is still actively listening
+        if (isListening && speechSupported) {
+          retryTimeoutRef.current = setTimeout(() => {
+            if (isListening && speechSupported) {
+              console.log('Restarting speech recognition...')
+              try {
+                recognition.start()
+              } catch (e) {
+                console.log('Restart failed, disabling voice input:', e)
+                setIsListening(false)
+              }
+            }
+          }, 500)
+        }
+      }
+
+      // Store the active recognition
+      recognitionRef.current = recognition
+      
       setInterimTranscript("")
       finalTranscriptRef.current = ""
       setIsListening(true)
-      recognitionRef.current.start()
+      recognition.start()
       
       toast({
         title: "Listening...",
