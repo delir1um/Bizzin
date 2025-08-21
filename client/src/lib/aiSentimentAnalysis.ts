@@ -430,60 +430,6 @@ function generateEnhancedBusinessInsights(text: string, mood: string, category: 
   return insights;
 }
 
-// Improved Hugging Face API call with authentication and retry logic (currently unused)
-async function callHuggingFaceModel(text: string, model: string, retries = 2): Promise<any> {
-  // This function is currently not used but kept for future server-side implementation
-  const token = 'placeholder';
-  
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-      
-      // Add authentication if token is available
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      
-      console.log(`HF API call attempt ${attempt + 1} to ${model} with token: ${token ? 'yes' : 'no'}`);
-      
-      const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ 
-          inputs: text,
-          options: { wait_for_model: true } // Wait for model to load
-        }),
-      });
-
-      if (response.status === 503 && attempt < retries) {
-        // Model is loading, wait and retry
-        await new Promise(resolve => setTimeout(resolve, 2000 * (attempt + 1)));
-        continue;
-      }
-
-      if (!response.ok) {
-        throw new Error(`HF API error: ${response.status} ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      
-      // Handle error responses
-      if (result.error) {
-        throw new Error(`HF API error: ${result.error}`);
-      }
-
-      return result;
-    } catch (error) {
-      if (attempt === retries) {
-        console.warn(`Hugging Face API error after ${retries + 1} attempts:`, error);
-        return null;
-      }
-    }
-  }
-  return null;
-}
 
 // Enhanced processing of Hugging Face results for business contexts
 function processEnhancedHuggingFaceResults(sentimentData: any, emotionData: any, text: string): BusinessSentiment {
@@ -662,12 +608,12 @@ function analyzeLocalSentiment(content: string, title?: string): BusinessSentime
   }
   
   // Generate insights
-  const insights = generateAdvancedBusinessInsights(primaryEmotion, category, text, finalConfidence);
+  const insights = generateAdvancedBusinessInsights(primaryEmotion, category || 'reflection', text, finalConfidence);
   
   // Generate enhanced business title
   const suggestedTitle = generateBusinessTitle(
     content, 
-    category.charAt(0).toUpperCase() + category.slice(1), 
+    (category || 'reflection').charAt(0).toUpperCase() + (category || 'reflection').slice(1), 
     primaryEmotion,
     energy
   );
@@ -678,7 +624,7 @@ function analyzeLocalSentiment(content: string, title?: string): BusinessSentime
     energy,
     emotions: topEmotions,
     insights,
-    business_category: category,
+    business_category: (category || 'reflection') as BusinessCategory,
     suggested_title: suggestedTitle
   };
 }
@@ -894,7 +840,7 @@ function processHuggingFaceResults(sentimentData: any, emotionData: any, content
   // Generate enhanced business title
   const suggestedTitle = generateBusinessTitle(
     content, 
-    category.charAt(0).toUpperCase() + category.slice(1), 
+    (category || 'reflection').charAt(0).toUpperCase() + (category || 'reflection').slice(1), 
     primaryEmotion,
     energy
   );
