@@ -23,8 +23,14 @@ export class EmailService {
     });
   }
 
-  // Load and compile email templates
+  // Load and compile email templates with caching
   async loadTemplates() {
+    // Return cached templates if already loaded
+    if (this.templates.size > 0) {
+      console.log('📦 Using cached email templates');
+      return;
+    }
+    
     try {
       console.log('🔄 Loading email templates...');
       console.log('Current working directory:', process.cwd());

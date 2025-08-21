@@ -18,7 +18,7 @@ export class EmailQueueService {
   private workerId: string;
   private isProcessing: boolean = false;
   private processingStats: Map<string, number> = new Map();
-  private maxConcurrentJobs: number = 5; // Process 5 emails simultaneously
+  private maxConcurrentJobs: number = process.env.NODE_ENV === 'development' ? 2 : 5; // Reduce concurrent jobs in development
   private heartbeatInterval: NodeJS.Timeout | null = null;
 
   constructor() {

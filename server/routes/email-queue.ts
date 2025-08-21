@@ -6,15 +6,28 @@ import { ScalableEmailScheduler } from '../services/ScalableEmailScheduler.js';
 import { EmailQueueService } from '../services/EmailQueueService.js';
 
 const router = Router();
-const emailScheduler = new ScalableEmailScheduler();
-const emailQueueService = new EmailQueueService();
 
-// Initialize scheduler on first load
-emailScheduler.initialize().catch(console.error);
+// Only initialize email systems if not in development or if explicitly needed
+const shouldInitializeEmail = process.env.NODE_ENV !== 'development' || process.env.FORCE_EMAIL_WORKERS === 'true';
+
+let emailScheduler: ScalableEmailScheduler | null = null;
+let emailQueueService: EmailQueueService | null = null;
+
+if (shouldInitializeEmail) {
+  emailScheduler = new ScalableEmailScheduler();
+  emailQueueService = new EmailQueueService();
+  // Initialize scheduler on first load
+  emailScheduler.initialize().catch(console.error);
+} else {
+  console.log('🔧 Email workers disabled in development mode');
+}
 
 // Get queue system statistics
 router.get('/stats', async (req, res) => {
   try {
+    if (!emailScheduler) {
+      return res.json({ message: 'Email system disabled in development mode', workers: 0, queue: { pending: 0 } });
+    }
     const stats = await emailScheduler.getSystemStats();
     res.json(stats);
   } catch (error) {
@@ -37,6 +50,9 @@ router.get('/queue', async (req, res) => {
 // Manually trigger email processing for all eligible users
 router.post('/process-all', async (req, res) => {
   try {
+    if (!emailScheduler) {
+      return res.json({ message: 'Email processing disabled in development mode', queued_jobs: 0 });
+    }
     console.log('📧 Manual trigger: Processing all eligible users');
     const queuedCount = await emailScheduler.queueAllEligibleUsers();
     
@@ -60,6 +76,9 @@ router.post('/queue-user', async (req, res) => {
     }
 
     console.log(`📧 Manual trigger: Queueing email for user ${userId}`);
+    if (!emailScheduler) {
+      return res.json({ message: 'Email queue disabled in development mode', success: false });
+    }
     const success = await emailScheduler.queueSingleUserEmail(userId, jobType);
     
     if (success) {
@@ -76,6 +95,9 @@ router.post('/queue-user', async (req, res) => {
 // Process pending jobs manually (for development/testing)
 router.post('/process-pending', async (req, res) => {
   try {
+    if (!emailQueueService) {
+      return res.json({ message: 'Email processing disabled in development mode' });
+    }
     console.log('🔄 Manual trigger: Processing pending jobs');
     await emailQueueService.processQueuedJobs();
     
@@ -89,6 +111,9 @@ router.post('/process-pending', async (req, res) => {
 // Create hourly email jobs manually (for testing)
 router.post('/create-hourly-jobs', async (req, res) => {
   try {
+    if (!emailScheduler) {
+      return res.json({ message: 'Email scheduler disabled in development mode' });
+    }
     console.log('⏰ Manual trigger: Creating hourly email jobs');
     await emailScheduler.createHourlyEmailJobs();
     

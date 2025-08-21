@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge"
 import { X, Brain, Check, ArrowRight, Sparkles, Lightbulb } from "lucide-react"
 import { aiBusinessCoach } from "@/lib/aiBusinessCoach"
 import { JournalService } from "@/lib/services/journal"
-import { IntelligentWritingAssistant } from "@/components/journal/IntelligentWritingAssistant"
 import { supabase } from "@/lib/supabase"
 import { useToast } from "@/hooks/use-toast"
 import { motion, AnimatePresence } from "framer-motion"
@@ -368,15 +367,7 @@ export function SimplifiedJournalInterface({
         </motion.div>
       </motion.div>
 
-      {/* Intelligent Writing Assistant */}
-      {user && isOpen && (title.length > 0 || content.length > 50) && (
-        <IntelligentWritingAssistant
-          userId={user.id}
-          currentContent={content}
-          currentTitle={title}
-          onSuggestionApply={handleApplySuggestion}
-        />
-      )}
+      {/* Intelligent Writing Assistant - Removed for streamlined AI system */}
     </>
   )
 }

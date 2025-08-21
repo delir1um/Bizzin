@@ -1,10 +1,10 @@
 import { supabase } from '@/lib/supabase'
 import type { JournalEntry, CreateJournalEntry, UpdateJournalEntry } from '@/types/journal'
-import { analyzeJournalEntry } from '@/lib/ai'
-import type { AIAnalysisResult } from '@/lib/ai/types'
+import { analyzeBusinessSentimentAI } from '@/lib/aiSentimentAnalysis'
+import type { BusinessSentiment } from '@/lib/aiSentimentAnalysis'
 
 // Generate contextual business insights based on AI analysis results
-function generateContextualInsights(aiAnalysis: AIAnalysisResult, content: string): string[] {
+function generateContextualInsights(aiAnalysis: BusinessSentiment, content: string): string[] {
   const insights: string[] = [];
   const lowerContent = content.toLowerCase();
   const category = aiAnalysis.business_category.toLowerCase();
@@ -157,7 +157,7 @@ export class JournalService {
       const readingTime = Math.max(1, Math.ceil(wordCount / 200))
 
       // Analyze with enhanced AI system (Hugging Face first, then autonomous fallback)
-      const aiAnalysis = await analyzeJournalEntry(entry.content, user.id)
+      const aiAnalysis = await analyzeBusinessSentimentAI(entry.content, entry.title, user.id)
       
       console.log('Using production AI analysis results:', {
         category: aiAnalysis.business_category,
@@ -247,7 +247,7 @@ export class JournalService {
         const content = updates.content || ''
         const title = updates.title || ''
         if (content || title) {
-          const aiAnalysis = await analyzeJournalEntry(content, user.id)
+          const aiAnalysis = await analyzeBusinessSentimentAI(content, '', user.id)
           
           // Use AI-generated heading if title is being updated but left empty
           if (updates.title === '' && content) {
@@ -437,7 +437,7 @@ export class JournalService {
         const batchPromises = batch.map(async (entry) => {
           try {
             // Analyze with enhanced AI system
-            const aiAnalysis = await analyzeJournalEntry(entry.content, user.id)
+            const aiAnalysis = await analyzeBusinessSentimentAI(entry.content, entry.title, user.id)
             
             // Generate contextual business insights based on AI analysis
             const insights = generateContextualInsights(aiAnalysis, entry.content);
