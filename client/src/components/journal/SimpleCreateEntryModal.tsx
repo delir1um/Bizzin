@@ -290,175 +290,168 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
     }
   }, [toast, isListening])
 
-  const startListening = () => {
+  const startListening = async () => {
     if (!speechSupported) {
       console.log('Voice input not supported in this environment')
       return
     }
+
+    // First, explicitly request microphone permission
+    try {
+      console.log('🎤 Requesting microphone access...')
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      console.log('✅ Microphone access granted')
+      
+      // Stop the stream immediately - we just needed permission
+      stream.getTracks().forEach(track => track.stop())
+      
+    } catch (error) {
+      console.error('❌ Microphone access denied:', error)
+      toast({
+        title: "Microphone access required",
+        description: "Please allow microphone access to use voice input. Check your browser permissions.",
+        variant: "destructive"
+      })
+      setSpeechSupported(false)
+      return
+    }
     
-    // Create a fresh recognition instance each time to avoid conflicts
+    // Now create speech recognition with proper permissions
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     if (!SpeechRecognition) {
       console.log('Speech recognition not available')
       setSpeechSupported(false)
+      toast({
+        title: "Speech recognition unavailable",
+        description: "Your browser doesn't support voice input. Please use a modern browser like Chrome.",
+        variant: "destructive"
+      })
       return
     }
 
     try {
-      // Create new recognition instance with extended timeout settings
+      // Create new recognition instance
       const recognition = new SpeechRecognition()
-      recognition.continuous = true  // Use continuous to prevent auto-timeout
-      recognition.interimResults = true  // Show interim results for feedback
+      recognition.continuous = true
+      recognition.interimResults = true
       recognition.lang = 'en-US'
       recognition.maxAlternatives = 1
-      
-      // Set longer timeout values if supported
-      if ('speechTimeouts' in recognition) {
-        (recognition as any).speechTimeouts = {
-          speechStart: 10000,  // 10 seconds to start speaking
-          speechEnd: 5000,     // 5 seconds of silence to end
-          noSpeech: 15000      // 15 seconds total timeout
-        }
-      }
+
+      // Track if we've received any speech at all
+      let hasReceivedSpeech = false
 
       recognition.onstart = () => {
-        console.log('🎤 ACTIVE SPEECH RECOGNITION STARTED - SPEAK NOW!')
+        console.log('🎤 SPEECH RECOGNITION ACTIVE - MIC IS ON!')
         setNetworkErrorCount(0)
         
-        // Show user feedback that mic is actively listening
         toast({
-          title: "🎤 Recording active - speak now!",
-          description: "Microphone is listening. Speak clearly.",
+          title: "🎤 Microphone active",
+          description: "Listening for your voice. Start speaking now!",
           className: "border-green-200 bg-green-50 text-green-800"
         })
       }
 
       recognition.onresult = (event: any) => {
-        console.log('🎯 SPEECH CAPTURED! Results:', event.results.length)
+        hasReceivedSpeech = true
+        console.log('🎯 SPEECH DETECTED! Processing results...')
         
         let interimTranscript = ""
         let finalTranscript = ""
         
-        // Process all results from the current batch
         for (let i = event.resultIndex; i < event.results.length; i++) {
           const transcript = event.results[i][0].transcript
-          console.log(`📝 Result ${i}: "${transcript}" (final: ${event.results[i].isFinal})`)
+          console.log(`📝 "${transcript}" (final: ${event.results[i].isFinal})`)
           
           if (event.results[i].isFinal) {
-            finalTranscript += transcript
+            finalTranscript += transcript + " "
           } else {
             interimTranscript += transcript
           }
         }
         
-        // Show interim results in real-time
+        // Show interim results
         if (interimTranscript) {
           setInterimTranscript(interimTranscript)
-          console.log('👁️ INTERIM TEXT:', interimTranscript)
+          console.log('👁️ SHOWING INTERIM:', interimTranscript)
         }
         
         // Add final results to content
-        if (finalTranscript && finalTranscript.trim()) {
-          console.log('✅ FINAL TRANSCRIPT:', finalTranscript)
+        if (finalTranscript.trim()) {
+          console.log('✅ ADDING FINAL TEXT:', finalTranscript.trim())
           setContent(prev => {
-            const currentContent = prev.trim()
-            const newContent = currentContent + (currentContent ? ' ' : '') + finalTranscript.trim()
-            console.log('✅ ADDED TO CONTENT:', newContent)
+            const newContent = prev + (prev ? ' ' : '') + finalTranscript.trim()
             return newContent
           })
-          setInterimTranscript("")  // Clear interim when we get final
+          setInterimTranscript("")
           
           toast({
             title: "✅ Voice captured!",
-            description: `Added: "${finalTranscript.trim()}"`,
+            description: `"${finalTranscript.trim()}"`,
             className: "border-green-200 bg-green-50 text-green-800"
           })
         }
       }
 
       recognition.onerror = (event: any) => {
-        console.error('❌ SPEECH RECOGNITION ERROR:', event.error)
-        setIsListening(false)
+        console.error('❌ SPEECH ERROR:', event.error)
         
         if (event.error === 'not-allowed') {
+          setIsListening(false)
           setSpeechSupported(false)
           toast({
-            title: "Microphone permission denied",
-            description: "Please allow microphone access in your browser settings",
+            title: "Microphone blocked",
+            description: "Click the microphone icon in your browser address bar to allow access",
             variant: "destructive"
           })
         } else if (event.error === 'no-speech') {
-          console.log('⚠️ No speech detected, but keeping microphone active')
-          // Don't show error for no-speech, just restart automatically
-          setTimeout(() => {
-            if (isListening && speechSupported) {
-              try {
-                recognition.start()
-                console.log('🔄 Restarted after no-speech timeout')
-              } catch (e) {
-                console.log('Failed to restart after no-speech:', e)
-              }
-            }
-          }, 100)
-        } else if (event.error === 'audio-capture') {
-          toast({
-            title: "Microphone not found",
-            description: "Please check your microphone connection",
-            variant: "destructive"
-          })
-        } else if (event.error === 'network') {
-          toast({
-            title: "Network error",
-            description: "Speech recognition service unavailable",
-            variant: "destructive"
-          })
+          if (!hasReceivedSpeech) {
+            console.log('⚠️ No speech detected, trying again...')
+            // Only show warning if we haven't captured any speech yet
+            toast({
+              title: "No speech detected",
+              description: "Speak louder or closer to your microphone",
+              variant: "destructive"
+            })
+          }
         } else {
+          console.error('Other speech error:', event.error)
           toast({
             title: "Voice input error",
-            description: `Error: ${event.error}. Try again.`,
+            description: `${event.error} - Try clicking the microphone again`,
             variant: "destructive"
           })
         }
       }
 
       recognition.onend = () => {
-        console.log('🛑 SPEECH RECOGNITION ENDED')
+        console.log('🛑 SPEECH RECOGNITION STOPPED')
+        setIsListening(false)
         setInterimTranscript("")
         
-        // Auto-restart if user is still listening (keep microphone active)
-        if (isListening && speechSupported) {
-          console.log('🔄 Auto-restarting speech recognition...')
-          setTimeout(() => {
-            if (isListening && speechSupported && recognitionRef.current) {
-              try {
-                recognitionRef.current.start()
-                console.log('✅ Successfully restarted speech recognition')
-              } catch (e) {
-                console.log('❌ Failed to restart speech recognition:', e)
-                setIsListening(false)
-              }
-            }
-          }, 500)
-        } else {
-          setIsListening(false)
+        if (hasReceivedSpeech) {
+          toast({
+            title: "✅ Recording complete",
+            description: "Click the microphone again to continue voice input",
+            className: "border-blue-200 bg-blue-50 text-blue-800"
+          })
         }
       }
 
-      // Store the active recognition and start
+      // Start the recognition
       recognitionRef.current = recognition
       setInterimTranscript("")
       setIsListening(true)
       
-      console.log('🚀 STARTING SPEECH RECOGNITION...')
+      console.log('🚀 STARTING VOICE RECOGNITION WITH PERMISSIONS...')
       recognition.start()
       
     } catch (error) {
-      console.error('❌ FAILED TO START SPEECH RECOGNITION:', error)
+      console.error('❌ SPEECH RECOGNITION FAILED:', error)
       setIsListening(false)
       setSpeechSupported(false)
       toast({
         title: "Voice input failed",
-        description: "Could not start speech recognition. Please type instead.",
+        description: "Speech recognition is not available. Please type your entry instead.",
         variant: "destructive"
       })
     }
