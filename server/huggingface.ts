@@ -414,6 +414,12 @@ router.post('/analyze', async (req, res) => {
         lowerText.includes('stress') || lowerText.includes('overwhelm') ||
         lowerText.includes('handed in her') || lowerText.includes('handed in his') || lowerText.includes('leaving') ||
         lowerText.includes('departing') || lowerText.includes('losing her knowledge') || lowerText.includes('major setback') ||
+        // Workplace safety and accident indicators - highest priority for safety incidents
+        lowerText.includes('accident') || lowerText.includes('injured') || lowerText.includes('injury') || 
+        lowerText.includes('hospitalized') || lowerText.includes('surgery') || lowerText.includes('recovery') ||
+        lowerText.includes('safety protocol') || lowerText.includes('osha') || lowerText.includes('insurance premium') ||
+        lowerText.includes('workplace accident') || lowerText.includes('forklift operator') || 
+        lowerText.includes('feel terrible') || lowerText.includes('could have prevented') ||
         // Technical crisis indicators
         lowerText.includes('crashed') || lowerText.includes('scrambling') || lowerText.includes('lost') ||
         (lowerText.includes('demo') && lowerText.includes('investors') && lowerText.includes('hours')) ||
@@ -506,6 +512,9 @@ router.post('/analyze', async (req, res) => {
       
       if (category === 'challenge') {
         // Analyze what type of challenge based on insights content
+        if (lowerText.includes('accident') || lowerText.includes('injured') || lowerText.includes('safety') || lowerText.includes('hospitalized')) {
+          return 'Workplace safety incident';
+        }
         if (lowerText.includes('burnout') || lowerText.includes('70-hour') || lowerText.includes('overwhelm') || 
             lowerText.includes('family dinner') || lowerText.includes('weekend plans') || 
             (lowerText.includes('hours') && lowerText.includes('week'))) {
@@ -608,7 +617,9 @@ router.post('/analyze', async (req, res) => {
       const lowerText = text.toLowerCase();
       
       if (category === 'challenge') {
-        if (lowerText.includes('competitor') || lowerText.includes('raised') || lowerText.includes('funding')) {
+        if (lowerText.includes('accident') || lowerText.includes('injured') || lowerText.includes('safety') || lowerText.includes('hospitalized')) {
+          contextualInsights.push('Workplace safety incidents remind us that employee wellbeing must always be the top priority in business operations. Use this experience to strengthen safety protocols, invest in better equipment, and create a culture where team members feel safe reporting potential hazards. A company that truly protects its people builds lasting loyalty and trust.');
+        } else if (lowerText.includes('competitor') || lowerText.includes('raised') || lowerText.includes('funding')) {
           contextualInsights.push('Competitive pressure creates opportunity - it validates market demand and forces innovation. Focus on execution speed and customer experience over feature parity. Study their moves carefully, then build something distinctly better rather than just different.');
         } else if (lowerText.includes('database') || lowerText.includes('technical') || lowerText.includes('system')) {
           contextualInsights.push('Technical failures expose infrastructure weaknesses before they become catastrophic. Build redundancy and monitoring systems now, not after the next outage. Every technical crisis is a learning opportunity that strengthens your operational foundation.');
