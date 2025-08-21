@@ -1,15 +1,19 @@
-import React, { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect } from "react"
+import { queryClient } from "@/lib/queryClient"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
-import { Card } from "@/components/ui/card"
-import { Mic, Brain, Lightbulb, TrendingUp, Calendar, X } from "lucide-react"
-import { JournalService } from "@/lib/services/journal"
+import { Card, CardContent } from "@/components/ui/card"
+import { PlusCircle, Brain, Sparkles, X, Mic, MicOff, Volume2 } from "lucide-react"
+import { supabase } from "@/lib/supabase"
 import { useMutation } from "@tanstack/react-query"
 import { useToast } from "@/hooks/use-toast"
-import { motion } from "framer-motion"
+import { format } from "date-fns"
+import { analyzeJournalEntry, initializeAISystem } from "@/lib/ai"
+import { motion, AnimatePresence } from "framer-motion"
+import { SuggestedTitleButton } from "./SuggestedTitleButton"
 
 interface SimpleCreateEntryModalProps {
   isOpen: boolean
@@ -17,185 +21,221 @@ interface SimpleCreateEntryModalProps {
   onEntryCreated: () => void
 }
 
-interface AIPreview {
-  suggested_title?: string
-  suggested_mood?: string
-  suggested_category?: string
-  suggested_insights?: string[]
-}
-
-interface SuggestedTitleButtonProps {
-  suggestedTitle: string
-  onUseSuggestion: (title: string) => void
-  isVisible: boolean
-}
-
-const SuggestedTitleButton: React.FC<SuggestedTitleButtonProps> = ({ 
-  suggestedTitle, 
-  onUseSuggestion, 
-  isVisible 
-}) => {
-  if (!isVisible || !suggestedTitle) return null
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      className="mb-3"
-    >
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        onClick={() => onUseSuggestion(suggestedTitle)}
-        className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 text-sm"
-      >
-        <Lightbulb className="w-3 h-3 mr-1" />
-        Use AI suggestion: "{suggestedTitle}"
-      </Button>
-    </motion.div>
-  )
-}
-
 export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: SimpleCreateEntryModalProps) {
   const [title, setTitle] = useState("")
   const [content, setContent] = useState("")
-  const [aiPreview, setAiPreview] = useState<AIPreview | null>(null)
-  
-  // Mobile-only voice recording states
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [aiPreview, setAiPreview] = useState<any>(null)
   const [isListening, setIsListening] = useState(false)
   const [interimTranscript, setInterimTranscript] = useState("")
-  const [speechSupported, setSpeechSupported] = useState(false)
   const recognitionRef = useRef<any>(null)
+  const finalTranscriptRef = useRef<string>("")
+  const [networkErrorCount, setNetworkErrorCount] = useState(0)
+  const [speechSupported, setSpeechSupported] = useState(true)
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const { toast } = useToast()
 
   const createEntryMutation = useMutation({
-    mutationFn: async (entry: { title: string; content: string; entry_date: string; tags: string[] }) => {
-      try {
-        const result = await JournalService.createEntry(entry)
-        return result
-      } catch (error: any) {
-        throw new Error(error.message || 'Failed to create journal entry')
-      }
-    },
-    onSuccess: () => {
-      onEntryCreated()
-      handleClose()
-      toast({
-        title: "Journal entry created!",
-        description: "Your thoughts have been saved and analyzed.",
+    mutationFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('No user found')
+
+      // Use JournalService.createEntry which includes enhanced insights logic
+      console.log('SimpleCreateEntryModal: Using JournalService.createEntry with enhanced insights');
+      
+      const { JournalService } = await import('@/lib/services/journal')
+      const data = await JournalService.createEntry({
+        title: title.trim() || '', // Let AI generate heading if no title provided
+        content: content.trim(),
+        tags: []
       })
+
+      // Update preview with the actual analyzed data
+      setAiPreview(data.sentiment_data)
+      setIsAnalyzing(false)
+      
+      return data
+    },
+    onSuccess: async () => {
+      // Invalidate usage stats to update the plan banner
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user?.id) {
+        // queryClient.invalidateQueries({ queryKey: ['usage-status', user.id] }) // Disabled to prevent HEAD requests
+      }
+      
+      toast({
+        title: "Entry created successfully",
+        description: "Your business insights have been captured and analyzed by AI",
+        className: "border-green-200 bg-green-50 text-green-800"
+      })
+      handleClose()
+      onEntryCreated()
     },
     onError: (error: any) => {
       toast({
         title: "Failed to create entry",
-        description: error.message || "Please try again.",
+        description: error.message,
         variant: "destructive"
       })
     }
   })
 
-  // Mobile device detection and speech setup
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!content.trim() || content.trim().length < 10) {
+      toast({
+        title: "Content required",
+        description: "Please write at least 10 characters for your journal entry",
+        variant: "destructive"
+      })
+      return
+    }
+    createEntryMutation.mutate()
+  }
+
+  const handleClose = () => {
+    setTitle("")
+    setContent("")
+    setAiPreview(null)
+    setIsAnalyzing(false)
+    stopListening()
+    onClose()
+  }
+
+  const handleUseSuggestedTitle = (suggestedTitle: string) => {
+    setTitle(suggestedTitle)
+  }
+
+  // Enhanced speech recognition with environment detection
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // Detect mobile devices - speech recognition works reliably here
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-                      ('ontouchstart' in window) ||
-                      (navigator.maxTouchPoints > 0)
-      
-      if (!isMobile) {
-        console.log('Voice input available only on mobile devices')
-        setSpeechSupported(false)
-        return
-      }
-
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
       
-      if (!SpeechRecognition) {
-        console.log('Speech recognition not supported on this mobile device')
+      // Enhanced environment compatibility check
+      const isReplitEnvironment = window.location.hostname.includes('replit') || window.location.hostname.includes('repl.co')
+      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      const isHTTPS = window.location.protocol === 'https:'
+      
+      // Speech recognition requires HTTPS in most browsers, except localhost
+      if (!SpeechRecognition || (!isHTTPS && !isLocalhost)) {
+        console.log('Speech recognition not available: Missing HTTPS or API support')
         setSpeechSupported(false)
         return
       }
 
-      // Mobile speech recognition setup
+      // Test speech recognition availability with a timeout
+      let testRecognition: any
       try {
-        const recognition = new SpeechRecognition()
-        recognition.continuous = false
-        recognition.interimResults = true
-        recognition.lang = 'en-US'
-        recognition.maxAlternatives = 1
+        testRecognition = new SpeechRecognition()
+        testRecognition.continuous = false
+        testRecognition.interimResults = false
+        testRecognition.lang = 'en-US'
+        testRecognition.maxAlternatives = 1
 
-        recognition.onstart = () => {
-          console.log('📱 Mobile voice recognition started')
-        }
+        // Test timeout to detect if service works
+        const testTimeout = setTimeout(() => {
+          console.log('Speech recognition test timeout - service likely unavailable')
+          setSpeechSupported(false)
+          try {
+            testRecognition?.abort()
+          } catch (e) {
+            // Ignore cleanup errors
+          }
+        }, 3000)
 
-        recognition.onresult = (event: any) => {
-          let interimTranscript = ""
-          let finalTranscript = ""
+        testRecognition.onstart = () => {
+          console.log('Speech recognition test successful')
+          clearTimeout(testTimeout)
+          testRecognition.stop()
           
-          for (let i = 0; i < event.results.length; i++) {
-            const transcript = event.results[i][0].transcript
+          // Service works, set up the actual recognition
+          const recognition = new SpeechRecognition()
+          recognition.continuous = false
+          recognition.interimResults = false
+          recognition.lang = 'en-US'
+          recognition.maxAlternatives = 1
+
+          recognition.onstart = () => {
+            console.log('Speech recognition started')
+            setNetworkErrorCount(0)
+          }
+
+          recognition.onresult = (event: any) => {
+            const transcript = event.results[0][0].transcript
+            console.log('Speech result:', transcript)
             
-            if (event.results[i].isFinal) {
-              finalTranscript += transcript
-            } else {
-              interimTranscript += transcript
+            if (transcript && transcript.trim()) {
+              setContent(prev => {
+                const currentContent = prev.trim()
+                const newContent = currentContent + (currentContent ? ' ' : '') + transcript.trim()
+                return newContent
+              })
+              setNetworkErrorCount(0)
             }
           }
-          
-          if (interimTranscript) {
-            setInterimTranscript(interimTranscript)
+
+          recognition.onerror = (event: any) => {
+            console.log('Speech recognition error:', event.error)
+            
+            if (event.error === 'not-allowed') {
+              setIsListening(false)
+              setSpeechSupported(false)
+              toast({
+                title: "Microphone permission needed",
+                description: "Click the microphone icon in your browser's address bar to enable voice input",
+                variant: "destructive"
+              })
+            } else if (event.error === 'network' || event.error === 'service-not-allowed') {
+              setIsListening(false)
+              // Don't show error toast for network issues - just silently disable
+              console.log('Voice input disabled due to service limitations')
+            } else if (event.error === 'audio-capture') {
+              setIsListening(false)
+              toast({
+                title: "Microphone not available",
+                description: "No microphone detected. Please connect a microphone to use voice input.",
+                variant: "destructive"
+              })
+            } else {
+              // For other errors, just log and continue
+              console.log(`Speech error: ${event.error}, continuing...`)
+            }
           }
-          
-          if (finalTranscript && finalTranscript.trim()) {
-            setContent(prev => {
-              const currentContent = prev.trim()
-              const newContent = currentContent + (currentContent ? ' ' : '') + finalTranscript.trim()
-              return newContent
-            })
+
+          recognition.onend = () => {
+            console.log('Speech recognition ended')
             setInterimTranscript("")
             
-            toast({
-              title: "✅ Voice captured!",
-              description: `Added: "${finalTranscript.trim()}"`,
-              className: "border-green-200 bg-green-50 text-green-800"
-            })
+            // Only restart if user is still actively listening and no errors occurred
+            if (isListening && speechSupported) {
+              retryTimeoutRef.current = setTimeout(() => {
+                if (isListening && recognitionRef.current && speechSupported) {
+                  try {
+                    recognitionRef.current.start()
+                  } catch (e) {
+                    console.log('Restart failed, disabling voice input:', e)
+                    setIsListening(false)
+                  }
+                }
+              }, 500)
+            }
           }
+
+          recognitionRef.current = recognition
+          setSpeechSupported(true)
         }
 
-        recognition.onerror = (event: any) => {
-          console.log('Mobile speech error:', event.error)
-          setIsListening(false)
-          
-          if (event.error === 'not-allowed') {
-            setSpeechSupported(false)
-            toast({
-              title: "Microphone permission needed",
-              description: "Please allow microphone access to use voice input",
-              variant: "destructive"
-            })
-          } else if (event.error === 'no-speech') {
-            toast({
-              title: "No speech detected",
-              description: "Try speaking louder or closer to your device",
-              variant: "destructive"
-            })
-          }
+        testRecognition.onerror = (event: any) => {
+          console.log('Speech recognition test failed:', event.error)
+          clearTimeout(testTimeout)
+          setSpeechSupported(false)
         }
 
-        recognition.onend = () => {
-          console.log('📱 Mobile speech recognition ended')
-          setIsListening(false)
-          setInterimTranscript("")
-        }
+        // Start the test
+        testRecognition.start()
 
-        recognitionRef.current = recognition
-        setSpeechSupported(true)
-        console.log('📱 Mobile voice input ready')
-        
       } catch (error) {
-        console.log('Mobile speech recognition not available:', error)
+        console.log('Speech recognition initialization failed:', error)
         setSpeechSupported(false)
       }
     }
@@ -205,46 +245,58 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
         try {
           recognitionRef.current.stop()
         } catch (e) {
-          // Ignore cleanup errors
+          console.log('Error stopping recognition:', e)
         }
       }
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current)
+      }
     }
-  }, [toast])
+  }, [toast, isListening])
 
-  const startListening = async () => {
-    if (!speechSupported || !recognitionRef.current) {
-      toast({
-        title: "Voice input unavailable",
-        description: "Voice recording is only available on mobile devices",
-        variant: "destructive"
-      })
+  const startListening = () => {
+    if (!speechSupported) {
+      console.log('Voice input not supported in this environment')
+      return
+    }
+    
+    if (!recognitionRef.current) {
+      console.log('Speech recognition not initialized')
       return
     }
 
     try {
-      setIsListening(true)
       setInterimTranscript("")
+      finalTranscriptRef.current = ""
+      setIsListening(true)
       recognitionRef.current.start()
       
       toast({
-        title: "🎤 Recording started",
-        description: "Speak clearly into your device microphone",
-        className: "border-green-200 bg-green-50 text-green-800"
+        title: "Listening...",
+        description: "Start speaking your journal entry",
+        className: "border-blue-200 bg-blue-50 text-blue-800"
       })
     } catch (error) {
-      console.error('Failed to start voice recording:', error)
+      console.error('Error starting speech recognition:', error)
       setIsListening(false)
+      setSpeechSupported(false)
       toast({
-        title: "Voice recording failed",
-        description: "Could not start voice recording. Please try again.",
+        title: "Voice input unavailable",
+        description: "Speech recognition is not working. Please type your journal entry instead.",
         variant: "destructive"
       })
     }
   }
 
   const stopListening = () => {
-    setIsListening(false)
-    setInterimTranscript("")
+    setIsListening(false) // Set this first to prevent auto-restart
+    setNetworkErrorCount(0)
+    
+    // Clear any pending retry timeout
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current)
+      retryTimeoutRef.current = null
+    }
     
     if (recognitionRef.current) {
       try {
@@ -253,17 +305,12 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
         console.log('Error stopping recognition:', e)
       }
     }
-    
-    toast({
-      title: "🛑 Recording stopped",
-      description: "Click the microphone to record more",
-      className: "border-blue-200 bg-blue-50 text-blue-800"
-    })
+    setInterimTranscript("")
+    finalTranscriptRef.current = ""
   }
 
-  const handleUseSuggestedTitle = (suggestedTitle: string) => {
-    setTitle(suggestedTitle)
-  }
+  // Generate a smart title from content
+
 
   const getMoodColor = (mood: string | null | undefined) => {
     if (!mood) return 'bg-gray-100 text-gray-600'
@@ -285,75 +332,33 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
   }
 
   const getCategoryColor = (category: string | null | undefined) => {
-    if (!category) return 'bg-gray-100 text-gray-600'
+    if (!category) return 'bg-slate-100 text-slate-600'
     
     const categoryColors: Record<string, string> = {
-      'business growth': 'bg-green-100 text-green-700',
-      'team management': 'bg-blue-100 text-blue-700',
-      'financial planning': 'bg-purple-100 text-purple-700',
-      'strategy': 'bg-indigo-100 text-indigo-700',
-      'personal': 'bg-pink-100 text-pink-700',
-      'challenges': 'bg-orange-100 text-orange-700',
-      'achievements': 'bg-emerald-100 text-emerald-700',
-      'decisions': 'bg-amber-100 text-amber-700'
+      'planning': 'bg-blue-100 text-blue-700',
+      'strategy': 'bg-purple-100 text-purple-700',
+      'operations': 'bg-green-100 text-green-700',
+      'finance': 'bg-emerald-100 text-emerald-700',
+      'marketing': 'bg-pink-100 text-pink-700',
+      'reflection': 'bg-indigo-100 text-indigo-700',
+      'challenges': 'bg-red-100 text-red-700',
+      'wins': 'bg-yellow-100 text-yellow-700'
     }
     
-    return categoryColors[category.toLowerCase()] || 'bg-gray-100 text-gray-600'
+    return categoryColors[category.toLowerCase()] || 'bg-slate-100 text-slate-600'
   }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!content.trim() || content.trim().length < 10) {
-      toast({
-        title: "Entry too short",
-        description: "Please write at least 10 characters for your journal entry.",
-        variant: "destructive"
-      })
-      return
-    }
-
-    const entryData = {
-      title: title.trim() || '',
-      content: content.trim(),
-      entry_date: new Date().toISOString(),
-      tags: [] as string[]
-    }
-
-    createEntryMutation.mutate(entryData)
-  }
-
-  const handleClose = () => {
-    if (isListening) {
-      stopListening()
-    }
-    setTitle("")
-    setContent("")
-    setAiPreview(null)
-    setInterimTranscript("")
-    onClose()
-  }
-
-  if (!isOpen) return null
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="flex flex-row items-center justify-between">
-          <DialogTitle className="flex items-center gap-2 text-xl font-semibold">
-            <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-              <Brain className="w-5 h-5 text-orange-600" />
-            </div>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <PlusCircle className="w-5 h-5 text-orange-600" />
             New Journal Entry
           </DialogTitle>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleClose}
-            className="h-6 w-6 p-0"
-          >
-            <X className="h-4 w-4" />
-          </Button>
+          <DialogDescription className="sr-only">
+            Create a new business journal entry with AI-powered sentiment analysis and insights
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -380,15 +385,15 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
             <div className="space-y-3">
               <div className="relative">
                 <Textarea
-                  placeholder="What's on your mind? Start typing or use voice input on mobile devices, and AI will analyze your business thoughts..."
-                  value={content + (interimTranscript ? ` ${interimTranscript}` : '')}
-                  onChange={(e) => setContent(e.target.value.replace(interimTranscript, '').trim())}
+                  placeholder="What's on your mind? Start typing or use voice input, and AI will analyze your business thoughts..."
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
                   className="min-h-[120px] resize-none pr-14 sm:pr-12"
                   rows={6}
                   autoFocus
                 />
                 
-                {/* Mobile-only Voice Input Button */}
+                {/* Voice Input Button - Only show when supported */}
                 {speechSupported && (
                   <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3">
                     <Button
@@ -401,7 +406,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
                           ? 'bg-red-500 hover:bg-red-600 border-red-300 shadow-lg' 
                           : 'hover:bg-orange-50 border-orange-200 text-orange-600'
                       }`}
-                      title={isListening ? "Stop recording" : "Start voice input (mobile only)"}
+                      title={isListening ? "Stop recording" : "Start voice input"}
                       disabled={createEntryMutation.isPending}
                     >
                       {isListening ? (
@@ -429,13 +434,15 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
                       <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
                     </div>
                     <span className="font-medium text-xs sm:text-sm">
-                      🎤 Recording... Speak clearly into your device microphone
+                      Listening... Speak a phrase and pause for it to appear
                     </span>
                   </div>
                 </div>
               )}
             </div>
           </div>
+
+
 
           {/* Saving Status Indicator */}
           {createEntryMutation.isPending && (
@@ -481,10 +488,10 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
                   >
                     <Brain className="w-4 h-4" />
                   </motion.div>
-                  Analyzing...
+                  Saving...
                 </>
               ) : (
-                'Save Entry'
+                "Save Entry"
               )}
             </Button>
           </div>
