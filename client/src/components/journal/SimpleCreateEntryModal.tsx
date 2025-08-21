@@ -330,128 +330,162 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
     }
 
     try {
-      // Create new recognition instance
+      // Create recognition with more basic, reliable settings
       const recognition = new SpeechRecognition()
-      recognition.continuous = true
-      recognition.interimResults = true
+      recognition.continuous = false  // Single-shot mode for reliability
+      recognition.interimResults = false  // Only final results
       recognition.lang = 'en-US'
       recognition.maxAlternatives = 1
+      
+      // Force longer timeout by using these browser-specific properties
+      try {
+        (recognition as any).serviceURI = 'wss://www.google.com/speech-api/v2/recognize'
+        ;(recognition as any).timeout = 30000  // 30 second timeout
+        ;(recognition as any).noSpeechTimeout = 15000  // 15 seconds to start speaking
+      } catch (e) {
+        // Ignore if browser doesn't support these
+      }
 
-      // Track if we've received any speech at all
-      let hasReceivedSpeech = false
+      let startTime = Date.now()
+      let speechDetected = false
 
       recognition.onstart = () => {
-        console.log('🎤 SPEECH RECOGNITION ACTIVE - MIC IS ON!')
-        setNetworkErrorCount(0)
+        console.log('🎤 MIC ACTIVE - YOU HAVE 15 SECONDS TO SPEAK!')
+        startTime = Date.now()
         
         toast({
-          title: "🎤 Microphone active",
-          description: "Listening for your voice. Start speaking now!",
+          title: "🎤 Say something now!",
+          description: "Speak clearly. You have 15 seconds to record your message.",
           className: "border-green-200 bg-green-50 text-green-800"
         })
+        
+        // Show countdown timer to user
+        setTimeout(() => {
+          if (isListening && !speechDetected) {
+            console.log('⏰ 10 seconds remaining...')
+            toast({
+              title: "⏰ 10 seconds left",
+              description: "Keep speaking! Recording will stop soon.",
+              className: "border-orange-200 bg-orange-50 text-orange-800"
+            })
+          }
+        }, 5000)
       }
 
       recognition.onresult = (event: any) => {
-        hasReceivedSpeech = true
-        console.log('🎯 SPEECH DETECTED! Processing results...')
+        speechDetected = true
+        console.log('🎯 SPEECH CAPTURED!')
         
-        let interimTranscript = ""
-        let finalTranscript = ""
-        
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript
-          console.log(`📝 "${transcript}" (final: ${event.results[i].isFinal})`)
+        if (event.results && event.results.length > 0) {
+          const transcript = event.results[0][0].transcript
+          console.log('📝 TRANSCRIPT:', transcript)
           
-          if (event.results[i].isFinal) {
-            finalTranscript += transcript + " "
-          } else {
-            interimTranscript += transcript
+          if (transcript && transcript.trim()) {
+            setContent(prev => {
+              const newText = prev + (prev ? ' ' : '') + transcript.trim()
+              console.log('✅ ADDED TO JOURNAL:', newText)
+              return newText
+            })
+            
+            toast({
+              title: "✅ Voice captured successfully!",
+              description: `Added: "${transcript.trim()}"`,
+              className: "border-green-200 bg-green-50 text-green-800"
+            })
           }
-        }
-        
-        // Show interim results
-        if (interimTranscript) {
-          setInterimTranscript(interimTranscript)
-          console.log('👁️ SHOWING INTERIM:', interimTranscript)
-        }
-        
-        // Add final results to content
-        if (finalTranscript.trim()) {
-          console.log('✅ ADDING FINAL TEXT:', finalTranscript.trim())
-          setContent(prev => {
-            const newContent = prev + (prev ? ' ' : '') + finalTranscript.trim()
-            return newContent
-          })
-          setInterimTranscript("")
-          
-          toast({
-            title: "✅ Voice captured!",
-            description: `"${finalTranscript.trim()}"`,
-            className: "border-green-200 bg-green-50 text-green-800"
-          })
         }
       }
 
       recognition.onerror = (event: any) => {
-        console.error('❌ SPEECH ERROR:', event.error)
+        const duration = Date.now() - startTime
+        console.error(`❌ SPEECH ERROR after ${duration}ms:`, event.error)
+        setIsListening(false)
         
-        if (event.error === 'not-allowed') {
-          setIsListening(false)
-          setSpeechSupported(false)
-          toast({
-            title: "Microphone blocked",
-            description: "Click the microphone icon in your browser address bar to allow access",
-            variant: "destructive"
-          })
-        } else if (event.error === 'no-speech') {
-          if (!hasReceivedSpeech) {
-            console.log('⚠️ No speech detected, trying again...')
-            // Only show warning if we haven't captured any speech yet
+        switch (event.error) {
+          case 'not-allowed':
+            setSpeechSupported(false)
             toast({
-              title: "No speech detected",
-              description: "Speak louder or closer to your microphone",
+              title: "Microphone access denied",
+              description: "Please allow microphone access in your browser settings",
               variant: "destructive"
             })
-          }
-        } else {
-          console.error('Other speech error:', event.error)
-          toast({
-            title: "Voice input error",
-            description: `${event.error} - Try clicking the microphone again`,
-            variant: "destructive"
-          })
+            break
+          case 'no-speech':
+            if (duration < 3000) {
+              // Ended too quickly - likely a service issue
+              toast({
+                title: "Voice input too fast",
+                description: "The microphone stopped too quickly. Try again and speak immediately.",
+                variant: "destructive"
+              })
+            } else {
+              toast({
+                title: "No speech detected",
+                description: "Try speaking louder or check your microphone",
+                variant: "destructive"
+              })
+            }
+            break
+          case 'network':
+            toast({
+              title: "Connection issue",
+              description: "Speech recognition service unavailable. Try again in a moment.",
+              variant: "destructive"
+            })
+            break
+          case 'audio-capture':
+            toast({
+              title: "Microphone error",
+              description: "Could not access your microphone. Check your device settings.",
+              variant: "destructive"
+            })
+            break
+          default:
+            toast({
+              title: "Voice input failed",
+              description: `Error: ${event.error}. Try the microphone again.`,
+              variant: "destructive"
+            })
         }
       }
 
       recognition.onend = () => {
-        console.log('🛑 SPEECH RECOGNITION STOPPED')
+        const duration = Date.now() - startTime
+        console.log(`🛑 RECOGNITION ENDED after ${duration}ms`)
         setIsListening(false)
-        setInterimTranscript("")
         
-        if (hasReceivedSpeech) {
+        if (speechDetected) {
           toast({
             title: "✅ Recording complete",
-            description: "Click the microphone again to continue voice input",
+            description: "Voice recording finished. Click the microphone to record more.",
             className: "border-blue-200 bg-blue-50 text-blue-800"
+          })
+        } else if (duration < 2000) {
+          // Ended too quickly without speech
+          console.log('⚠️ Recognition ended too quickly - likely service issue')
+          toast({
+            title: "Recording ended too quickly",
+            description: "Speech service may be unavailable. Try typing instead.",
+            variant: "destructive"
           })
         }
       }
 
-      // Start the recognition
+      // Start recognition
       recognitionRef.current = recognition
-      setInterimTranscript("")
       setIsListening(true)
+      speechDetected = false
       
-      console.log('🚀 STARTING VOICE RECOGNITION WITH PERMISSIONS...')
+      console.log('🚀 STARTING SINGLE-SHOT VOICE RECOGNITION...')
       recognition.start()
       
     } catch (error) {
-      console.error('❌ SPEECH RECOGNITION FAILED:', error)
+      console.error('❌ FAILED TO CREATE SPEECH RECOGNITION:', error)
       setIsListening(false)
       setSpeechSupported(false)
       toast({
-        title: "Voice input failed",
-        description: "Speech recognition is not available. Please type your entry instead.",
+        title: "Voice input unavailable",
+        description: "Your browser doesn't support voice input. Please type your entry.",
         variant: "destructive"
       })
     }
