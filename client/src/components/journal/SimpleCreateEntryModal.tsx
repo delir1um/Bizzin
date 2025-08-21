@@ -158,8 +158,8 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
           
           // Service works, set up the actual recognition
           const recognition = new SpeechRecognition()
-          recognition.continuous = false
-          recognition.interimResults = false
+          recognition.continuous = true  // Keep listening for multiple phrases
+          recognition.interimResults = true  // Show partial results
           recognition.lang = 'en-US'
           recognition.maxAlternatives = 1
 
@@ -169,15 +169,37 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
           }
 
           recognition.onresult = (event: any) => {
-            const transcript = event.results[0][0].transcript
-            console.log('Speech result:', transcript)
+            console.log('Speech recognition event received:', event.results.length, 'results')
             
-            if (transcript && transcript.trim()) {
+            let interimTranscript = ""
+            let finalTranscript = ""
+            
+            // Process all results
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+              const transcript = event.results[i][0].transcript
+              console.log(`Result ${i}: "${transcript}" (final: ${event.results[i].isFinal})`)
+              
+              if (event.results[i].isFinal) {
+                finalTranscript += transcript
+              } else {
+                interimTranscript += transcript
+              }
+            }
+            
+            // Update interim results for real-time feedback
+            if (interimTranscript) {
+              setInterimTranscript(interimTranscript)
+            }
+            
+            // Add final results to content
+            if (finalTranscript && finalTranscript.trim()) {
+              console.log('Adding final transcript:', finalTranscript)
               setContent(prev => {
                 const currentContent = prev.trim()
-                const newContent = currentContent + (currentContent ? ' ' : '') + transcript.trim()
+                const newContent = currentContent + (currentContent ? ' ' : '') + finalTranscript.trim()
                 return newContent
               })
+              setInterimTranscript("") // Clear interim when we have final
               setNetworkErrorCount(0)
             }
           }
@@ -400,8 +422,8 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
               <div className="relative">
                 <Textarea
                   placeholder="What's on your mind? Start typing or use voice input, and AI will analyze your business thoughts..."
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
+                  value={content + (interimTranscript ? ` ${interimTranscript}` : '')}
+                  onChange={(e) => setContent(e.target.value.replace(interimTranscript, '').trim())}
                   className="min-h-[120px] resize-none pr-14 sm:pr-12"
                   rows={6}
                   autoFocus
