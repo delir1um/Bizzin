@@ -28,7 +28,7 @@ export function ViewEntryModal({ isOpen, onClose, entry, onEdit, onDelete }: Vie
 
   return (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50"
       onClick={(e) => {
         // Close modal when clicking outside the card
         if (e.target === e.currentTarget) {
@@ -36,15 +36,15 @@ export function ViewEntryModal({ isOpen, onClose, entry, onEdit, onDelete }: Vie
         }
       }}
     >
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-800">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6 border-b border-slate-200 dark:border-slate-700">
+      <Card className="w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-800 mx-2 sm:mx-0">
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0 pb-4 sm:pb-6 border-b border-slate-200 dark:border-slate-700 p-4 sm:p-6">
           <div className="flex-1">
             {/* Title with mood emoji */}
-            <CardTitle className="text-3xl font-bold text-slate-900 dark:text-white pr-4 mb-3 flex items-center gap-2">
+            <CardTitle className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white pr-0 sm:pr-4 mb-2 sm:mb-3 flex items-center gap-2 leading-tight">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="text-2xl cursor-default">{displayData.moodEmoji}</span>
+                    <span className="text-xl sm:text-2xl cursor-default">{displayData.moodEmoji}</span>
                   </TooltipTrigger>
                   <TooltipContent side="top">
                     <p className="text-sm capitalize">
@@ -57,12 +57,12 @@ export function ViewEntryModal({ isOpen, onClose, entry, onEdit, onDelete }: Vie
             </CardTitle>
             
             {/* Date */}
-            <div className="mb-3 text-sm text-slate-500 dark:text-slate-400">
+            <div className="mb-2 sm:mb-3 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
               {format(new Date(entry.created_at), 'MMMM dd, yyyy • h:mm a')}
             </div>
             
             {/* Category and Energy badges */}
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex flex-wrap items-center gap-1 sm:gap-2 mb-2">
               {displayData.category && (
                 <Badge variant="outline" className="text-orange-600 border-orange-200 font-medium">
                   {displayData.category}
@@ -85,13 +85,13 @@ export function ViewEntryModal({ isOpen, onClose, entry, onEdit, onDelete }: Vie
 
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2 w-full sm:w-auto justify-end sm:justify-start">
             {onEdit && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onEdit(entry)}
-                className="text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white"
+                className="text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white min-h-[44px] text-sm px-3 sm:px-4"
               >
                 <Edit className="w-4 h-4 mr-2" />
                 Edit
@@ -103,7 +103,7 @@ export function ViewEntryModal({ isOpen, onClose, entry, onEdit, onDelete }: Vie
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-red-600 hover:text-red-800 hover:bg-red-50 border-red-200 dark:text-red-400 dark:hover:text-red-300"
+                    className="text-red-600 hover:text-red-800 hover:bg-red-50 border-red-200 dark:text-red-400 dark:hover:text-red-300 min-h-[44px] text-sm px-3 sm:px-4"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
                     Delete
@@ -132,17 +132,17 @@ export function ViewEntryModal({ isOpen, onClose, entry, onEdit, onDelete }: Vie
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-600"
+              className="text-slate-400 hover:text-slate-600 min-h-[44px] min-w-[44px] p-2"
             >
               <X className="w-5 h-5" />
             </Button>
           </div>
         </CardHeader>
 
-        <CardContent className="p-8 space-y-8">
+        <CardContent className="p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8">
           {/* Journal Content - Prominent and Journal-like */}
-          <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-6 border-l-4 border-orange-500">
-            <div className="text-lg text-slate-800 dark:text-slate-200 leading-relaxed font-medium whitespace-pre-wrap">
+          <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4 sm:p-6 border-l-4 border-orange-500">
+            <div className="text-base sm:text-lg text-slate-800 dark:text-slate-200 leading-relaxed font-medium whitespace-pre-wrap">
               {entry.content}
             </div>
           </div>
@@ -153,13 +153,13 @@ export function ViewEntryModal({ isOpen, onClose, entry, onEdit, onDelete }: Vie
           {/* Tags */}
           {entry.tags && entry.tags.length > 0 && (
             <div>
-              <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Tags</h4>
+              <h4 className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 sm:mb-3">Tags</h4>
               <div className="flex flex-wrap gap-2">
                 {entry.tags.map((tag, index) => (
                   <Badge 
                     key={index} 
                     variant="outline" 
-                    className="text-sm"
+                    className="text-xs sm:text-sm"
                   >
                     {tag}
                   </Badge>
@@ -171,7 +171,7 @@ export function ViewEntryModal({ isOpen, onClose, entry, onEdit, onDelete }: Vie
           {/* Footer Info - Only show if updated */}
           {entry.updated_at !== entry.created_at && (
             <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-              <div className="text-sm text-slate-500 dark:text-slate-400">
+              <div className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
                 Last updated {format(new Date(entry.updated_at), 'MMM dd, yyyy')}
               </div>
             </div>

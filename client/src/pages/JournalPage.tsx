@@ -561,7 +561,7 @@ export function JournalPage() {
         }
       }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6">
       {/* Page Header with Enhanced Animations */}
       <motion.div 
         className="mb-8"
@@ -569,14 +569,14 @@ export function JournalPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
       >
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
           >
             <motion.h1 
-              className="text-3xl font-bold text-slate-900 dark:text-white"
+              className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white"
               whileHover={{ 
                 scale: 1.02,
                 transition: { duration: 0.2 }
@@ -597,7 +597,7 @@ export function JournalPage() {
               </motion.span>
             </motion.h1>
             <motion.p 
-              className="mt-2 text-lg text-slate-600 dark:text-slate-300"
+              className="mt-2 text-base sm:text-lg text-slate-600 dark:text-slate-300"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
@@ -607,7 +607,7 @@ export function JournalPage() {
           </motion.div>
           
           <motion.div 
-            className="mt-4 sm:mt-0 flex gap-2"
+            className="flex flex-wrap gap-2 sm:gap-2"
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.3, ease: "backOut" }}
@@ -624,7 +624,7 @@ export function JournalPage() {
                   variant="outline"
                   size="sm"
                   className="border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-950/20
-                    transition-all duration-300 hover:shadow-md relative overflow-hidden disabled:opacity-50"
+                    transition-all duration-300 hover:shadow-md relative overflow-hidden disabled:opacity-50 min-h-[44px] text-sm sm:text-base"
                 >
                   <motion.div
                     animate={isReAnalyzing ? { 
@@ -661,9 +661,9 @@ export function JournalPage() {
               >
                 <Button 
                   onClick={handleCreateEntry}
-                  className="bg-orange-600 hover:bg-orange-700 text-white mr-2
+                  className="bg-orange-600 hover:bg-orange-700 text-white
                     transition-all duration-300 hover:shadow-lg hover:shadow-orange-200 dark:hover:shadow-orange-900/30
-                    relative overflow-hidden group"
+                    relative overflow-hidden group min-h-[44px] text-sm sm:text-base px-4 sm:px-6"
                 >
                   <PlusCircle className="w-4 h-4 mr-2" />
                   <span className="relative z-10">Write Entry</span>
@@ -697,7 +697,7 @@ export function JournalPage() {
               }}
               variant="outline"
               size="sm"
-              className="border-red-200 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-950/20"
+              className="border-red-200 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-950/20 min-h-[44px] text-sm"
             >
               <Trash2 className="w-4 h-4 mr-2" />
               Clear All
@@ -708,7 +708,7 @@ export function JournalPage() {
               onClick={handleAddSamples}
               variant="outline"
               size="sm"
-              className="border-purple-200 text-purple-700 hover:bg-purple-50 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-950/20"
+              className="border-purple-200 text-purple-700 hover:bg-purple-50 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-950/20 min-h-[44px] text-sm"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Random Samples
@@ -735,13 +735,13 @@ export function JournalPage() {
 
       {/* Statistics Overview with Smooth Animations */}
       <motion.div 
-        className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.5 }}
       >
-        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800">
-          <CardContent className="p-6">
+        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800 min-h-[100px] sm:min-h-[120px]">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center">
               <div className="p-2 bg-orange-500 rounded-lg shadow-sm">
                 <Calendar className="w-5 h-5 text-white" />
@@ -758,8 +758,8 @@ export function JournalPage() {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900 border-green-200 dark:border-green-800">
-          <CardContent className="p-6">
+        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900 border-green-200 dark:border-green-800 min-h-[100px] sm:min-h-[120px]">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center">
               <div className="p-2 bg-green-500 rounded-lg shadow-sm">
                 <TrendingUp className="w-5 h-5 text-white" />
@@ -776,8 +776,8 @@ export function JournalPage() {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-900 border-blue-200 dark:border-blue-800">
-          <CardContent className="p-6">
+        <Card className="hover:shadow-md transition-shadow bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-900 border-blue-200 dark:border-blue-800 min-h-[100px] sm:min-h-[120px] sm:col-span-2 lg:col-span-1">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center">
               <div className="p-2 bg-blue-500 rounded-lg shadow-sm">
                 <Heart className="w-5 h-5 text-white" />
@@ -797,7 +797,7 @@ export function JournalPage() {
 
       {/* Search */}
       <motion.div 
-        className="mb-8 flex flex-col sm:flex-row gap-4"
+        className="mb-6 sm:mb-8 flex flex-col sm:flex-row gap-3 sm:gap-4"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
@@ -809,14 +809,14 @@ export function JournalPage() {
             placeholder="Search your entries..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-10 focus:ring-orange-500 focus:border-orange-500"
+            className="pl-10 pr-10 focus:ring-orange-500 focus:border-orange-500 h-12 sm:h-10 text-base sm:text-sm"
           />
           {searchQuery && (
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setSearchQuery('')}
-              className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-slate-100 rounded-full"
+              className="absolute right-1 top-1/2 transform -translate-y-1/2 h-10 w-10 sm:h-8 sm:w-8 p-0 hover:bg-slate-100 rounded-full"
             >
               <X className="w-4 h-4 text-slate-400 hover:text-slate-600" />
             </Button>
@@ -890,30 +890,30 @@ export function JournalPage() {
                             hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer group 
                             border border-slate-200 hover:border-orange-300 bg-white hover:bg-orange-50/30
                             dark:bg-slate-800 dark:border-slate-700 dark:hover:border-orange-600 dark:hover:bg-orange-950/20
-                            relative overflow-hidden"
+                            relative overflow-hidden min-h-[120px] sm:min-h-[140px] active:scale-[0.98] touch-manipulation"
                           onClick={() => handleViewEntry(entry)}
                           data-entry-card
                         >
                           {/* Animated Background Gradient */}
                           <div className="absolute inset-0 bg-gradient-to-br from-orange-50/50 to-transparent dark:from-orange-900/10 
                             opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                          <CardHeader className="pb-4 relative z-10">
+                          <CardHeader className="pb-3 sm:pb-4 relative z-10 p-4 sm:p-6">
                             <div className="flex items-start justify-between mb-3">
                               <div className="flex items-center gap-3 flex-1">
                                 <span className="text-2xl" title={entry.mood || entry.sentiment_data?.primary_mood || 'No mood detected'}>
                                   {getDisplayMoodEmoji(entry)}
                                 </span>
-                                <CardTitle className="text-lg font-semibold text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-1">
+                                <CardTitle className="text-base sm:text-lg font-semibold text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-1 sm:line-clamp-2">
                                   {entry.title}
                                 </CardTitle>
                               </div>
                             </div>
                             <div className="flex items-center gap-3">
-                              <span className="text-sm text-slate-500">{formatDate(entry.created_at || entry.entry_date || '')}</span>
+                              <span className="text-xs sm:text-sm text-slate-500">{formatDate(entry.created_at || entry.entry_date || '')}</span>
                               {(entry.category || entry.sentiment_data?.business_category) && (
                                 <Badge 
                                   variant="outline" 
-                                  className="bg-orange-50 text-orange-700 border-orange-200 text-xs px-2 py-1"
+                                  className="bg-orange-50 text-orange-700 border-orange-200 text-xs px-2 py-1 hidden sm:inline-flex"
                                 >
                                   {getEntryDisplayData(entry).category}
                                 </Badge>
@@ -926,14 +926,14 @@ export function JournalPage() {
                               )}
                             </div>
                           </CardHeader>
-                          <CardContent className="pt-0 pb-4 relative z-10">
+                          <CardContent className="pt-0 pb-3 sm:pb-4 relative z-10 px-4 sm:px-6">
                             <div className="mb-3">
-                              <p className="text-slate-700 leading-relaxed line-clamp-2">
+                              <p className="text-sm sm:text-base text-slate-700 leading-relaxed line-clamp-2 sm:line-clamp-3">
                                 {entry.content}
                               </p>
                               {entry.content.length > 200 && (
                                 <button 
-                                  className="text-orange-600 hover:text-orange-700 text-sm font-medium mt-1"
+                                  className="text-orange-600 hover:text-orange-700 text-xs sm:text-sm font-medium mt-1 min-h-[44px] sm:min-h-auto p-2 sm:p-0 -m-2 sm:m-0 touch-manipulation"
                                   onClick={(e) => {
                                     e.stopPropagation()
                                     setSelectedEntry(entry)
@@ -974,7 +974,7 @@ export function JournalPage() {
                           className={`${canCreateEntry() 
                             ? 'bg-orange-600 hover:bg-orange-700 text-white' 
                             : 'bg-slate-400 hover:bg-slate-500 text-white'} 
-                            px-6 py-3 text-base font-medium`}
+                            px-4 sm:px-6 py-3 text-sm sm:text-base font-medium min-h-[48px] touch-manipulation`}
                           disabled={!canCreateEntry() && !isPremium}
                         >
                           <PlusCircle className="w-5 h-5 mr-2" />
@@ -996,13 +996,13 @@ export function JournalPage() {
                 >
                   <Button
                     variant="ghost"
-                    className="flex items-center justify-between w-full p-4 hover:bg-gradient-to-r hover:from-slate-50 hover:to-orange-50 rounded-xl border border-slate-200 hover:border-orange-200 transition-all duration-200"
+                    className="flex items-center justify-between w-full p-3 sm:p-4 hover:bg-gradient-to-r hover:from-slate-50 hover:to-orange-50 rounded-xl border border-slate-200 hover:border-orange-200 transition-all duration-200 min-h-[56px] touch-manipulation"
                     onClick={() => toggleSection('thisWeek')}
                     data-section-header
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-3 h-3 bg-gradient-to-br from-blue-400 to-blue-500 rounded-full"></div>
-                      <h2 className="text-lg font-semibold text-slate-900">Earlier this week</h2>
+                      <h2 className="text-base sm:text-lg font-semibold text-slate-900">Earlier this week</h2>
                       <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs font-medium">
                         {organizedEntries.thisWeek.length} entries
                       </Badge>
@@ -1025,20 +1025,20 @@ export function JournalPage() {
                         {organizedEntries.thisWeek.map((entry: JournalEntry) => (
                           <Card 
                             key={entry.id}
-                            className="hover:shadow-md transition-all duration-200 cursor-pointer group border border-slate-200 hover:border-blue-300 bg-white hover:bg-blue-50/30"
+                            className="hover:shadow-md transition-all duration-200 cursor-pointer group border border-slate-200 hover:border-blue-300 bg-white hover:bg-blue-50/30 min-h-[100px] active:scale-[0.98] touch-manipulation"
                             onClick={() => handleViewEntry(entry)}
                             data-entry-card
                           >
-                            <CardContent className="p-4">
+                            <CardContent className="p-3 sm:p-4">
                               <div className="flex items-center gap-2 mb-2">
                                 <span className="text-lg" title={entry.mood || entry.sentiment_data?.primary_mood || 'No mood detected'}>
                                   {getDisplayMoodEmoji(entry)}
                                 </span>
-                                <h3 className="font-medium text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-1">
+                                <h3 className="text-sm sm:text-base font-medium text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-1">
                                   {entry.title}
                                 </h3>
                               </div>
-                              <div className="flex items-center gap-3 text-sm text-slate-500 mb-2">
+                              <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-slate-500 mb-2">
                                 <span>{formatDate(entry.created_at || entry.entry_date || '')}</span>
                                 {getEntryDisplayData(entry).category && (
                                   <Badge className="bg-orange-50 text-orange-700 border-orange-200 text-xs px-1.5 py-0.5">
@@ -1046,7 +1046,7 @@ export function JournalPage() {
                                   </Badge>
                                 )}
                               </div>
-                              <p className="text-slate-600 text-sm line-clamp-1">
+                              <p className="text-slate-600 text-xs sm:text-sm line-clamp-1 sm:line-clamp-2">
                                 {entry.content.length > 0 ? entry.content : 'No content available'}
                               </p>
                             </CardContent>
@@ -1068,13 +1068,13 @@ export function JournalPage() {
                 >
                   <Button
                     variant="ghost"
-                    className="flex items-center justify-between w-full p-4 hover:bg-gradient-to-r hover:from-slate-50 hover:to-green-50 rounded-xl border border-slate-200 hover:border-green-200 transition-all duration-200"
+                    className="flex items-center justify-between w-full p-3 sm:p-4 hover:bg-gradient-to-r hover:from-slate-50 hover:to-green-50 rounded-xl border border-slate-200 hover:border-green-200 transition-all duration-200 min-h-[56px] touch-manipulation"
                     onClick={() => toggleSection('thisMonth')}
                     data-section-header
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-3 h-3 bg-gradient-to-br from-green-400 to-green-500 rounded-full"></div>
-                      <h2 className="text-lg font-semibold text-slate-900">Earlier this month</h2>
+                      <h2 className="text-base sm:text-lg font-semibold text-slate-900">Earlier this month</h2>
                       <Badge className="bg-green-100 text-green-700 border-green-200 text-xs font-medium">
                         {organizedEntries.thisMonth.length} entries
                       </Badge>
@@ -1092,16 +1092,16 @@ export function JournalPage() {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 ml-4"
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 ml-2 sm:ml-4"
                       >
                         {organizedEntries.thisMonth.map((entry: JournalEntry) => (
                           <Card 
                             key={entry.id}
-                            className="hover:shadow-sm transition-all duration-200 cursor-pointer group border border-slate-200 hover:border-green-300 bg-white hover:bg-green-50/30"
+                            className="hover:shadow-sm transition-all duration-200 cursor-pointer group border border-slate-200 hover:border-green-300 bg-white hover:bg-green-50/30 min-h-[80px] active:scale-[0.98] touch-manipulation"
                             onClick={() => handleViewEntry(entry)}
                             data-entry-card
                           >
-                            <CardContent className="p-3">
+                            <CardContent className="p-2 sm:p-3">
                               <div className="flex items-center gap-2 mb-1">
                                 <span className="text-sm" title={entry.mood || entry.sentiment_data?.primary_mood || 'No mood detected'}>
                                   {getDisplayMoodEmoji(entry)}

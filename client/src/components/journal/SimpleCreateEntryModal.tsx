@@ -350,9 +350,9 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full mx-2 sm:mx-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <PlusCircle className="w-5 h-5 text-orange-600" />
             New Journal Entry
           </DialogTitle>
@@ -361,15 +361,15 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 p-1">
           {/* Entry Form */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <div>
               <Input
                 placeholder="Entry title (optional - AI will suggest one)"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="mb-4"
+                className="mb-3 sm:mb-4 h-12 sm:h-10 text-base sm:text-sm"
               />
             </div>
             
@@ -382,26 +382,26 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
               />
             )}
             
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               <div className="relative">
                 <Textarea
                   placeholder="What's on your mind? Start typing or use voice input, and AI will analyze your business thoughts..."
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  className="min-h-[120px] resize-none pr-14 sm:pr-12"
+                  className="min-h-[140px] sm:min-h-[120px] resize-none pr-14 sm:pr-12 text-base sm:text-sm leading-relaxed"
                   rows={6}
                   autoFocus
                 />
                 
                 {/* Voice Input Button - Only show when supported */}
                 {speechSupported && (
-                  <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3">
+                  <div className="absolute bottom-3 right-3 sm:bottom-3 sm:right-3">
                     <Button
                       type="button"
                       size="sm"
                       variant={isListening ? "destructive" : "outline"}
                       onClick={isListening ? stopListening : startListening}
-                      className={`w-8 h-8 sm:w-10 sm:h-10 p-0 transition-all duration-200 relative ${
+                      className={`w-12 h-12 sm:w-10 sm:h-10 p-0 transition-all duration-200 relative touch-manipulation ${
                         isListening 
                           ? 'bg-red-500 hover:bg-red-600 border-red-300 shadow-lg' 
                           : 'hover:bg-orange-50 border-orange-200 text-orange-600'
@@ -427,7 +427,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
               
               {/* Voice Status Indicator - Only show when supported and listening */}
               {speechSupported && isListening && (
-                <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-2 sm:p-3 rounded-md border border-red-200">
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-red-600 bg-red-50 p-3 sm:p-3 rounded-md border border-red-200">
                   <div className="flex items-center gap-2 w-full">
                     {/* Simple recording indicator */}
                     <div className="flex items-center gap-0.5 flex-shrink-0">
@@ -446,7 +446,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
 
           {/* Saving Status Indicator */}
           {createEntryMutation.isPending && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
               <div className="flex items-center gap-3">
                 <motion.div
                   animate={{ rotate: 360 }}
@@ -456,20 +456,21 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
                   <Brain className="w-5 h-5 text-blue-600" />
                 </motion.div>
                 <div>
-                  <p className="font-medium text-blue-800">Creating your journal entry...</p>
-                  <p className="text-sm text-blue-600">AI is analyzing your content and generating insights</p>
+                  <p className="text-sm sm:text-base font-medium text-blue-800">Creating your journal entry...</p>
+                  <p className="text-xs sm:text-sm text-blue-600">AI is analyzing your content and generating insights</p>
                 </div>
               </div>
             </div>
           )}
 
           {/* Action Buttons */}
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-3 sm:pt-4">
             <Button
               type="button"
               variant="outline"
               onClick={handleClose}
               disabled={createEntryMutation.isPending}
+              className="min-h-[48px] sm:min-h-[44px] order-2 sm:order-1 touch-manipulation"
             >
               Cancel
             </Button>
@@ -477,7 +478,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
             <Button
               type="submit"
               disabled={createEntryMutation.isPending || !content.trim() || content.trim().length < 10}
-              className="bg-orange-600 hover:bg-orange-700 text-white"
+              className="bg-orange-600 hover:bg-orange-700 text-white min-h-[48px] sm:min-h-[44px] order-1 sm:order-2 touch-manipulation font-medium"
             >
               {createEntryMutation.isPending ? (
                 <>
@@ -488,10 +489,10 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
                   >
                     <Brain className="w-4 h-4" />
                   </motion.div>
-                  Saving...
+                  Creating...
                 </>
               ) : (
-                "Save Entry"
+                "Create Entry"
               )}
             </Button>
           </div>
