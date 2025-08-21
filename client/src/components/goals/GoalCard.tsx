@@ -15,6 +15,7 @@ type GoalCardProps = {
   onEdit?: (goal: Goal) => void
   onDelete?: (goal: Goal) => void
   viewMode?: 'grid' | 'list'
+  className?: string
 }
 
 const statusConfig = {
@@ -56,7 +57,7 @@ const priorityColors = {
   high: "border-l-red-500"
 }
 
-export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid' }: GoalCardProps) {
+export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid', className }: GoalCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const statusInfo = statusConfig[goal.status]
   const StatusIcon = statusInfo.icon
@@ -142,9 +143,11 @@ export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid' }: GoalCard
   // List view - more compact horizontal layout
   if (viewMode === 'list') {
     return (
-      <Card className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 border-l-4 ${priorityColors[goal.priority]} ${
-        goal.status === 'completed' ? 'opacity-75' : ''
-      }`}>
+      <Card className={cn(
+        `bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 border-l-4 ${priorityColors[goal.priority]}`,
+        goal.status === 'completed' && 'opacity-75',
+        className
+      )}>
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             {/* Left side - Goal info */}
@@ -224,11 +227,13 @@ export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid' }: GoalCard
 
   // Grid view - modern card layout
   return (
-    <Card className={`bg-white dark:bg-slate-800 border-0 shadow-sm hover:shadow-lg 
+    <Card className={cn(
+      `bg-white dark:bg-slate-800 border-0 shadow-sm hover:shadow-lg 
       transition-all duration-300 ease-out cursor-pointer group
-      relative overflow-hidden rounded-xl
-      ${goal.status === 'completed' ? 'opacity-75' : ''}
-    `}>
+      relative overflow-hidden rounded-xl`,
+      goal.status === 'completed' && 'opacity-75',
+      className
+    )}>
       {/* Priority indicator stripe */}
       <div className={`absolute top-0 left-0 right-0 h-1 ${
         goal.priority === 'high' ? 'bg-red-500' : 

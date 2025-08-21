@@ -8,13 +8,19 @@ export interface BusinessMood {
   emotions: string[];
 }
 
+export type BusinessCategory = 'growth' | 'challenge' | 'achievement' | 'planning' | 'reflection' | 'learning' | 'research';
+
 export interface BusinessSentiment {
   primary_mood: string;
   confidence: number;
   energy: 'low' | 'medium' | 'high';
   emotions: string[];
   insights: string[];
-  business_category: 'growth' | 'challenge' | 'achievement' | 'planning' | 'reflection' | 'learning' | 'research';
+  business_category: BusinessCategory;
+  rules_matched?: string[];
+  ai_heading?: string;
+  mood_polarity?: number;
+  user_learned?: boolean;
   suggested_title?: string;
   analysis_source?: string;
   // Legacy compatibility properties
@@ -240,7 +246,7 @@ function performEnhancedLocalAnalysis(text: string): BusinessSentiment {
     energy: energy as 'high' | 'medium' | 'low',
     emotions: [primaryMood.toLowerCase()],
     insights,
-    business_category: businessCategory.toLowerCase() as 'growth' | 'challenge' | 'achievement' | 'planning' | 'learning' | 'research',
+    business_category: businessCategory.toLowerCase() as BusinessCategory,
     // Legacy compatibility properties
     mood: primaryMood,
     category: businessCategory,
