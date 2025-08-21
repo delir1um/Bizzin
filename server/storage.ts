@@ -1,38 +1,34 @@
-import { users, type User, type InsertUser } from "@shared/schema";
+import { type UserProfile } from "@shared/schema";
 
 // modify the interface with any CRUD methods
 // you might need
 
 export interface IStorage {
-  getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  getUserProfile(userId: string): Promise<UserProfile | undefined>;
+  createUserProfile(profile: Partial<UserProfile>): Promise<UserProfile>;
 }
 
 export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  currentId: number;
+  private profiles: Map<string, UserProfile>;
 
   constructor() {
-    this.users = new Map();
-    this.currentId = 1;
+    this.profiles = new Map();
   }
 
-  async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+  async getUserProfile(userId: string): Promise<UserProfile | undefined> {
+    return this.profiles.get(userId);
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+  async createUserProfile(profile: Partial<UserProfile>): Promise<UserProfile> {
+    const newProfile: UserProfile = {
+      user_id: profile.user_id || '',
+      email: profile.email || '',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      ...profile
+    } as UserProfile;
+    this.profiles.set(newProfile.user_id, newProfile);
+    return newProfile;
   }
 }
 
