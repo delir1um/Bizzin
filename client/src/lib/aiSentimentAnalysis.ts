@@ -282,6 +282,11 @@ function detectBusinessCategory(lowerText: string): string {
     categoryScores.Challenge += 4; // Increased priority for strong challenge indicators
   }
   
+  // Workplace safety and accident indicators - highest priority for safety incidents
+  if (lowerText.match(/\b(accident|injured|injury|hospitalized|surgery|recovery|safety.*protocol|osha|insurance.*premium|workplace.*accident|forklift.*operator|feel.*terrible|could.*have.*prevented)\b/)) {
+    categoryScores.Challenge += 8; // Very high priority for workplace safety incidents
+  }
+  
   // Strong challenge indicators - critical business issues
   if (lowerText.match(/\b(major.*bug|production.*system|affected.*\d+%.*users|crisis|call.*clients|apologize|failed.*as.*leader|questioning.*workflow|completely.*overhaul|slipped.*through)\b/)) {
     categoryScores.Challenge += 6; // Very high priority for crisis situations
@@ -354,7 +359,9 @@ function generateEnhancedBusinessInsights(text: string, mood: string, category: 
       "Team unity during difficult times builds lasting organizational strength."
     ];
     // Specific insights for crisis situations
-    if (lowerText.includes('major bug') || lowerText.includes('production') || lowerText.includes('crisis')) {
+    if (lowerText.includes('accident') || lowerText.includes('injured') || lowerText.includes('safety') || lowerText.includes('hospitalized')) {
+      insights.push("Workplace safety incidents remind us that employee wellbeing must always be the top priority in business operations.");
+    } else if (lowerText.includes('major bug') || lowerText.includes('production') || lowerText.includes('crisis')) {
       insights.push("Crisis management situations test and strengthen your leadership capabilities.");
     } else if (lowerText.includes('team') && (lowerText.includes('together') || lowerText.includes('rally'))) {
       insights.push("Team unity during difficult times builds lasting organizational strength.");
