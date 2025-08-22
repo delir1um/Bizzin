@@ -1,0 +1,17 @@
+{
+  "name": "bizzin-email-worker",
+  "version": "1.0.0",
+  "description": "CloudFlare Worker for reliable daily digest emails",
+  "main": "src/worker.js",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "test": "wrangler dev --local",
+    "tail": "wrangler tail",
+    "publish": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  },
+  "dependencies": {}
+}

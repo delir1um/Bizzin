@@ -1,0 +1,22 @@
+name = "bizzin-email-worker"
+main = "src/worker.js"
+compatibility_date = "2024-08-01"
+
+[triggers]
+crons = ["0 * * * *"]
+
+[vars]
+SUPABASE_URL = "https://your-supabase-url.supabase.co"
+SMTP_HOST = "mail.smtp2go.com"
+SMTP_PORT = "2525"
+
+# Secrets to be set via: wrangler secret put SECRET_NAME
+# SUPABASE_SERVICE_KEY
+# SMTP_USER
+# SMTP_PASSWORD
+# SMTP2GO_API_KEY
+
+[[kv_namespaces]]
+binding = "EMAIL_CACHE"
+id = "email-cache-namespace"
+preview_id = "email-cache-preview"
