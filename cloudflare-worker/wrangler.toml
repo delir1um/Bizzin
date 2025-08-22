@@ -9,12 +9,14 @@ crons = ["0 * * * *"]
 SUPABASE_URL = "https://your-supabase-url.supabase.co"
 SMTP_HOST = "mail.smtp2go.com"
 SMTP_PORT = "2525"
+ALLOWED_ORIGINS = "https://bizzin.replit.app,http://localhost:5000,http://localhost:3000"
 
 # Secrets to be set via: wrangler secret put SECRET_NAME
-# SUPABASE_SERVICE_KEY
-# SMTP_USER
-# SMTP_PASSWORD
-# SMTP2GO_API_KEY
+# SUPABASE_SERVICE_KEY - Supabase service role key
+# SMTP_USER - SMTP username
+# SMTP_PASSWORD - SMTP password  
+# SMTP2GO_API_KEY - SMTP2GO API key
+# WORKER_ADMIN_TOKEN - Authentication token for protected endpoints
 
 [[kv_namespaces]]
 binding = "EMAIL_CACHE"

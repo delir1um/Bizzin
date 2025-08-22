@@ -3,6 +3,7 @@
 
 import { handleEmailScheduling, sendTestEmail } from './emailProcessor.js';
 import { getWorkerStats, logWorkerActivity } from './monitoring.js';
+import { authenticateRequest, checkRateLimit, getCorsHeaders } from './security.js';
 
 export default {
   // Cron trigger handler - runs every hour at minute 0
@@ -34,12 +35,8 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
     
-    // CORS headers for all responses
-    const corsHeaders = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    };
+    // Get CORS headers based on origin
+    const corsHeaders = getCorsHeaders(request.headers.get('origin'), env);
     
     // Handle OPTIONS request for CORS
     if (request.method === 'OPTIONS') {
@@ -50,8 +47,45 @@ export default {
     }
     
     try {
-      // Manual email trigger endpoint
+      // Manual email trigger endpoint (POST only, authenticated)
       if (path === '/trigger-emails') {
+        if (request.method !== 'POST') {
+          return new Response(JSON.stringify({
+            error: 'Method not allowed. Use POST.'
+          }), {
+            status: 405,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+
+        // Authenticate request
+        const authResult = await authenticateRequest(request, env);
+        if (!authResult.authenticated) {
+          return new Response(JSON.stringify({
+            error: 'Authentication required',
+            message: authResult.error
+          }), {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+
+        // Rate limiting
+        const rateLimitResult = await checkRateLimit('trigger-emails', request, env);
+        if (!rateLimitResult.allowed) {
+          return new Response(JSON.stringify({
+            error: 'Rate limit exceeded',
+            retryAfter: rateLimitResult.retryAfter
+          }), {
+            status: 429,
+            headers: { 
+              ...corsHeaders, 
+              'Content-Type': 'application/json',
+              'Retry-After': rateLimitResult.retryAfter.toString()
+            }
+          });
+        }
+
         console.log('🚀 Manual email trigger requested');
         await logWorkerActivity('manual_trigger', env);
         
@@ -69,8 +103,20 @@ export default {
         });
       }
       
-      // Test email endpoint
+      // Test email endpoint (authenticated)
       if (path === '/test-email') {
+        // Authenticate request
+        const authResult = await authenticateRequest(request, env);
+        if (!authResult.authenticated) {
+          return new Response(JSON.stringify({
+            error: 'Authentication required',
+            message: authResult.error
+          }), {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+
         const userId = url.searchParams.get('userId');
         
         if (!userId) {
@@ -100,8 +146,20 @@ export default {
         });
       }
       
-      // Worker stats endpoint
+      // Worker stats endpoint (authenticated)
       if (path === '/stats') {
+        // Authenticate request
+        const authResult = await authenticateRequest(request, env);
+        if (!authResult.authenticated) {
+          return new Response(JSON.stringify({
+            error: 'Authentication required',
+            message: authResult.error
+          }), {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+
         const stats = await getWorkerStats(env);
         
         return new Response(JSON.stringify({

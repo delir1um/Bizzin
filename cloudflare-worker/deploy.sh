@@ -30,25 +30,43 @@ if [ ! -f "wrangler.toml" ]; then
 fi
 
 # Extract SUPABASE_URL from wrangler.toml and validate
-SUPABASE_URL=$(grep "SUPABASE_URL" wrangler.toml | cut -d'"' -f2)
-if [[ "$SUPABASE_URL" == *"your-supabase-url"* ]]; then
-    echo "❌ Please update SUPABASE_URL in wrangler.toml with your actual Supabase URL"
+if [ ! -f "wrangler.toml" ]; then
+    echo "❌ wrangler.toml not found"
     exit 1
 fi
+
+SUPABASE_URL=$(grep -E '^SUPABASE_URL' wrangler.toml | sed 's/.*=\s*"\(.*\)".*/\1/' || echo "")
+if [ -z "$SUPABASE_URL" ] || [[ "$SUPABASE_URL" == *"your-supabase-url"* ]]; then
+    echo "❌ Please update SUPABASE_URL in wrangler.toml with your actual Supabase URL"
+    echo "   Current value: $SUPABASE_URL"
+    exit 1
+fi
+echo "✅ SUPABASE_URL configured: $SUPABASE_URL"
 
 # Prompt for missing secrets
 echo "🔑 Checking required secrets..."
 
-secrets_to_check=("SUPABASE_SERVICE_KEY" "SMTP_USER" "SMTP_PASSWORD" "SMTP2GO_API_KEY")
+secrets_to_check=("SUPABASE_SERVICE_KEY" "SMTP_USER" "SMTP_PASSWORD" "SMTP2GO_API_KEY" "WORKER_ADMIN_TOKEN")
 
 for secret in "${secrets_to_check[@]}"; do
-    if ! wrangler secret list | grep -q "$secret"; then
-        echo "⚠️  Secret $secret not found"
+    if ! wrangler secret list 2>/dev/null | grep -q "$secret"; then
+        if [ "$secret" = "WORKER_ADMIN_TOKEN" ]; then
+            echo "⚠️  Secret $secret not found (required for API security)"
+            echo "This token will be used to authenticate API requests."
+        else
+            echo "⚠️  Secret $secret not found"
+        fi
+        
         read -p "Enter $secret: " -s secret_value
         echo
         if [ -n "$secret_value" ]; then
-            echo "$secret_value" | wrangler secret put "$secret"
-            echo "✅ $secret set"
+            echo "$secret_value" | wrangler secret put "$secret" 2>/dev/null
+            if [ $? -eq 0 ]; then
+                echo "✅ $secret set successfully"
+            else
+                echo "❌ Failed to set $secret"
+                exit 1
+            fi
         else
             echo "❌ $secret is required"
             exit 1
@@ -60,25 +78,34 @@ done
 
 # Create KV namespace if it doesn't exist
 echo "🗄️  Setting up KV namespace..."
-if ! wrangler kv:namespace list | grep -q "EMAIL_CACHE"; then
+if ! wrangler kv:namespace list 2>/dev/null | grep -q "EMAIL_CACHE"; then
     echo "Creating EMAIL_CACHE namespace..."
-    wrangler kv:namespace create "EMAIL_CACHE"
-    echo "⚠️  Please update the KV namespace ID in wrangler.toml with the ID shown above"
-    read -p "Press Enter after updating wrangler.toml..."
+    echo "Running: wrangler kv:namespace create EMAIL_CACHE"
+    KV_OUTPUT=$(wrangler kv:namespace create "EMAIL_CACHE" 2>&1)
+    
+    if echo "$KV_OUTPUT" | grep -q "id.*=.*\".*\""; then
+        KV_ID=$(echo "$KV_OUTPUT" | grep -o '"[a-f0-9]\{32\}"' | tr -d '"')
+        echo "✅ KV namespace created with ID: $KV_ID"
+        echo "⚠️  Please update the KV namespace ID in wrangler.toml:"
+        echo "   Replace 'email-cache-namespace' with '$KV_ID'"
+        read -p "Press Enter after updating wrangler.toml..."
+    else
+        echo "⚠️  Could not parse KV namespace ID. Please check wrangler.toml manually."
+        echo "   Output: $KV_OUTPUT"
+        read -p "Press Enter to continue..."
+    fi
+else
+    echo "✅ KV namespace EMAIL_CACHE already exists"
 fi
 
-# Test the configuration
+# Test the configuration with dry-run
 echo "🧪 Testing worker configuration..."
-if ! wrangler dev --local --port 8787 --test > /dev/null 2>&1 & then
-    echo "❌ Worker configuration test failed"
+if wrangler deploy --dry-run --compatibility-date 2024-08-01; then
+    echo "✅ Configuration validation passed"
+else
+    echo "❌ Worker configuration validation failed"
     exit 1
 fi
-
-# Kill the test worker
-sleep 2
-pkill -f "wrangler dev" > /dev/null 2>&1
-
-echo "✅ Configuration test passed"
 
 # Deploy to CloudFlare
 echo "📤 Deploying to CloudFlare Workers..."

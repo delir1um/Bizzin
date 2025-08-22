@@ -1,17 +1,35 @@
 // Supabase Client for CloudFlare Workers
 // Handles all database interactions for user data, email settings, and logging
 
+import { buildSupabaseUrl, retryWithBackoff, isRetryableError } from './utils.js';
+
 // Get eligible users for email sending
-export async function getEligibleUsers(timeSlot, env, specificUserId = null) {
-  try {
-    let query = `${env.SUPABASE_URL}/rest/v1/daily_email_settings?enabled=eq.true&select=user_id,send_time,content_preferences,user_profiles(email,full_name,business_name,business_type)`;
+export async function getEligibleUsers(timeSlots, env, specificUserId = null) {
+  const fetchUsers = async (attempt) => {
+    let query;
     
-    // If specific user ID provided (for test emails)
     if (specificUserId) {
-      query = `${env.SUPABASE_URL}/rest/v1/daily_email_settings?user_id=eq.${specificUserId}&enabled=eq.true&select=user_id,send_time,content_preferences,user_profiles(email,full_name,business_name,business_type)`;
-    } else if (timeSlot) {
-      // Filter by specific time slot
-      query += `&send_time=eq.${timeSlot}`;
+      // For test emails - single user
+      query = buildSupabaseUrl(env.SUPABASE_URL, 'daily_email_settings', {
+        user_id: `eq.${specificUserId}`,
+        enabled: 'eq.true',
+        select: 'user_id,send_time,content_preferences,user_profiles(email,full_name,business_name,business_type)'
+      });
+    } else if (Array.isArray(timeSlots)) {
+      // Multiple time slots to handle cron jitter
+      const timeSlotFilter = timeSlots.map(slot => `send_time.eq.${slot}`).join(',');
+      query = buildSupabaseUrl(env.SUPABASE_URL, 'daily_email_settings', {
+        enabled: 'eq.true',
+        or: `(${timeSlotFilter})`,
+        select: 'user_id,send_time,content_preferences,user_profiles(email,full_name,business_name,business_type)'
+      });
+    } else {
+      // Single time slot (backward compatibility)
+      query = buildSupabaseUrl(env.SUPABASE_URL, 'daily_email_settings', {
+        enabled: 'eq.true',
+        send_time: `eq.${timeSlots}`,
+        select: 'user_id,send_time,content_preferences,user_profiles(email,full_name,business_name,business_type)'
+      });
     }
     
     const response = await fetch(query, {
@@ -26,10 +44,27 @@ export async function getEligibleUsers(timeSlot, env, specificUserId = null) {
     
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Supabase query failed (${response.status}): ${errorText}`);
+      const error = new Error(`Supabase query failed (${response.status}): ${errorText}`);
+      error.status = response.status;
+      throw error;
     }
     
-    const users = await response.json();
+    return response.json();
+  };
+
+  try {
+    const result = await retryWithBackoff(fetchUsers, {
+      maxRetries: 3,
+      retryCondition: isRetryableError
+    });
+    
+    if (!result.success) {
+      throw result.error;
+    }
+    
+    const users = result.result;
+    
+    // Validation moved above
     
     if (!Array.isArray(users)) {
       console.error('Invalid response format from Supabase:', users);

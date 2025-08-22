@@ -4,43 +4,43 @@
 import { getEligibleUsers, checkEmailAlreadySent, logEmailDelivery } from './supabaseClient.js';
 import { sendEmail, generateEmailContent } from './emailSender.js';
 import { logWorkerActivity } from './monitoring.js';
+import { getSouthAfricaTime, getEmailTimeWindow, createBatches, ConcurrencyLimiter, WorkerError } from './utils.js';
 
 // Main email processing function called by cron trigger
 export async function handleEmailScheduling(env) {
   const startTime = Date.now();
   
   try {
-    // Get current South Africa time (UTC+2)
-    const now = new Date();
-    const southAfricaTime = new Date(now.getTime() + (2 * 60 * 60 * 1000));
-    const currentHour = southAfricaTime.getHours();
-    const currentTimeSlot = `${currentHour.toString().padStart(2, '0')}:00`;
+    // Get current South Africa time with proper timezone handling
+    const { timeSlots, saTime, currentSlot } = getEmailTimeWindow();
+    const southAfricaTime = saTime.datetime;
     
-    console.log(`🕐 Processing emails for ${currentTimeSlot} SA time`);
-    console.log(`📅 Server UTC: ${now.toISOString()}`);
-    console.log(`🌍 SA Time: ${southAfricaTime.toISOString()}`);
+    console.log(`🕐 Processing emails for SA time window: ${timeSlots.join(', ')}`);
+    console.log(`📅 Server UTC: ${new Date().toISOString()}`);
+    console.log(`🌍 SA Time: ${saTime.timestamp}`);
     
-    // Get eligible users from Supabase
-    const users = await getEligibleUsers(currentTimeSlot, env);
+    // Get eligible users from Supabase (using time window to handle cron jitter)
+    const users = await getEligibleUsers(timeSlots, env);
     
     if (!users || users.length === 0) {
-      console.log(`📭 No users scheduled for ${currentTimeSlot}`);
-      await logWorkerActivity('no_users', env, currentTimeSlot);
+      console.log(`📭 No users scheduled for time slots: ${timeSlots.join(', ')}`);
+      await logWorkerActivity('no_users', env, timeSlots.join(','));
       return {
         success: true,
-        message: `No users scheduled for ${currentTimeSlot}`,
+        message: `No users scheduled for time slots: ${timeSlots.join(', ')}`,
         usersProcessed: 0,
         emailsSent: 0,
         duration: Date.now() - startTime
       };
     }
     
-    console.log(`👥 Processing ${users.length} users for ${currentTimeSlot}`);
-    await logWorkerActivity('processing_started', env, `${users.length} users for ${currentTimeSlot}`);
+    console.log(`👥 Processing ${users.length} users for time slots: ${timeSlots.join(', ')}`);
+    await logWorkerActivity('processing_started', env, `${users.length} users for ${timeSlots.join(',')}`);
     
-    // Process emails in batches to avoid overwhelming services
-    const BATCH_SIZE = 10; // Optimal batch size for CloudFlare Workers
-    const batches = chunkArray(users, BATCH_SIZE);
+    // Process emails in batches with concurrency limiting
+    const BATCH_SIZE = 8; // Reduced for better reliability
+    const batches = createBatches(users, BATCH_SIZE);
+    const concurrencyLimiter = new ConcurrencyLimiter(3); // Max 3 concurrent operations
     
     let totalSent = 0;
     let totalSkipped = 0;
@@ -55,9 +55,11 @@ export async function handleEmailScheduling(env) {
       
       console.log(`🔄 Processing batch ${i + 1}/${batches.length} (${batch.length} users)`);
       
-      // Process batch with Promise.allSettled for fault tolerance
+      // Process batch with Promise.allSettled and concurrency limiting
       const batchResults = await Promise.allSettled(
-        batch.map(user => processUserEmail(user, env, southAfricaTime))
+        batch.map(user => concurrencyLimiter.execute(
+          () => processUserEmail(user, env, southAfricaTime)
+        ))
       );
       
       // Analyze batch results
@@ -111,8 +113,8 @@ export async function handleEmailScheduling(env) {
       emailsSkipped: totalSkipped,
       errors: totalErrors,
       duration: totalDuration,
-      timeSlot: currentTimeSlot,
-      results: results
+      timeSlots: timeSlots,
+      results: results.slice(0, 10) // Limit result details in response
     };
     
     console.log(`🎯 Final Results: ${totalSent} sent, ${totalSkipped} skipped, ${totalErrors} errors in ${totalDuration}ms`);

@@ -2,6 +2,7 @@
 // Handles email content generation and sending via SMTP2GO API
 
 import { getUserProfile, getUserGoals, getUserJournalEntries, storeDailyEmailContent } from './supabaseClient.js';
+import { retryWithBackoff, isRetryableError, getRetryDelay, WorkerError } from './utils.js';
 
 // Generate personalized email content for a user
 export async function generateEmailContent(userId, env) {
@@ -250,10 +251,10 @@ Update preferences or unsubscribe at any time.
 `;
 }
 
-// Send email via SMTP2GO API
+// Send email via SMTP2GO API with retry logic
 export async function sendEmail(emailContent, recipientEmail, env) {
-  try {
-    console.log(`📤 Sending email to ${recipientEmail} via SMTP2GO API`);
+  const sendEmailAttempt = async (attempt) => {
+    console.log(`📤 Sending email to ${recipientEmail} via SMTP2GO API (attempt ${attempt + 1})`);
     
     // Prepare email payload for SMTP2GO API
     const emailPayload = {
@@ -279,6 +280,15 @@ export async function sendEmail(emailContent, recipientEmail, env) {
       body: JSON.stringify(emailPayload)
     });
     
+    // Handle rate limiting with Retry-After header
+    if (response.status === 429) {
+      const retryDelay = getRetryDelay(response);
+      const error = new Error(`Rate limited. Retry after ${retryDelay}ms`);
+      error.status = 429;
+      error.retryAfter = retryDelay;
+      throw error;
+    }
+    
     const result = await response.json();
     
     if (response.ok && result.request_id) {
@@ -289,11 +299,36 @@ export async function sendEmail(emailContent, recipientEmail, env) {
         service: 'smtp2go'
       };
     } else {
-      console.error('❌ SMTP2GO API error:', result);
+      const error = new Error(result.error || 'SMTP2GO API error');
+      error.status = response.status;
+      error.response = result;
+      throw error;
+    }
+    
+  };
+
+  try {
+    const result = await retryWithBackoff(sendEmailAttempt, {
+      maxRetries: 3,
+      baseDelay: 2000, // Start with 2 seconds
+      maxDelay: 30000, // Max 30 seconds
+      retryCondition: (error) => {
+        // Don't retry client errors (except rate limiting)
+        if (error.status >= 400 && error.status < 500 && error.status !== 429) {
+          return false;
+        }
+        return isRetryableError(error);
+      }
+    });
+    
+    if (result.success) {
+      return result.result;
+    } else {
+      console.error('❌ Email sending failed after retries:', result.error);
       return {
         success: false,
-        error: result.error || 'SMTP2GO API error',
-        response: result
+        error: result.error.message,
+        attempts: result.attempts
       };
     }
     
