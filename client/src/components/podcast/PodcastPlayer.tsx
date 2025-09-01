@@ -247,7 +247,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
             <div className="flex items-center space-x-3">
               <Badge 
                 variant="secondary" 
-                className={`${episode.seriesColor} text-white`}
+                className={episode.seriesColor}
               >
                 {episode.series}
               </Badge>
