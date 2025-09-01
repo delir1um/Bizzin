@@ -600,7 +600,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
 
           {/* Controls - Only show for audio episodes */}
           {!isVideoEpisode && (
-            <div className="flex items-center justify-between mb-6">
+            <div className="relative flex items-center justify-between mb-6">
               {/* Left side controls */}
               <div className="flex items-center space-x-2">
                 {/* Replay last 10 seconds */}
@@ -635,22 +635,24 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                 </Button>
               </div>
               
-              {/* Center play/pause button */}
-              <Button
-                onClick={handlePlayPause}
-                size="lg"
-                className="bg-orange-600 hover:bg-orange-700 text-white rounded-full w-14 h-14 disabled:opacity-50"
-                disabled={isAudioLoading}
-                data-testid="button-play-pause-audio"
-              >
-                {isAudioLoading ? (
-                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : isPlaying ? (
-                  <Pause className="w-6 h-6" />
-                ) : (
-                  <Play className="w-6 h-6 ml-1" />
-                )}
-              </Button>
+              {/* Center play/pause button - absolutely centered */}
+              <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                <Button
+                  onClick={handlePlayPause}
+                  size="lg"
+                  className="bg-orange-600 hover:bg-orange-700 text-white rounded-full w-14 h-14 disabled:opacity-50"
+                  disabled={isAudioLoading}
+                  data-testid="button-play-pause-audio"
+                >
+                  {isAudioLoading ? (
+                    <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : isPlaying ? (
+                    <Pause className="w-6 h-6" />
+                  ) : (
+                    <Play className="w-6 h-6 ml-1" />
+                  )}
+                </Button>
+              </div>
               
               {/* Right side controls */}
               <div className="flex items-center space-x-2">
