@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import { useToast } from "@/hooks/use-toast"
+import { extractMediaDuration, formatDurationDisplay, isMediaFile } from "@/utils/mediaUtils"
 import { 
   Plus,
   Edit,
@@ -472,8 +474,132 @@ function EpisodeForm({ episode, onClose }: EpisodeFormProps) {
     video_url: episode?.video_url || '',
     audio_url: episode?.audio_url || ''
   })
-
+  
+  const [isDetectingDuration, setIsDetectingDuration] = useState(false)
+  const [detectedFromFile, setDetectedFromFile] = useState<string | null>(null)
+  
+  const { toast } = useToast()
   const queryClient = useQueryClient()
+  
+  // Handle file selection for audio
+  const handleAudioFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    
+    if (!isMediaFile(file)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please select a valid audio file",
+        variant: "destructive"
+      })
+      return
+    }
+    
+    await extractDurationFromFile(file, 'audio')
+  }
+  
+  // Handle file selection for video
+  const handleVideoFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    
+    if (!isMediaFile(file)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please select a valid video file",
+        variant: "destructive"
+      })
+      return
+    }
+    
+    await extractDurationFromFile(file, 'video')
+  }
+  
+  // Extract duration from uploaded file
+  const extractDurationFromFile = async (file: File, type: 'audio' | 'video') => {
+    setIsDetectingDuration(true)
+    setDetectedFromFile(null)
+    
+    try {
+      const duration = await extractMediaDuration(file)
+      setFormData(prev => ({ ...prev, duration }))
+      setDetectedFromFile(type)
+      
+      toast({
+        title: "Duration detected",
+        description: `Automatically detected duration: ${formatDurationDisplay(duration)}`,
+      })
+    } catch (error) {
+      console.error('Error extracting duration:', error)
+      toast({
+        title: "Could not detect duration",
+        description: "Please enter the duration manually",
+        variant: "destructive"
+      })
+    } finally {
+      setIsDetectingDuration(false)
+    }
+  }
+  
+  // Detect duration from URL (for existing files)
+  const detectDurationFromUrl = async (url: string, type: 'audio' | 'video') => {
+    if (!url) return
+    
+    setIsDetectingDuration(true)
+    setDetectedFromFile(null)
+    
+    try {
+      // Create a temporary media element to load the URL and get duration
+      const mediaElement = type === 'video' ? document.createElement('video') : document.createElement('audio')
+      mediaElement.crossOrigin = 'anonymous'
+      
+      const duration = await new Promise<number>((resolve, reject) => {
+        const onLoadedMetadata = () => {
+          const duration = mediaElement.duration
+          cleanup()
+          if (isFinite(duration) && duration > 0) {
+            resolve(Math.round(duration))
+          } else {
+            reject(new Error('Could not determine duration'))
+          }
+        }
+        
+        const onError = () => {
+          cleanup()
+          reject(new Error('Failed to load media'))
+        }
+        
+        const cleanup = () => {
+          mediaElement.removeEventListener('loadedmetadata', onLoadedMetadata)
+          mediaElement.removeEventListener('error', onError)
+        }
+        
+        mediaElement.addEventListener('loadedmetadata', onLoadedMetadata)
+        mediaElement.addEventListener('error', onError)
+        mediaElement.src = url
+        mediaElement.load()
+        
+        // Timeout after 5 seconds
+        setTimeout(() => {
+          cleanup()
+          reject(new Error('Timeout'))
+        }, 5000)
+      })
+      
+      setFormData(prev => ({ ...prev, duration }))
+      setDetectedFromFile(type)
+      
+      toast({
+        title: "Duration detected",
+        description: `Automatically detected duration: ${formatDurationDisplay(duration)}`,
+      })
+    } catch (error) {
+      console.error('Error detecting duration from URL:', error)
+      // Don't show error toast for URL detection failures as they're common
+    } finally {
+      setIsDetectingDuration(false)
+    }
+  }
 
   const saveMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
@@ -559,13 +685,32 @@ function EpisodeForm({ episode, onClose }: EpisodeFormProps) {
         
         <div className="space-y-2">
           <Label htmlFor="duration">Duration (seconds)</Label>
-          <Input
-            id="duration"
-            type="number"
-            value={formData.duration}
-            onChange={(e) => setFormData(prev => ({ ...prev, duration: parseInt(e.target.value) }))}
-            required
-          />
+          <div className="flex items-center gap-2">
+            <Input
+              id="duration"
+              type="number"
+              value={formData.duration}
+              onChange={(e) => setFormData(prev => ({ ...prev, duration: parseInt(e.target.value) }))}
+              className={detectedFromFile ? 'bg-green-50 border-green-200' : ''}
+              required
+            />
+            {isDetectingDuration && (
+              <div className="flex items-center gap-2 text-sm text-blue-600">
+                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                Detecting...
+              </div>
+            )}
+            {detectedFromFile && (
+              <Badge variant="secondary" className="bg-green-100 text-green-700">
+                Auto-detected from {detectedFromFile}
+              </Badge>
+            )}
+          </div>
+          {detectedFromFile && (
+            <p className="text-xs text-green-600">
+              Duration automatically detected: {formatDurationDisplay(formData.duration)}
+            </p>
+          )}
         </div>
       </div>
 
@@ -587,13 +732,25 @@ function EpisodeForm({ episode, onClose }: EpisodeFormProps) {
             <FileBrowser 
               fileType="audio"
               currentValue={formData.audio_url}
-              onSelectFile={(url) => setFormData(prev => ({ ...prev, audio_url: url }))}
+              onSelectFile={async (url) => {
+                setFormData(prev => ({ ...prev, audio_url: url }))
+                await detectDurationFromUrl(url, 'audio')
+              }}
             />
             <Input
               placeholder="Or enter audio URL manually"
               value={formData.audio_url}
               onChange={(e) => setFormData(prev => ({ ...prev, audio_url: e.target.value }))}
             />
+            <div className="flex items-center gap-2">
+              <input
+                type="file"
+                accept="audio/*"
+                onChange={handleAudioFileSelect}
+                className="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
+              />
+              <span className="text-xs text-slate-500">Upload to auto-detect duration</span>
+            </div>
           </div>
         </div>
         
@@ -603,11 +760,14 @@ function EpisodeForm({ episode, onClose }: EpisodeFormProps) {
             <FileBrowser 
               fileType="video"
               currentValue={formData.video_url}
-              onSelectFile={(url) => setFormData(prev => ({ 
-                ...prev, 
-                video_url: url,
-                has_video: !!url
-              }))}
+              onSelectFile={async (url) => {
+                setFormData(prev => ({ 
+                  ...prev, 
+                  video_url: url,
+                  has_video: !!url
+                }))
+                await detectDurationFromUrl(url, 'video')
+              }}
             />
             <Input
               placeholder="Or enter video URL manually"
@@ -618,6 +778,15 @@ function EpisodeForm({ episode, onClose }: EpisodeFormProps) {
                 has_video: !!e.target.value
               }))}
             />
+            <div className="flex items-center gap-2">
+              <input
+                type="file"
+                accept="video/*"
+                onChange={handleVideoFileSelect}
+                className="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
+              />
+              <span className="text-xs text-slate-500">Upload to auto-detect duration</span>
+            </div>
           </div>
         </div>
       </div>
