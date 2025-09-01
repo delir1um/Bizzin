@@ -105,8 +105,14 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
   // Handle audio playback for audio episodes
   useEffect(() => {
     if (!isVideoEpisode) {
-      // Priority: Use video URL for audio extraction if available, fall back to dedicated audio URL
-      const audioSource = episode.videoUrl || episode.audioUrl
+      // For audio playback, use the local proxy to handle R2 URLs
+      let audioSource = episode.audioUrl || episode.videoUrl
+      
+      // Convert R2 URLs to local proxy URLs for audio compatibility
+      if (audioSource && audioSource.includes('bizzin.r2.dev')) {
+        const filename = audioSource.split('/').pop()
+        audioSource = `/api/video-proxy/videos/${filename}`
+      }
       
       if (audioSource && audioSource.trim() !== '') {
         // Create audio element if it doesn't exist
