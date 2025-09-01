@@ -223,6 +223,23 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
 
   // Handle close with progress save
   const handleClose = () => {
+    // Stop and cleanup audio playback immediately
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current.currentTime = 0
+      audioRef.current = null
+    }
+    
+    // Clear any running intervals
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current)
+      intervalRef.current = null
+    }
+    
+    // Stop video playback if playing
+    setIsPlaying(false)
+    
+    // Save final progress before closing
     if (currentTime > 0) {
       updateProgress.mutate({
         episodeId: episode.id,
@@ -231,6 +248,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
         mediaType: isVideoEpisode ? 'video' : 'audio'
       })
     }
+    
     onClose()
   }
 
