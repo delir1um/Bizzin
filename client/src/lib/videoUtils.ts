@@ -8,7 +8,8 @@
 export function convertToProxyUrl(videoUrl: string): string {
   if (!videoUrl) return videoUrl;
   
-  console.log('Converting video URL:', videoUrl);
+  // If it's already a proxy URL, return as-is
+  if (videoUrl.startsWith('/api/video-proxy/')) return videoUrl;
   
   // Check if it's a direct R2 URL that needs conversion
   if (videoUrl.includes('.r2.cloudflarestorage.com/') || videoUrl.includes('.r2.dev/')) {
@@ -16,17 +17,14 @@ export function convertToProxyUrl(videoUrl: string): string {
     try {
       const url = new URL(videoUrl);
       const key = url.pathname.substring(1); // Remove leading slash
-      const proxyUrl = `/api/video-proxy/${key}`;
-      console.log('Converted to proxy URL:', proxyUrl);
-      return proxyUrl;
+      return `/api/video-proxy/${key}`;
     } catch (error) {
       console.warn('Failed to parse video URL for proxy conversion:', videoUrl);
       return videoUrl;
     }
   }
   
-  // If it's already a proxy URL or local URL, return as-is
-  console.log('URL is already a proxy or local URL, returning as-is:', videoUrl);
+  // Return local URLs or other formats as-is
   return videoUrl;
 }
 

@@ -54,6 +54,9 @@ export function VideoPlayer({
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const controlsTimeoutRef = useRef<NodeJS.Timeout>()
+  
+  // Convert URL once and memoize it
+  const proxyVideoUrl = convertToProxyUrl(videoUrl)
 
   // Initialize video
   useEffect(() => {
@@ -91,7 +94,7 @@ export function VideoPlayer({
     }
 
     const handleError = () => {
-      console.error('Video loading failed for:', videoUrl)
+      console.error('Video loading failed for:', proxyVideoUrl)
       setHasError(true)
       setIsLoading(false)
     }
@@ -114,7 +117,7 @@ export function VideoPlayer({
       video.removeEventListener('error', handleError)
       video.removeEventListener('canplay', handleCanPlay)
     }
-  }, [startTime, onTimeUpdate, onEnded])
+  }, [startTime, onTimeUpdate, onEnded, proxyVideoUrl])
 
   // Auto-hide controls in fullscreen
   useEffect(() => {
@@ -242,7 +245,7 @@ export function VideoPlayer({
     >
       <video
         ref={videoRef}
-        src={convertToProxyUrl(videoUrl)}
+        src={proxyVideoUrl}
         poster={thumbnailUrl}
         className="w-full h-full"
         onClick={togglePlay}
