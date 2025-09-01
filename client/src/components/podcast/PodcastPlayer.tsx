@@ -111,15 +111,26 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
       if (audioSource && audioSource.trim() !== '') {
         // Create audio element if it doesn't exist
         if (!audioRef.current) {
-          audioRef.current = new Audio(audioSource)
+          audioRef.current = new Audio()
           audioRef.current.preload = 'metadata'
           
           // Set up audio event listeners
-        audioRef.current.addEventListener('loadedmetadata', () => {
-          if (audioRef.current) {
-            setActualDuration(audioRef.current.duration)
-          }
-        })
+          audioRef.current.addEventListener('loadedmetadata', () => {
+            if (audioRef.current) {
+              setActualDuration(audioRef.current.duration)
+            }
+          })
+          
+          audioRef.current.addEventListener('error', (e) => {
+            console.error('Audio loading error:', e)
+          })
+        }
+        
+        // Set the source
+        if (audioRef.current.src !== audioSource) {
+          audioRef.current.src = audioSource
+          audioRef.current.load() // Reload with new source
+        }
         
         audioRef.current.addEventListener('timeupdate', () => {
           if (audioRef.current) {
@@ -141,7 +152,6 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
           setMaxProgressReached(actualDuration)
           saveProgress(actualDuration)
         })
-        }
       }
       
       // Set audio properties
