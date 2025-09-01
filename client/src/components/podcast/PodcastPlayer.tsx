@@ -234,11 +234,11 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end">
-      <Card className={`w-full ${isExpanded ? 'h-full' : 'h-auto'} bg-white dark:bg-slate-900 rounded-t-xl border-0 transition-all duration-300`}>
-        <CardContent className="p-6">
+    <div className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-50 ${isVideoEpisode ? 'flex items-center justify-center p-4' : 'flex items-end'}`}>
+      <Card className={`${isVideoEpisode ? 'max-w-6xl mx-auto h-[90vh] w-full' : 'w-full'} ${isExpanded && !isVideoEpisode ? 'h-full' : isVideoEpisode ? 'h-[90vh]' : 'h-auto'} bg-white dark:bg-slate-900 ${isVideoEpisode ? 'rounded-xl' : 'rounded-t-xl'} border-0 transition-all duration-300 overflow-hidden`}>
+        <CardContent className={`${isVideoEpisode ? 'p-0 h-full flex flex-col' : 'p-6'}`}>
           {/* Header */}
-          <div className="flex items-center justify-between mb-4">
+          <div className={`flex items-center justify-between ${isVideoEpisode ? 'p-4 pb-2' : 'mb-4'}`}>
             <div className="flex items-center space-x-3">
               <Badge 
                 variant="secondary" 
@@ -270,13 +270,15 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                   </>
                 )}
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsExpanded(!isExpanded)}
-              >
-                {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-              </Button>
+              {!isVideoEpisode && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsExpanded(!isExpanded)}
+                >
+                  {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
@@ -288,7 +290,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
           </div>
 
           {/* Episode Info */}
-          <div className="mb-6">
+          <div className={`${isVideoEpisode ? 'px-4 pb-2' : 'mb-6'}`}>
             <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
               {episode.title}
             </h3>
@@ -301,7 +303,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
 
           {/* Video Player (for video episodes) */}
           {isVideoEpisode && (
-            <div className="mb-6">
+            <div className="flex-1 flex flex-col">
               <VideoPlayer
                 videoUrl={episode.videoUrl || ''}
                 thumbnailUrl={episode.videoThumbnail}
@@ -310,11 +312,11 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                 onDurationUpdate={handleVideoDurationUpdate}
                 onEnded={handleVideoEnded}
                 startTime={startTime}
-                className="w-full h-64 md:h-96"
+                className="flex-1 min-h-0"
                 isCompleted={isCompleted}
               />
               {/* Video Progress Display */}
-              <div className="mt-4 flex justify-between items-center text-sm text-slate-600 dark:text-slate-400">
+              <div className="p-4 pt-2 flex justify-between items-center text-sm text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-900">
                 <span>{formatTime(currentTime)} / {formatTime(actualDuration)}</span>
                 <div className="flex items-center space-x-2">
                   <span className="font-semibold text-orange-600">{Math.round(displayProgress)}% Complete</span>
@@ -442,7 +444,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
           )}
 
           {/* Completion Badge */}
-          {isCompleted && (
+          {isCompleted && !isVideoEpisode && (
             <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
