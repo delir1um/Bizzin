@@ -119,29 +119,14 @@ export function VideoPlayer({
     }
   }, [startTime, onTimeUpdate, onEnded, proxyVideoUrl])
 
-  // Auto-hide controls in fullscreen
+  // Cleanup timeout on unmount
   useEffect(() => {
-    if (isFullscreen) {
-      const resetControlsTimeout = () => {
-        if (controlsTimeoutRef.current) {
-          clearTimeout(controlsTimeoutRef.current)
-        }
-        setShowControls(true)
-        controlsTimeoutRef.current = setTimeout(() => {
-          setShowControls(false)
-        }, 3000)
+    return () => {
+      if (controlsTimeoutRef.current) {
+        clearTimeout(controlsTimeoutRef.current)
       }
-
-      resetControlsTimeout()
-      const container = containerRef.current
-      if (container) {
-        container.addEventListener('mousemove', resetControlsTimeout)
-        return () => container.removeEventListener('mousemove', resetControlsTimeout)
-      }
-    } else {
-      setShowControls(true)
     }
-  }, [isFullscreen])
+  }, [])
 
   const togglePlay = () => {
     const video = videoRef.current
@@ -238,10 +223,41 @@ export function VideoPlayer({
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
+  // Handle mouse interactions for control visibility
+  const handleMouseEnter = () => {
+    setShowControls(true)
+    if (controlsTimeoutRef.current) {
+      clearTimeout(controlsTimeoutRef.current)
+    }
+  }
+
+  const handleMouseLeave = () => {
+    if (isPlaying) {
+      controlsTimeoutRef.current = setTimeout(() => {
+        setShowControls(false)
+      }, 2000)
+    }
+  }
+
+  const handleMouseMove = () => {
+    setShowControls(true)
+    if (controlsTimeoutRef.current) {
+      clearTimeout(controlsTimeoutRef.current)
+    }
+    if (isPlaying) {
+      controlsTimeoutRef.current = setTimeout(() => {
+        setShowControls(false)
+      }, 3000)
+    }
+  }
+
   return (
     <div 
       ref={containerRef}
       className={`relative bg-black rounded-lg overflow-hidden ${className}`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onMouseMove={handleMouseMove}
     >
       <video
         ref={videoRef}
