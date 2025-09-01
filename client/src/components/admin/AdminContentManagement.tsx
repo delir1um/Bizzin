@@ -519,6 +519,8 @@ function EpisodeForm({ episode, onClose }: EpisodeFormProps) {
 
   const saveMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
+      console.log('Submitting episode data:', data)
+      
       if (episode) {
         // Update existing episode
         const { error } = await supabase
@@ -526,19 +528,32 @@ function EpisodeForm({ episode, onClose }: EpisodeFormProps) {
           .update(data)
           .eq('id', episode.id)
         
-        if (error) throw error
+        if (error) {
+          console.error('Update error:', error)
+          throw error
+        }
       } else {
         // Create new episode
-        const { error } = await supabase
+        const { data: result, error } = await supabase
           .from('podcast_episodes')
           .insert([data])
+          .select()
         
-        if (error) throw error
+        if (error) {
+          console.error('Insert error:', error)
+          throw error
+        }
+        
+        console.log('Episode created successfully:', result)
       }
     },
     onSuccess: () => {
+      console.log('Episode saved successfully')
       queryClient.invalidateQueries({ queryKey: ['admin-episodes'] })
       onClose()
+    },
+    onError: (error) => {
+      console.error('Save mutation error:', error)
     }
   })
 
