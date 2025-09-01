@@ -92,8 +92,8 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
   }
 
   // Check if episode has both audio and video
-  const hasAudio = Boolean(episode.audioUrl)
-  const hasVideo = Boolean(episode.hasVideo && episode.videoUrl)
+  const hasAudio = Boolean(episode.audio_url)
+  const hasVideo = Boolean(episode.has_video && episode.video_url)
   const hasBothFormats = hasAudio && hasVideo
 
   // Get user's last used media type for smart button text
@@ -111,7 +111,7 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
                 <div className="flex items-center gap-2 mb-2">
                   <Badge 
                     variant="secondary" 
-                    className={episode.seriesColor}
+                    className={episode.series_color}
                   >
                     {episode.series}
                   </Badge>
@@ -237,11 +237,11 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
             <Separator />
 
             {/* Key Takeaways */}
-            {episode.keyTakeaways && episode.keyTakeaways.length > 0 && (
+            {episode.key_takeaways && episode.key_takeaways.length > 0 && (
               <div>
                 <h3 className="text-lg font-semibold mb-4">Key Takeaways</h3>
                 <div className="space-y-3">
-                  {episode.keyTakeaways.map((takeaway, index) => (
+                  {episode.key_takeaways.map((takeaway: string, index: number) => (
                     <div key={index} className="flex items-start space-x-3">
                       <div className="w-6 h-6 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                         <span className="text-orange-600 dark:text-orange-400 text-sm font-bold">{index + 1}</span>

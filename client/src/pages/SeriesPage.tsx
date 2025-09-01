@@ -105,28 +105,13 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
     return seriesColorMap[seriesName] || 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200'
   }
 
-  // Filter episodes for this series and convert to Episode format
+  // Filter episodes for this series - keep original database structure
   const episodes: PodcastEpisode[] = useMemo(() => {
     if (!dbEpisodes) return []
     
     return dbEpisodes
       .filter(ep => ep.series === seriesName)
-      .map(ep => ({
-        id: ep.id,
-        title: ep.title,
-        description: ep.description || '',
-        duration: ep.duration,
-        series: ep.series,
-        seriesColor: getSeriesColor(ep.series, ep.series_color),
-        transcript: ep.transcript || '',
-        episodeNumber: ep.episode_number,
-        keyTakeaways: ep.key_takeaways,
-        difficulty: ep.difficulty,
-        hasVideo: ep.has_video,
-        videoUrl: ep.video_url,
-        videoThumbnail: ep.video_thumbnail
-      }))
-      .sort((a, b) => (a.episodeNumber || 0) - (b.episodeNumber || 0))
+      .sort((a, b) => (a.episode_number || 0) - (b.episode_number || 0))
   }, [dbEpisodes, seriesName])
 
 
@@ -326,7 +311,7 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
                               <Badge variant="outline" className="text-xs">
-                                Episode {episode.episodeNumber}
+                                Episode {episode.episode_number}
                               </Badge>
                               {episode.difficulty && (
                                 <Badge variant="secondary" className="text-xs">
