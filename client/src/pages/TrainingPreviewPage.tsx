@@ -14,7 +14,7 @@ const demoEpisodes = [
     description: "Practical steps when money gets tight and how to navigate financial challenges while keeping your business operational.",
     duration: "15 min",
     progress: 12,
-    series: "Finance",
+    series: "Strategy",
     episode: 1,
     level: "Intermediate",
     type: "Video"
@@ -25,7 +25,7 @@ const demoEpisodes = [
     description: "Quick framework to validate your business idea and build a sustainable model that attracts customers and generates revenue from day one.",
     duration: "15 min", 
     progress: 0,
-    series: "Strategy",
+    series: "The Journey",
     episode: 1,
     level: "Beginner",
     type: "Audio"
@@ -36,7 +36,7 @@ const demoEpisodes = [
     description: "Step-by-step guide to creating a sales funnel that converts visitors into customers using practical, low-cost methods.",
     duration: "16 min",
     progress: 0,
-    series: "Marketing",
+    series: "Self-Development",
     episode: 1,
     level: "Beginner", 
     type: "Audio"
@@ -47,7 +47,7 @@ const demoEpisodes = [
     description: "Key performance indicators every entrepreneur should track to make informed decisions and measure success.",
     duration: "13 min",
     progress: 0,
-    series: "Finance",
+    series: "Strategy",
     episode: 2,
     level: "Beginner",
     type: "Audio"
@@ -69,7 +69,7 @@ const demoEpisodes = [
     description: "Practical methods to understand your market without expensive research firms or complex surveys.",
     duration: "14 min",
     progress: 0,
-    series: "Strategy",
+    series: "The Journey",
     episode: 2,
     level: "Beginner",
     type: "Audio"
@@ -77,10 +77,10 @@ const demoEpisodes = [
 ]
 
 const seriesColors = {
-  "Strategy": "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200",
-  "Marketing": "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200", 
-  "Finance": "bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200",
-  "Leadership": "bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200"
+  "The Journey": "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200",
+  "Self-Development": "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200", 
+  "Leadership": "bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200",
+  "Strategy": "bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200"
 }
 
 const levelColors = {
@@ -196,7 +196,7 @@ export function TrainingPreviewPage() {
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">Popular Series</h2>
             <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-              {['Strategy', 'Marketing', 'Finance', 'Leadership'].map((series) => (
+              {['The Journey', 'Self-Development', 'Leadership', 'Strategy'].map((series) => (
                 <Card key={series} className="text-center p-4 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col">
                   <div className={`w-12 h-12 rounded-full ${seriesColors[series as keyof typeof seriesColors]} flex items-center justify-center mx-auto mb-3`}>  
                     <GraduationCap className="w-6 h-6" />
@@ -219,7 +219,7 @@ export function TrainingPreviewPage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <Badge className="bg-orange-100 text-orange-800 text-xs">Episode 1</Badge>
-                    <Badge variant="outline" className="text-xs">Finance</Badge>
+                    <Badge variant="outline" className="text-xs">Strategy</Badge>
                   </div>
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
                     Cash Flow Crisis Management
@@ -321,7 +321,7 @@ export function TrainingPreviewPage() {
             <Users className="w-12 h-12 text-green-600 mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Course Categories</h3>
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              Strategy, Marketing, Finance, and Leadership course collections
+              The Journey, Self-Development, Leadership, and Strategy course collections
             </p>
           </div>
           

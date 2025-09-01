@@ -29,26 +29,19 @@ const seriesConfig: Record<string, {
   bgColor: string
   icon: React.ReactNode
 }> = {
-  strategy: {
-    name: 'Strategy',
-    description: 'Master the art of business strategy with frameworks and methodologies used by successful entrepreneurs worldwide.',
+  'the-journey': {
+    name: 'The Journey',
+    description: 'Navigate the entrepreneurial journey from idea to execution with real stories and practical experiences.',
     color: 'text-blue-600',
     bgColor: 'bg-blue-100 dark:bg-blue-900',
     icon: <Mic className="w-6 h-6 text-blue-600 dark:text-blue-400" />
   },
-  marketing: {
-    name: 'Marketing', 
-    description: 'Practical marketing strategies that work for startups and small businesses on any budget.',
+  'self-development': {
+    name: 'Self-Development', 
+    description: 'Build the mindset, habits, and personal skills needed to succeed as an entrepreneur.',
     color: 'text-green-600',
     bgColor: 'bg-green-100 dark:bg-green-900',
     icon: <Users className="w-6 h-6 text-green-600 dark:text-green-400" />
-  },
-  finance: {
-    name: 'Finance',
-    description: 'Financial fundamentals every entrepreneur needs to know to build a profitable and sustainable business.',
-    color: 'text-purple-600', 
-    bgColor: 'bg-purple-100 dark:bg-purple-900',
-    icon: <Award className="w-6 h-6 text-purple-600 dark:text-purple-400" />
   },
   leadership: {
     name: 'Leadership',
@@ -56,6 +49,13 @@ const seriesConfig: Record<string, {
     color: 'text-orange-600',
     bgColor: 'bg-orange-100 dark:bg-orange-900', 
     icon: <Star className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+  },
+  strategy: {
+    name: 'Strategy',
+    description: 'Master the art of business strategy with frameworks and methodologies used by successful entrepreneurs worldwide.',
+    color: 'text-purple-600', 
+    bgColor: 'bg-purple-100 dark:bg-purple-900',
+    icon: <Award className="w-6 h-6 text-purple-600 dark:text-purple-400" />
   }
 }
 
