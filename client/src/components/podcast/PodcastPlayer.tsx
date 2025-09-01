@@ -105,8 +105,8 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
   // Handle audio playback for audio episodes
   useEffect(() => {
     if (!isVideoEpisode) {
-      // Use audio URL if available, otherwise use video URL for audio-only playback
-      const audioSource = episode.audioUrl || episode.videoUrl
+      // Priority: Use video URL for audio extraction if available, fall back to dedicated audio URL
+      const audioSource = episode.videoUrl || episode.audioUrl
       
       if (audioSource && audioSource.trim() !== '') {
         // Create audio element if it doesn't exist
@@ -122,7 +122,15 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
           })
           
           audioRef.current.addEventListener('error', (e) => {
-            console.error('Audio loading error:', e)
+            console.error('Audio loading error:', e, 'Source:', audioSource)
+            // Try to provide more specific error information
+            if (audioRef.current) {
+              console.error('Audio error details:', {
+                networkState: audioRef.current.networkState,
+                readyState: audioRef.current.readyState,
+                error: audioRef.current.error
+              })
+            }
           })
         }
         
