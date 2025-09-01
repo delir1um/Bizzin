@@ -104,7 +104,10 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
         transcript: ep.transcript || '',
         episodeNumber: ep.episode_number,
         keyTakeaways: ep.key_takeaways,
-        difficulty: ep.difficulty
+        difficulty: ep.difficulty,
+        hasVideo: ep.has_video,
+        videoUrl: ep.video_url,
+        videoThumbnail: ep.video_thumbnail
       }))
       .sort((a, b) => (a.episodeNumber || 0) - (b.episodeNumber || 0))
   }, [dbEpisodes, seriesName])
