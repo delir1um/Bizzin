@@ -471,9 +471,13 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                         hasVideo,
                         hasBothFormats
                       });
+                      const wasPlaying = isPlaying
                       setCurrentMediaType('audio')
                       // Continue with the same progress when switching to audio
-                      setIsPlaying(false) // Reset play state for smooth transition
+                      // Auto-start audio playback when user explicitly switches to audio mode
+                      if (!wasPlaying) {
+                        setIsPlaying(true) // Start audio automatically when user clicks audio toggle
+                      }
                     }}
                     className={`px-2 py-1 text-xs rounded ${
                       currentMediaType === 'audio'
