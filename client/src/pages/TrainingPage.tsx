@@ -55,7 +55,7 @@ export function PodcastPage() {
 
 
 
-  const handleEpisodeClick = (episode: Episode) => {
+  const handleEpisodeClick = (episode: PodcastEpisode) => {
     setSelectedEpisode(episode)
     setShowEpisodeModal(true)
   }
@@ -412,17 +412,7 @@ export function PodcastPage() {
                   <Button 
                     onClick={() => {
                       if (currentlyListening.episode) {
-                        setSelectedEpisode({
-                          id: currentlyListening.episode.id,
-                          title: currentlyListening.episode.title,
-                          description: currentlyListening.episode.description || '',
-                          duration: currentlyListening.episode.duration,
-                          series: currentlyListening.episode.series,
-                          seriesColor: currentlyListening.episode.series_color || '',
-                          hasVideo: currentlyListening.episode.has_video,
-                          videoUrl: currentlyListening.episode.video_url,
-                          audioUrl: currentlyListening.episode.audio_url
-                        })
+                        setSelectedEpisode(currentlyListening.episode)
                         setShowPlayer(true)
                       }
                     }}
@@ -484,17 +474,7 @@ export function PodcastPage() {
                   hover:-translate-y-1 hover:scale-[1.02] transition-all duration-300 ease-out
                   cursor-pointer group relative overflow-hidden"
                   onClick={() => {
-                    setSelectedEpisode({
-                      id: episode.id,
-                      title: episode.title,
-                      description: episode.description,
-                      duration: episode.duration,
-                      series: episode.series,
-                      seriesColor: episode.seriesColor,
-                      hasVideo: episode.hasVideo,
-                      videoUrl: episode.videoUrl,
-                      audioUrl: episode.audioUrl
-                    })
+                    setSelectedEpisode(episode)
                     setShowEpisodeModal(true)
                   }}
                 >

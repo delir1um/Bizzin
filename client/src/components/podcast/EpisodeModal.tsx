@@ -59,7 +59,7 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
   const { data: allEpisodes } = usePodcastEpisodes()
   const { data: completedEpisodes } = useCompletedEpisodes()
   const { data: allProgress } = usePodcastProgress()
-  const relatedEpisodes = useRelatedEpisodes(episode || {} as Episode)
+  const relatedEpisodes = useRelatedEpisodes(episode || {} as PodcastEpisode)
 
   if (!episode) return null
 
