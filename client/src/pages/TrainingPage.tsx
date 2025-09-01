@@ -247,7 +247,7 @@ export function PodcastPage() {
               <Card 
                 className="bg-white dark:bg-slate-800 hover:shadow-xl transition-all duration-300 cursor-pointer group
                   border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600 relative overflow-hidden"
-                onClick={() => setLocation('/training/series/strategy')}
+                onClick={() => setLocation('/training/series/the-journey')}
               >
                 <CardContent className="p-6 text-center">
                   <motion.div 
@@ -257,8 +257,8 @@ export function PodcastPage() {
                   >
                     <Mic className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                   </motion.div>
-                  <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Strategy</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{episodes.filter(ep => ep.series === 'Strategy').length} episodes</p>
+                  <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">The Journey</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{episodes.filter(ep => ep.series === 'The Journey').length} episodes</p>
                   
                   {/* Background shine effect */}
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -279,7 +279,7 @@ export function PodcastPage() {
                 className="bg-white dark:bg-slate-800 hover:shadow-xl hover:shadow-green-200/50 dark:hover:shadow-green-900/30 
                   hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer group
                   border border-slate-200 dark:border-slate-700 hover:border-green-300 dark:hover:border-green-600 relative overflow-hidden"
-                onClick={() => setLocation('/training/series/marketing')}
+                onClick={() => setLocation('/training/series/self-development')}
               >
                 <CardContent className="p-6 text-center relative z-10">
                   <motion.div 
@@ -289,8 +289,8 @@ export function PodcastPage() {
                   >
                     <Users className="w-6 h-6 text-green-600 dark:text-green-400" />
                   </motion.div>
-                  <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">Marketing</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{episodes.filter(ep => ep.series === 'Marketing').length} episodes</p>
+                  <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">Self-Development</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{episodes.filter(ep => ep.series === 'Self-Development').length} episodes</p>
                   
                   {/* Animated Background Gradient */}
                   <div className="absolute inset-0 bg-gradient-to-br from-green-50/50 to-transparent dark:from-green-900/10 
@@ -310,7 +310,7 @@ export function PodcastPage() {
                 className="bg-white dark:bg-slate-800 hover:shadow-xl hover:shadow-purple-200/50 dark:hover:shadow-purple-900/30 
                   hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer group
                   border border-slate-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-600 relative overflow-hidden"
-                onClick={() => setLocation('/training/series/finance')}
+                onClick={() => setLocation('/training/series/strategy')}
               >
                 <CardContent className="p-6 text-center relative z-10">
                   <motion.div 
@@ -320,8 +320,8 @@ export function PodcastPage() {
                   >
                     <Award className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                   </motion.div>
-                  <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">Finance</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{episodes.filter(ep => ep.series === 'Finance').length} episodes</p>
+                  <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">Strategy</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{episodes.filter(ep => ep.series === 'Strategy').length} episodes</p>
                   
                   {/* Animated Background Gradient */}
                   <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-transparent dark:from-purple-900/10 

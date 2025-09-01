@@ -397,7 +397,7 @@ function EpisodeForm({ episode, onClose }: EpisodeFormProps) {
   const [formData, setFormData] = useState({
     title: episode?.title || '',
     description: episode?.description || '',
-    series: episode?.series || 'Strategy',
+    series: episode?.series || 'The Journey',
     episode_number: episode?.episode_number || 1,
     duration: episode?.duration || 900,
     has_video: episode?.has_video || false,
@@ -458,10 +458,10 @@ function EpisodeForm({ episode, onClose }: EpisodeFormProps) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Strategy">Strategy</SelectItem>
-              <SelectItem value="Marketing">Marketing</SelectItem>
-              <SelectItem value="Finance">Finance</SelectItem>
+              <SelectItem value="The Journey">The Journey</SelectItem>
+              <SelectItem value="Self-Development">Self-Development</SelectItem>
               <SelectItem value="Leadership">Leadership</SelectItem>
+              <SelectItem value="Strategy">Strategy</SelectItem>
             </SelectContent>
           </Select>
         </div>
