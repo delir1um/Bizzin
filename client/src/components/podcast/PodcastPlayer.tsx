@@ -107,6 +107,28 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
     }
   }
 
+  // Define event handlers outside useEffect to avoid scope issues
+  const handleTimeUpdate = () => {
+    if (audioRef.current) {
+      const newTime = audioRef.current.currentTime
+      setCurrentTime(newTime)
+      
+      // Track maximum progress reached
+      if (newTime > maxProgressReached) {
+        setMaxProgressReached(newTime)
+      }
+      
+      // Auto-save progress every 10 seconds
+      saveProgress(newTime)
+    }
+  }
+  
+  const handleEnded = () => {
+    setIsPlaying(false)
+    setMaxProgressReached(actualDuration)
+    saveProgress(actualDuration)
+  }
+
   // Handle audio playback for audio episodes
   useEffect(() => {
     if (!isVideoEpisode) {
@@ -167,26 +189,13 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
           audioRef.current.load() // Reload with new source
         }
         
-        audioRef.current.addEventListener('timeupdate', () => {
-          if (audioRef.current) {
-            const newTime = audioRef.current.currentTime
-            setCurrentTime(newTime)
-            
-            // Track maximum progress reached
-            if (newTime > maxProgressReached) {
-              setMaxProgressReached(newTime)
-            }
-            
-            // Auto-save progress every 10 seconds
-            saveProgress(newTime)
-          }
-        })
+        // Remove any existing listeners before adding new ones
+        audioRef.current.removeEventListener('timeupdate', handleTimeUpdate)
+        audioRef.current.removeEventListener('ended', handleEnded)
         
-        audioRef.current.addEventListener('ended', () => {
-          setIsPlaying(false)
-          setMaxProgressReached(actualDuration)
-          saveProgress(actualDuration)
-        })
+        // Add fresh event listeners
+        audioRef.current.addEventListener('timeupdate', handleTimeUpdate)
+        audioRef.current.addEventListener('ended', handleEnded)
       }
       
       // Set audio properties
@@ -202,10 +211,20 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
     }
     
     return () => {
-      // Clean up audio element when switching to video or unmounting
-      if (audioRef.current && isVideoEpisode) {
-        audioRef.current.pause()
-        audioRef.current = null
+      // Clean up event listeners and audio element when switching or unmounting
+      if (audioRef.current) {
+        // Remove all event listeners to prevent conflicts
+        audioRef.current.removeEventListener('timeupdate', handleTimeUpdate)
+        audioRef.current.removeEventListener('ended', handleEnded)
+        audioRef.current.removeEventListener('loadstart', () => {})
+        audioRef.current.removeEventListener('canplay', () => {})
+        audioRef.current.removeEventListener('loadedmetadata', () => {})
+        audioRef.current.removeEventListener('error', () => {})
+        
+        if (isVideoEpisode) {
+          audioRef.current.pause()
+          audioRef.current = null
+        }
       }
     }
   }, [isVideoEpisode, episode.audio_url, episode.video_url])
