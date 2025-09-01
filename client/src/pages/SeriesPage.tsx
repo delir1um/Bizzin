@@ -21,6 +21,7 @@ import { AnimatedGrid, AnimatedItem } from '@/components/ui/animated-card'
 import { EpisodeModal } from '@/components/podcast/EpisodeModal'
 import { Episode } from '@/components/podcast/PodcastPlayer'
 import { usePodcastEpisodes, useSeriesProgress, useCompletedEpisodes, usePodcastProgress } from '@/hooks/usePodcastProgress'
+import { PodcastService } from '@/lib/podcastService'
 
 // Series configuration with metadata (UI styling only)
 const seriesConfig: Record<string, {
@@ -283,7 +284,8 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
                 const episodeProgress = allProgress?.find(p => p.episode_id === episode.id)
                 const isCompleted = completedEpisodes?.some(completedEp => completedEp.episode_id === episode.id)
                 const hasProgress = episodeProgress && episodeProgress.progress_seconds > 0
-                const progressPercentage = hasProgress ? Math.round((episodeProgress.progress_seconds / episode.duration) * 100) : 0
+                const progressPercentage = hasProgress ? PodcastService.getCompletionPercentage(episodeProgress.progress_seconds, episode.duration) : 0
+                const isEpisodeCompleted = hasProgress ? PodcastService.isEpisodeCompleted(episodeProgress.progress_seconds, episode.duration) : false
                 
                 // Determine button text and icon based on video/audio and progress
                 const isVideoEpisode = episode.hasVideo && episode.videoUrl

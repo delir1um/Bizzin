@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { Episode, PodcastPlayer } from './PodcastPlayer'
 import { usePodcastEpisodes, useSeriesProgress, useCompletedEpisodes, usePodcastProgress } from '@/hooks/usePodcastProgress'
+import { PodcastService } from '@/lib/podcastService'
 
 interface EpisodeModalProps {
   episode: Episode | null
@@ -233,7 +234,7 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
               const episodeProgress = allProgress?.find(p => p.episode_id === episode.id)
               const isCompleted = completedEpisodes?.some(completed => completed.episode_id === episode.id)
               const hasProgress = episodeProgress && episodeProgress.progress_seconds > 0
-              const progressPercentage = hasProgress ? Math.round((episodeProgress.progress_seconds / episode.duration) * 100) : 0
+              const progressPercentage = hasProgress ? PodcastService.getCompletionPercentage(episodeProgress.progress_seconds, episode.duration) : 0
               
               if (hasProgress || isCompleted) {
                 return (

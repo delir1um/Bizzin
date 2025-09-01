@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useUpdateProgress, useEpisodeProgress } from '@/hooks/usePodcastProgress'
+import { PodcastService } from '@/lib/podcastService'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
@@ -203,9 +204,9 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
     setPlaybackSpeed(speeds[nextIndex])
   }
 
-  const currentProgress = Math.min((currentTime / actualDuration) * 100, 100)
-  const maxProgress = Math.min((maxProgressReached / actualDuration) * 100, 100)
-  const isCompleted = maxProgress >= 95
+  const currentProgress = Math.min(PodcastService.getCompletionPercentage(currentTime, actualDuration), 100)
+  const maxProgress = Math.min(PodcastService.getCompletionPercentage(maxProgressReached, actualDuration), 100)
+  const isCompleted = PodcastService.isEpisodeCompleted(maxProgressReached, actualDuration)
   
   // Display progress should show the maximum reached, not current position for completed episodes
   const displayProgress = isCompleted ? Math.max(maxProgress, 95) : currentProgress

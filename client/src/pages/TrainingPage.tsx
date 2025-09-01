@@ -10,6 +10,7 @@ import { AnimatedCard, AnimatedGrid, AnimatedItem } from "@/components/ui/animat
 import { useState } from "react"
 import { useLocation } from 'wouter'
 import { usePodcastDashboard, usePodcastEpisodes, usePodcastProgress, useCompletedEpisodes } from '@/hooks/usePodcastProgress'
+import { PodcastService } from '@/lib/podcastService'
 import { EpisodeModal } from '@/components/podcast/EpisodeModal'
 import { PodcastPlayer, Episode } from '@/components/podcast/PodcastPlayer'
 
@@ -397,11 +398,11 @@ export function PodcastPage() {
                         {Math.floor(currentlyListening.progress_seconds / 60)}:{String(currentlyListening.progress_seconds % 60).padStart(2, '0')} / {Math.floor((currentlyListening.episode?.duration || 0) / 60)}:{String((currentlyListening.episode?.duration || 0) % 60).padStart(2, '0')}
                       </span>
                       <span>
-                        {Math.round((currentlyListening.progress_seconds / (currentlyListening.episode?.duration || 1)) * 100)}% complete
+                        {PodcastService.getCompletionPercentage(currentlyListening.progress_seconds, currentlyListening.episode?.duration || 1)}% complete
                       </span>
                     </div>
                     <Progress 
-                      value={(currentlyListening.progress_seconds / (currentlyListening.episode?.duration || 1)) * 100} 
+                      value={PodcastService.getCompletionPercentage(currentlyListening.progress_seconds, currentlyListening.episode?.duration || 1)} 
                       className="h-2" 
                     />
                   </div>
@@ -549,7 +550,7 @@ export function PodcastPage() {
                       const episodeProgress = allProgress?.find(p => p.episode_id === episode.id)
                       const isCompleted = completedEpisodes?.some(completedEp => completedEp.episode_id === episode.id)
                       const hasProgress = episodeProgress && episodeProgress.progress_seconds > 0
-                      const progressPercentage = hasProgress ? Math.round((episodeProgress.progress_seconds / episode.duration) * 100) : 0
+                      const progressPercentage = hasProgress ? PodcastService.getCompletionPercentage(episodeProgress.progress_seconds, episode.duration) : 0
                       
                       // Determine button text and icon based on content type
                       let buttonText = episode.hasVideo && episode.videoUrl ? 'Watch Now' : 'Listen Now'
