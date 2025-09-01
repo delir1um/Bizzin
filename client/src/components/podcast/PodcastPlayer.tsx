@@ -88,9 +88,10 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
     }
   }
 
-  // Simulate audio playback with progress tracking
+  // Simulate audio playback with progress tracking (only for audio episodes)
   useEffect(() => {
-    if (isPlaying) {
+    // Only run timer simulation for audio episodes, video episodes are handled by VideoPlayer
+    if (!isVideoEpisode && isPlaying) {
       intervalRef.current = setInterval(() => {
         setCurrentTime(prev => {
           const newTime = prev + playbackSpeed
@@ -116,8 +117,8 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
       }
-      // Save progress when paused
-      if (currentTime > 0) {
+      // Save progress when paused (only for audio episodes)
+      if (!isVideoEpisode && currentTime > 0) {
         saveProgress(currentTime)
       }
     }
@@ -127,7 +128,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
         clearInterval(intervalRef.current)
       }
     }
-  }, [isPlaying, playbackSpeed, actualDuration, maxProgressReached])
+  }, [isPlaying, playbackSpeed, actualDuration, maxProgressReached, isVideoEpisode])
 
   // Save progress when component unmounts (player closed)
   useEffect(() => {
@@ -212,14 +213,17 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
   // No longer needed - episodes are either audio or video, not both
 
   const handleVideoTimeUpdate = (time: number) => {
-    setCurrentTime(time)
-    
-    // Track maximum progress reached
-    if (time > maxProgressReached) {
-      setMaxProgressReached(time)
+    // Only update time if this is a video episode to prevent conflicts with audio timer
+    if (isVideoEpisode) {
+      setCurrentTime(time)
+      
+      // Track maximum progress reached
+      if (time > maxProgressReached) {
+        setMaxProgressReached(time)
+      }
+      
+      saveProgress(time)
     }
-    
-    saveProgress(time)
   }
 
   const handleVideoDurationUpdate = (duration: number) => {
