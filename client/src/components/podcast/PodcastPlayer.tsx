@@ -104,13 +104,17 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
 
   // Handle audio playback for audio episodes
   useEffect(() => {
-    if (!isVideoEpisode && episode.audioUrl) {
-      // Create audio element if it doesn't exist
-      if (!audioRef.current) {
-        audioRef.current = new Audio(episode.audioUrl)
-        audioRef.current.preload = 'metadata'
-        
-        // Set up audio event listeners
+    if (!isVideoEpisode) {
+      // Use audio URL if available, otherwise use video URL for audio-only playback
+      const audioSource = episode.audioUrl || episode.videoUrl
+      
+      if (audioSource) {
+        // Create audio element if it doesn't exist
+        if (!audioRef.current) {
+          audioRef.current = new Audio(audioSource)
+          audioRef.current.preload = 'metadata'
+          
+          // Set up audio event listeners
         audioRef.current.addEventListener('loadedmetadata', () => {
           if (audioRef.current) {
             setActualDuration(audioRef.current.duration)
@@ -137,6 +141,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
           setMaxProgressReached(actualDuration)
           saveProgress(actualDuration)
         })
+        }
       }
       
       // Set audio properties
@@ -154,7 +159,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
         audioRef.current = null
       }
     }
-  }, [isVideoEpisode, episode.audioUrl])
+  }, [isVideoEpisode, episode.audioUrl, episode.videoUrl])
 
   // Handle play/pause for audio
   useEffect(() => {
