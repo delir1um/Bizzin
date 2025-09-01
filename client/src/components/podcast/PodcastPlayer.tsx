@@ -108,7 +108,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
       // Use audio URL if available, otherwise use video URL for audio-only playback
       const audioSource = episode.audioUrl || episode.videoUrl
       
-      if (audioSource) {
+      if (audioSource && audioSource.trim() !== '') {
         // Create audio element if it doesn't exist
         if (!audioRef.current) {
           audioRef.current = new Audio(audioSource)

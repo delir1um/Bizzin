@@ -206,7 +206,7 @@ export class PodcastService {
       
       // Include media type if specified
       if (mediaType) {
-        updateData.last_media_type = mediaType
+        // updateData.last_media_type = mediaType  // Temporarily disabled until schema cache refreshes
       }
 
       const { error } = await supabase
