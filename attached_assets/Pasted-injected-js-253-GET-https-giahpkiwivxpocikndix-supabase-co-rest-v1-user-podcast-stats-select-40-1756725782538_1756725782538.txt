@@ -1,0 +1,92 @@
+injected.js:253  GET https://giahpkiwivxpocikndix.supabase.co/rest/v1/user_podcast_stats?select=* 406 (Not Acceptable)
+window.fetch @ Network.js:219
+apply @ injected.js:253
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4213
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4234
+fulfilled @ @supabase_supabase-js.js?v=c9799909:4186
+Promise.then
+step @ @supabase_supabase-js.js?v=c9799909:4199
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4201
+__awaiter6 @ @supabase_supabase-js.js?v=c9799909:4183
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4224
+then @ @supabase_supabase-js.js?v=c9799909:89Understand this error
+injected.js:253  GET https://giahpkiwivxpocikndix.supabase.co/rest/v1/user_podcast_stats?select=* 406 (Not Acceptable)
+window.fetch @ Network.js:219
+apply @ injected.js:253
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4213
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4234
+fulfilled @ @supabase_supabase-js.js?v=c9799909:4186
+Promise.then
+step @ @supabase_supabase-js.js?v=c9799909:4199
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4201
+__awaiter6 @ @supabase_supabase-js.js?v=c9799909:4183
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4224
+then @ @supabase_supabase-js.js?v=c9799909:89Understand this error
+injected.js:253  GET https://giahpkiwivxpocikndix.supabase.co/rest/v1/user_podcast_stats?select=* 406 (Not Acceptable)
+window.fetch @ Network.js:219
+apply @ injected.js:253
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4213
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4234
+fulfilled @ @supabase_supabase-js.js?v=c9799909:4186
+Promise.then
+step @ @supabase_supabase-js.js?v=c9799909:4199
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4201
+__awaiter6 @ @supabase_supabase-js.js?v=c9799909:4183
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4224
+then @ @supabase_supabase-js.js?v=c9799909:89Understand this error
+injected.js:253  GET https://giahpkiwivxpocikndix.supabase.co/rest/v1/user_podcast_stats?select=* 406 (Not Acceptable)
+window.fetch @ Network.js:219
+apply @ injected.js:253
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4213
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4234
+fulfilled @ @supabase_supabase-js.js?v=c9799909:4186
+Promise.then
+step @ @supabase_supabase-js.js?v=c9799909:4199
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4201
+__awaiter6 @ @supabase_supabase-js.js?v=c9799909:4183
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4224
+then @ @supabase_supabase-js.js?v=c9799909:89Understand this error
+Console.js:61 NotSupportedError: Failed to load because no supported source was found.
+Mt.forEach.n.<computed> @ Console.js:61
+Promise.catch
+(anonymous) @ PodcastPlayer.tsx:168
+commitHookEffectListMount @ chunk-276SZO74.js?v=c9799909:16915
+commitPassiveMountOnFiber @ chunk-276SZO74.js?v=c9799909:18156
+commitPassiveMountEffects_complete @ chunk-276SZO74.js?v=c9799909:18129
+commitPassiveMountEffects_begin @ chunk-276SZO74.js?v=c9799909:18119
+commitPassiveMountEffects @ chunk-276SZO74.js?v=c9799909:18109
+flushPassiveEffectsImpl @ chunk-276SZO74.js?v=c9799909:19490
+flushPassiveEffects @ chunk-276SZO74.js?v=c9799909:19447
+commitRootImpl @ chunk-276SZO74.js?v=c9799909:19416
+commitRoot @ chunk-276SZO74.js?v=c9799909:19277
+performSyncWorkOnRoot @ chunk-276SZO74.js?v=c9799909:18895
+flushSyncCallbacks @ chunk-276SZO74.js?v=c9799909:9119
+(anonymous) @ chunk-276SZO74.js?v=c9799909:18627Understand this error
+Console.js:61 NotSupportedError: Failed to load because no supported source was found.
+Mt.forEach.n.<computed> @ Console.js:61
+Promise.catch
+(anonymous) @ PodcastPlayer.tsx:168
+commitHookEffectListMount @ chunk-276SZO74.js?v=c9799909:16915
+invokePassiveEffectMountInDEV @ chunk-276SZO74.js?v=c9799909:18324
+invokeEffectsInDev @ chunk-276SZO74.js?v=c9799909:19701
+commitDoubleInvokeEffectsInDEV @ chunk-276SZO74.js?v=c9799909:19686
+flushPassiveEffectsImpl @ chunk-276SZO74.js?v=c9799909:19503
+flushPassiveEffects @ chunk-276SZO74.js?v=c9799909:19447
+commitRootImpl @ chunk-276SZO74.js?v=c9799909:19416
+commitRoot @ chunk-276SZO74.js?v=c9799909:19277
+performSyncWorkOnRoot @ chunk-276SZO74.js?v=c9799909:18895
+flushSyncCallbacks @ chunk-276SZO74.js?v=c9799909:9119
+(anonymous) @ chunk-276SZO74.js?v=c9799909:18627Understand this error
+injected.js:253  GET https://giahpkiwivxpocikndix.supabase.co/rest/v1/user_podcast_stats?select=* 406 (Not Acceptable)
+window.fetch @ Network.js:219
+apply @ injected.js:253
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4213
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4234
+fulfilled @ @supabase_supabase-js.js?v=c9799909:4186
+Promise.then
+step @ @supabase_supabase-js.js?v=c9799909:4199
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4201
+__awaiter6 @ @supabase_supabase-js.js?v=c9799909:4183
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4224
+then @ @supabase_supabase-js.js?v=c9799909:89Understand this error
+injected.js:253  GET https://giahpkiwivxpocikndix.supabase.co/rest/v1/user_podcast_stats?select=* 406 (Not Acceptable)

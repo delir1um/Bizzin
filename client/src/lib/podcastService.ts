@@ -230,10 +230,13 @@ export class PodcastService {
     const { data, error } = await supabase
       .from('user_podcast_stats')
       .select('*')
-      .single()
+      .limit(1)
     
-    if (error && error.code !== 'PGRST116') throw error
-    return data
+    if (error) {
+      console.error('Error fetching user stats:', error)
+      return null
+    }
+    return data?.[0] || null
   }
 
   // Get recently listened episodes
