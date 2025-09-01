@@ -728,7 +728,7 @@ function EpisodeForm({ episode, onClose }: EpisodeFormProps) {
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label>Audio File</Label>
-          <div className="space-y-2">
+          <div className="space-y-3">
             <FileBrowser 
               fileType="audio"
               currentValue={formData.audio_url}
@@ -742,21 +742,21 @@ function EpisodeForm({ episode, onClose }: EpisodeFormProps) {
               value={formData.audio_url}
               onChange={(e) => setFormData(prev => ({ ...prev, audio_url: e.target.value }))}
             />
-            <div className="flex items-center gap-2">
+            <div className="border-t pt-2">
+              <Label className="text-sm text-gray-600 mb-2 block">Upload new file (auto-detects duration)</Label>
               <input
                 type="file"
                 accept="audio/*"
                 onChange={handleAudioFileSelect}
-                className="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
+                className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
               />
-              <span className="text-xs text-slate-500">Upload to auto-detect duration</span>
             </div>
           </div>
         </div>
         
         <div className="space-y-2">
           <Label>Video File (optional)</Label>
-          <div className="space-y-2">
+          <div className="space-y-3">
             <FileBrowser 
               fileType="video"
               currentValue={formData.video_url}
@@ -778,14 +778,14 @@ function EpisodeForm({ episode, onClose }: EpisodeFormProps) {
                 has_video: !!e.target.value
               }))}
             />
-            <div className="flex items-center gap-2">
+            <div className="border-t pt-2">
+              <Label className="text-sm text-gray-600 mb-2 block">Upload new file (auto-detects duration)</Label>
               <input
                 type="file"
                 accept="video/*"
                 onChange={handleVideoFileSelect}
-                className="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
+                className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
               />
-              <span className="text-xs text-slate-500">Upload to auto-detect duration</span>
             </div>
           </div>
         </div>
