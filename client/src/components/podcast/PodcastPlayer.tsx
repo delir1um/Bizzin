@@ -17,7 +17,8 @@ import {
   Maximize2,
   Minimize2,
   Video,
-  Headphones
+  Headphones,
+  RotateCcw
 } from 'lucide-react'
 
 interface PodcastPlayerProps {
@@ -581,6 +582,9 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
               </div>
               <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
                 <span>{formatTime(currentTime)}</span>
+                <span className="text-orange-600 dark:text-orange-400 font-medium">
+                  {Math.round((currentTime / actualDuration) * 100)}%
+                </span>
                 <span>{formatTime(actualDuration)}</span>
               </div>
               <p className="text-xs text-slate-400 dark:text-slate-500 text-center">
@@ -595,12 +599,33 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
           {/* Controls - Only show for audio episodes */}
           {!isVideoEpisode && (
             <div className="flex items-center justify-center space-x-4 mb-6">
+              {/* Replay last 10 seconds */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  if (audioRef.current) {
+                    const newTime = Math.max(0, currentTime - 10)
+                    audioRef.current.currentTime = newTime
+                    setCurrentTime(newTime)
+                  }
+                }}
+                className="text-slate-600 dark:text-slate-400"
+                title="Replay last 10 seconds"
+              >
+                <div className="relative">
+                  <RotateCcw className="w-4 h-4" />
+                  <span className="absolute -bottom-1 -right-1 text-[10px] font-bold">10</span>
+                </div>
+              </Button>
+
+              {/* Skip back 15 seconds */}
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={skipBackward}
                 className="text-slate-600 dark:text-slate-400"
-                title="Replay last 15 seconds"
+                title="Skip back 15 seconds"
               >
                 <SkipBack className="w-5 h-5" />
               </Button>
@@ -621,10 +646,22 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                 )}
               </Button>
               
-              {/* Skip forward removed - users should not skip ahead in learning content */}
-              <div className="w-10 h-10 flex items-center justify-center opacity-30">
-                <SkipForward className="w-5 h-5 text-slate-400" />
-              </div>
+              {/* Skip forward 15 seconds - learning-friendly */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  if (audioRef.current) {
+                    const newTime = Math.min(maxProgressReached, currentTime + 15)
+                    audioRef.current.currentTime = newTime
+                    setCurrentTime(newTime)
+                  }
+                }}
+                className="text-slate-600 dark:text-slate-400"
+                title="Skip forward 15 seconds (up to your progress)"
+              >
+                <SkipForward className="w-5 h-5" />
+              </Button>
             </div>
           )}
 
