@@ -259,6 +259,7 @@ export type UserPodcastProgress = {
   progress_seconds: number;
   completed: boolean;
   completed_at?: string;
+  last_media_type?: string; // Track whether last played as 'audio' or 'video'
   created_at: string;
   updated_at: string;
 };
