@@ -71,9 +71,17 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
   // Fetch real episode data from database
   const { data: dbEpisodes, isLoading: episodesLoading } = usePodcastEpisodes()
   
+  // Convert slug to proper series name (e.g., "the-journey" → "The Journey")
+  const convertSlugToSeriesName = (slug: string) => {
+    return slug
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
+  }
+  
   // Get real progress data from database
-  const capitalizedSeries = seriesSlug.charAt(0).toUpperCase() + seriesSlug.slice(1)
-  const { data: seriesProgress } = useSeriesProgress(capitalizedSeries)
+  const seriesName = convertSlugToSeriesName(seriesSlug)
+  const { data: seriesProgress } = useSeriesProgress(seriesName)
   const { data: completedEpisodes } = useCompletedEpisodes()
   const { data: allProgress } = usePodcastProgress()
 
@@ -84,10 +92,8 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
   const episodes: Episode[] = useMemo(() => {
     if (!dbEpisodes) return []
     
-    const capitalizedSeries = seriesSlug.charAt(0).toUpperCase() + seriesSlug.slice(1)
-    
     return dbEpisodes
-      .filter(ep => ep.series === capitalizedSeries)
+      .filter(ep => ep.series === seriesName)
       .map(ep => ({
         id: ep.id,
         title: ep.title,
@@ -101,7 +107,7 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
         difficulty: ep.difficulty
       }))
       .sort((a, b) => (a.episodeNumber || 0) - (b.episodeNumber || 0))
-  }, [dbEpisodes, seriesSlug])
+  }, [dbEpisodes, seriesName])
 
 
 
@@ -111,7 +117,7 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
   
   // Get actual completed episodes count for this series
   const seriesCompletedCount = completedEpisodes?.filter(ep => 
-    ep.episode?.series === capitalizedSeries
+    ep.episode?.series === seriesName
   ).length || 0
   
   const progressPercentage = episodes.length > 0 ? (seriesCompletedCount / episodes.length) * 100 : 0
