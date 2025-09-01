@@ -135,22 +135,42 @@ export function usePodcastDashboard() {
   const statsQuery = usePodcastStats()
   const recentQuery = useRecentlyListened(3)
   const progressQuery = usePodcastProgress()
+  const episodesQuery = usePodcastEpisodes()
 
-  const isLoading = statsQuery.isLoading || recentQuery.isLoading || progressQuery.isLoading
-  const error = statsQuery.error || recentQuery.error || progressQuery.error
+  const isLoading = statsQuery.isLoading || recentQuery.isLoading || progressQuery.isLoading || episodesQuery.isLoading
+  const error = statsQuery.error || recentQuery.error || progressQuery.error || episodesQuery.error
 
   // Calculate additional metrics
   const stats = statsQuery.data
   const recentEpisodes = recentQuery.data || []
   const allProgress = progressQuery.data || []
+  const allEpisodes = episodesQuery.data || []
 
   const currentlyListening = recentEpisodes.find(
     progress => progress.progress_seconds > 0 && !progress.completed
   )
 
-  const totalEpisodes = new Set(allProgress.map(p => p.episode_id)).size
+  const totalEpisodes = allEpisodes.length // Use actual total episodes count
   const completedCount = allProgress.filter(p => p.completed).length
   const inProgressCount = allProgress.filter(p => p.progress_seconds > 0 && !p.completed).length
+
+  // Calculate completion rate considering partial progress across ALL episodes
+  let totalCompletionScore = 0
+  
+  allEpisodes.forEach(episode => {
+    const userProgress = allProgress.find(p => p.episode_id === episode.id)
+    
+    if (userProgress?.completed) {
+      totalCompletionScore += 100 // Full completion
+    } else if (userProgress?.progress_seconds && userProgress.progress_seconds > 0) {
+      // Calculate partial completion percentage
+      const episodeCompletion = (userProgress.progress_seconds / episode.duration) * 100
+      totalCompletionScore += Math.min(episodeCompletion, 100)
+    }
+    // Episodes with no progress contribute 0 to the score
+  })
+
+  const averageCompletionRate = totalEpisodes > 0 ? Math.round(totalCompletionScore / totalEpisodes) : 0
 
   return {
     stats,
@@ -160,7 +180,7 @@ export function usePodcastDashboard() {
       totalEpisodes,
       completedCount,
       inProgressCount,
-      completionRate: totalEpisodes > 0 ? Math.round((completedCount / totalEpisodes) * 100) : 0
+      completionRate: averageCompletionRate
     },
     isLoading,
     error

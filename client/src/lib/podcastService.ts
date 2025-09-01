@@ -27,7 +27,8 @@ export interface UserPodcastProgress {
   progress_seconds: number
   completed: boolean
   completed_at?: string
-  last_listened_at: string
+  created_at: string
+  updated_at: string
   episode?: PodcastEpisode
 }
 
@@ -162,7 +163,7 @@ export class PodcastService {
         *,
         episode:podcast_episodes(*)
       `)
-      .order('last_listened_at', { ascending: false })
+      .order('updated_at', { ascending: false })
     
     if (error) throw error
     return data || []
@@ -201,7 +202,6 @@ export class PodcastService {
           progress_seconds: progressSeconds,
           completed: completed,
           completed_at: completed ? new Date().toISOString() : null,
-          last_listened_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         }, {
           onConflict: 'user_id,episode_id'
@@ -236,7 +236,7 @@ export class PodcastService {
         *,
         episode:podcast_episodes(*)
       `)
-      .order('last_listened_at', { ascending: false })
+      .order('updated_at', { ascending: false })
       .limit(limit)
     
     if (error) throw error
