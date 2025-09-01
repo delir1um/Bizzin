@@ -29,6 +29,7 @@ export interface UserPodcastProgress {
   completed_at?: string
   created_at: string
   updated_at: string
+  last_media_type?: 'audio' | 'video'
   episode?: PodcastEpisode
 }
 
@@ -182,7 +183,7 @@ export class PodcastService {
   }
 
   // Update listening progress using direct table operations
-  static async updateProgress(episodeId: string, progressSeconds: number, episodeDuration: number): Promise<void> {
+  static async updateProgress(episodeId: string, progressSeconds: number, episodeDuration: number, mediaType?: 'audio' | 'video'): Promise<void> {
     try {
       // Get current user
       const { data: { user } } = await supabase.auth.getUser()
@@ -194,16 +195,23 @@ export class PodcastService {
       // Use direct table operations to avoid 406 RPC errors
       const completed = progressSeconds >= (episodeDuration * 0.95)
       
+      const updateData: any = {
+        user_id: user.id,
+        episode_id: episodeId,
+        progress_seconds: progressSeconds,
+        completed: completed,
+        completed_at: completed ? new Date().toISOString() : null,
+        updated_at: new Date().toISOString()
+      }
+      
+      // Include media type if specified
+      if (mediaType) {
+        updateData.last_media_type = mediaType
+      }
+
       const { error } = await supabase
         .from('user_podcast_progress')
-        .upsert({
-          user_id: user.id,
-          episode_id: episodeId,
-          progress_seconds: progressSeconds,
-          completed: completed,
-          completed_at: completed ? new Date().toISOString() : null,
-          updated_at: new Date().toISOString()
-        }, {
+        .upsert(updateData, {
           onConflict: 'user_id,episode_id'
         })
       

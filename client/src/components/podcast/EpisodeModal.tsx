@@ -95,6 +95,11 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
   const hasVideo = Boolean(episode.hasVideo && episode.videoUrl)
   const hasBothFormats = hasAudio && hasVideo
 
+  // Get user's last used media type for smart button text
+  const episodeProgress = allProgress?.find(p => p.episode_id === episode.id)
+  const lastMediaType = episodeProgress?.last_media_type || 'video'
+  const hasProgress = episodeProgress && episodeProgress.progress_seconds > 0
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -127,24 +132,50 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
             <div className="flex justify-center">
               {hasBothFormats ? (
                 <div className="flex flex-col sm:flex-row gap-3 items-center">
-                  <Button
-                    onClick={() => handlePlayEpisode('video')}
-                    size="lg"
-                    className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3"
-                  >
-                    <Video className="w-5 h-5 mr-2" />
-                    Watch Video
-                  </Button>
-                  <span className="text-slate-400 dark:text-slate-500 text-sm">or</span>
-                  <Button
-                    onClick={() => handlePlayEpisode('audio')}
-                    size="lg"
-                    variant="outline"
-                    className="border-orange-600 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 px-8 py-3"
-                  >
-                    <Play className="w-5 h-5 mr-2" />
-                    Listen Audio
-                  </Button>
+                  {/* Primary button based on last used media type or progress */}
+                  {lastMediaType === 'video' ? (
+                    <>
+                      <Button
+                        onClick={() => handlePlayEpisode('video')}
+                        size="lg"
+                        className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3"
+                      >
+                        <Video className="w-5 h-5 mr-2" />
+                        {hasProgress ? 'Continue Watching' : 'Watch Video'}
+                      </Button>
+                      <span className="text-slate-400 dark:text-slate-500 text-sm">or</span>
+                      <Button
+                        onClick={() => handlePlayEpisode('audio')}
+                        size="lg"
+                        variant="outline"
+                        className="border-orange-600 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 px-8 py-3"
+                      >
+                        <Play className="w-5 h-5 mr-2" />
+                        Listen Audio
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        onClick={() => handlePlayEpisode('audio')}
+                        size="lg"
+                        className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3"
+                      >
+                        <Play className="w-5 h-5 mr-2" />
+                        {hasProgress ? 'Continue Listening' : 'Listen Audio'}
+                      </Button>
+                      <span className="text-slate-400 dark:text-slate-500 text-sm">or</span>
+                      <Button
+                        onClick={() => handlePlayEpisode('video')}
+                        size="lg"
+                        variant="outline"
+                        className="border-orange-600 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 px-8 py-3"
+                      >
+                        <Video className="w-5 h-5 mr-2" />
+                        Watch Video
+                      </Button>
+                    </>
+                  )}
                 </div>
               ) : (
                 <Button
@@ -155,12 +186,12 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
                   {hasVideo ? (
                     <>
                       <Video className="w-5 h-5 mr-2" />
-                      Watch Now
+                      {hasProgress ? 'Continue Watching' : 'Watch Now'}
                     </>
                   ) : (
                     <>
                       <Play className="w-5 h-5 mr-2" />
-                      Listen Now
+                      {hasProgress ? 'Continue Listening' : 'Listen Now'}
                     </>
                   )}
                 </Button>

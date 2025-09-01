@@ -79,6 +79,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
     : Boolean(episode.hasVideo && episode.videoUrl)
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
   const updateProgress = useUpdateProgress()
   const lastSaveTime = useRef(startTime)
 
@@ -93,54 +94,87 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
         updateProgress.mutate({
           episodeId: episode.id,
           progressSeconds: Math.floor(time),
-          episodeDuration: Math.floor(actualDuration) // Use actual media duration
+          episodeDuration: Math.floor(actualDuration), // Use actual media duration
+          mediaType: isVideoEpisode ? 'video' : 'audio'
         })
         lastSaveTime.current = time
       }
     }
   }
 
-  // Simulate audio playback with progress tracking (only for audio episodes)
+  // Handle audio playback for audio episodes
   useEffect(() => {
-    // Only run timer simulation for audio episodes, video episodes are handled by VideoPlayer
-    if (!isVideoEpisode && isPlaying) {
-      intervalRef.current = setInterval(() => {
-        setCurrentTime(prev => {
-          const newTime = prev + playbackSpeed
-          
-          if (newTime >= actualDuration) {
-            setIsPlaying(false)
-            setMaxProgressReached(actualDuration) // Update max progress
-            saveProgress(actualDuration) // Save completion
-            return actualDuration
+    if (!isVideoEpisode && episode.audioUrl) {
+      // Create audio element if it doesn't exist
+      if (!audioRef.current) {
+        audioRef.current = new Audio(episode.audioUrl)
+        audioRef.current.preload = 'metadata'
+        
+        // Set up audio event listeners
+        audioRef.current.addEventListener('loadedmetadata', () => {
+          if (audioRef.current) {
+            setActualDuration(audioRef.current.duration)
           }
-          
-          // Track maximum progress reached
-          if (newTime > maxProgressReached) {
-            setMaxProgressReached(newTime)
-          }
-          
-          // Auto-save progress every 10 seconds while playing
-          saveProgress(newTime)
-          return newTime
         })
-      }, 1000)
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
+        
+        audioRef.current.addEventListener('timeupdate', () => {
+          if (audioRef.current) {
+            const newTime = audioRef.current.currentTime
+            setCurrentTime(newTime)
+            
+            // Track maximum progress reached
+            if (newTime > maxProgressReached) {
+              setMaxProgressReached(newTime)
+            }
+            
+            // Auto-save progress every 10 seconds
+            saveProgress(newTime)
+          }
+        })
+        
+        audioRef.current.addEventListener('ended', () => {
+          setIsPlaying(false)
+          setMaxProgressReached(actualDuration)
+          saveProgress(actualDuration)
+        })
       }
-      // Save progress when paused (only for audio episodes)
-      if (!isVideoEpisode && currentTime > 0) {
+      
+      // Set audio properties
+      if (audioRef.current) {
+        audioRef.current.currentTime = startTime
+        audioRef.current.volume = (isMuted ? 0 : volume) / 100
+        audioRef.current.playbackRate = playbackSpeed
+      }
+    }
+    
+    return () => {
+      // Clean up audio element when switching to video or unmounting
+      if (audioRef.current && isVideoEpisode) {
+        audioRef.current.pause()
+        audioRef.current = null
+      }
+    }
+  }, [isVideoEpisode, episode.audioUrl])
+
+  // Handle play/pause for audio
+  useEffect(() => {
+    if (!isVideoEpisode && audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.play().catch(console.error)
+      } else {
+        audioRef.current.pause()
         saveProgress(currentTime)
       }
     }
+  }, [isPlaying, isVideoEpisode])
 
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
+  // Update audio properties when they change
+  useEffect(() => {
+    if (!isVideoEpisode && audioRef.current) {
+      audioRef.current.volume = (isMuted ? 0 : volume) / 100
+      audioRef.current.playbackRate = playbackSpeed
     }
-  }, [isPlaying, playbackSpeed, actualDuration, maxProgressReached, isVideoEpisode])
+  }, [volume, isMuted, playbackSpeed, isVideoEpisode])
 
   // Save progress when component unmounts (player closed)
   useEffect(() => {
@@ -149,7 +183,8 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
         updateProgress.mutate({
           episodeId: episode.id,
           progressSeconds: Math.floor(currentTime),
-          episodeDuration: Math.floor(actualDuration)
+          episodeDuration: Math.floor(actualDuration),
+          mediaType: isVideoEpisode ? 'video' : 'audio'
         })
       }
     }
@@ -161,7 +196,8 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
       updateProgress.mutate({
         episodeId: episode.id,
         progressSeconds: Math.floor(currentTime),
-        episodeDuration: Math.floor(actualDuration)
+        episodeDuration: Math.floor(actualDuration),
+        mediaType: isVideoEpisode ? 'video' : 'audio'
       })
     }
     onClose()
@@ -185,6 +221,12 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
     // Otherwise, only allow seeking backwards to prevent skipping ahead
     if (isCompleted || newTime <= currentTime) {
       setCurrentTime(newTime)
+      
+      // Update audio element position for audio episodes
+      if (!isVideoEpisode && audioRef.current) {
+        audioRef.current.currentTime = newTime
+      }
+      
       saveProgress(newTime)
     }
   }
@@ -205,7 +247,13 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
   }
 
   const skipBackward = () => {
-    setCurrentTime(prev => Math.max(prev - 15, 0))
+    const newTime = Math.max(currentTime - 15, 0)
+    setCurrentTime(newTime)
+    
+    // Update audio element position for audio episodes
+    if (!isVideoEpisode && audioRef.current) {
+      audioRef.current.currentTime = newTime
+    }
   }
 
   const cyclePlaybackSpeed = () => {
@@ -278,7 +326,13 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setCurrentMediaType('video')}
+                    onClick={() => {
+                      setCurrentMediaType('video')
+                      // Pause audio when switching to video
+                      if (audioRef.current) {
+                        audioRef.current.pause()
+                      }
+                    }}
                     className={`px-2 py-1 text-xs rounded ${
                       currentMediaType === 'video' 
                         ? 'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300' 
@@ -291,7 +345,11 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setCurrentMediaType('audio')}
+                    onClick={() => {
+                      setCurrentMediaType('audio')
+                      // Continue with the same progress when switching to audio
+                      setIsPlaying(false) // Reset play state for smooth transition
+                    }}
                     className={`px-2 py-1 text-xs rounded ${
                       currentMediaType === 'audio'
                         ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'

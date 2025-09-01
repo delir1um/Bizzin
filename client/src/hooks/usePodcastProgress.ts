@@ -89,13 +89,15 @@ export function useUpdateProgress() {
     mutationFn: async ({ 
       episodeId, 
       progressSeconds, 
-      episodeDuration 
+      episodeDuration,
+      mediaType
     }: { 
       episodeId: string
       progressSeconds: number
-      episodeDuration: number 
+      episodeDuration: number
+      mediaType?: 'audio' | 'video'
     }) => {
-      await PodcastService.updateProgress(episodeId, progressSeconds, episodeDuration)
+      await PodcastService.updateProgress(episodeId, progressSeconds, episodeDuration, mediaType)
     },
     onSuccess: (_, variables) => {
       // Invalidate specific queries that need immediate updates
