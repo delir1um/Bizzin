@@ -497,12 +497,19 @@ ${new Date().toISOString().split('T')[0]}`;
         }
       });
       
+      console.log('Fetching video from R2 with key:', videoKey, 'from bucket:', BUCKET_NAME);
+      
       const command = new GetObjectCommand({
         Bucket: BUCKET_NAME,
         Key: videoKey,
       });
       
       const response = await s3Client.send(command);
+      console.log('R2 response received:', {
+        ContentType: response.ContentType,
+        ContentLength: response.ContentLength,
+        hasBody: !!response.Body
+      });
       
       // Set CORS headers
       res.header('Access-Control-Allow-Origin', '*');
@@ -534,14 +541,36 @@ ${new Date().toISOString().split('T')[0]}`;
       // Stream the video data
       if (response.Body) {
         const stream = response.Body as any;
+        
+        // Handle stream errors
+        stream.on('error', (streamError: any) => {
+          console.error('Stream error:', streamError);
+          if (!res.headersSent) {
+            res.status(500).json({ error: 'Stream error' });
+          }
+        });
+        
         stream.pipe(res);
       } else {
+        console.error('No body in R2 response');
         res.status(404).json({ error: 'Video not found' });
       }
       
     } catch (error) {
       console.error('Video proxy error:', error);
-      res.status(500).json({ error: 'Failed to proxy video' });
+      console.error('Error details:', {
+        name: (error as Error).name,
+        message: (error as Error).message,
+        code: (error as any).Code,
+        statusCode: (error as any).$metadata?.httpStatusCode
+      });
+      
+      if (!res.headersSent) {
+        res.status(500).json({ 
+          error: 'Failed to proxy video',
+          details: (error as Error).message 
+        });
+      }
     }
   });
 
