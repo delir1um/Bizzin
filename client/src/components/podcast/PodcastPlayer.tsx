@@ -62,17 +62,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
     ? currentMediaType === 'video' 
     : Boolean(episode.has_video && episode.video_url)
     
-  // Debug logging
-  console.log('Player State Debug:', {
-    hasAudio,
-    hasVideo,
-    hasBothFormats,
-    currentMediaType,
-    isVideoEpisode,
-    episode_has_video: episode.has_video,
-    episode_video_url: episode.video_url,
-    episode_audio_url: episode.audio_url
-  })
+  // Media type logic configured
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -255,7 +245,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
         })
       }
     }
-  }, [currentTime, actualDuration, isVideoEpisode, episode.id, updateProgress]) // Include dependencies
+  }, [episode.id]) // Only depend on episode.id to avoid infinite loops
 
   // Handle close with progress save
   const handleClose = () => {
