@@ -12,11 +12,12 @@ import { useLocation } from 'wouter'
 import { usePodcastDashboard, usePodcastEpisodes, usePodcastProgress, useCompletedEpisodes } from '@/hooks/usePodcastProgress'
 import { PodcastService } from '@/lib/podcastService'
 import { EpisodeModal } from '@/components/podcast/EpisodeModal'
-import { PodcastPlayer, Episode } from '@/components/podcast/PodcastPlayer'
+import { PodcastPlayer } from '@/components/podcast/PodcastPlayer'
+import { PodcastEpisode } from '@/lib/podcastService'
 
 export function PodcastPage() {
   const [, setLocation] = useLocation()
-  const [selectedEpisode, setSelectedEpisode] = useState<Episode | null>(null)
+  const [selectedEpisode, setSelectedEpisode] = useState<PodcastEpisode | null>(null)
   const [showEpisodeModal, setShowEpisodeModal] = useState(false)
   const [showPlayer, setShowPlayer] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
@@ -41,23 +42,8 @@ export function PodcastPage() {
     return seriesColorMap[seriesName] || 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200'
   }
 
-  // Convert database episodes to Episode format
-  const episodes: Episode[] = dbEpisodes?.map(ep => ({
-    id: ep.id,
-    title: ep.title,
-    description: ep.description || '',
-    duration: ep.duration,
-    series: ep.series,
-    seriesColor: getSeriesColor(ep.series, ep.series_color),
-    audioUrl: ep.audio_url,
-    videoUrl: ep.video_url,
-    videoThumbnail: ep.video_thumbnail,
-    hasVideo: ep.has_video,
-    transcript: ep.transcript || '',
-    episodeNumber: ep.episode_number,
-    keyTakeaways: ep.key_takeaways,
-    difficulty: ep.difficulty
-  })) || []
+  // Use episodes directly from database without conversion
+  const episodes: PodcastEpisode[] = dbEpisodes || []
 
   // Filter episodes based on search query
   const filteredEpisodes = episodes.filter(episode =>

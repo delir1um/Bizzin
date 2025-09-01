@@ -21,18 +21,19 @@ import {
   CheckCircle2,
   Video,
 } from 'lucide-react'
-import { Episode, PodcastPlayer } from './PodcastPlayer'
+import { PodcastPlayer } from './PodcastPlayer'
+import { PodcastEpisode } from '@/lib/podcastService'
 import { usePodcastEpisodes, useSeriesProgress, useCompletedEpisodes, usePodcastProgress } from '@/hooks/usePodcastProgress'
 import { PodcastService } from '@/lib/podcastService'
 
 interface EpisodeModalProps {
-  episode: Episode | null
+  episode: PodcastEpisode | null
   isOpen: boolean
   onClose: () => void
 }
 
 // Get related episodes from database (other episodes in same series)
-const useRelatedEpisodes = (currentEpisode: Episode) => {
+const useRelatedEpisodes = (currentEpisode: PodcastEpisode) => {
   const { data: allEpisodes } = usePodcastEpisodes()
   const { data: completedEpisodes } = useCompletedEpisodes()
   
