@@ -728,65 +728,81 @@ function EpisodeForm({ episode, onClose }: EpisodeFormProps) {
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label>Audio File</Label>
-          <div className="space-y-3">
-            <FileBrowser 
-              fileType="audio"
-              currentValue={formData.audio_url}
-              onSelectFile={async (url) => {
-                setFormData(prev => ({ ...prev, audio_url: url }))
-                await detectDurationFromUrl(url, 'audio')
-              }}
-            />
-            <Input
-              placeholder="Or enter audio URL manually"
-              value={formData.audio_url}
-              onChange={(e) => setFormData(prev => ({ ...prev, audio_url: e.target.value }))}
-            />
-            <div className="border-t pt-2">
-              <Label className="text-sm text-gray-600 mb-2 block">Upload new file (auto-detects duration)</Label>
-              <input
-                type="file"
-                accept="audio/*"
-                onChange={handleAudioFileSelect}
-                className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
+          <div className="flex flex-col gap-3">
+            <div className="flex gap-2">
+              <FileBrowser 
+                fileType="audio"
+                currentValue={formData.audio_url}
+                onSelectFile={async (url) => {
+                  setFormData(prev => ({ ...prev, audio_url: url }))
+                  await detectDurationFromUrl(url, 'audio')
+                }}
               />
+              <div className="flex flex-col">
+                <input
+                  type="file"
+                  accept="audio/*"
+                  onChange={handleAudioFileSelect}
+                  className="hidden"
+                  id="audio-file-upload"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="text-orange-700 border-orange-200 hover:bg-orange-50"
+                  onClick={() => document.getElementById('audio-file-upload')?.click()}
+                >
+                  Upload New
+                </Button>
+              </div>
             </div>
+            {formData.audio_url && (
+              <div className="text-xs text-gray-500 truncate">
+                {formData.audio_url}
+              </div>
+            )}
           </div>
         </div>
         
         <div className="space-y-2">
           <Label>Video File (optional)</Label>
-          <div className="space-y-3">
-            <FileBrowser 
-              fileType="video"
-              currentValue={formData.video_url}
-              onSelectFile={async (url) => {
-                setFormData(prev => ({ 
-                  ...prev, 
-                  video_url: url,
-                  has_video: !!url
-                }))
-                await detectDurationFromUrl(url, 'video')
-              }}
-            />
-            <Input
-              placeholder="Or enter video URL manually"
-              value={formData.video_url}
-              onChange={(e) => setFormData(prev => ({ 
-                ...prev, 
-                video_url: e.target.value,
-                has_video: !!e.target.value
-              }))}
-            />
-            <div className="border-t pt-2">
-              <Label className="text-sm text-gray-600 mb-2 block">Upload new file (auto-detects duration)</Label>
-              <input
-                type="file"
-                accept="video/*"
-                onChange={handleVideoFileSelect}
-                className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
+          <div className="flex flex-col gap-3">
+            <div className="flex gap-2">
+              <FileBrowser 
+                fileType="video"
+                currentValue={formData.video_url}
+                onSelectFile={async (url) => {
+                  setFormData(prev => ({ 
+                    ...prev, 
+                    video_url: url,
+                    has_video: !!url
+                  }))
+                  await detectDurationFromUrl(url, 'video')
+                }}
               />
+              <div className="flex flex-col">
+                <input
+                  type="file"
+                  accept="video/*"
+                  onChange={handleVideoFileSelect}
+                  className="hidden"
+                  id="video-file-upload"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="text-orange-700 border-orange-200 hover:bg-orange-50"
+                  onClick={() => document.getElementById('video-file-upload')?.click()}
+                >
+                  Upload New
+                </Button>
+              </div>
             </div>
+            {formData.video_url && (
+              <div className="text-xs text-gray-500 truncate">
+                {formData.video_url}
+              </div>
+            )}
           </div>
         </div>
       </div>
