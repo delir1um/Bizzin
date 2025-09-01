@@ -319,12 +319,12 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
     setIsPlaying(!isPlaying)
   }
 
-  // Seeking capability - allow full navigation for completed episodes
+  // Seeking capability - allow navigation up to maximum progress reached (learning system)
   const handleSeek = (value: number[]) => {
     const newTime = value[0]
     // If episode is completed (95%+), allow seeking anywhere
-    // Otherwise, only allow seeking backwards to prevent skipping ahead
-    if (isCompleted || newTime <= currentTime) {
+    // Otherwise, allow seeking up to the maximum progress reached (for review)
+    if (isCompleted || newTime <= maxProgressReached) {
       setCurrentTime(newTime)
       
       // Update audio element position for audio episodes
@@ -539,6 +539,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                 onDurationUpdate={handleVideoDurationUpdate}
                 onEnded={handleVideoEnded}
                 startTime={startTime}
+                maxProgressReached={maxProgressReached}
                 className="flex-1 min-h-0"
                 isCompleted={isCompleted}
               />

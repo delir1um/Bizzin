@@ -25,6 +25,7 @@ interface VideoPlayerProps {
   onDurationUpdate?: (duration: number) => void
   onEnded: () => void
   startTime?: number
+  maxProgressReached?: number // Maximum progress reached (for learning system)
   className?: string
   isCompleted?: boolean // Whether episode is completed (allows free navigation)
 }
@@ -37,6 +38,7 @@ export function VideoPlayer({
   onDurationUpdate,
   onEnded, 
   startTime = 0,
+  maxProgressReached = 0,
   className = "",
   isCompleted = false
 }: VideoPlayerProps) {
@@ -146,8 +148,8 @@ export function VideoPlayer({
 
     const newTime = value[0]
     // If episode is completed, allow seeking anywhere
-    // Otherwise, only allow seeking backwards to prevent skipping ahead
-    if (isCompleted || newTime <= currentTime) {
+    // Otherwise, allow seeking up to the maximum progress reached (for review)
+    if (isCompleted || newTime <= Math.max(maxProgressReached, currentTime)) {
       video.currentTime = newTime
       setCurrentTime(newTime)
     }
@@ -352,7 +354,7 @@ export function VideoPlayer({
             <p className="text-xs text-white/60 text-center">
               {isCompleted 
                 ? "Episode completed! You can navigate freely through the content" 
-                : "You can only replay content you've already completed"
+                : "You can review any content you've already watched, but can't skip ahead"
               }
             </p>
           </div>
