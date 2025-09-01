@@ -27,10 +27,13 @@ router.get('/episodes', async (req, res) => {
 // POST /api/podcast/episodes - Create a new episode
 router.post('/episodes', async (req, res) => {
   try {
+    console.log('Received episode data:', req.body);
+    
     // Validate the request body
     const validationResult = createPodcastEpisodeSchema.safeParse(req.body);
     
     if (!validationResult.success) {
+      console.error('Validation failed:', validationResult.error.errors);
       return res.status(400).json({ 
         error: 'Validation failed',
         details: validationResult.error.errors
@@ -38,11 +41,21 @@ router.post('/episodes', async (req, res) => {
     }
 
     const episodeData = validationResult.data;
+    
+    // Convert empty strings to null for database
+    const cleanData = {
+      ...episodeData,
+      video_url: episodeData.video_url === "" ? null : episodeData.video_url,
+      audio_url: episodeData.audio_url === "" ? null : episodeData.audio_url,
+      video_thumbnail: episodeData.video_thumbnail === "" ? null : episodeData.video_thumbnail,
+    };
+
+    console.log('Cleaned episode data for insertion:', cleanData);
 
     // Insert the episode using service role key (bypasses RLS)
     const { data: episode, error } = await supabase
       .from('podcast_episodes')
-      .insert([episodeData])
+      .insert([cleanData])
       .select()
       .single();
 
