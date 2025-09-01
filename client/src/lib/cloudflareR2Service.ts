@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3'
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, CopyObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
 // Cloudflare R2 Configuration
@@ -156,19 +156,48 @@ class CloudflareR2Service {
   }
 
   /**
-   * Delete video from R2
+   * Delete file from R2
    */
-  async deleteVideo(videoKey: string): Promise<void> {
+  async deleteFile(fileKey: string): Promise<void> {
     try {
       const command = new DeleteObjectCommand({
         Bucket: BUCKET_NAME,
-        Key: videoKey,
+        Key: fileKey,
       })
 
       await this.s3Client.send(command)
     } catch (error) {
-      console.error('Error deleting video from R2:', error)
-      throw new Error('Failed to delete video')
+      console.error('Error deleting file from R2:', error)
+      throw new Error('Failed to delete file')
+    }
+  }
+
+  /**
+   * Delete video from R2 (legacy method)
+   */
+  async deleteVideo(videoKey: string): Promise<void> {
+    return this.deleteFile(videoKey)
+  }
+
+  /**
+   * Rename file in R2 (copy and delete)
+   */
+  async renameFile(oldKey: string, newKey: string): Promise<void> {
+    try {
+      // First, copy the file to the new location
+      const copyCommand = new CopyObjectCommand({
+        Bucket: BUCKET_NAME,
+        CopySource: `${BUCKET_NAME}/${oldKey}`,
+        Key: newKey,
+      })
+
+      await this.s3Client.send(copyCommand)
+
+      // Then delete the old file
+      await this.deleteFile(oldKey)
+    } catch (error) {
+      console.error('Error renaming file in R2:', error)
+      throw new Error('Failed to rename file')
     }
   }
 

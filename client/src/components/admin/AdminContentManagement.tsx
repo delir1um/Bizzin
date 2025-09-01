@@ -24,7 +24,10 @@ import {
   BarChart3,
   Eye,
   Calendar,
-  Clock
+  Clock,
+  MoreVertical,
+  Edit3,
+  AlertTriangle
 } from "lucide-react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { supabase } from "@/lib/supabase"
@@ -363,8 +366,79 @@ interface FileBrowserProps {
   currentValue?: string
 }
 
+interface RenameDialogProps {
+  isOpen: boolean
+  onClose: () => void
+  currentName: string
+  onRename: (newName: string) => void
+  isLoading: boolean
+}
+
+function RenameDialog({ isOpen, onClose, currentName, onRename, isLoading }: RenameDialogProps) {
+  const [newName, setNewName] = useState('')
+  
+  useEffect(() => {
+    if (isOpen) {
+      // Extract filename without extension for editing
+      const nameWithoutExt = currentName.replace(/\.[^/.]+$/, '')
+      setNewName(nameWithoutExt)
+    }
+  }, [isOpen, currentName])
+  
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (newName.trim() && newName !== currentName.replace(/\.[^/.]+$/, '')) {
+      // Add back the original extension
+      const extension = currentName.split('.').pop()
+      const newFullName = `${newName.trim()}.${extension}`
+      onRename(newFullName)
+    }
+  }
+  
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Rename File</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="filename">File Name</Label>
+            <Input
+              id="filename"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="Enter new filename"
+              disabled={isLoading}
+            />
+            <p className="text-xs text-gray-500">
+              Extension will be preserved: .{currentName.split('.').pop()}
+            </p>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isLoading || !newName.trim()}>
+              {isLoading ? 'Renaming...' : 'Rename'}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 function FileBrowser({ onSelectFile, fileType, currentValue }: FileBrowserProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [selectedFileKey, setSelectedFileKey] = useState<string | null>(null)
+  const [isRenameOpen, setIsRenameOpen] = useState(false)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [isRenaming, setIsRenaming] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
   
   const { data: r2Files, isLoading } = useQuery({
     queryKey: ['r2-files'],
@@ -395,6 +469,65 @@ function FileBrowser({ onSelectFile, fileType, currentValue }: FileBrowserProps)
     return `https://${import.meta.env.VITE_CLOUDFLARE_R2_PUBLIC_DOMAIN}/${key}`
   }
   
+  const handleRename = async (newName: string) => {
+    if (!selectedFileKey) return
+    
+    setIsRenaming(true)
+    try {
+      const directory = selectedFileKey.includes('/') ? selectedFileKey.substring(0, selectedFileKey.lastIndexOf('/') + 1) : ''
+      const newKey = directory + newName
+      
+      await r2Service.renameFile(selectedFileKey, newKey)
+      
+      // Refresh the file list
+      queryClient.invalidateQueries({ queryKey: ['r2-files'] })
+      
+      toast({
+        title: "File renamed",
+        description: `Successfully renamed to ${newName}`,
+      })
+      
+      setIsRenameOpen(false)
+      setSelectedFileKey(null)
+    } catch (error) {
+      toast({
+        title: "Failed to rename file",
+        description: error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive"
+      })
+    } finally {
+      setIsRenaming(false)
+    }
+  }
+  
+  const handleDelete = async () => {
+    if (!selectedFileKey) return
+    
+    setIsDeleting(true)
+    try {
+      await r2Service.deleteFile(selectedFileKey)
+      
+      // Refresh the file list
+      queryClient.invalidateQueries({ queryKey: ['r2-files'] })
+      
+      toast({
+        title: "File deleted",
+        description: "File has been successfully deleted",
+      })
+      
+      setIsDeleteOpen(false)
+      setSelectedFileKey(null)
+    } catch (error) {
+      toast({
+        title: "Failed to delete file",
+        description: error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive"
+      })
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+  
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -422,15 +555,17 @@ function FileBrowser({ onSelectFile, fileType, currentValue }: FileBrowserProps)
               {filteredFiles.map((file) => (
                 <Card 
                   key={file.key} 
-                  className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                  onClick={() => {
-                    onSelectFile(getPublicUrl(file.key))
-                    setIsOpen(false)
-                  }}
+                  className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                 >
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
-                      <div className="flex-1">
+                      <div 
+                        className="flex-1 cursor-pointer"
+                        onClick={() => {
+                          onSelectFile(getPublicUrl(file.key))
+                          setIsOpen(false)
+                        }}
+                      >
                         <div className="font-medium">{file.key.split('/').pop()}</div>
                         <div className="text-sm text-slate-600 dark:text-slate-400">
                           {formatFileSize(file.size)} • {format(new Date(file.lastModified), 'MMM d, yyyy')}
@@ -445,6 +580,32 @@ function FileBrowser({ onSelectFile, fileType, currentValue }: FileBrowserProps)
                         <Badge variant="outline">
                           {file.key.split('.').pop()?.toUpperCase()}
                         </Badge>
+                        <div className="flex gap-1">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 w-8 p-0"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setSelectedFileKey(file.key)
+                              setIsRenameOpen(true)
+                            }}
+                          >
+                            <Edit3 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setSelectedFileKey(file.key)
+                              setIsDeleteOpen(true)
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -454,6 +615,56 @@ function FileBrowser({ onSelectFile, fileType, currentValue }: FileBrowserProps)
           )}
         </div>
       </DialogContent>
+      
+      <RenameDialog
+        isOpen={isRenameOpen}
+        onClose={() => {
+          setIsRenameOpen(false)
+          setSelectedFileKey(null)
+        }}
+        currentName={selectedFileKey ? selectedFileKey.split('/').pop() || '' : ''}
+        onRename={handleRename}
+        isLoading={isRenaming}
+      />
+      
+      <Dialog open={isDeleteOpen} onOpenChange={() => {
+        setIsDeleteOpen(false)
+        setSelectedFileKey(null)
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+              Delete File
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Are you sure you want to delete <strong>{selectedFileKey?.split('/').pop()}</strong>? 
+              This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setIsDeleteOpen(false)
+                  setSelectedFileKey(null)
+                }}
+                disabled={isDeleting}
+              >
+                Cancel
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={handleDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   )
 }
