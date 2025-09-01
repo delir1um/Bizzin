@@ -2,21 +2,24 @@ import React from 'react'
 import { BaseStatsCard, CardZones } from './BaseStatsCard'
 import { Badge } from '@/components/ui/badge'
 import { Brain, PlayCircle, BookOpen, GraduationCap, Target } from 'lucide-react'
+import { usePodcastDashboard, usePodcastEpisodes } from '@/hooks/usePodcastProgress'
 
 interface TrainingStatsCardProps {
   onNavigate: (path: string) => void
 }
 
 export function TrainingStatsCard({ onNavigate }: TrainingStatsCardProps) {
-  // Training modules data - This would typically come from a service
-  // For now, using representative data based on the Training page structure
+  const { stats, metrics, isLoading } = usePodcastDashboard()
+  const { data: allEpisodes } = usePodcastEpisodes()
+  
+  // Calculate actual training stats from real data
   const trainingStats = {
-    modulesCompleted: 3, // Based on typical user progress
-    totalModules: 12, // Total available modules
-    learningStreak: 5, // Days with training activity
-    timeInvestedHours: 8.5, // Hours spent this month
-    nextRecommended: 'Business Model Canvas',
-    completionRate: 25 // Percentage of modules completed
+    modulesCompleted: metrics?.completedCount || 0,
+    totalModules: allEpisodes?.length || 0,
+    learningStreak: stats?.learning_streak || 0,
+    timeInvestedHours: stats?.total_listening_time ? Math.round((stats.total_listening_time / 3600) * 10) / 10 : 0,
+    nextRecommended: 'Business Model Canvas', // This could be dynamic based on completed episodes
+    completionRate: metrics?.completionRate || 0
   }
   
   // Determine learning status and color
@@ -30,10 +33,10 @@ export function TrainingStatsCard({ onNavigate }: TrainingStatsCardProps) {
   
   const learningInfo = getLearningStatus(trainingStats.learningStreak, trainingStats.completionRate)
 
-  // Create header badge
+  // Create header badge with loading state
   const headerBadge = (
     <Badge variant="secondary" className="bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300 text-xs">
-      {trainingStats.modulesCompleted}/{trainingStats.totalModules} modules
+      {isLoading ? "Loading..." : `${trainingStats.modulesCompleted}/${trainingStats.totalModules} modules`}
     </Badge>
   )
 
@@ -44,7 +47,7 @@ export function TrainingStatsCard({ onNavigate }: TrainingStatsCardProps) {
       badge: headerBadge
     },
     metric: {
-      primary: `${trainingStats.completionRate}%`,
+      primary: isLoading ? "--" : `${trainingStats.completionRate}%`,
       label: 'Completion Rate',
       status: learningInfo.status,
       statusColor: learningInfo.color,
@@ -60,11 +63,11 @@ export function TrainingStatsCard({ onNavigate }: TrainingStatsCardProps) {
     },
     stats: {
       left: {
-        value: trainingStats.learningStreak,
+        value: isLoading ? "--" : trainingStats.learningStreak,
         label: 'Day Streak'
       },
       right: {
-        value: `${trainingStats.timeInvestedHours}h`,
+        value: isLoading ? "--" : `${trainingStats.timeInvestedHours}h`,
         label: 'This Month'
       }
     },
