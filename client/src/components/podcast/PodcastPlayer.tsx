@@ -417,10 +417,10 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                 {episode.series}
               </Badge>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={cyclePlaybackSpeed}
-                className="text-xs font-mono"
+                className="text-sm font-mono bg-orange-50 dark:bg-orange-950 border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900 px-3 py-1"
               >
                 {playbackSpeed}x
               </Button>
