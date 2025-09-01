@@ -511,16 +511,13 @@ function EpisodeForm({ episode, onClose }: EpisodeFormProps) {
     duration: episode?.duration || 900,
     has_video: episode?.has_video || false,
     video_url: episode?.video_url || '',
-    audio_url: episode?.audio_url || '',
-    is_published: episode?.is_published || false
+    audio_url: episode?.audio_url || ''
   })
 
   const queryClient = useQueryClient()
 
   const saveMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      console.log('Submitting episode data:', data)
-      
       if (episode) {
         // Update existing episode
         const { error } = await supabase
@@ -528,32 +525,19 @@ function EpisodeForm({ episode, onClose }: EpisodeFormProps) {
           .update(data)
           .eq('id', episode.id)
         
-        if (error) {
-          console.error('Update error:', error)
-          throw error
-        }
+        if (error) throw error
       } else {
         // Create new episode
-        const { data: result, error } = await supabase
+        const { error } = await supabase
           .from('podcast_episodes')
           .insert([data])
-          .select()
         
-        if (error) {
-          console.error('Insert error:', error)
-          throw error
-        }
-        
-        console.log('Episode created successfully:', result)
+        if (error) throw error
       }
     },
     onSuccess: () => {
-      console.log('Episode saved successfully')
       queryClient.invalidateQueries({ queryKey: ['admin-episodes'] })
       onClose()
-    },
-    onError: (error) => {
-      console.error('Save mutation error:', error)
     }
   })
 
@@ -666,24 +650,13 @@ function EpisodeForm({ episode, onClose }: EpisodeFormProps) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between">
-        <Label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={formData.is_published}
-            onChange={(e) => setFormData(prev => ({ ...prev, is_published: e.target.checked }))}
-          />
-          Publish immediately
-        </Label>
-        
-        <div className="flex gap-2">
-          <Button type="button" variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={saveMutation.isPending}>
-            {saveMutation.isPending ? 'Saving...' : episode ? 'Update' : 'Create'} Episode
-          </Button>
-        </div>
+      <div className="flex justify-end gap-2">
+        <Button type="button" variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={saveMutation.isPending}>
+          {saveMutation.isPending ? 'Saving...' : episode ? 'Update' : 'Create'} Episode
+        </Button>
       </div>
     </form>
   )

@@ -231,6 +231,38 @@ export type PlatformSettings = {
   updated_at: string;
 };
 
+// Podcast Episodes Table
+export type PodcastEpisode = {
+  id: string;
+  title: string;
+  description?: string;
+  series: string;
+  episode_number: number;
+  duration: number; // in seconds
+  has_video: boolean;
+  video_url?: string;
+  audio_url?: string;
+  video_thumbnail?: string;
+  transcript?: string;
+  key_takeaways?: string[];
+  difficulty?: string;
+  series_color?: string;
+  created_at: string;
+  updated_at: string;
+};
+
+// User Podcast Progress Table
+export type UserPodcastProgress = {
+  id: string;
+  user_id: string;
+  episode_id: string;
+  progress_seconds: number;
+  completed: boolean;
+  completed_at?: string;
+  created_at: string;
+  updated_at: string;
+};
+
 // Zod Validation Schemas
 export const createUserProfileSchema = z.object({
   email: z.string().email(),
@@ -336,6 +368,38 @@ export const updatePlatformSettingsSchema = z.object({
   maintenance_message: z.string().optional(),
 });
 
+export const createPodcastEpisodeSchema = z.object({
+  title: z.string().min(1),
+  description: z.string().optional(),
+  series: z.string().min(1),
+  episode_number: z.number().int().positive(),
+  duration: z.number().int().positive(),
+  has_video: z.boolean().default(false),
+  video_url: z.string().url().optional(),
+  audio_url: z.string().url().optional(),
+  video_thumbnail: z.string().url().optional(),
+  transcript: z.string().optional(),
+  key_takeaways: z.array(z.string()).optional(),
+  difficulty: z.string().optional(),
+  series_color: z.string().optional(),
+});
+
+export const updatePodcastEpisodeSchema = z.object({
+  title: z.string().min(1).optional(),
+  description: z.string().optional(),
+  series: z.string().min(1).optional(),
+  episode_number: z.number().int().positive().optional(),
+  duration: z.number().int().positive().optional(),
+  has_video: z.boolean().optional(),
+  video_url: z.string().url().optional(),
+  audio_url: z.string().url().optional(),
+  video_thumbnail: z.string().url().optional(),
+  transcript: z.string().optional(),
+  key_takeaways: z.array(z.string()).optional(),
+  difficulty: z.string().optional(),
+  series_color: z.string().optional(),
+});
+
 // Calculator History Table - store saved calculations
 export type CalculatorHistory = {
   id: string;
@@ -375,5 +439,7 @@ export type UpdateMilestone = z.infer<typeof updateMilestoneSchema>;
 export type CreateDocument = z.infer<typeof createDocumentSchema>;
 export type CreateEarlySignup = z.infer<typeof createEarlySignupSchema>;
 export type UpdatePlatformSettings = z.infer<typeof updatePlatformSettingsSchema>;
+export type CreatePodcastEpisode = z.infer<typeof createPodcastEpisodeSchema>;
+export type UpdatePodcastEpisode = z.infer<typeof updatePodcastEpisodeSchema>;
 export type CreateCalculatorHistory = z.infer<typeof createCalculatorHistorySchema>;
 export type UpdateCalculatorHistory = z.infer<typeof updateCalculatorHistorySchema>;

@@ -1,0 +1,40 @@
+injected.js:253  POST https://giahpkiwivxpocikndix.supabase.co/rest/v1/podcast_episodes?columns=%22title%22%2C%22description%22%2C%22series%22%2C%22episode_number%22%2C%22duration%22%2C%22has_video%22%2C%22video_url%22%2C%22audio_url%22%2C%22is_published%22&select=* 400 (Bad Request)
+window.fetch @ Network.js:219
+apply @ injected.js:253
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4213
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4234
+fulfilled @ @supabase_supabase-js.js?v=c9799909:4186
+Promise.then
+step @ @supabase_supabase-js.js?v=c9799909:4199
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4201
+__awaiter6 @ @supabase_supabase-js.js?v=c9799909:4183
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4224
+then @ @supabase_supabase-js.js?v=c9799909:89Understand this error
+Console.js:61 Insert error: {code: 'PGRST204', details: null, hint: null, message: "Could not find the 'is_published' column of 'podcast_episodes' in the schema cache"}
+Mt.forEach.n.<computed> @ Console.js:61
+mutationFn @ AdminContentManagement.tsx:543
+await in mutationFn
+fn @ @tanstack_react-query.js?v=c9799909:1189
+run @ @tanstack_react-query.js?v=c9799909:494
+start @ @tanstack_react-query.js?v=c9799909:536
+execute @ @tanstack_react-query.js?v=c9799909:1225
+await in execute
+mutate @ @tanstack_react-query.js?v=c9799909:2630
+(anonymous) @ @tanstack_react-query.js?v=c9799909:3295
+handleSubmit @ AdminContentManagement.tsx:562
+callCallback2 @ chunk-276SZO74.js?v=c9799909:3674
+invokeGuardedCallbackDev @ chunk-276SZO74.js?v=c9799909:3699
+invokeGuardedCallback @ chunk-276SZO74.js?v=c9799909:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-276SZO74.js?v=c9799909:3736
+executeDispatch @ chunk-276SZO74.js?v=c9799909:7014
+processDispatchQueueItemsInOrder @ chunk-276SZO74.js?v=c9799909:7034
+processDispatchQueue @ chunk-276SZO74.js?v=c9799909:7043
+dispatchEventsForPlugins @ chunk-276SZO74.js?v=c9799909:7051
+(anonymous) @ chunk-276SZO74.js?v=c9799909:7174
+batchedUpdates$1 @ chunk-276SZO74.js?v=c9799909:18913
+batchedUpdates @ chunk-276SZO74.js?v=c9799909:3579
+dispatchEventForPluginEventSystem @ chunk-276SZO74.js?v=c9799909:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-276SZO74.js?v=c9799909:5478
+dispatchEvent @ chunk-276SZO74.js?v=c9799909:5472
+dispatchDiscreteEvent @ chunk-276SZO74.js?v=c9799909:5449Understand this error
+Console.js:61 Save mutation error: {code: 'PGRST204', details: null, hint: null, message: "Could not find the 'is_published' column of 'podcast_episodes' in the schema cache"}
