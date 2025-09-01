@@ -613,9 +613,9 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                 className="text-slate-600 dark:text-slate-400"
                 title="Replay last 10 seconds"
               >
-                <div className="relative">
+                <div className="flex items-center space-x-1">
                   <RotateCcw className="w-4 h-4" />
-                  <span className="absolute -bottom-1 -right-1 text-[10px] font-bold">10</span>
+                  <span className="text-[10px] font-bold leading-none">10s</span>
                 </div>
               </Button>
 
