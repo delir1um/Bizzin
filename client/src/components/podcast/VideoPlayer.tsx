@@ -225,7 +225,7 @@ export function VideoPlayer({
         container.requestFullscreen()
       }
     } else {
-      if (document.exitFullscreen) {
+      if (document.exitFullscreen && document.fullscreenElement) {
         document.exitFullscreen()
       }
     }
