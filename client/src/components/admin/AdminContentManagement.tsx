@@ -54,71 +54,42 @@ export function AdminContentManagement() {
   const { data: episodes, isLoading } = useQuery({
     queryKey: ['admin-episodes'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('podcast_episodes')
-        .select(`
-          id,
-          title,
-          description,
-          series,
-          episode_number,
-          duration,
-          has_video,
-          video_url,
-          audio_url,
-          is_published,
-          created_at,
-          updated_at,
-          podcast_progress(count)
-        `)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-
-      return data?.map(episode => ({
+      const response = await fetch('/api/podcast/episodes')
+      
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to fetch episodes')
+      }
+      
+      const data = await response.json()
+      return data.episodes?.map((episode: any) => ({
         ...episode,
-        view_count: Array.isArray(episode.podcast_progress) ? episode.podcast_progress.length : 0
+        is_published: true, // Default since we removed this field
+        view_count: 0 // We'll add this later if needed
       })) || []
     },
     refetchInterval: 60000 // Refresh every minute
   })
 
-  // Toggle episode publish status
-  const togglePublishMutation = useMutation({
-    mutationFn: async ({ id, is_published }: { id: string; is_published: boolean }) => {
-      const { error } = await supabase
-        .from('podcast_episodes')
-        .update({ is_published })
-        .eq('id', id)
-
-      if (error) throw error
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-episodes'] })
-    }
-  })
+  // Note: Removed toggle publish functionality since is_published field was removed
 
   // Delete episode
   const deleteEpisodeMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('podcast_episodes')
-        .delete()
-        .eq('id', id)
-
-      if (error) throw error
+      const response = await fetch(`/api/podcast/episodes/${id}`, {
+        method: 'DELETE'
+      })
+      
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to delete episode')
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-episodes'] })
     }
   })
 
-  const handleTogglePublish = (episode: PodcastEpisode) => {
-    togglePublishMutation.mutate({
-      id: episode.id,
-      is_published: !episode.is_published
-    })
-  }
 
   const handleDeleteEpisode = (id: string) => {
     if (confirm('Are you sure you want to delete this episode?')) {
@@ -308,18 +279,6 @@ export function AdminContentManagement() {
                           
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleTogglePublish(episode)}
-                              >
-                                {episode.is_published ? (
-                                  <Pause className="w-4 h-4" />
-                                ) : (
-                                  <Play className="w-4 h-4" />
-                                )}
-                              </Button>
-                              
                               <Dialog>
                                 <DialogTrigger asChild>
                                   <Button 
@@ -520,19 +479,32 @@ function EpisodeForm({ episode, onClose }: EpisodeFormProps) {
     mutationFn: async (data: typeof formData) => {
       if (episode) {
         // Update existing episode
-        const { error } = await supabase
-          .from('podcast_episodes')
-          .update(data)
-          .eq('id', episode.id)
+        const response = await fetch(`/api/podcast/episodes/${episode.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        })
         
-        if (error) throw error
+        if (!response.ok) {
+          const error = await response.json()
+          throw new Error(error.error || 'Failed to update episode')
+        }
+        
+        return response.json()
       } else {
         // Create new episode
-        const { error } = await supabase
-          .from('podcast_episodes')
-          .insert([data])
+        const response = await fetch('/api/podcast/episodes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        })
         
-        if (error) throw error
+        if (!response.ok) {
+          const error = await response.json()
+          throw new Error(error.error || 'Failed to create episode')
+        }
+        
+        return response.json()
       }
     },
     onSuccess: () => {

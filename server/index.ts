@@ -54,6 +54,10 @@ app.use((req, res, next) => {
   const simpleEmailRoutes = await import('./routes/simple-email.js');
   app.use('/api/simple-email', simpleEmailRoutes.default);
   
+  // Add Podcast API routes
+  const podcastRoutes = await import('./routes/podcast.js');
+  app.use('/api/podcast', podcastRoutes.default);
+  
   const server = await registerRoutes(app);
   
   // Initialize Simple Email Scheduler
