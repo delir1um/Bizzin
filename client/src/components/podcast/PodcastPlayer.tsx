@@ -598,38 +598,42 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
 
           {/* Controls - Only show for audio episodes */}
           {!isVideoEpisode && (
-            <div className="flex items-center justify-center space-x-4 mb-6">
-              {/* Replay last 10 seconds */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  if (audioRef.current) {
-                    const newTime = Math.max(0, currentTime - 10)
-                    audioRef.current.currentTime = newTime
-                    setCurrentTime(newTime)
-                  }
-                }}
-                className="text-slate-600 dark:text-slate-400"
-                title="Replay last 10 seconds"
-              >
-                <div className="flex items-center space-x-1">
-                  <RotateCcw className="w-4 h-4" />
-                  <span className="text-[10px] font-bold leading-none">10s</span>
-                </div>
-              </Button>
+            <div className="flex items-center justify-between mb-6">
+              {/* Left side controls */}
+              <div className="flex items-center space-x-2">
+                {/* Replay last 10 seconds */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    if (audioRef.current) {
+                      const newTime = Math.max(0, currentTime - 10)
+                      audioRef.current.currentTime = newTime
+                      setCurrentTime(newTime)
+                    }
+                  }}
+                  className="text-slate-600 dark:text-slate-400"
+                  title="Replay last 10 seconds"
+                >
+                  <div className="flex items-center space-x-1">
+                    <RotateCcw className="w-4 h-4" />
+                    <span className="text-[10px] font-bold leading-none">10s</span>
+                  </div>
+                </Button>
 
-              {/* Skip back 15 seconds */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={skipBackward}
-                className="text-slate-600 dark:text-slate-400"
-                title="Skip back 15 seconds"
-              >
-                <SkipBack className="w-5 h-5" />
-              </Button>
+                {/* Skip back 15 seconds */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={skipBackward}
+                  className="text-slate-600 dark:text-slate-400"
+                  title="Skip back 15 seconds"
+                >
+                  <SkipBack className="w-5 h-5" />
+                </Button>
+              </div>
               
+              {/* Center play/pause button */}
               <Button
                 onClick={handlePlayPause}
                 size="lg"
@@ -646,22 +650,28 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                 )}
               </Button>
               
-              {/* Skip forward 15 seconds - learning-friendly */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  if (audioRef.current) {
-                    const newTime = Math.min(maxProgressReached, currentTime + 15)
-                    audioRef.current.currentTime = newTime
-                    setCurrentTime(newTime)
-                  }
-                }}
-                className="text-slate-600 dark:text-slate-400"
-                title="Skip forward 15 seconds (up to your progress)"
-              >
-                <SkipForward className="w-5 h-5" />
-              </Button>
+              {/* Right side controls */}
+              <div className="flex items-center space-x-2">
+                {/* Skip forward 15 seconds - learning-friendly */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    if (audioRef.current) {
+                      const newTime = Math.min(maxProgressReached, currentTime + 15)
+                      audioRef.current.currentTime = newTime
+                      setCurrentTime(newTime)
+                    }
+                  }}
+                  className="text-slate-600 dark:text-slate-400"
+                  title="Skip forward 15 seconds (up to your progress)"
+                >
+                  <SkipForward className="w-5 h-5" />
+                </Button>
+                
+                {/* Spacer to balance left side */}
+                <div className="w-[68px]"></div>
+              </div>
             </div>
           )}
 
