@@ -191,7 +191,11 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
       
       // Set audio properties
       if (audioRef.current) {
-        audioRef.current.currentTime = startTime
+        // Only set position if this is the initial load or switching media types
+        // Avoid resetting position during normal playback
+        if (Math.abs(audioRef.current.currentTime - currentTime) > 1) {
+          audioRef.current.currentTime = currentTime
+        }
         audioRef.current.volume = (isMuted ? 0 : volume) / 100
         audioRef.current.playbackRate = playbackSpeed
       }
