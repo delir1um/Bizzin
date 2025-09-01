@@ -75,6 +75,9 @@ export function VideoPlayer({
         video.currentTime = startTime
         setCurrentTime(startTime)
       }
+      // Auto-play video once metadata is loaded
+      setIsPlaying(true)
+      video.play().catch(console.error)
     }
 
     const handleTimeUpdate = () => {
@@ -316,18 +319,7 @@ export function VideoPlayer({
         </div>
 
         {/* Center Play Button */}
-        {!isPlaying && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Button
-              size="lg"
-              variant="ghost"
-              className="text-white bg-black/50 hover:bg-black/70 rounded-full p-6"
-              onClick={togglePlay}
-            >
-              <Play className="w-8 h-8" />
-            </Button>
-          </div>
-        )}
+        {/* Center play button removed - using only bottom controls */}
 
         {/* Bottom Controls */}
         <div className="absolute bottom-0 left-0 right-0 p-4 space-y-3">
