@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useUpdateProgress, useEpisodeProgress } from '@/hooks/usePodcastProgress'
-import { PodcastService } from '@/lib/podcastService'
+import { PodcastService, PodcastEpisode } from '@/lib/podcastService'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
@@ -20,25 +20,8 @@ import {
   Headphones
 } from 'lucide-react'
 
-export interface Episode {
-  id: string
-  title: string
-  description: string
-  duration: number // in seconds
-  series: string
-  seriesColor: string
-  audioUrl?: string // For demo, we'll simulate audio
-  videoUrl?: string // Video URL from Cloudflare R2
-  videoThumbnail?: string // Video thumbnail URL
-  hasVideo?: boolean // Whether episode has video content
-  transcript?: string
-  episodeNumber?: number
-  keyTakeaways?: string[]
-  difficulty?: 'Beginner' | 'Intermediate' | 'Advanced'
-}
-
 interface PodcastPlayerProps {
-  episode: Episode
+  episode: PodcastEpisode
   onClose: () => void
   autoPlay?: boolean
   startTime?: number // Continue from specific time
@@ -67,16 +50,18 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
   const [currentMediaType, setCurrentMediaType] = useState<'audio' | 'video'>(
     preferVideo ? 'video' : 'audio'
   )
+  const [isAudioLoading, setIsAudioLoading] = useState(false)
+  const [isVideoLoading, setIsVideoLoading] = useState(false)
   
   // Check what media types are available
-  const hasAudio = Boolean(episode.audioUrl)
-  const hasVideo = Boolean(episode.hasVideo && episode.videoUrl)
+  const hasAudio = Boolean(episode.audio_url)
+  const hasVideo = Boolean(episode.has_video && episode.video_url)
   const hasBothFormats = hasAudio && hasVideo
   
   // Determine which format to use
   const isVideoEpisode = hasBothFormats 
     ? currentMediaType === 'video' 
-    : Boolean(episode.hasVideo && episode.videoUrl)
+    : Boolean(episode.has_video && episode.video_url)
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -105,13 +90,19 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
   // Handle audio playback for audio episodes
   useEffect(() => {
     if (!isVideoEpisode) {
-      // For audio playback, use the local proxy to handle R2 URLs
-      let audioSource = episode.audioUrl || episode.videoUrl
+      // Prefer dedicated audio URL for instant playback, fallback to video URL
+      let audioSource = episode.audio_url || episode.video_url
       
-      // Convert R2 URLs to local proxy URLs for audio compatibility
+      // Only use proxy for video files (MP4), direct access for audio files (MP3, M4A, etc.)
       if (audioSource && audioSource.includes('bizzin.r2.dev')) {
         const filename = audioSource.split('/').pop()
-        audioSource = `/api/video-proxy/videos/${filename}`
+        const extension = filename?.split('.').pop()?.toLowerCase()
+        
+        // Use proxy only for video files, direct access for audio files
+        if (extension === 'mp4' || extension === 'webm' || extension === 'mov') {
+          audioSource = `/api/video-proxy/videos/${filename}`
+        }
+        // For audio files (mp3, m4a, wav, etc.), use direct URL for instant loading
       }
       
       if (audioSource && audioSource.trim() !== '') {
@@ -121,6 +112,14 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
           audioRef.current.preload = 'metadata'
           
           // Set up audio event listeners
+          audioRef.current.addEventListener('loadstart', () => {
+            setIsAudioLoading(true)
+          })
+          
+          audioRef.current.addEventListener('canplay', () => {
+            setIsAudioLoading(false)
+          })
+          
           audioRef.current.addEventListener('loadedmetadata', () => {
             if (audioRef.current) {
               setActualDuration(audioRef.current.duration)
@@ -185,7 +184,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
         audioRef.current = null
       }
     }
-  }, [isVideoEpisode, episode.audioUrl, episode.videoUrl])
+  }, [isVideoEpisode, episode.audio_url, episode.video_url])
 
   // Handle play/pause for audio
   useEffect(() => {
@@ -355,7 +354,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
             <div className="flex items-center space-x-3">
               <Badge 
                 variant="secondary" 
-                className={episode.seriesColor}
+                className={episode.series_color}
               >
                 {episode.series}
               </Badge>
@@ -459,8 +458,8 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
           {isVideoEpisode && (
             <div className="flex-1 flex flex-col">
               <VideoPlayer
-                videoUrl={episode.videoUrl || ''}
-                thumbnailUrl={episode.videoThumbnail}
+                videoUrl={episode.video_url || ''}
+                thumbnailUrl={episode.video_thumbnail}
                 title={episode.title}
                 onTimeUpdate={handleVideoTimeUpdate}
                 onDurationUpdate={handleVideoDurationUpdate}
@@ -530,9 +529,17 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
               <Button
                 onClick={handlePlayPause}
                 size="lg"
-                className="bg-orange-600 hover:bg-orange-700 text-white rounded-full w-14 h-14"
+                className="bg-orange-600 hover:bg-orange-700 text-white rounded-full w-14 h-14 disabled:opacity-50"
+                disabled={isAudioLoading}
+                data-testid="button-play-pause-audio"
               >
-                {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-1" />}
+                {isAudioLoading ? (
+                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : isPlaying ? (
+                  <Pause className="w-6 h-6" />
+                ) : (
+                  <Play className="w-6 h-6 ml-1" />
+                )}
               </Button>
               
               {/* Skip forward removed - users should not skip ahead in learning content */}
