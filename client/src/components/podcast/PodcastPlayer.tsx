@@ -62,6 +62,18 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
   const isVideoEpisode = hasBothFormats 
     ? currentMediaType === 'video' 
     : Boolean(episode.has_video && episode.video_url)
+    
+  // Debug logging
+  console.log('Player State Debug:', {
+    hasAudio,
+    hasVideo,
+    hasBothFormats,
+    currentMediaType,
+    isVideoEpisode,
+    episode_has_video: episode.has_video,
+    episode_video_url: episode.video_url,
+    episode_audio_url: episode.audio_url
+  })
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
