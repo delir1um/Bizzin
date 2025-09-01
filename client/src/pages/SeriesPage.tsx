@@ -90,6 +90,21 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
   // Get series configuration
   const seriesInfo = seriesConfig[seriesSlug]
 
+  // Helper function to get series-specific colors
+  const getSeriesColor = (seriesName: string, dbColor?: string) => {
+    if (dbColor) return dbColor
+    
+    // Use series-specific colors based on series name
+    const seriesColorMap: Record<string, string> = {
+      'The Journey': 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200',
+      'Self-Development': 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200',
+      'Leadership': 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-200',
+      'Strategy': 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-200'
+    }
+    
+    return seriesColorMap[seriesName] || 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200'
+  }
+
   // Filter episodes for this series and convert to Episode format
   const episodes: Episode[] = useMemo(() => {
     if (!dbEpisodes) return []
@@ -102,7 +117,7 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
         description: ep.description || '',
         duration: ep.duration,
         series: ep.series,
-        seriesColor: ep.series_color || 'bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200',
+        seriesColor: getSeriesColor(ep.series, ep.series_color),
         transcript: ep.transcript || '',
         episodeNumber: ep.episode_number,
         keyTakeaways: ep.key_takeaways,
