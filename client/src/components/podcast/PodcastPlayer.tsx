@@ -507,21 +507,31 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
             </div>
           </div>
 
-          {/* Episode Info - Compact header for audio */}
+          {/* Episode Info - Enhanced header for audio */}
           {!isVideoEpisode && (
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white truncate">
+            <div className="mb-6 text-center">
+              <h3 className="text-2xl font-bold text-white mb-2">
                 {episode.title}
               </h3>
+              {episode.description && (
+                <p className="text-sm text-white/80 leading-relaxed max-w-2xl mx-auto">
+                  {episode.description}
+                </p>
+              )}
             </div>
           )}
           
-          {/* Episode Info - Full header for video */}
+          {/* Episode Info - Enhanced header for video */}
           {isVideoEpisode && (
-            <div className="px-4 pb-2">
-              <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
+            <div className="px-4 pb-3">
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
                 {episode.title}
               </h3>
+              {episode.description && (
+                <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                  {episode.description}
+                </p>
+              )}
             </div>
           )}
 
