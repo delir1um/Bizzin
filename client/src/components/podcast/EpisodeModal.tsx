@@ -96,7 +96,7 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
                 <div className="flex items-center gap-2 mb-2">
                   <Badge 
                     variant="secondary" 
-                    className={`${episode.seriesColor} text-white`}
+                    className={episode.seriesColor}
                   >
                     {episode.series}
                   </Badge>
