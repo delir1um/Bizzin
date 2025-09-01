@@ -438,9 +438,14 @@ export function PodcastPage() {
                     className="bg-orange-600 hover:bg-orange-700 text-white"
                   >
                     <Play className="w-4 h-4 mr-2" />
-                    {currentlyListening.last_media_type === 'video' || 
-                     (currentlyListening.episode?.has_video && !currentlyListening.last_media_type) 
-                     ? 'Continue Watching' : 'Continue Listening'}
+                    {(() => {
+                      // Check database first, then localStorage fallback
+                      const lastMediaType = currentlyListening.last_media_type || 
+                        (currentlyListening.episode ? PodcastService.getStoredMediaTypePreference(currentlyListening.episode.id) : null)
+                      return (lastMediaType === 'video' || 
+                        (currentlyListening.episode?.has_video && !lastMediaType)) 
+                        ? 'Continue Watching' : 'Continue Listening'
+                    })()}
                   </Button>
                 </div>
               </div>

@@ -109,8 +109,11 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
 
   // Get user's last used media type for smart button text
   const episodeProgress = allProgress?.find(p => p.episode_id === episode.id)
-  const lastMediaType = episodeProgress?.last_media_type || 'video'
+  // Try database first, then localStorage fallback, finally default to video
+  const lastMediaType = episodeProgress?.last_media_type || PodcastService.getStoredMediaTypePreference(episode.id) || 'video'
   const hasProgress = episodeProgress && episodeProgress.progress_seconds > 0
+  
+  // Media type preference resolved successfully
 
   return (
     <>
