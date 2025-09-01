@@ -525,35 +525,50 @@ ${new Date().toISOString().split('T')[0]}`;
         res.header('Content-Length', response.ContentLength.toString());
       }
       
-      // Handle range requests for video streaming
+      // For range requests, we need to make a new request to R2 with the range
       const range = req.headers.range;
       if (range && response.ContentLength) {
+        console.log('Range request received:', range);
+        // Close current response and make a new range request
+        const { GetObjectCommand } = await import('@aws-sdk/client-s3');
+        const rangeCommand = new GetObjectCommand({
+          Bucket: BUCKET_NAME,
+          Key: videoKey,
+          Range: range,
+        });
+        
+        const rangeResponse = await s3Client.send(rangeCommand);
+        
         const parts = range.replace(/bytes=/, "").split("-");
         const start = parseInt(parts[0], 10);
         const end = parts[1] ? parseInt(parts[1], 10) : response.ContentLength - 1;
-        const chunksize = (end - start) + 1;
         
         res.status(206);
         res.header('Content-Range', `bytes ${start}-${end}/${response.ContentLength}`);
-        res.header('Content-Length', chunksize.toString());
-      }
-      
-      // Stream the video data
-      if (response.Body) {
-        const stream = response.Body as any;
+        res.header('Content-Length', rangeResponse.ContentLength?.toString() || '0');
         
-        // Handle stream errors
-        stream.on('error', (streamError: any) => {
-          console.error('Stream error:', streamError);
-          if (!res.headersSent) {
-            res.status(500).json({ error: 'Stream error' });
-          }
-        });
-        
-        stream.pipe(res);
+        if (rangeResponse.Body) {
+          const stream = rangeResponse.Body as any;
+          stream.pipe(res);
+        }
       } else {
-        console.error('No body in R2 response');
-        res.status(404).json({ error: 'Video not found' });
+        // Full file request
+        if (response.Body) {
+          const stream = response.Body as any;
+          
+          // Handle stream errors
+          stream.on('error', (streamError: any) => {
+            console.error('Stream error:', streamError);
+            if (!res.headersSent) {
+              res.status(500).json({ error: 'Stream error' });
+            }
+          });
+          
+          stream.pipe(res);
+        } else {
+          console.error('No body in R2 response');
+          res.status(404).json({ error: 'Video not found' });
+        }
       }
       
     } catch (error) {
