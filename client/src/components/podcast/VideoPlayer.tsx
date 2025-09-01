@@ -327,21 +327,24 @@ export function VideoPlayer({
           <div className="space-y-1">
             <div className="relative">
               <Slider
-                value={[currentTime]}
-                max={duration}
+                value={[isLoading ? 0 : currentTime]}
+                max={isLoading ? 100 : duration}
                 step={1}
                 onValueChange={handleSeek}
-                className="w-full"
+                className={`w-full ${isLoading ? 'opacity-30 pointer-events-none' : ''}`}
+                disabled={isLoading}
               />
               {/* Visual indicator for completed progress */}
               <div 
-                className="absolute top-0 left-0 h-2 bg-orange-200/30 rounded-full -z-10"
-                style={{ width: `${(currentTime / duration) * 100}%` }}
+                className={`absolute top-0 left-0 h-2 rounded-full -z-10 ${
+                  isLoading ? 'bg-gray-400/20' : 'bg-orange-200/30'
+                }`}
+                style={{ width: isLoading ? '0%' : `${(currentTime / duration) * 100}%` }}
               />
             </div>
-            <div className="flex justify-between text-xs text-white/80">
-              <span>{formatTime(currentTime)}</span>
-              <span>{formatTime(duration)}</span>
+            <div className={`flex justify-between text-xs ${isLoading ? 'text-white/40' : 'text-white/80'}`}>
+              <span>{isLoading ? '--:--' : formatTime(currentTime)}</span>
+              <span>{isLoading ? '--:--' : formatTime(duration)}</span>
             </div>
             <p className="text-xs text-white/60 text-center">
               {isCompleted 
