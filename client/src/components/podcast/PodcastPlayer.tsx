@@ -64,8 +64,19 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
   const [isMuted, setIsMuted] = useState(false)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
   const [isExpanded, setIsExpanded] = useState(false)
-  // Episodes are either audio or video, not both - no toggle needed
-  const isVideoEpisode = Boolean(episode.hasVideo && episode.videoUrl)
+  const [currentMediaType, setCurrentMediaType] = useState<'audio' | 'video'>(
+    preferVideo ? 'video' : 'audio'
+  )
+  
+  // Check what media types are available
+  const hasAudio = Boolean(episode.audioUrl)
+  const hasVideo = Boolean(episode.hasVideo && episode.videoUrl)
+  const hasBothFormats = hasAudio && hasVideo
+  
+  // Determine which format to use
+  const isVideoEpisode = hasBothFormats 
+    ? currentMediaType === 'video' 
+    : Boolean(episode.hasVideo && episode.videoUrl)
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const updateProgress = useUpdateProgress()
@@ -261,20 +272,51 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
               </Button>
             </div>
             <div className="flex items-center space-x-2">
-              {/* Content type indicator (no toggle needed) */}
-              <div className="flex items-center px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-md">
-                {isVideoEpisode ? (
-                  <>
-                    <Video className="w-4 h-4 mr-1 text-orange-600" />
-                    <span className="text-xs text-slate-700 dark:text-slate-300">Video</span>
-                  </>
-                ) : (
-                  <>
-                    <Headphones className="w-4 h-4 mr-1 text-blue-600" />
-                    <span className="text-xs text-slate-700 dark:text-slate-300">Audio</span>
-                  </>
-                )}
-              </div>
+              {/* Media type controls - show toggle if both formats available */}
+              {hasBothFormats ? (
+                <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-md p-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setCurrentMediaType('video')}
+                    className={`px-2 py-1 text-xs rounded ${
+                      currentMediaType === 'video' 
+                        ? 'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300' 
+                        : 'text-slate-600 dark:text-slate-400'
+                    }`}
+                  >
+                    <Video className="w-3 h-3 mr-1" />
+                    Video
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setCurrentMediaType('audio')}
+                    className={`px-2 py-1 text-xs rounded ${
+                      currentMediaType === 'audio'
+                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
+                        : 'text-slate-600 dark:text-slate-400'
+                    }`}
+                  >
+                    <Headphones className="w-3 h-3 mr-1" />
+                    Audio
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-md">
+                  {isVideoEpisode ? (
+                    <>
+                      <Video className="w-4 h-4 mr-1 text-orange-600" />
+                      <span className="text-xs text-slate-700 dark:text-slate-300">Video</span>
+                    </>
+                  ) : (
+                    <>
+                      <Headphones className="w-4 h-4 mr-1 text-blue-600" />
+                      <span className="text-xs text-slate-700 dark:text-slate-300">Audio</span>
+                    </>
+                  )}
+                </div>
+              )}
               {!isVideoEpisode && (
                 <Button
                   variant="ghost"

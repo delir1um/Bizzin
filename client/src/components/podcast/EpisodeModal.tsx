@@ -52,6 +52,7 @@ const useRelatedEpisodes = (currentEpisode: Episode) => {
 
 export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
   const [showPlayer, setShowPlayer] = useState(false)
+  const [preferredMediaType, setPreferredMediaType] = useState<'audio' | 'video'>('video')
 
   // Get real data from database
   const { data: allEpisodes } = usePodcastEpisodes()
@@ -61,7 +62,10 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
 
   if (!episode) return null
 
-  const handlePlayEpisode = () => {
+  const handlePlayEpisode = (mediaType?: 'audio' | 'video') => {
+    if (mediaType) {
+      setPreferredMediaType(mediaType)
+    }
     setShowPlayer(true)
     onClose() // Close the modal when starting to play
   }
@@ -85,6 +89,11 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
     const mins = Math.floor(seconds / 60)
     return `${mins} min`
   }
+
+  // Check if episode has both audio and video
+  const hasAudio = Boolean(episode.audioUrl)
+  const hasVideo = Boolean(episode.hasVideo && episode.videoUrl)
+  const hasBothFormats = hasAudio && hasVideo
 
   return (
     <>
@@ -114,25 +123,48 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
           </DialogHeader>
 
           <div className="space-y-6">
-            {/* Play Button */}
+            {/* Play Button - Enhanced for dual format episodes */}
             <div className="flex justify-center">
-              <Button
-                onClick={handlePlayEpisode}
-                size="lg"
-                className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3"
-              >
-                {episode.hasVideo && episode.videoUrl ? (
-                  <>
+              {hasBothFormats ? (
+                <div className="flex flex-col sm:flex-row gap-3 items-center">
+                  <Button
+                    onClick={() => handlePlayEpisode('video')}
+                    size="lg"
+                    className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3"
+                  >
                     <Video className="w-5 h-5 mr-2" />
-                    Watch Now
-                  </>
-                ) : (
-                  <>
+                    Watch Video
+                  </Button>
+                  <span className="text-slate-400 dark:text-slate-500 text-sm">or</span>
+                  <Button
+                    onClick={() => handlePlayEpisode('audio')}
+                    size="lg"
+                    variant="outline"
+                    className="border-orange-600 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 px-8 py-3"
+                  >
                     <Play className="w-5 h-5 mr-2" />
-                    Listen Now
-                  </>
-                )}
-              </Button>
+                    Listen Audio
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  onClick={() => handlePlayEpisode()}
+                  size="lg"
+                  className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3"
+                >
+                  {hasVideo ? (
+                    <>
+                      <Video className="w-5 h-5 mr-2" />
+                      Watch Now
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-5 h-5 mr-2" />
+                      Listen Now
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
 
             <Separator />
@@ -302,6 +334,7 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
             onClose={handleClosePlayer}
             autoPlay={true}
             startTime={startTime}
+            preferVideo={preferredMediaType === 'video'}
           />
         )
       })()}
