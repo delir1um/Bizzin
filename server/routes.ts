@@ -324,12 +324,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await s3Client.send(command)
       console.log('Upload successful!')
       
-      // Use public R2 development URL for video access
-      const publicUrl = `https://pub-b3498cd071e1420b9d379a5510ba4bb8.r2.dev/${key}`
+      // Return proxy URL to avoid CORS issues
+      const proxyUrl = `/api/video-proxy/${key}`
       
       res.json({ 
         success: true, 
-        url: publicUrl,
+        url: proxyUrl,
         message: 'Video uploaded successfully'
       })
       
@@ -470,6 +470,77 @@ ${new Date().toISOString().split('T')[0]}`;
       
       res.setHeader('Content-Type', 'text/plain; charset=utf-8');
       res.send(fallbackContent);
+    }
+  });
+
+  // Video proxy endpoint to serve R2 videos with CORS headers
+  app.get('/api/video-proxy/:videoKey(*)', async (req, res) => {
+    try {
+      const videoKey = req.params.videoKey;
+      console.log('Video proxy request for:', videoKey);
+      
+      // Validate environment variables
+      if (!process.env.VITE_CLOUDFLARE_ACCOUNT_ID || !process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID) {
+        return res.status(500).json({ error: 'Server configuration error' });
+      }
+      
+      const { S3Client, GetObjectCommand } = await import('@aws-sdk/client-s3');
+      
+      const BUCKET_NAME = process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || 'bizzin-podcasts';
+      const s3Client = new S3Client({
+        region: 'auto',
+        endpoint: `https://${process.env.VITE_CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+        credentials: {
+          accessKeyId: process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID,
+          secretAccessKey: process.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY,
+        }
+      });
+      
+      const command = new GetObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: videoKey,
+      });
+      
+      const response = await s3Client.send(command);
+      
+      // Set CORS headers
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Range, Content-Type');
+      res.header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
+      
+      // Set appropriate content type and headers for video
+      res.header('Content-Type', response.ContentType || 'video/mp4');
+      res.header('Accept-Ranges', 'bytes');
+      
+      if (response.ContentLength) {
+        res.header('Content-Length', response.ContentLength.toString());
+      }
+      
+      // Handle range requests for video streaming
+      const range = req.headers.range;
+      if (range && response.ContentLength) {
+        const parts = range.replace(/bytes=/, "").split("-");
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : response.ContentLength - 1;
+        const chunksize = (end - start) + 1;
+        
+        res.status(206);
+        res.header('Content-Range', `bytes ${start}-${end}/${response.ContentLength}`);
+        res.header('Content-Length', chunksize.toString());
+      }
+      
+      // Stream the video data
+      if (response.Body) {
+        const stream = response.Body as any;
+        stream.pipe(res);
+      } else {
+        res.status(404).json({ error: 'Video not found' });
+      }
+      
+    } catch (error) {
+      console.error('Video proxy error:', error);
+      res.status(500).json({ error: 'Failed to proxy video' });
     }
   });
 

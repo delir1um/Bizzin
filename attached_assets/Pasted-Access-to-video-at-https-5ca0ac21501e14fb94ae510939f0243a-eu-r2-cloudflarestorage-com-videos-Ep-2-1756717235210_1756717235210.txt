@@ -1,0 +1,35 @@
+Access to video at 'https://5ca0ac21501e14fb94ae510939f0243a.eu.r2.cloudflarestorage.com/videos/Ep%201_final.mp4' from origin 'https://b4a595c1-5278-4619-92c1-c13562ecc1a6-00-28rr7dv01069q.worf.replit.dev' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.Understand this error
+5ca0ac21501e14fb94ae510939f0243a.eu.r2.cloudflarestorage.com/videos/Ep%201_final.mp4:1  GET https://5ca0ac21501e14fb94ae510939f0243a.eu.r2.cloudflarestorage.com/videos/Ep%201_final.mp4 net::ERR_FAILED 400 (Bad Request)Understand this error
+Console.js:61 Video loading failed for: https://5ca0ac21501e14fb94ae510939f0243a.eu.r2.cloudflarestorage.com/videos/Ep 1_final.mp4
+Mt.forEach.n.<computed> @ Console.js:61
+handleError @ VideoPlayer.tsx:93Understand this error
+VideoPlayer.tsx:149 Uncaught (in promise) NotSupportedError: The element has no supported sources.
+togglePlay @ VideoPlayer.tsx:149
+callCallback2 @ chunk-276SZO74.js?v=c9799909:3674
+invokeGuardedCallbackDev @ chunk-276SZO74.js?v=c9799909:3699
+invokeGuardedCallback @ chunk-276SZO74.js?v=c9799909:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-276SZO74.js?v=c9799909:3736
+executeDispatch @ chunk-276SZO74.js?v=c9799909:7014
+processDispatchQueueItemsInOrder @ chunk-276SZO74.js?v=c9799909:7034
+processDispatchQueue @ chunk-276SZO74.js?v=c9799909:7043
+dispatchEventsForPlugins @ chunk-276SZO74.js?v=c9799909:7051
+(anonymous) @ chunk-276SZO74.js?v=c9799909:7174
+batchedUpdates$1 @ chunk-276SZO74.js?v=c9799909:18913
+batchedUpdates @ chunk-276SZO74.js?v=c9799909:3579
+dispatchEventForPluginEventSystem @ chunk-276SZO74.js?v=c9799909:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-276SZO74.js?v=c9799909:5478
+dispatchEvent @ chunk-276SZO74.js?v=c9799909:5472
+dispatchDiscreteEvent @ chunk-276SZO74.js?v=c9799909:5449Understand this error
+injected.js:253  GET https://giahpkiwivxpocikndix.supabase.co/rest/v1/user_podcast_stats?select=* 406 (Not Acceptable)
+window.fetch @ Network.js:219
+apply @ injected.js:253
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4213
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4234
+fulfilled @ @supabase_supabase-js.js?v=c9799909:4186
+Promise.then
+step @ @supabase_supabase-js.js?v=c9799909:4199
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4201
+__awaiter6 @ @supabase_supabase-js.js?v=c9799909:4183
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4224
+then @ @supabase_supabase-js.js?v=c9799909:89Understand this error
+injected.js:253  GET https://giahpkiwivxpocikndix.supabase.co/rest/v1/user_podcast_stats?select=* 406 (Not Acceptable)

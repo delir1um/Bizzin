@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { Badge } from '@/components/ui/badge'
+import { convertToProxyUrl } from '@/lib/videoUtils'
 import { 
   Play, 
   Pause, 
@@ -241,7 +242,7 @@ export function VideoPlayer({
     >
       <video
         ref={videoRef}
-        src={videoUrl}
+        src={convertToProxyUrl(videoUrl)}
         poster={thumbnailUrl}
         className="w-full h-full"
         onClick={togglePlay}
