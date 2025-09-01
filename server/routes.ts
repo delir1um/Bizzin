@@ -473,6 +473,60 @@ ${new Date().toISOString().split('T')[0]}`;
     }
   });
 
+  // R2 file listing endpoint
+  app.get('/api/r2/list-files', async (req, res) => {
+    try {
+      // Import AWS SDK at runtime
+      const { S3Client, ListObjectsV2Command } = await import('@aws-sdk/client-s3')
+      
+      // Validate environment variables
+      if (!process.env.VITE_CLOUDFLARE_ACCOUNT_ID || 
+          !process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID || 
+          !process.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY ||
+          !process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME) {
+        console.error('Missing R2 configuration')
+        return res.status(500).json({ error: 'Server configuration error: Missing R2 credentials' })
+      }
+
+      // Configure R2 client
+      const r2Client = new S3Client({
+        region: 'auto',
+        endpoint: `https://${process.env.VITE_CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+        credentials: {
+          accessKeyId: process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID,
+          secretAccessKey: process.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY,
+        },
+        forcePathStyle: true,
+      })
+
+      const command = new ListObjectsV2Command({
+        Bucket: process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME,
+        MaxKeys: 1000, // Limit results
+      })
+
+      const response = await r2Client.send(command)
+      
+      const files = response.Contents?.map(obj => ({
+        key: obj.Key || '',
+        size: obj.Size || 0,
+        lastModified: obj.LastModified || new Date(),
+        contentType: obj.Key?.split('.').pop()?.toLowerCase() === 'mp4' ? 'video/mp4' : 
+                    obj.Key?.split('.').pop()?.toLowerCase() === 'mp3' ? 'audio/mp3' : 
+                    'application/octet-stream'
+      })) || []
+
+      console.log(`Listed ${files.length} files from R2 bucket`)
+      res.json({ files })
+      
+    } catch (error) {
+      console.error('R2 list files error:', error)
+      res.status(500).json({ 
+        error: 'Failed to list files from storage',
+        details: (error as Error).message 
+      })
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

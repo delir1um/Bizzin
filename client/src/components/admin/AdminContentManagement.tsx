@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -26,6 +26,7 @@ import {
 } from "lucide-react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { supabase } from "@/lib/supabase"
+import { r2Service } from "@/lib/cloudflareR2Service"
 import { format } from "date-fns"
 
 interface PodcastEpisode {
@@ -388,6 +389,114 @@ export function AdminContentManagement() {
   )
 }
 
+interface R2File {
+  key: string
+  size: number
+  lastModified: Date
+  contentType?: string
+}
+
+interface FileBrowserProps {
+  onSelectFile: (fileUrl: string) => void
+  fileType: 'audio' | 'video'
+  currentValue?: string
+}
+
+function FileBrowser({ onSelectFile, fileType, currentValue }: FileBrowserProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  
+  const { data: r2Files, isLoading } = useQuery({
+    queryKey: ['r2-files'],
+    queryFn: () => r2Service.listFiles(),
+    enabled: isOpen
+  })
+  
+  const filteredFiles = r2Files?.files.filter(file => {
+    const extension = file.key.split('.').pop()?.toLowerCase()
+    if (fileType === 'audio') {
+      return ['mp3', 'wav', 'aac', 'm4a'].includes(extension || '')
+    }
+    if (fileType === 'video') {
+      return ['mp4', 'webm', 'mov', 'avi'].includes(extension || '')
+    }
+    return false
+  }) || []
+  
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 B'
+    const k = 1024
+    const sizes = ['B', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  }
+  
+  const getPublicUrl = (key: string) => {
+    return `https://${import.meta.env.VITE_CLOUDFLARE_R2_PUBLIC_DOMAIN}/${key}`
+  }
+  
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button type="button" variant="outline" className="w-full">
+          {currentValue ? `Selected: ${currentValue.split('/').pop()}` : `Browse ${fileType} files`}
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-4xl max-h-[80vh]">
+        <DialogHeader>
+          <DialogTitle>Select {fileType === 'audio' ? 'Audio' : 'Video'} File</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          {isLoading ? (
+            <div className="space-y-2">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-16 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div>
+              ))}
+            </div>
+          ) : filteredFiles.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-slate-600 dark:text-slate-400">No {fileType} files found in storage</p>
+            </div>
+          ) : (
+            <div className="max-h-96 overflow-y-auto space-y-2">
+              {filteredFiles.map((file) => (
+                <Card 
+                  key={file.key} 
+                  className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                  onClick={() => {
+                    onSelectFile(getPublicUrl(file.key))
+                    setIsOpen(false)
+                  }}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="font-medium">{file.key.split('/').pop()}</div>
+                        <div className="text-sm text-slate-600 dark:text-slate-400">
+                          {formatFileSize(file.size)} • {format(new Date(file.lastModified), 'MMM d, yyyy')}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {fileType === 'video' ? (
+                          <Video className="w-5 h-5 text-orange-600" />
+                        ) : (
+                          <Headphones className="w-5 h-5 text-blue-600" />
+                        )}
+                        <Badge variant="outline">
+                          {file.key.split('.').pop()?.toUpperCase()}
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 interface EpisodeFormProps {
   episode?: PodcastEpisode
   onClose: () => void
@@ -502,27 +611,43 @@ function EpisodeForm({ episode, onClose }: EpisodeFormProps) {
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="audio_url">Audio URL</Label>
-          <Input
-            id="audio_url"
-            value={formData.audio_url}
-            onChange={(e) => setFormData(prev => ({ ...prev, audio_url: e.target.value }))}
-            placeholder="https://..."
-          />
+          <Label>Audio File</Label>
+          <div className="space-y-2">
+            <FileBrowser 
+              fileType="audio"
+              currentValue={formData.audio_url}
+              onSelectFile={(url) => setFormData(prev => ({ ...prev, audio_url: url }))}
+            />
+            <Input
+              placeholder="Or enter audio URL manually"
+              value={formData.audio_url}
+              onChange={(e) => setFormData(prev => ({ ...prev, audio_url: e.target.value }))}
+            />
+          </div>
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="video_url">Video URL (optional)</Label>
-          <Input
-            id="video_url"
-            value={formData.video_url}
-            onChange={(e) => setFormData(prev => ({ 
-              ...prev, 
-              video_url: e.target.value,
-              has_video: !!e.target.value
-            }))}
-            placeholder="https://..."
-          />
+          <Label>Video File (optional)</Label>
+          <div className="space-y-2">
+            <FileBrowser 
+              fileType="video"
+              currentValue={formData.video_url}
+              onSelectFile={(url) => setFormData(prev => ({ 
+                ...prev, 
+                video_url: url,
+                has_video: !!url
+              }))}
+            />
+            <Input
+              placeholder="Or enter video URL manually"
+              value={formData.video_url}
+              onChange={(e) => setFormData(prev => ({ 
+                ...prev, 
+                video_url: e.target.value,
+                has_video: !!e.target.value
+              }))}
+            />
+          </div>
         </div>
       </div>
 

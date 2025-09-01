@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
 // Cloudflare R2 Configuration
@@ -178,6 +178,29 @@ class CloudflareR2Service {
   extractVideoKey(videoUrl: string): string {
     const url = new URL(videoUrl)
     return url.pathname.substring(1) // Remove leading slash
+  }
+
+  /**
+   * List files in R2 bucket (frontend version - calls backend API)
+   */
+  async listFiles(): Promise<{ files: Array<{ key: string; size: number; lastModified: Date; contentType?: string }> }> {
+    try {
+      const response = await fetch('/api/r2/list-files', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to list files: ${response.status}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Error listing R2 files:', error)
+      throw new Error('Failed to list files from storage')
+    }
   }
 }
 
