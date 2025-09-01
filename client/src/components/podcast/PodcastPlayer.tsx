@@ -405,7 +405,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
 
   return (
     <div className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-50 ${isVideoEpisode ? 'flex items-center justify-center p-4' : 'flex items-end'}`}>
-      <Card className={`${isVideoEpisode ? 'max-w-6xl mx-auto h-[90vh] w-full' : 'w-full h-auto'} bg-white dark:bg-slate-900 ${isVideoEpisode ? 'rounded-xl' : 'rounded-t-xl'} border-0 transition-all duration-300 overflow-hidden`}>
+      <Card className={`${isVideoEpisode ? 'max-w-6xl mx-auto h-[90vh] w-full' : 'w-full h-auto'} ${isVideoEpisode ? 'bg-white dark:bg-slate-900' : 'bg-gradient-to-t from-black/90 via-black/70 to-black/50'} ${isVideoEpisode ? 'rounded-xl' : 'rounded-t-xl'} border-0 transition-all duration-300 overflow-hidden`}>
         <CardContent className={`${isVideoEpisode ? 'p-0 h-full flex flex-col' : 'p-6'}`}>
           {/* Header */}
           <div className={`flex items-center justify-between ${isVideoEpisode ? 'p-4 pb-2' : 'mb-4'}`}>
@@ -568,18 +568,18 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                 />
                 {/* Visual indicator for completed progress */}
                 <div 
-                  className="absolute top-0 left-0 h-2 bg-orange-200 dark:bg-orange-800 rounded-full -z-10"
+                  className="absolute top-0 left-0 h-2 bg-orange-200/30 rounded-full -z-10"
                   style={{ width: `${displayProgress}%` }}
                 />
               </div>
-              <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
+              <div className="flex justify-between text-xs text-white/80">
                 <span>{formatTime(currentTime)}</span>
-                <span className="text-orange-600 dark:text-orange-400 font-medium">
+                <span className="text-orange-400 font-medium">
                   {Math.round((currentTime / actualDuration) * 100)}%
                 </span>
                 <span>{formatTime(actualDuration)}</span>
               </div>
-              <p className="text-xs text-slate-400 dark:text-slate-500 text-center">
+              <p className="text-xs text-white/60 text-center">
                 {isCompleted 
                   ? "Episode completed! You can navigate freely through the content" 
                   : "You can only replay content you've already completed"
@@ -604,7 +604,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                       setCurrentTime(newTime)
                     }
                   }}
-                  className="text-slate-600 dark:text-slate-400"
+                  className="text-white hover:bg-white/20"
                   title="Replay last 10 seconds"
                 >
                   <div className="flex items-center space-x-1">
@@ -618,10 +618,10 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                   variant="ghost"
                   size="sm"
                   onClick={skipBackward}
-                  className="text-slate-600 dark:text-slate-400"
+                  className="text-white hover:bg-white/20"
                   title="Skip back 15 seconds"
                 >
-                  <SkipBack className="w-5 h-5" />
+                  <SkipBack className="w-4 h-4" />
                 </Button>
               </div>
               
@@ -655,14 +655,22 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                       setCurrentTime(newTime)
                     }
                   }}
-                  className="text-slate-600 dark:text-slate-400"
+                  className="text-white hover:bg-white/20"
                   title="Skip forward 15 seconds (up to your progress)"
                 >
-                  <SkipForward className="w-5 h-5" />
+                  <SkipForward className="w-4 h-4" />
                 </Button>
                 
-                {/* Spacer to balance left side */}
-                <div className="w-[68px]"></div>
+                {/* Speed control */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={cyclePlaybackSpeed}
+                  className="text-white hover:bg-white/20"
+                  title="Change playback speed"
+                >
+                  <span className="text-xs font-mono">{playbackSpeed}x</span>
+                </Button>
               </div>
             </div>
           )}
@@ -674,7 +682,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                 variant="ghost"
                 size="sm"
                 onClick={toggleMute}
-                className="text-slate-600 dark:text-slate-400"
+                className="text-white hover:bg-white/20"
               >
                 {isMuted || volume === 0 ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
               </Button>
@@ -685,7 +693,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                 onValueChange={handleVolumeChange}
                 className="flex-1 max-w-24"
               />
-              <span className="text-xs text-slate-500 dark:text-slate-400 w-8">
+              <span className="text-xs text-white/80 w-8">
                 {isMuted ? 0 : volume}%
               </span>
             </div>
