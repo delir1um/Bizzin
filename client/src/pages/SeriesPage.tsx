@@ -19,9 +19,9 @@ import {
 } from 'lucide-react'
 import { AnimatedGrid, AnimatedItem } from '@/components/ui/animated-card'
 import { EpisodeModal } from '@/components/podcast/EpisodeModal'
-import { Episode } from '@/components/podcast/PodcastPlayer'
+import { PodcastPlayer } from '@/components/podcast/PodcastPlayer'
 import { usePodcastEpisodes, useSeriesProgress, useCompletedEpisodes, usePodcastProgress } from '@/hooks/usePodcastProgress'
-import { PodcastService } from '@/lib/podcastService'
+import { PodcastService, PodcastEpisode } from '@/lib/podcastService'
 
 // Series configuration with metadata (UI styling only)
 const seriesConfig: Record<string, {
@@ -67,7 +67,7 @@ interface SeriesPageProps {
 
 export function SeriesPage({ seriesSlug }: SeriesPageProps) {
   const [, setLocation] = useLocation()
-  const [selectedEpisode, setSelectedEpisode] = useState<Episode | null>(null)
+  const [selectedEpisode, setSelectedEpisode] = useState<PodcastEpisode | null>(null)
   const [showEpisodeModal, setShowEpisodeModal] = useState(false)
 
   // Fetch real episode data from database
@@ -106,7 +106,7 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
   }
 
   // Filter episodes for this series and convert to Episode format
-  const episodes: Episode[] = useMemo(() => {
+  const episodes: PodcastEpisode[] = useMemo(() => {
     if (!dbEpisodes) return []
     
     return dbEpisodes
@@ -190,7 +190,7 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
     )
   }
 
-  const handleEpisodeClick = (episode: Episode) => {
+  const handleEpisodeClick = (episode: PodcastEpisode) => {
     setSelectedEpisode(episode)
     setShowEpisodeModal(true)
   }
@@ -302,16 +302,19 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
                 const progressPercentage = hasProgress ? PodcastService.getCompletionPercentage(episodeProgress.progress_seconds, episode.duration) : 0
                 const isEpisodeCompleted = hasProgress ? PodcastService.isEpisodeCompleted(episodeProgress.progress_seconds, episode.duration) : false
                 
-                // Determine button text and icon based on video/audio and progress
-                const isVideoEpisode = episode.hasVideo && episode.videoUrl
-                let buttonText = isVideoEpisode ? 'Watch Now' : 'Listen Now'
-                let buttonIcon = isVideoEpisode ? <Video className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />
+                // Determine button text and icon based on last media type used or episode capability
+                const userLastMediaType = episodeProgress?.last_media_type
+                const episodeHasVideo = episode.has_video && episode.video_url
+                
+                // Use last media type if available, otherwise default to episode capability
+                let buttonText = (userLastMediaType === 'video' || (episodeHasVideo && !userLastMediaType)) ? 'Watch Now' : 'Listen Now'
+                let buttonIcon = (userLastMediaType === 'video' || (episodeHasVideo && !userLastMediaType)) ? <Video className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />
                 
                 if (isCompleted) {
-                  buttonText = isVideoEpisode ? 'Watch Again' : 'Listen Again'
+                  buttonText = (userLastMediaType === 'video' || (episodeHasVideo && !userLastMediaType)) ? 'Watch Again' : 'Listen Again'
                   buttonIcon = <CheckCircle2 className="w-4 h-4 mr-2" />
                 } else if (hasProgress) {
-                  buttonText = isVideoEpisode ? 'Continue Watching' : 'Continue Listening'
+                  buttonText = (userLastMediaType === 'video' || (episodeHasVideo && !userLastMediaType)) ? 'Continue Watching' : 'Continue Listening'
                   buttonIcon = <Play className="w-4 h-4 mr-2" />
                 }
 

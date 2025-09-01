@@ -419,7 +419,9 @@ export function PodcastPage() {
                     className="bg-orange-600 hover:bg-orange-700 text-white"
                   >
                     <Play className="w-4 h-4 mr-2" />
-                    {currentlyListening.episode?.has_video ? 'Continue Watching' : 'Continue Listening'}
+                    {currentlyListening.last_media_type === 'video' || 
+                     (currentlyListening.episode?.has_video && !currentlyListening.last_media_type) 
+                     ? 'Continue Watching' : 'Continue Listening'}
                   </Button>
                 </div>
               </div>
@@ -495,7 +497,7 @@ export function PodcastPage() {
                             : episode.description}
                         </CardDescription>
                       </div>
-                      <Badge variant="secondary" className={episode.seriesColor}>
+                      <Badge variant="secondary" className={episode.series_color}>
                         {episode.series}
                       </Badge>
                     </div>
@@ -507,7 +509,7 @@ export function PodcastPage() {
                           <Clock className="w-4 h-4 mr-1" />
                           {Math.round(episode.duration / 60)} min
                         </div>
-                        {episode.hasVideo ? (
+                        {episode.has_video ? (
                           <div className="flex items-center text-orange-600">
                             <Video className="w-4 h-4 mr-1" />
                             <span className="text-xs">Video</span>
@@ -533,18 +535,22 @@ export function PodcastPage() {
                       const hasProgress = episodeProgress && episodeProgress.progress_seconds > 0
                       const progressPercentage = hasProgress ? PodcastService.getCompletionPercentage(episodeProgress.progress_seconds, episode.duration) : 0
                       
-                      // Determine button text and icon based on content type
-                      let buttonText = episode.hasVideo && episode.videoUrl ? 'Watch Now' : 'Listen Now'
-                      let buttonIcon = episode.hasVideo && episode.videoUrl ? 
+                      // Determine button text and icon based on last media type used or episode capability
+                      const userLastMediaType = episodeProgress?.last_media_type
+                      const episodeHasVideo = episode.has_video && episode.video_url
+                      
+                      // Use last media type if available, otherwise default to episode capability
+                      let buttonText = (userLastMediaType === 'video' || (episodeHasVideo && !userLastMediaType)) ? 'Watch Now' : 'Listen Now'
+                      let buttonIcon = (userLastMediaType === 'video' || (episodeHasVideo && !userLastMediaType)) ? 
                         <Video className="w-4 h-4 mr-2" /> : 
                         <Play className="w-4 h-4 mr-2" />
                       
                       if (isCompleted) {
-                        buttonText = episode.hasVideo && episode.videoUrl ? 'Watch Again' : 'Listen Again'
+                        buttonText = (userLastMediaType === 'video' || (episodeHasVideo && !userLastMediaType)) ? 'Watch Again' : 'Listen Again'
                         buttonIcon = <CheckCircle2 className="w-4 h-4 mr-2" />
                       } else if (hasProgress) {
-                        buttonText = episode.hasVideo && episode.videoUrl ? 'Continue Watching' : 'Continue Listening'
-                        buttonIcon = episode.hasVideo && episode.videoUrl ? 
+                        buttonText = (userLastMediaType === 'video' || (episodeHasVideo && !userLastMediaType)) ? 'Continue Watching' : 'Continue Listening'
+                        buttonIcon = (userLastMediaType === 'video' || (episodeHasVideo && !userLastMediaType)) ? 
                           <Video className="w-4 h-4 mr-2" /> : 
                           <Play className="w-4 h-4 mr-2" />
                       }
