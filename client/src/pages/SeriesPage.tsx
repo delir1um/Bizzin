@@ -14,7 +14,8 @@ import {
   Users,
   Award,
   Mic,
-  TrendingUp
+  TrendingUp,
+  Video
 } from 'lucide-react'
 import { AnimatedGrid, AnimatedItem } from '@/components/ui/animated-card'
 import { EpisodeModal } from '@/components/podcast/EpisodeModal'
@@ -284,15 +285,16 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
                 const hasProgress = episodeProgress && episodeProgress.progress_seconds > 0
                 const progressPercentage = hasProgress ? Math.round((episodeProgress.progress_seconds / episode.duration) * 100) : 0
                 
-                // Determine button text and icon
-                let buttonText = 'Listen Now'
-                let buttonIcon = <Play className="w-4 h-4 mr-2" />
+                // Determine button text and icon based on video/audio and progress
+                const isVideoEpisode = episode.hasVideo && episode.videoUrl
+                let buttonText = isVideoEpisode ? 'Watch Now' : 'Listen Now'
+                let buttonIcon = isVideoEpisode ? <Video className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />
                 
                 if (isCompleted) {
-                  buttonText = 'Listen Again'
+                  buttonText = isVideoEpisode ? 'Watch Again' : 'Listen Again'
                   buttonIcon = <CheckCircle2 className="w-4 h-4 mr-2" />
                 } else if (hasProgress) {
-                  buttonText = 'Continue Listening'
+                  buttonText = isVideoEpisode ? 'Continue Watching' : 'Continue Listening'
                   buttonIcon = <Play className="w-4 h-4 mr-2" />
                 }
 
