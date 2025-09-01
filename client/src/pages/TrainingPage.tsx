@@ -555,7 +555,8 @@ export function PodcastPage() {
                       const progressPercentage = hasProgress ? PodcastService.getCompletionPercentage(episodeProgress.progress_seconds, episode.duration) : 0
                       
                       // Determine button text and icon based on last media type used or episode capability
-                      const userLastMediaType = episodeProgress?.last_media_type
+                      // Try database first, then localStorage fallback
+                      const userLastMediaType = episodeProgress?.last_media_type || PodcastService.getStoredMediaTypePreference(episode.id)
                       const episodeHasVideo = episode.has_video && episode.video_url
                       
                       // Use last media type if available, otherwise default to episode capability

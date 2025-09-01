@@ -209,13 +209,37 @@ export class PodcastService {
         updateData.last_media_type = mediaType
       }
 
-      const { error } = await supabase
+      // First attempt: try with last_media_type
+      let { error } = await supabase
         .from('user_podcast_progress')
         .upsert(updateData, {
           onConflict: 'user_id,episode_id'
         })
       
-      if (error) {
+      // If schema cache error, retry without last_media_type
+      if (error && error.code === 'PGRST204' && error.message?.includes('last_media_type')) {
+        console.warn('Schema cache issue detected, retrying without last_media_type:', error)
+        
+        // Remove problematic field and retry
+        const fallbackData = { ...updateData }
+        delete fallbackData.last_media_type
+        
+        const { error: retryError } = await supabase
+          .from('user_podcast_progress')
+          .upsert(fallbackData, {
+            onConflict: 'user_id,episode_id'
+          })
+        
+        if (retryError) {
+          console.error('Fallback update also failed:', retryError)
+        } else {
+          console.log('Progress saved successfully without media type')
+          // Store media type preference in localStorage as fallback
+          if (mediaType) {
+            this.storeMediaTypePreference(episodeId, mediaType)
+          }
+        }
+      } else if (error) {
         console.error('Failed to update progress:', error)
         // Don't throw to prevent UI disruption
       }
@@ -333,5 +357,31 @@ export class PodcastService {
   // Check if episode is completed (95% threshold)
   static isEpisodeCompleted(progressSeconds: number, totalSeconds: number): boolean {
     return progressSeconds >= (totalSeconds * 0.95)
+  }
+
+  // Fallback method to store media type preference in localStorage
+  static storeMediaTypePreference(episodeId: string, mediaType: 'audio' | 'video'): void {
+    try {
+      const key = `podcast_media_type_${episodeId}`
+      localStorage.setItem(key, mediaType)
+      console.log('📱 [LOCALSTORAGE] Stored media type preference:', { episodeId, mediaType })
+    } catch (error) {
+      console.warn('Failed to store media type preference in localStorage:', error)
+    }
+  }
+
+  // Fallback method to retrieve media type preference from localStorage
+  static getStoredMediaTypePreference(episodeId: string): 'audio' | 'video' | null {
+    try {
+      const key = `podcast_media_type_${episodeId}`
+      const stored = localStorage.getItem(key)
+      if (stored === 'audio' || stored === 'video') {
+        console.log('📱 [LOCALSTORAGE] Retrieved media type preference:', { episodeId, mediaType: stored })
+        return stored
+      }
+    } catch (error) {
+      console.warn('Failed to retrieve media type preference from localStorage:', error)
+    }
+    return null
   }
 }

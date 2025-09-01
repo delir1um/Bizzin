@@ -240,6 +240,13 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
   useEffect(() => {
     return () => {
       if (currentTime > 0) {
+        console.log('🔚 [UNMOUNT SAVE] Saving progress on unmount:', {
+          episodeId: episode.id,
+          currentTime,
+          actualDuration,
+          isVideoEpisode,
+          mediaType: isVideoEpisode ? 'video' : 'audio'
+        });
         updateProgress.mutate({
           episodeId: episode.id,
           progressSeconds: Math.floor(currentTime),
@@ -248,7 +255,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
         })
       }
     }
-  }, []) // Empty dependency array to only run on unmount
+  }, [currentTime, actualDuration, isVideoEpisode, episode.id, updateProgress]) // Include dependencies
 
   // Handle close with progress save
   const handleClose = () => {
@@ -270,6 +277,13 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
     
     // Save final progress before closing
     if (currentTime > 0) {
+      console.log('🚪 [CLOSE SAVE] Saving progress on close:', {
+        episodeId: episode.id,
+        currentTime,
+        actualDuration,
+        isVideoEpisode,
+        mediaType: isVideoEpisode ? 'video' : 'audio'
+      });
       updateProgress.mutate({
         episodeId: episode.id,
         progressSeconds: Math.floor(currentTime),
