@@ -364,7 +364,17 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
                         
                         <Button 
                           className="w-full bg-orange-600 hover:bg-orange-700 text-white"
-                          onClick={() => handleEpisodeClick(episode)}
+                          onClick={() => {
+                            console.log('🔍 [CLICK LOG] SeriesPage - Episode button clicked:', {
+                              episodeId: episode.id,
+                              title: episode.title,
+                              buttonText,
+                              lastMediaType: episodeProgress?.last_media_type,
+                              hasProgress,
+                              isCompleted
+                            });
+                            handleEpisodeClick(episode)
+                          }}
                         >
                           {buttonIcon}
                           {buttonText}

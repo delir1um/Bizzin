@@ -87,11 +87,30 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
       
       // Only save if we have meaningful progress (more than 3 seconds)
       if (time >= 3) {
+        const mediaType = isVideoEpisode ? 'video' : 'audio';
+        console.log('💾 [DATABASE SAVE] Attempting to save progress:', {
+          episodeId: episode.id,
+          progressSeconds: Math.floor(time),
+          episodeDuration: Math.floor(actualDuration),
+          mediaType,
+          currentMediaType,
+          isVideoEpisode,
+          lastSaveTime: lastSaveTime.current,
+          timeDifference: time - lastSaveTime.current
+        });
+        
         updateProgress.mutate({
           episodeId: episode.id,
           progressSeconds: Math.floor(time),
           episodeDuration: Math.floor(actualDuration), // Use actual media duration
-          mediaType: isVideoEpisode ? 'video' : 'audio'
+          mediaType
+        }, {
+          onSuccess: (data) => {
+            console.log('✅ [DATABASE SAVE] Progress saved successfully:', data);
+          },
+          onError: (error) => {
+            console.error('❌ [DATABASE SAVE] Failed to save progress:', error);
+          }
         })
         lastSaveTime.current = time
       }
@@ -386,6 +405,16 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                     variant="ghost"
                     size="sm"
                     onClick={() => {
+                      console.log('🔍 [CLICK LOG] PodcastPlayer - Video toggle clicked:', {
+                        episodeId: episode.id,
+                        title: episode.title,
+                        previousMediaType: currentMediaType,
+                        newMediaType: 'video',
+                        currentTime,
+                        hasAudio,
+                        hasVideo,
+                        hasBothFormats
+                      });
                       setCurrentMediaType('video')
                       // Pause audio when switching to video
                       if (audioRef.current) {
@@ -405,6 +434,16 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                     variant="ghost"
                     size="sm"
                     onClick={() => {
+                      console.log('🔍 [CLICK LOG] PodcastPlayer - Audio toggle clicked:', {
+                        episodeId: episode.id,
+                        title: episode.title,
+                        previousMediaType: currentMediaType,
+                        newMediaType: 'audio',
+                        currentTime,
+                        hasAudio,
+                        hasVideo,
+                        hasBothFormats
+                      });
                       setCurrentMediaType('audio')
                       // Continue with the same progress when switching to audio
                       setIsPlaying(false) // Reset play state for smooth transition

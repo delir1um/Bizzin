@@ -64,6 +64,17 @@ export function EpisodeModal({ episode, isOpen, onClose }: EpisodeModalProps) {
   if (!episode) return null
 
   const handlePlayEpisode = (mediaType?: 'audio' | 'video') => {
+    console.log('🔍 [CLICK LOG] EpisodeModal - Play button clicked:', {
+      episodeId: episode.id,
+      title: episode.title,
+      clickedMediaType: mediaType,
+      currentLastMediaType: lastMediaType,
+      hasProgress,
+      hasAudio,
+      hasVideo,
+      hasBothFormats
+    });
+    
     if (mediaType) {
       setPreferredMediaType(mediaType)
     }

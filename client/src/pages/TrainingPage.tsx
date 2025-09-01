@@ -61,6 +61,8 @@ export function PodcastPage() {
   }
 
   const handleContinueListening = () => {
+    console.log('🔍 [CLICK LOG] TrainingPage - Continue button clicked');
+    
     // Find first episode with progress from real database data
     if (episodes.length > 0 && allProgress) {
       // Find episode with most recent progress
@@ -70,9 +72,18 @@ export function PodcastPage() {
       })
       
       if (episodeWithProgress) {
+        const progress = allProgress.find(p => p.episode_id === episodeWithProgress.id);
+        console.log('🔍 [CLICK LOG] Found episode with progress:', {
+          episodeId: episodeWithProgress.id,
+          title: episodeWithProgress.title,
+          progressSeconds: progress?.progress_seconds,
+          lastMediaType: progress?.last_media_type,
+          hasProgress: !!progress
+        });
         setSelectedEpisode(episodeWithProgress)
         setShowPlayer(true)
       } else {
+        console.log('🔍 [CLICK LOG] No progress found, starting first episode:', episodes[0]?.title);
         // No progress found, start first episode
         setSelectedEpisode(episodes[0])
         setShowPlayer(true)
@@ -411,6 +422,14 @@ export function PodcastPage() {
                 <div className="mt-4 md:mt-0 md:ml-6">
                   <Button 
                     onClick={() => {
+                      console.log('🔍 [CLICK LOG] Continue Learning - Button clicked:', {
+                        episodeId: currentlyListening.episode?.id,
+                        title: currentlyListening.episode?.title,
+                        lastMediaType: currentlyListening.last_media_type,
+                        hasVideo: currentlyListening.episode?.has_video,
+                        progressSeconds: currentlyListening.progress_seconds
+                      });
+                      
                       if (currentlyListening.episode) {
                         setSelectedEpisode(currentlyListening.episode)
                         setShowPlayer(true)
@@ -569,7 +588,19 @@ export function PodcastPage() {
                           
                           <Button 
                             className="w-full bg-orange-600 hover:bg-orange-700 text-white"
-                            onClick={() => handleEpisodeClick(episode)}
+                            onClick={() => {
+                              console.log('🔍 [CLICK LOG] Featured Episodes - Episode card clicked:', {
+                                episodeId: episode.id,
+                                title: episode.title,
+                                buttonText,
+                                userLastMediaType,
+                                episodeHasVideo,
+                                hasProgress,
+                                isCompleted,
+                                progressSeconds: episodeProgress?.progress_seconds
+                              });
+                              handleEpisodeClick(episode)
+                            }}
                           >
                             {buttonIcon}
                             {buttonText}
