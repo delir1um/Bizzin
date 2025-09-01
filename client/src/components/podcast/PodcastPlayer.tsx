@@ -134,9 +134,11 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
           })
         }
         
-        // Set the source
-        if (audioRef.current.src !== audioSource) {
-          audioRef.current.src = audioSource
+        // Set the source - ensure it's a full URL for audio element
+        const fullAudioSource = audioSource.startsWith('/') ? `${window.location.origin}${audioSource}` : audioSource
+        if (audioRef.current.src !== fullAudioSource) {
+          console.log('Setting audio source:', fullAudioSource)
+          audioRef.current.src = fullAudioSource
           audioRef.current.load() // Reload with new source
         }
         
