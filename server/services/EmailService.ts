@@ -900,16 +900,24 @@ export class EmailService {
     const currentHour = new Date().getHours();
     const partOfDay = currentHour < 12 ? 'morning' : currentHour < 17 ? 'afternoon' : 'evening';
 
-    // Get fresh goal and journal data for accurate state determination
+    // Use the actual goal and journal data passed from the email generation
     const goals = additionalData?.goals || [];
     const recentEntries = additionalData?.recentEntries || [];
     
-    // Calculate stats with proper logic
-    const allGoals = goals || [];
+    // Calculate stats with proper logic - USE REAL DATA
+    const allGoals = goals;
     const activeGoals = allGoals.filter((g: any) => ['in_progress', 'not_started'].includes(g.status));
     const completedGoals = allGoals.filter((g: any) => g.status === 'completed');
     const totalGoals = allGoals.length;
     const successRate = totalGoals > 0 ? Math.round((completedGoals.length / totalGoals) * 100) : 0;
+
+    console.log('📊 Smart Template Data Stats:', {
+      totalGoals,
+      activeGoals: activeGoals.length,
+      completedGoals: completedGoals.length,
+      successRate,
+      goalData: goals.map((g: any) => ({ title: g.title, status: g.status }))
+    });
 
     // Journal status with no contradictions
     const thisWeekEntries = this.getEntriesThisWeek(recentEntries || []);
