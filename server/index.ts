@@ -42,17 +42,9 @@ app.use((req, res, next) => {
   // Add Hugging Face API routes
   app.use('/api/huggingface', huggingfaceRouter);
   
-  // Add Email API routes
+  // Add Email API routes - unified email management
   const emailRoutes = await import('./routes/email.js');
   app.use('/api/email', emailRoutes.default);
-  
-  // Add Email Queue API routes
-  const emailQueueRoutes = await import('./routes/email-queue.js');
-  app.use('/api/email-queue', emailQueueRoutes.default);
-  
-  // Add Simple Email API routes
-  const simpleEmailRoutes = await import('./routes/simple-email.js');
-  app.use('/api/simple-email', simpleEmailRoutes.default);
   
   // Add Podcast API routes
   const podcastRoutes = await import('./routes/podcast.js');
@@ -60,7 +52,8 @@ app.use((req, res, next) => {
   
   const server = await registerRoutes(app);
   
-  // Initialize Simple Email Scheduler
+  // Initialize single email system - SimpleEmailScheduler (most reliable for this use case)
+  console.log('📧 Initializing unified email system...');
   const { simpleEmailScheduler } = await import('./services/SimpleEmailScheduler.js');
   simpleEmailScheduler.start().catch(error => {
     console.error('❌ Failed to start email scheduler:', error);

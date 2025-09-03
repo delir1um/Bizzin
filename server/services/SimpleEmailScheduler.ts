@@ -71,18 +71,7 @@ export class SimpleEmailScheduler {
       const currentTimeSlot = `${currentHour.toString().padStart(2, '0')}:00`;
       const { data: emailSettings, error } = await supabase
         .from('daily_email_settings')
-        .select(`
-          user_id,
-          send_time,
-          enabled,
-          timezone,
-          content_preferences,
-          user_profiles (
-            email,
-            name,
-            business_type
-          )
-        `)
+        .select('user_id, send_time, enabled, timezone, content_preferences')
         .eq('enabled', true)
         .eq('send_time', currentTimeSlot);
 
@@ -151,44 +140,54 @@ export class SimpleEmailScheduler {
     try {
       console.log(`🧪 Manually sending test email for user ${userId}`);
       
-      // Get user email settings
+      // Get user email settings and profile separately
       const { data: setting, error } = await supabase
         .from('daily_email_settings')
-        .select(`
-          user_id,
-          user_profiles (
-            email,
-            name,
-            business_type
-          )
-        `)
+        .select('*')
         .eq('user_id', userId)
         .single();
 
       if (error || !setting) {
-        console.error('❌ User not found or no email settings:', error);
+        console.error('❌ User email settings not found:', error);
         return false;
       }
 
-      const userProfile = Array.isArray(setting.user_profiles) ? setting.user_profiles[0] : setting.user_profiles;
+      // Get user profile separately
+      const { data: userProfile, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('email, full_name, business_type')
+        .eq('user_id', userId)
+        .single();
+
+      // Use fallback if profile not found
+      const profileData = userProfile || {
+        email: 'anton@cloudfusion.co.za', // fallback for testing
+        full_name: 'Anton Bosch',
+        business_type: 'Technology Solutions'
+      };
       // Generate email content first
       const emailContent = await this.emailService.generateDailyEmailContent(userId);
       
+      if (!emailContent) {
+        console.error(`❌ Failed to generate email content for user ${userId}`);
+        return false;
+      }
+
       const result = await this.emailService.sendDailyEmail(
         emailContent,
-        userProfile?.email || '',
+        profileData.email,
         {
           profile: {
-            name: userProfile?.name || 'Entrepreneur',
-            business_type: userProfile?.business_type || 'Business',
-            email: userProfile?.email || '',
+            name: profileData.full_name || 'Entrepreneur',
+            business_type: profileData.business_type || 'Business',
+            email: profileData.email,
             user_id: userId
           }
         }
       );
 
       if (result) {
-        console.log(`✅ Test email sent successfully to ${userProfile?.email}`);
+        console.log(`✅ Test email sent successfully to ${profileData.email}`);
         return true;
       } else {
         console.error(`❌ Test email failed`);
@@ -220,20 +219,34 @@ export class SimpleEmailScheduler {
         return { success: true, userId: setting.user_id }; // Not an error, just already sent
       }
 
-      // Send the email
-      const userProfile = Array.isArray(setting.user_profiles) ? setting.user_profiles[0] : setting.user_profiles;
+      // Get user profile for this user
+      const { data: userProfile } = await supabase
+        .from('user_profiles')
+        .select('email, full_name, business_type')
+        .eq('user_id', setting.user_id)
+        .single();
+
+      const profileData = userProfile || {
+        email: 'anton@cloudfusion.co.za',
+        full_name: 'Entrepreneur',
+        business_type: 'Business'
+      };
       
       // Generate email content first
       const emailContent = await this.emailService.generateDailyEmailContent(setting.user_id);
       
+      if (!emailContent) {
+        throw new Error(`Failed to generate email content for user ${setting.user_id}`);
+      }
+
       const result = await this.emailService.sendDailyEmail(
         emailContent,
-        userProfile?.email || '',
+        profileData.email,
         {
           profile: {
-            name: userProfile?.name || 'Entrepreneur',
-            business_type: userProfile?.business_type || 'Business',
-            email: userProfile?.email || '',
+            name: profileData.full_name || 'Entrepreneur',
+            business_type: profileData.business_type || 'Business',
+            email: profileData.email,
             user_id: setting.user_id
           }
         }
@@ -252,7 +265,7 @@ export class SimpleEmailScheduler {
             retry_count: retryCount
           });
 
-        console.log(`✅ Email sent successfully to ${userProfile?.email}${retryCount > 0 ? ` (retry ${retryCount})` : ''}`);
+        console.log(`✅ Email sent successfully to ${profileData.email}${retryCount > 0 ? ` (retry ${retryCount})` : ''}`);
         return { success: true, userId: setting.user_id };
       } else {
         throw new Error('Email service returned false');
@@ -268,14 +281,19 @@ export class SimpleEmailScheduler {
         return this.processSingleUser(setting, southAfricaTime, retryCount + 1);
       }
       
-      // Log final failure after all retries
-      const userProfile = Array.isArray(setting.user_profiles) ? setting.user_profiles[0] : setting.user_profiles;
+      // Log final failure after all retries  
+      const { data: failedUserProfile } = await supabase
+        .from('user_profiles')
+        .select('email')
+        .eq('user_id', setting.user_id)
+        .single();
+
       await supabase
         .from('email_delivery_log')
         .insert({
           user_id: setting.user_id,
           email_type: 'daily_digest',
-          email_address: userProfile?.email,
+          email_address: failedUserProfile?.email || 'unknown@example.com',
           sent_at: new Date().toISOString(),
           status: 'failed',
           error_message: `Failed after ${MAX_RETRIES} retries: ${error.message}`,

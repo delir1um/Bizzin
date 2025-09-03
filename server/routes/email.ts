@@ -1,13 +1,10 @@
-// Email API Routes
+// Email API Routes - Unified email management endpoints
 import express from 'express';
-import { ScalableEmailScheduler } from '../services/ScalableEmailScheduler.js';
+import { simpleEmailScheduler } from '../services/SimpleEmailScheduler.js';
 import { supabase } from '../lib/supabase.js';
 
 const router = express.Router();
-const emailScheduler = new ScalableEmailScheduler();
-
-// Initialize email scheduler on startup
-emailScheduler.initialize().catch(console.error);
+// Use the same email scheduler instance from server startup
 
 // Clean up email content (for testing)
 router.delete('/content/cleanup', async (req, res) => {
@@ -59,6 +56,105 @@ router.get('/debug/profile/:userId', async (req, res) => {
   } catch (error) {
     console.error('Debug profile error:', error);
     res.status(500).json({ error: 'Debug failed' });
+  }
+});
+
+// Save/update email settings from profile (main endpoint for profile page)
+router.post('/settings', async (req, res) => {
+  try {
+    const { userId, enabled, sendTime = '08:00', timezone = 'Africa/Johannesburg', contentPreferences } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    // Update or create email settings
+    const { data: existingSetting } = await supabase
+      .from('daily_email_settings')
+      .select('id')
+      .eq('user_id', userId)
+      .single();
+
+    const settingsData = {
+      enabled: enabled !== undefined ? enabled : true,
+      send_time: sendTime,
+      timezone: timezone,
+      content_preferences: contentPreferences || {
+        journal_prompts: true,
+        goal_summaries: true,
+        business_insights: true,
+        milestone_reminders: true
+      },
+      updated_at: new Date().toISOString()
+    };
+
+    if (existingSetting) {
+      const { error } = await supabase
+        .from('daily_email_settings')
+        .update(settingsData)
+        .eq('user_id', userId);
+      
+      if (error) throw error;
+    } else {
+      const { error } = await supabase
+        .from('daily_email_settings')
+        .insert({
+          user_id: userId,
+          ...settingsData
+        });
+      
+      if (error) throw error;
+    }
+
+    res.json({ 
+      message: 'Email settings saved successfully', 
+      settings: { sendTime, timezone, enabled: settingsData.enabled }
+    });
+  } catch (error) {
+    console.error('Save email settings error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get current email settings for a user
+router.get('/settings/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    const { data: settings, error } = await supabase
+      .from('daily_email_settings')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+      throw error;
+    }
+
+    // Return default settings if none exist
+    const defaultSettings = {
+      enabled: false,
+      send_time: '08:00',
+      timezone: 'Africa/Johannesburg',
+      content_preferences: {
+        journal_prompts: true,
+        goal_summaries: true,
+        business_insights: true,
+        milestone_reminders: true
+      }
+    };
+
+    res.json({ 
+      settings: settings || defaultSettings,
+      hasSettings: !!settings
+    });
+  } catch (error) {
+    console.error('Get email settings error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -127,7 +223,7 @@ router.post('/test', async (req, res) => {
       return res.status(400).json({ error: 'User ID is required' });
     }
 
-    const success = await emailScheduler.queueSingleUserEmail(userId, 'daily_digest');
+    const success = await simpleEmailScheduler.sendTestEmail(userId);
     
     if (success) {
       res.json({ message: 'Test email sent successfully' });
@@ -145,12 +241,18 @@ router.post('/trigger-daily', async (req, res) => {
   try {
     console.log('=== MANUAL DAILY EMAIL TRIGGER ===');
     // Trigger daily emails by calling public methods
-    const users = await emailScheduler['emailService'].getUsersForDailyEmails();
+    // Get all users with email enabled for manual trigger
+    const { data: settings } = await supabase
+      .from('daily_email_settings')
+      .select('user_id')
+      .eq('enabled', true);
+    
+    const users = settings || [];
     console.log(`Found ${users.length} eligible users for daily emails`);
     
     let successCount = 0;
-    for (const user of users) {
-      const success = await emailScheduler.queueSingleUserEmail(user.userId, 'daily_digest');
+    for (const userSetting of users) {
+      const success = await simpleEmailScheduler.sendTestEmail(userSetting.user_id);
       if (success) successCount++;
     }
     
@@ -168,7 +270,11 @@ router.post('/trigger-daily', async (req, res) => {
 router.get('/analytics', async (req, res) => {
   try {
     const { days = '30' } = req.query;
-    const analytics = await emailScheduler.getSystemStats();
+    // Get basic email analytics from database
+    const { data: analytics } = await supabase
+      .from('email_analytics')
+      .select('*')
+      .gte('created_at', new Date(Date.now() - parseInt(days as string) * 24 * 60 * 60 * 1000).toISOString());
     res.json(analytics);
   } catch (error) {
     console.error('Analytics error:', error);
