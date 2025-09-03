@@ -57,8 +57,8 @@ export class EmailService {
         });
       });
 
-      // Try to load the safe template (most compatible)
-      const templatePath = path.join(process.cwd(), 'server', 'templates', 'daily-email-safe.hbs');
+      // Try to load the clean template (most compatible)
+      const templatePath = path.join(process.cwd(), 'server', 'templates', 'daily-email-clean.hbs');
       console.log('📍 Template path:', templatePath);
       
       // Check if file exists first

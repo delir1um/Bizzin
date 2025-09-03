@@ -1,0 +1,345 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light only">
+    <meta name="supported-color-schemes" content="light">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Your Daily Business Digest</title>
+    <style type="text/css">
+        /* Email client resets */
+        #outlook a { padding: 0; }
+        body { margin: 0; padding: 0; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        table, td { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+        img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
+        
+        /* Force light theme everywhere */
+        body, table, td, p, a, span, div, h1, h2, h3, h4, h5, h6 {
+            color: #0F172A !important;
+            background-color: transparent !important;
+        }
+        
+        /* Inter font */
+        .font-inter {
+            font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif !important;
+        }
+        
+        /* Clean card design */
+        .clean-card {
+            background-color: #ffffff !important;
+            border: 1px solid #E2E8F0 !important;
+            border-radius: 12px !important;
+            padding: 24px !important;
+            margin-bottom: 24px !important;
+        }
+        
+        .stats-card {
+            background-color: #ffffff !important;
+            border: 1px solid #E2E8F0 !important;
+            border-radius: 12px !important;
+            padding: 24px !important;
+            text-align: center !important;
+        }
+        
+        /* Brand colors */
+        .brand-orange { color: #EA7A57 !important; }
+        .text-dark { color: #0F172A !important; }
+        .text-muted { color: #64748B !important; }
+        
+        /* Button styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #EA7A57 0%, #E65100 100%) !important;
+            color: #ffffff !important;
+            padding: 12px 24px !important;
+            border-radius: 8px !important;
+            text-decoration: none !important;
+            font-weight: 600 !important;
+            display: inline-block !important;
+            font-size: 14px !important;
+        }
+        
+        /* Dark mode prevention */
+        @media (prefers-color-scheme: dark) {
+            *, body, table, td, p, a, span, div, h1, h2, h3, h4, h5, h6 {
+                color: #0F172A !important;
+                background-color: transparent !important;
+            }
+            .clean-card, .stats-card {
+                background-color: #ffffff !important;
+            }
+        }
+        
+        /* Responsive */
+        @media only screen and (max-width: 600px) {
+            .container { width: 100% !important; margin: 8px !important; }
+            .stats-row td { 
+                display: block !important; 
+                width: 100% !important; 
+                margin-bottom: 16px !important;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter" style="margin: 0; padding: 0; background-color: #F8FAFC !important;">
+    <!-- Email wrapper -->
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #F8FAFC !important;">
+        <tr>
+            <td align="center" style="padding: 40px 16px;">
+                <!-- Main container -->
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="640" class="container" style="background-color: #ffffff !important; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);">
+                    
+                    <!-- Clean Header -->
+                    <tr>
+                        <td style="padding: 40px 40px 32px 40px; text-align: center; background-color: #ffffff !important;">
+                            <!-- Logo -->
+                            <div class="font-inter brand-orange" style="font-size: 32px; font-weight: 800; margin-bottom: 20px; letter-spacing: -0.5px;">
+                                Bizzin
+                            </div>
+                            <!-- Greeting -->
+                            <div class="font-inter text-dark" style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">
+                                Good {{partOfDay}}, {{user.firstName}}!
+                            </div>
+                            <!-- Date -->
+                            <div class="font-inter text-muted" style="font-size: 14px;">
+                                Your daily business digest for {{formattedDate}}
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Quote Card -->
+                    <tr>
+                        <td style="padding: 0 40px 32px 40px; background-color: #ffffff !important;">
+                            <div class="clean-card" style="border-left: 4px solid #EA7A57 !important;">
+                                <div class="font-inter text-dark" style="font-size: 16px; font-style: italic; line-height: 1.6; margin-bottom: 12px;">
+                                    "{{quote.text}}"
+                                </div>
+                                <div class="font-inter brand-orange" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px;">
+                                    Your Daily Business Fuel
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Stats Grid -->
+                    <tr>
+                        <td style="padding: 0 40px 32px 40px; background-color: #ffffff !important;">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="stats-row">
+                                <tr>
+                                    <!-- Total Goals -->
+                                    <td width="23%" style="padding-right: 12px;">
+                                        <div class="stats-card">
+                                            <div class="font-inter brand-orange" style="font-size: 36px; font-weight: 700; line-height: 1; margin-bottom: 8px;">
+                                                {{stats.totalGoals}}
+                                            </div>
+                                            <div class="font-inter text-muted" style="font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">
+                                                Total Goals
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <!-- Completed -->
+                                    <td width="23%" style="padding: 0 6px;">
+                                        <div class="stats-card">
+                                            <div class="font-inter" style="font-size: 36px; font-weight: 700; color: #10B981 !important; line-height: 1; margin-bottom: 8px;">
+                                                {{stats.completedGoals}}
+                                            </div>
+                                            <div class="font-inter text-muted" style="font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">
+                                                Completed
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <!-- In Progress -->
+                                    <td width="23%" style="padding: 0 6px;">
+                                        <div class="stats-card">
+                                            <div class="font-inter brand-orange" style="font-size: 36px; font-weight: 700; line-height: 1; margin-bottom: 8px;">
+                                                {{stats.inProgressGoals}}
+                                            </div>
+                                            <div class="font-inter text-muted" style="font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">
+                                                In Progress
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <!-- Success Rate -->
+                                    <td width="23%" style="padding-left: 12px;">
+                                        <div class="stats-card">
+                                            <div class="font-inter brand-orange" style="font-size: 36px; font-weight: 700; line-height: 1; margin-bottom: 8px;">
+                                                {{stats.successRate}}%
+                                            </div>
+                                            <div class="font-inter text-muted" style="font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">
+                                                Success Rate
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    {{#if (gt stats.totalGoals 0)}}
+                    <!-- Goal Preview Section -->
+                    <tr>
+                        <td style="padding: 0 40px 32px 40px; background-color: #ffffff !important;">
+                            <div class="clean-card">
+                                <div class="font-inter text-dark" style="font-size: 18px; font-weight: 600; margin-bottom: 20px;">
+                                    Your Active Goals
+                                </div>
+                                {{#each goalPreviews}}
+                                <div style="border: 1px solid #E2E8F0; border-radius: 8px; padding: 16px; margin-bottom: 16px; background-color: #ffffff !important;">
+                                    <div class="font-inter text-dark" style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">
+                                        {{this.title}}
+                                    </div>
+                                    <div class="font-inter text-muted" style="font-size: 14px; line-height: 1.5; margin-bottom: 12px;">
+                                        {{this.description}}
+                                    </div>
+                                    <!-- Progress bar -->
+                                    <div style="width: 100%; height: 6px; background-color: #E2E8F0; border-radius: 3px; margin-bottom: 12px;">
+                                        <div style="height: 100%; background: linear-gradient(90deg, #EA7A57 0%, #E65100 100%); border-radius: 3px; width: {{this.progress}}%;"></div>
+                                    </div>
+                                    <div class="font-inter text-muted" style="font-size: 12px;">
+                                        {{this.priority}} Priority • {{this.category}} • {{this.progress}}% Complete
+                                    </div>
+                                </div>
+                                {{/each}}
+                            </div>
+                        </td>
+                    </tr>
+                    {{else}}
+                    <!-- No Goals CTA -->
+                    <tr>
+                        <td style="padding: 0 40px 32px 40px; background-color: #ffffff !important;">
+                            <div style="background: linear-gradient(135deg, #EA7A57 0%, #E65100 100%); border-radius: 12px; padding: 32px; text-align: center;">
+                                <div class="font-inter" style="font-size: 20px; font-weight: 700; color: #ffffff !important; margin-bottom: 12px;">
+                                    Set and Track Your Business Goals
+                                </div>
+                                <div class="font-inter" style="font-size: 14px; color: rgba(255, 255, 255, 0.9) !important; margin-bottom: 20px; line-height: 1.5;">
+                                    Create objectives with progress tracking, priority levels, and milestone management
+                                </div>
+                                <a href="{{dashboardUrl}}/goals" class="font-inter" style="background-color: rgba(255, 255, 255, 0.2); color: #ffffff !important; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-block;">
+                                    Start Goal Tracking →
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {{/if}}
+
+                    <!-- Journal Progress -->
+                    <tr>
+                        <td style="padding: 0 40px 24px 40px; background-color: #ffffff !important;">
+                            <div class="clean-card">
+                                <div class="font-inter text-dark" style="font-size: 16px; font-weight: 600; margin-bottom: 12px;">
+                                    📝 Journal Progress
+                                </div>
+                                <div class="font-inter text-muted" style="font-size: 14px; line-height: 1.5; margin-bottom: 16px;">
+                                    {{journalStatus.message}}
+                                </div>
+                                {{#if journalStatus.streakDays}}
+                                <div class="font-inter brand-orange" style="font-size: 12px; font-weight: 600; margin-bottom: 16px;">
+                                    {{journalStatus.streakDays}} day streak! You're building an amazing habit.
+                                </div>
+                                {{/if}}
+                                <a href="{{dashboardUrl}}/journal" class="btn-primary">{{journalCTA}}</a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Business Health Check -->
+                    <tr>
+                        <td style="padding: 0 40px 24px 40px; background-color: #ffffff !important;">
+                            <div class="clean-card">
+                                <div class="font-inter text-dark" style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">
+                                    📊 Business Health Check
+                                </div>
+                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                    <tr>
+                                        <td width="50%" style="padding-right: 16px;">
+                                            <div class="font-inter text-dark" style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">
+                                                Reflection Consistency
+                                            </div>
+                                            <div class="font-inter text-muted" style="font-size: 14px;">
+                                                {{healthCheck.reflectionStatus}}
+                                            </div>
+                                        </td>
+                                        <td width="50%" style="padding-left: 16px;">
+                                            <div class="font-inter text-dark" style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">
+                                                Business Sentiment
+                                            </div>
+                                            <div class="font-inter text-muted" style="font-size: 14px;">
+                                                {{healthCheck.sentimentStatus}}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Today's Action Items -->
+                    <tr>
+                        <td style="padding: 0 40px 24px 40px; background-color: #ffffff !important;">
+                            <div class="clean-card">
+                                <div class="font-inter text-dark" style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">
+                                    Today's Action Items
+                                </div>
+                                {{#each actionItems}}
+                                <div style="display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #F1F5F9;">
+                                    <div style="width: 6px; height: 6px; background-color: #EA7A57; border-radius: 50%; margin-right: 12px; flex-shrink: 0;"></div>
+                                    <div class="font-inter text-dark" style="font-size: 14px; line-height: 1.4; flex-grow: 1;">
+                                        {{this.text}}
+                                    </div>
+                                    <a href="{{this.url}}" class="font-inter brand-orange" style="font-size: 14px; font-weight: 500; text-decoration: none; margin-left: 12px;">→</a>
+                                </div>
+                                {{/each}}
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Today's Journal Prompt -->
+                    <tr>
+                        <td style="padding: 0 40px 24px 40px; background-color: #ffffff !important;">
+                            <div class="clean-card">
+                                <div class="font-inter text-dark" style="font-size: 16px; font-weight: 600; margin-bottom: 12px;">
+                                    📝 Today's Journal Prompt
+                                </div>
+                                <div class="font-inter text-muted" style="font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
+                                    {{journalPrompt}}
+                                </div>
+                                <a href="{{dashboardUrl}}/journal" class="btn-primary">{{journalCTA}}</a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Open Dashboard CTA -->
+                    <tr>
+                        <td style="padding: 0 40px 40px 40px; text-align: center; background-color: #ffffff !important;">
+                            <a href="{{dashboardUrl}}" class="btn-primary" style="padding: 16px 32px; font-size: 16px;">
+                                Open Your Dashboard
+                            </a>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #F8FAFC !important; padding: 32px 40px; text-align: center;">
+                            <div class="font-inter text-dark" style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">
+                                Keep building your business success with Bizzin
+                            </div>
+                            <div style="margin-bottom: 20px;">
+                                <a href="{{dashboardUrl}}/notifications" class="font-inter text-muted" style="font-size: 14px; text-decoration: none; margin: 0 12px;">Manage Notifications</a>
+                                <span class="font-inter text-muted" style="font-size: 14px;">•</span>
+                                <a href="{{dashboardUrl}}/profile" class="font-inter text-muted" style="font-size: 14px; text-decoration: none; margin: 0 12px;">Email Preferences</a>
+                                <span class="font-inter text-muted" style="font-size: 14px;">•</span>
+                                <a href="https://bizzin.co.za" class="font-inter text-muted" style="font-size: 14px; text-decoration: none; margin: 0 12px;">Visit Bizzin</a>
+                            </div>
+                            <div class="font-inter text-muted" style="font-size: 12px; line-height: 1.5;">
+                                © 2025 Bizzin. All rights reserved.<br>
+                                Developed by CloudFusion
+                            </div>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

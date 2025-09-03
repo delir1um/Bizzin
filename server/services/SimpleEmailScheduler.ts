@@ -175,7 +175,29 @@ export class SimpleEmailScheduler {
         console.log('Using fallback profile data for testing');
       }
 
-      // profileData is now set above
+      // FETCH GOALS AND ENTRIES FOR REAL DATA IN EMAIL
+      const [goalsResult, entriesResult] = await Promise.all([
+        supabase
+          .from('goals')
+          .select(`*, milestones(*)`)
+          .eq('user_id', userId),
+        supabase
+          .from('journal_entries')
+          .select('*')
+          .eq('user_id', userId)
+          .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+          .order('created_at', { ascending: false })
+      ]);
+
+      const goals = goalsResult.data || [];
+      const recentEntries = entriesResult.data || [];
+
+      console.log('🎯 Test email fetching real data:', {
+        goalsCount: goals.length,
+        entriesCount: recentEntries.length,
+        goalTitles: goals.map(g => g.title)
+      });
+
       // Generate email content first
       const emailContent = await this.emailService.generateDailyEmailContent(userId);
       
@@ -193,7 +215,9 @@ export class SimpleEmailScheduler {
             business_type: profileData.business_type || 'Business',
             email: profileData.email,
             user_id: userId
-          }
+          },
+          goals: goals,
+          recentEntries: recentEntries
         }
       );
 
