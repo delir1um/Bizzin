@@ -108,8 +108,11 @@ export function useUpdateProgress() {
       queryClient.invalidateQueries({ queryKey: ['podcast', 'stats'] })
       queryClient.invalidateQueries({ queryKey: ['podcast', 'series'] })
       
-      // Force immediate refetch with reduced stale time
-      queryClient.refetchQueries({ queryKey: ['podcast'] })
+      // Force immediate refetch to sync all components
+      queryClient.refetchQueries({ 
+        queryKey: ['podcast'],
+        type: 'all' 
+      })
       
       // Show completion toast if episode was just completed
       const isCompleted = PodcastService.isEpisodeCompleted(

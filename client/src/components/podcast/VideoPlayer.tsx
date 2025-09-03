@@ -62,6 +62,16 @@ export function VideoPlayer({
   // Convert URL once and memoize it
   const proxyVideoUrl = convertToProxyUrl(videoUrl)
 
+  // Sync with parent currentTime when provided
+  useEffect(() => {
+    if (startTime > 0 && Math.abs(currentTime - startTime) > 1) {
+      setCurrentTime(startTime)
+      if (videoRef.current && videoRef.current.duration > 0) {
+        videoRef.current.currentTime = startTime
+      }
+    }
+  }, [startTime])
+
   // Initialize video with minimal event handling
   useEffect(() => {
     const video = videoRef.current
@@ -80,7 +90,7 @@ export function VideoPlayer({
           onDurationUpdate(video.duration)
         }
         
-        // Set start time
+        // Set start time if provided
         if (startTime > 0) {
           video.currentTime = startTime
           setCurrentTime(startTime)
@@ -90,8 +100,9 @@ export function VideoPlayer({
 
     const handleTimeUpdate = () => {
       if (!isSeeking) {
-        setCurrentTime(video.currentTime)
-        onTimeUpdate(video.currentTime)
+        const videoTime = video.currentTime
+        setCurrentTime(videoTime)
+        onTimeUpdate(videoTime)
       }
     }
 
