@@ -95,7 +95,8 @@ export function VideoPlayer({
     const handleLoadedData = () => {
       // This fires when enough data is loaded to start playback
       console.log('Video data loaded - ready for playback')
-      // Don't immediately hide loading - wait for canplay event
+      setIsLoading(false)
+      setIsVideoReady(true)
     }
 
     const handleLoadedMetadata = () => {
@@ -128,8 +129,8 @@ export function VideoPlayer({
       setCanPlayThrough(true)
       setIsLoading(false)
       setIsBuffering(false)
-      // Don't auto-play immediately, let user control playback
-      // Auto-play is handled by the parent component
+      setIsVideoReady(true)
+      // Don't auto-play immediately, let user control playbook
     }
 
     const handleTimeUpdate = () => {
@@ -161,12 +162,11 @@ export function VideoPlayer({
 
     const handleCanPlay = () => {
       // Video can start playing - ensure loading is hidden
-      if (duration > 0) {
-        setIsLoading(false)
-        setIsBuffering(false)
-      }
+      setIsLoading(false)
+      setIsBuffering(false)
       setHasError(false)
       setCanPlayThrough(true)
+      setIsVideoReady(true)
       console.log('Video ready to play')
     }
     
@@ -419,15 +419,7 @@ export function VideoPlayer({
         style={{ backgroundColor: '#000' }}
       />
       
-      {/* Loading State - Only show when video duration is not available */}
-      {duration <= 0 && !hasError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/90">
-          <div className="flex flex-col items-center space-y-4">
-            <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-white text-sm font-medium">Loading video...</p>
-          </div>
-        </div>
-      )}
+      {/* No loading overlay - video shows immediately */}
       
       {/* Buffering State - Show minimal indicator during playback buffering */}
       {isBuffering && duration > 0 && !hasError && (
