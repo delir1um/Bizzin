@@ -1,0 +1,188 @@
+Here’s a single, hand-over note you can give the Replit team. It combines **design alignment** with the **dynamic/state logic fixes** so the email always matches the user’s reality.
+
+# Bizzin Daily Digest — Design & Dynamic Logic Feedback
+
+## 1) Visual alignment with website
+
+Match the “Advanced Goal Analytics” page style (clean cards, thin borders, warm orange accent).
+
+**Brand & tokens**
+
+* Primary accent: warm orange (use the same as the goals CTA/banner).
+* Text: very dark grey for headings, mid-grey for body.
+* Surfaces: white cards with a 1px light border, **rounded 10–12px**. Minimal/no shadow.
+* Type: Inter (fallback Arial). Sizes: H1 24px, H2 16px, body 14px, captions 12px; line-height \~1.5.
+* Spacing: 8-point rhythm; content width max 640px; 16px side padding.
+
+**Components (email equivalents of site UI)**
+
+* **Header:** Bizzin wordmark left, “Good {part-of-day}, {name}!” headline, date beneath in small text.
+* **Quote block:** Keep it. Italic line with **orange left border** and a tiny “Your Daily Business Fuel” label. Author optional.
+* **Stats row:** Four compact stat cards like the site chips. Desktop: one row; mobile: 2×2 grid.
+  Labels mirror site casing: “Total Goals”, “Completed”, “In Progress”, “Success Rate” (or “Weekly Progress” if that’s your metric).
+* **Primary banner:** One orange feature band (like the site hero strip) with title “Set and Track Your Business Goals”, a one-line value prop, and a primary CTA (“Start Goal Tracking →”).
+* **Goal previews:** Up to 3 mini goal cards styled like the site (title, 1-line description, **thin progress bar** in orange, small chips for Priority/Category/Due date, a status pill: In Progress = orange, Completed = green, At Risk = red). End each with “View goal →”.
+* **Action Items:** Three bullet actions with small arrow icons. Same verbs/site tone.
+* **Smart Suggestions:** Three small info tiles (icon, bold title, one-line description, subtle arrow link) echoing the site’s bottom tiles: Goal Management, Progress Tracking, Organisation (DocSafe).
+* **Journal Prompt:** As a tidy card with a pencil icon and a strong “Write your entry” CTA.
+* **Business Insights:** Neutral callout card with one actionable tip and a small category chip (e.g., Growth/Finance/Operations).
+* **CTAs:** Primary buttons in orange with white text, rounded corners, short labels + arrow. Secondary links in neutral text with arrows. Full-width buttons on mobile.
+* **Footer:** “Open your dashboard” as the last strong CTA, then light links for Privacy / Terms / Contact. Keep “Developed by Cloudfusion” as a quiet single line.
+
+**Accessibility & email safety**
+
+* AA contrast on orange banner/buttons.
+* Bulletproof buttons; avoid background images for critical text.
+* Alt text for images/icons.
+* Dark-mode safe colours (don’t rely on transparency over unknown backgrounds).
+
+**Tone & SA English**
+
+* Use **organise, analyse, focussed**.
+* Clear, action-led verbs: **Review**, **Write**, **Explore**, **Open dashboard**.
+
+---
+
+## 2) Issues identified (current mailer) to rectify
+
+* **Contradictory CTAs:** “Create your first goal” while stats show **Active Goals > 0**.
+* **Journal contradiction:** “Write your first journal entry” while **Journal Entries ≥ 1**.
+* **Casing inconsistency:** Mixed label casing (“Day Streak”, “Weekly progress”, etc.).
+* **Vague progress metric:** Shows “Weekly Progress 75%” but copy elsewhere assumes “Success Rate”. Align metric naming.
+* **Health Check tone drift:** “Needs attention” while other sections speak as if setup hasn’t started.
+* **CTA redundancy:** Too many similar links; prioritise 1 primary action per block.
+* **Copy not SA-localised:** Use SA English consistently.
+
+---
+
+## 3) Dynamic copy rules (state-aware, no contradictions)
+
+**Inputs expected (read-only)**
+
+* `goals.active_count` (int)
+* `goals.completed_count` (int)
+* `goals.in_progress_count` (int)
+* `goals.success_rate_pct` or `goals.weekly_progress_pct` (0–100)
+* `journal.total_entries` (int)
+* `journal.week_entries` (int)
+* `journal.streak_days` (int)
+* `journal.last_entry_days` (int|null)
+* `sentiment.available` (bool), `sentiment.label` (“Positive”|“Neutral”|“Negative”)
+* `docs.count` (int)
+* `focus.category` (string e.g., “Growth”)
+* `user.first_name`, `now.iso_date`, `now.part_of_day`
+* Optional `quote.override_text`, `quote.override_author`
+
+**Greeting & date**
+
+* “Good {morning/afternoon/evening}, {FirstName}!”
+* Date in full: “Wednesday, 3 September 2025.”
+
+**Quote**
+
+* If override present → use it. Else pick deterministic “quote of the day” by date and (optionally) user seed.
+
+**Stats labels & values**
+
+* Show: **Total Goals**, **Completed**, **In Progress**, **Success Rate** (or **Weekly Progress** if that’s the data).
+* Never display “Success Rate” if you don’t calculate it; use “Weekly Progress” instead. Keep casing consistent.
+
+**Journal Progress card**
+
+* If `journal.total_entries == 0` → “Create your first journal entry today.”
+* Else if `journal.week_entries == 0` → “Start this week’s first entry today.”
+* Else → “Keep your streak going with today’s entry.”
+
+**Business Health Check**
+
+* **Reflection Consistency:**
+
+  * `week_entries == 0` → “Needs attention — 0 entries this week.”
+  * `1–3` → “Getting started — {X} entries this week.”
+  * `>=4` → “On track — {X} entries this week.”
+* **Business Sentiment:**
+
+  * If `!sentiment.available` OR `last_entry_days > 7` → “No recent reflections to analyse.”
+  * Else → “Recent sentiment: {label}.”
+
+**Today’s Action Items (choose top 3)**
+
+* Goals:
+
+  * If `goals.active_count == 0` → “Create your first goal →”
+  * Else → “Review your active goals →”
+* Journal:
+
+  * If `journal.total_entries == 0` → “Write your first journal entry →”
+  * Else if `journal.week_entries == 0` → “Write today’s entry →”
+  * Else → “Keep the streak alive →”
+* Tools: Always include “Explore BizBuilder Tools →”
+* Optional DocSafe when `docs.count == 0` → “Secure your key documents with DocSafe →”
+
+**Goal previews section (up to 3 cards)**
+
+* If `goals.active_count == 0` → Hide previews, show an orange **“Start Goal Tracking →”** banner.
+* Else → show 1–3 most relevant goals (prioritise `At Risk`, then `In Progress`, then nearest due).
+
+  * Status pill mapping:
+
+    * Completed → green pill, progress 100%
+    * In Progress → orange pill, progress >0 & <100
+    * At Risk (your logic) → red pill, progress bar still shows current %
+
+**Smart Suggestions**
+
+* **Document Management**
+
+  * `docs.count == 0` → “Organise important business documents with secure DocSafe storage.”
+  * `>0` → “Add tags and expiry reminders to stay audit-ready in DocSafe.”
+* **Goal-setting framework**
+
+  * Show if `goals.active_count < 3` OR `success/weekly_progress_pct < 60`.
+
+**Journal Prompt**
+
+* Always show a single prompt.
+* If `streak_days == 0` → append “Start a 2-day streak this week.”
+
+**Business Insights**
+
+* If `success/weekly_progress_pct < 100` → insight about breaking goals into smaller milestones.
+* If `focus.category` present → append “You’re heavily **focussed on {category}** — check if this balance fits your priorities.”
+
+**Buttons & labels (stateful)**
+
+* Goals CTA: `Create your first goal` | `Review your active goals`
+* Journal CTA: `Write your first entry` | `Write today’s entry` | `Keep the streak alive`
+* DocSafe: `Explore DocSafe` | `Add documents`
+* Global: `Open your dashboard`
+
+**Localisation**
+
+* SA English: organise, analyse, focussed, programme (if used), licence, etc.
+* Date format: `D MMMM YYYY` (e.g., 3 September 2025).
+
+---
+
+## 4) Edge cases & fallbacks
+
+* **Brand-new user:** All counts 0 → emphasise setup: first goal, first journal, DocSafe intro. Hide stats that would read 0% success unless you can explain it.
+* **All goals completed:** Replace goal previews with a celebratory line + “Create a new goal”.
+* **No sentiment data:** Always show “No recent reflections to analyse.”
+* **Dark mode:** Ensure orange buttons stay legible; don’t invert to low contrast.
+* **Email client limitations:** Don’t rely on background images; progress bars should degrade gracefully (e.g., a solid colour bar inside a bordered container).
+
+---
+
+## 5) QA checklist before shipping
+
+* **No contradictions** in copy given the user state (especially “first goal/entry” vs counts).
+* **Casing and labels** match site (“In Progress”, “Completed”, “At Risk”).
+* **Metrics alignment:** If you show “Success Rate”, it is actually computed; otherwise show “Weekly Progress”.
+* **Visual parity:** Cards, chips, pills, progress bar style match the site’s look and feel.
+* **Responsive:** Desktop one-row stats; mobile 2×2; buttons full-width on mobile.
+* **Accessibility:** AA contrast; button/tap targets ≥ 44px on mobile; alt text present.
+* **Tracking:** CTAs consistently tagged (UTM/source).
+* **Quote:** Deterministic per day (and user seed) unless overridden.
+
+This gives the devs both the **design direction** to mirror the site and the **state rules** to keep the content smart and contradiction-free.
