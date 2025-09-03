@@ -894,6 +894,208 @@ export class EmailService {
     return suggestions.slice(0, 2); // Return top 2 suggestions
   }
 
+  // Generate template data with state-aware logic (eliminates contradictions)
+  private async generateSmartTemplateData(emailContent: DailyEmailContent, additionalData?: any) {
+    const personalData = emailContent.personalization_data as any;
+    const currentHour = new Date().getHours();
+    const partOfDay = currentHour < 12 ? 'morning' : currentHour < 17 ? 'afternoon' : 'evening';
+
+    // Get fresh goal and journal data for accurate state determination
+    const goals = additionalData?.goals || [];
+    const recentEntries = additionalData?.recentEntries || [];
+    
+    // Calculate stats with proper logic
+    const allGoals = goals || [];
+    const activeGoals = allGoals.filter((g: any) => ['in_progress', 'not_started'].includes(g.status));
+    const completedGoals = allGoals.filter((g: any) => g.status === 'completed');
+    const totalGoals = allGoals.length;
+    const successRate = totalGoals > 0 ? Math.round((completedGoals.length / totalGoals) * 100) : 0;
+
+    // Journal status with no contradictions
+    const thisWeekEntries = this.getEntriesThisWeek(recentEntries || []);
+    const journalStreak = this.calculateJournalStreak(recentEntries || []);
+    const lastEntryDays = this.getDaysSinceLastEntry(recentEntries || []);
+
+    // State-aware journal messaging
+    let journalStatus, journalCTA;
+    if (recentEntries?.length === 0) {
+      journalStatus = { message: "Ready to start capturing your business insights? Create your first journal entry today." };
+      journalCTA = "Write Your First Entry";
+    } else if (thisWeekEntries.length === 0) {
+      journalStatus = { message: "Start this week's first entry today." };
+      journalCTA = "Write Today's Entry";
+    } else {
+      journalStatus = {
+        message: "Keep your reflection streak going with today's entry.",
+        streakDays: journalStreak > 0 ? journalStreak : undefined
+      };
+      journalCTA = "Keep The Streak Alive";
+    }
+
+    // Health check with proper status logic
+    let reflectionStatus, sentimentStatus;
+    if (thisWeekEntries.length === 0) {
+      reflectionStatus = "Needs attention — 0 entries this week";
+    } else if (thisWeekEntries.length <= 3) {
+      reflectionStatus = `Getting started — ${thisWeekEntries.length} entries this week`;
+    } else {
+      reflectionStatus = `On track — ${thisWeekEntries.length} entries this week`;
+    }
+
+    if (!recentEntries?.length || lastEntryDays > 7) {
+      sentimentStatus = "No recent reflections to analyse";
+    } else {
+      const latestEntry = recentEntries[0];
+      const sentiment = latestEntry.sentiment_analysis?.sentiment || 'Neutral';
+      sentimentStatus = `Recent sentiment: ${sentiment}`;
+    }
+
+    // State-aware action items (no contradictions)
+    const actionItems = [];
+    
+    // Goals action
+    if (totalGoals === 0) {
+      actionItems.push({
+        text: "Create your first goal to unlock progress tracking and milestone management",
+        url: "https://bizzin.co.za/goals"
+      });
+    } else {
+      actionItems.push({
+        text: "Review your active goals and update progress",
+        url: "https://bizzin.co.za/goals"
+      });
+    }
+
+    // Journal action
+    if (recentEntries?.length === 0) {
+      actionItems.push({
+        text: "Write your first journal entry and start building insights",
+        url: "https://bizzin.co.za/journal"
+      });
+    } else if (thisWeekEntries.length === 0) {
+      actionItems.push({
+        text: "Write today's entry to maintain your reflection practice",
+        url: "https://bizzin.co.za/journal"
+      });
+    } else {
+      actionItems.push({
+        text: "Keep the momentum going with today's reflection",
+        url: "https://bizzin.co.za/journal"
+      });
+    }
+
+    // Always include tools
+    actionItems.push({
+      text: "Explore BizBuilder Tools for financial planning",
+      url: "https://bizzin.co.za/bizbuilder"
+    });
+
+    // Smart suggestions with state awareness
+    const smartSuggestions = [];
+    
+    // Document management suggestion
+    smartSuggestions.push({
+      icon: "📁",
+      title: "Document Management",
+      description: "Organise important business documents with secure DocSafe storage",
+      url: "https://bizzin.co.za/docsafe",
+      cta: "Explore DocSafe"
+    });
+
+    // Goal framework suggestion (show if low goal count or poor success rate)
+    if (totalGoals < 3 || successRate < 60) {
+      smartSuggestions.push({
+        icon: "🎯",
+        title: "Goal-Setting Framework",
+        description: "Learn effective goal-setting strategies for sustainable business growth",
+        url: "https://bizzin.co.za/goals",
+        cta: "Explore Now"
+      });
+    }
+
+    // Progress tracking
+    smartSuggestions.push({
+      icon: "📈",
+      title: "Progress Tracking",
+      description: "Monitor progress with visual indicators and status updates",
+      url: "https://bizzin.co.za/goals",
+      cta: "View Progress"
+    });
+
+    // Goal previews with proper status mapping
+    const goalPreviews = activeGoals.slice(0, 3).map((goal: any) => ({
+      title: goal.title,
+      description: goal.description?.substring(0, 120) + (goal.description?.length > 120 ? '...' : '') || 'No description provided',
+      progress: goal.progress || 0,
+      priority: goal.priority || 'Medium',
+      category: goal.category || 'General',
+      dueDate: goal.deadline ? new Date(goal.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : null,
+      status: this.mapGoalStatus(goal.status, goal.progress || 0),
+      statusClass: this.getStatusClass(goal.status, goal.progress || 0)
+    }));
+
+    // Business insight with state awareness
+    let businessInsight = null;
+    if (successRate < 100 && totalGoals > 0) {
+      businessInsight = {
+        text: "Consider breaking down your goals into smaller milestones to improve completion rates. You're heavily focussed on Growth — check if this balance aligns with your business priorities.",
+        category: "Growth"
+      };
+    }
+
+    return {
+      user: {
+        firstName: personalData?.userName || 'Anton'
+      },
+      partOfDay,
+      formattedDate: new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+      quote: {
+        text: "Great things never come from comfort zones."
+      },
+      stats: {
+        totalGoals,
+        completedGoals: completedGoals.length,
+        inProgressGoals: activeGoals.length,
+        successRate
+      },
+      goalPreviews,
+      journalStatus,
+      journalCTA,
+      healthCheck: {
+        reflectionStatus,
+        sentimentStatus
+      },
+      actionItems,
+      smartSuggestions: smartSuggestions.slice(0, 3),
+      journalPrompt: emailContent.journal_prompt || "What's motivating you most about your business goals right now?",
+      businessInsight,
+      dashboardUrl: "https://bizzin.co.za"
+    };
+  }
+
+  // Helper methods for template data generation
+  private mapGoalStatus(status: string, progress: number): string {
+    if (status === 'completed') return 'Completed';
+    if (progress === 0) return 'Not Started';
+    if (progress < 100) return 'In Progress';
+    return 'At Risk'; // Custom logic for at-risk goals
+  }
+
+  private getStatusClass(status: string, progress: number): string {
+    if (status === 'completed') return 'completed';
+    if (progress === 0) return 'not-started';
+    if (progress < 100) return 'in-progress';
+    return 'at-risk';
+  }
+
+  private getDaysSinceLastEntry(entries: any[]): number {
+    if (!entries?.length) return Infinity;
+    const lastEntry = entries[0];
+    const lastEntryDate = new Date(lastEntry.created_at);
+    const now = new Date();
+    return Math.floor((now.getTime() - lastEntryDate.getTime()) / (24 * 60 * 60 * 1000));
+  }
+
   // Send daily email to user
   async sendDailyEmail(emailContent: DailyEmailContent, userEmail: string, additionalData?: {
     profile?: any,
@@ -907,32 +1109,8 @@ export class EmailService {
         return false;
       }
 
-      const templateData = {
-        ...emailContent,
-        personalization: emailContent.personalization_data,
-        baseUrl: process.env.BASE_URL || 'https://bizzin.co.za',
-        unsubscribeUrl: `${process.env.BASE_URL || 'https://bizzin.co.za'}/unsubscribe?token=${this.generateUnsubscribeToken(emailContent.user_id)}`,
-        formattedDate: new Date().toLocaleDateString('en-US', { 
-          weekday: 'long', 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
-        }),
-        ...this.getTimeOfDayGreeting(),
-        stats: {
-          totalGoals: emailContent.personalization_data?.totalGoals || 0,
-          journalEntries: emailContent.personalization_data?.recentEntryCount || 0,
-          streak: emailContent.personalization_data?.journalStreak || 0,
-          weeklyProgress: emailContent.personalization_data?.weeklyProgress || 0
-        },
-        // Generate fresh enhanced digest content for each email
-        motivation_quote: this.generateMotivationQuote(),
-        top_goal: this.getTopPriorityGoal(additionalData?.goals || []),
-        journal_snapshot: this.generateJournalSnapshot(additionalData?.recentEntries || []),
-        business_health: this.generateBusinessHealth(additionalData?.profile, additionalData?.goals || [], additionalData?.recentEntries || []),
-        action_nudges: this.generateActionNudges(additionalData?.profile, additionalData?.goals || [], additionalData?.recentEntries || []),
-        smart_suggestions: this.generateSmartSuggestions(additionalData?.profile, additionalData?.goals || [], additionalData?.recentEntries || [])
-      };
+      // Generate smart template data with no contradictions
+      const templateData = await this.generateSmartTemplateData(emailContent, additionalData);
 
       const htmlContent = template(templateData);
 
