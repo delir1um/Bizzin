@@ -188,14 +188,18 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
             ${
               isListening
                 ? 'bg-red-500 hover:bg-red-600 text-white border-red-400 shadow-lg animate-pulse'
-                : 'bg-orange-500 hover:bg-orange-600 text-white border-orange-400 shadow-md hover:shadow-lg'
+                : 'bg-gray-400 hover:bg-gray-500 text-white border-gray-300 shadow-md hover:shadow-lg'
             }
           `}
           style={{ zIndex: 1000 }}
-          title={isListening ? 'Stop recording' : 'Start voice input'}
+          title={isListening ? 'Click to stop recording' : 'Click to start voice input'}
           data-testid="button-mic-compact"
         >
-          <Mic className="w-5 h-5" />
+          {isListening ? (
+            <MicOff className="w-5 h-5" />
+          ) : (
+            <Mic className="w-5 h-5" />
+          )}
           
           {/* Animated recording ring */}
           {isListening && (
