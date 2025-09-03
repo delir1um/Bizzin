@@ -1426,7 +1426,7 @@ export class EmailService {
       greetingEmoji: greetingData.greetingEmoji,
       partOfDay,
       formattedDate: new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
-      quote: personalData?.motivationQuote || {
+      quote: emailContent?.motivationQuote || personalData?.motivationQuote || {
         text: "Great things never come from comfort zones.",
         author: "Anonymous"
       },
