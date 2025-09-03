@@ -75,6 +75,7 @@ export function VideoPlayer({
     setHasError(false)
     setCurrentTime(startTime)
     setDuration(0)
+    setIsPlaying(false)
 
     // Optimize video loading for better streaming
     video.setAttribute('preload', 'auto')
@@ -90,14 +91,16 @@ export function VideoPlayer({
     const handleLoadedData = () => {
       // This fires when enough data is loaded to start playback
       console.log('Video data loaded - ready for playback')
-      setIsLoading(false)
-      setIsBuffering(false)
+      // Don't immediately hide loading - wait for canplay event
     }
 
     const handleLoadedMetadata = () => {
       const videoDuration = video.duration
       setDuration(videoDuration)
       console.log('Video duration updated:', videoDuration, 'Episode duration:', Math.floor(videoDuration))
+      
+      // Video metadata is loaded - we can hide loading now
+      setIsLoading(false)
       
       // Notify parent component of actual duration
       if (onDurationUpdate) {
@@ -149,11 +152,11 @@ export function VideoPlayer({
     }
 
     const handleCanPlay = () => {
-      // Only hide loading if we haven't started playing yet
-      if (!isPlaying) {
-        setIsLoading(false)
-      }
+      // Video can start playing - hide loading overlay
+      setIsLoading(false)
+      setIsBuffering(false)
       setHasError(false)
+      setCanPlayThrough(true)
       console.log('Video ready to play')
     }
     
@@ -174,6 +177,7 @@ export function VideoPlayer({
     const handlePlaying = () => {
       setIsLoading(false)
       setIsBuffering(false)
+      setIsPlaying(true)
       console.log('Video playing smoothly')
     }
 
@@ -191,8 +195,13 @@ export function VideoPlayer({
     video.addEventListener('playing', handlePlaying)
     
     // Add play/pause event listeners to sync state
-    const handlePlayEvent = () => setIsPlaying(true)
-    const handlePauseEvent = () => setIsPlaying(false)
+    const handlePlayEvent = () => {
+      setIsPlaying(true)
+      setIsLoading(false)
+    }
+    const handlePauseEvent = () => {
+      setIsPlaying(false)
+    }
     video.addEventListener('play', handlePlayEvent)
     video.addEventListener('pause', handlePauseEvent)
     
@@ -376,20 +385,12 @@ export function VideoPlayer({
         style={{ backgroundColor: '#000' }}
       />
       
-      {/* Loading State - Only show on initial load, not during playback buffering */}
-      {isLoading && !canPlayThrough && !hasError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+      {/* Loading State - Only show when video metadata is not loaded */}
+      {duration === 0 && !hasError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/90">
           <div className="flex flex-col items-center space-y-4">
-            <div className="w-10 h-10 border-3 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-white text-sm font-medium">Preparing video...</p>
-            {bufferingProgress > 0 && (
-              <div className="w-56 bg-gray-700 rounded-full h-2">
-                <div 
-                  className="bg-orange-500 h-2 rounded-full transition-all duration-300" 
-                  style={{ width: `${Math.min(bufferingProgress, 100)}%` }}
-                ></div>
-              </div>
-            )}
+            <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-white text-sm font-medium">Loading video...</p>
           </div>
         </div>
       )}
