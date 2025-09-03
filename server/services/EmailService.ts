@@ -1117,8 +1117,12 @@ export class EmailService {
         return false;
       }
 
-      // Generate smart template data with no contradictions
-      const templateData = await this.generateSmartTemplateData(emailContent, additionalData);
+      // Generate smart template data with no contradictions - pass real goal data
+      const templateData = await this.generateSmartTemplateData(emailContent, {
+        goals: additionalData?.goals || [],
+        recentEntries: additionalData?.recentEntries || [],
+        profile: additionalData?.profile
+      });
 
       const htmlContent = template(templateData);
 
