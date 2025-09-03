@@ -1213,21 +1213,25 @@ export class EmailService {
       // NEW: Comprehensive Dashboard Metrics (matches dashboard cards)
       dashboardMetrics: {
         journal: {
+          title: 'JOURNAL WRITING',
           value: dashboardMetrics.journalStreak,
-          label: dashboardMetrics.journalStreak === 1 ? 'Day Writing Streak' : 'Days Writing Streak',
+          label: dashboardMetrics.journalStreak === 1 ? 'Day Streak' : 'Days Streak',
           color: '#f97316' // Orange
         },
         goals: {
+          title: 'GOAL PROGRESS',
           value: `${dashboardMetrics.goalProgressPercentage}%`,
           label: 'Weighted Progress',
           color: '#3b82f6' // Blue
         },
         training: {
+          title: 'TRAINING MODULES',
           value: `${dashboardMetrics.trainingCompletionRate}%`,
           label: 'Completion Rate',
           color: '#8b5cf6' // Purple
         },
         documents: {
+          title: 'DOCUMENT STORAGE',
           value: dashboardMetrics.documentCount,
           label: 'Documents Stored',
           color: '#22c55e' // Green
