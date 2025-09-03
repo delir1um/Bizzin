@@ -193,18 +193,18 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
         
         {/* Live interim transcript overlay - positioned above the button */}
         <AnimatePresence>
-          {interimTranscript && (
+          {interimTranscript && isListening && (
             <motion.div
-              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              initial={{ opacity: 0, y: 5, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+              exit={{ opacity: 0, y: 5, scale: 0.95 }}
               transition={{ duration: 0.15 }}
-              className="absolute bottom-12 right-0 max-w-xs bg-blue-50 border border-blue-200 rounded-lg p-2 shadow-lg z-10"
+              className="absolute bottom-10 right-0 max-w-xs bg-white border border-gray-200 rounded-lg p-2 shadow-lg z-10"
               data-testid="overlay-interim"
             >
               <div className="flex items-start gap-2">
-                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse flex-shrink-0 mt-1.5"></div>
-                <p className="text-xs text-blue-800 italic leading-relaxed">
+                <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse flex-shrink-0 mt-1.5"></div>
+                <p className="text-xs text-gray-700 leading-relaxed">
                   "{interimTranscript}"
                 </p>
               </div>
