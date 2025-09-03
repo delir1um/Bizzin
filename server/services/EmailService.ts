@@ -928,6 +928,9 @@ export class EmailService {
     const currentHour = new Date().getHours();
     const partOfDay = currentHour < 12 ? 'morning' : currentHour < 17 ? 'afternoon' : 'evening';
 
+    // Get time-based greeting data
+    const greetingData = this.getTimeOfDayGreeting();
+    
     // Use the actual goal and journal data passed from the email generation
     const goals = additionalData?.goals || [];
     const recentEntries = additionalData?.recentEntries || [];
@@ -1083,6 +1086,8 @@ export class EmailService {
       user: {
         firstName: personalData?.userName || 'Anton'
       },
+      timeOfDayGreeting: greetingData.timeOfDayGreeting,
+      greetingEmoji: greetingData.greetingEmoji,
       partOfDay,
       formattedDate: new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
       quote: {
