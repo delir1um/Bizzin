@@ -130,7 +130,8 @@
         
         /* Aggressive dark mode prevention - force light theme across all clients */
         @media (prefers-color-scheme: dark) {
-            body, table, td, p, a, span, div, h1, h2, h3, h4, h5, h6 {
+            *, *:before, *:after,
+            body, table, tbody, tr, td, p, a, span, div, h1, h2, h3, h4, h5, h6 {
                 color: hsl(222.2, 84%, 4.9%) !important;
                 background-color: transparent !important;
             }
@@ -143,16 +144,42 @@
                 background-color: #ffffff !important;
                 color: hsl(222.2, 84%, 4.9%) !important;
             }
+            /* Force all table cells and containers to white */
+            td, th, table {
+                background-color: #ffffff !important;
+            }
+            /* Override any client-applied dark backgrounds */
+            [style*="background"] {
+                background-color: #ffffff !important;
+            }
         }
         
         /* Additional dark mode overrides for specific clients */
-        [data-ogsc] body, [data-ogsc] table, [data-ogsc] td, [data-ogsc] div, [data-ogsc] span, [data-ogsc] p {
+        [data-ogsc] *, [data-ogsc] body, [data-ogsc] table, [data-ogsc] td, [data-ogsc] div, [data-ogsc] span, [data-ogsc] p {
             color: hsl(222.2, 84%, 4.9%) !important;
             background-color: #ffffff !important;
         }
         
         /* Thunderbird and Outlook dark mode fixes */
-        .moz-text-html body, .moz-text-html table, .moz-text-html td {
+        .moz-text-html *, .moz-text-html body, .moz-text-html table, .moz-text-html td {
+            color: hsl(222.2, 84%, 4.9%) !important;
+            background-color: #ffffff !important;
+        }
+        
+        /* Apple Mail dark mode fixes */
+        @media (prefers-color-scheme: dark) {
+            .AppleMailSignature, .AppleMailSignature * {
+                color: hsl(222.2, 84%, 4.9%) !important;
+                background-color: #ffffff !important;
+            }
+        }
+        
+        /* Generic dark mode client overrides */
+        [data-color-mode="dark"] *, 
+        [data-theme="dark"] *,
+        .dark-mode *,
+        body[bgcolor] *,
+        body[style*="background"] * {
             color: hsl(222.2, 84%, 4.9%) !important;
             background-color: #ffffff !important;
         }
@@ -194,17 +221,17 @@
                     
                     <!-- Header with Bizzin logo -->
                     <tr>
-                        <td class="content-padding" style="padding: 24px 32px; text-align: left; border-bottom: 1px solid hsl(214.3, 31.8%, 91.4%);">
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                        <td class="content-padding" style="padding: 24px 32px; text-align: left; border-bottom: 1px solid hsl(214.3, 31.8%, 91.4%); background-color: #ffffff !important;">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #ffffff !important;">
                                 <tr>
-                                    <td style="vertical-align: top;">
-                                        <div class="font-inter" style="font-size: 24px; font-weight: 800; color: hsl(20.5, 90.2%, 48.2%); margin-bottom: 8px; letter-spacing: -0.025em;">
+                                    <td style="vertical-align: top; background-color: #ffffff !important;">
+                                        <div class="font-inter" style="font-size: 24px; font-weight: 800; color: hsl(20.5, 90.2%, 48.2%) !important; margin-bottom: 8px; letter-spacing: -0.025em; background-color: #ffffff !important;">
                                             Bizzin
                                         </div>
-                                        <div class="font-inter" style="font-size: 16px; font-weight: 600; color: hsl(222.2, 84%, 4.9%); margin-bottom: 4px;">
+                                        <div class="font-inter" style="font-size: 16px; font-weight: 600; color: hsl(222.2, 84%, 4.9%) !important; margin-bottom: 4px; background-color: #ffffff !important;">
                                             Good {{partOfDay}}, {{user.firstName}}!
                                         </div>
-                                        <div class="font-inter" style="font-size: 14px; color: hsl(215.4, 16.3%, 46.9%);">
+                                        <div class="font-inter" style="font-size: 14px; color: hsl(215.4, 16.3%, 46.9%) !important; background-color: #ffffff !important;">
                                             Your daily business digest for {{formattedDate}}
                                         </div>
                                     </td>
@@ -215,12 +242,12 @@
 
                     <!-- Daily Business Fuel Quote -->
                     <tr>
-                        <td class="content-padding" style="padding: 24px 32px;">
-                            <div style="border-left: 4px solid hsl(20.5, 90.2%, 48.2%); padding-left: 16px; margin-bottom: 8px;">
-                                <div class="font-inter" style="font-size: 16px; font-style: italic; color: hsl(222.2, 84%, 4.9%); line-height: 1.5; margin-bottom: 8px;">
+                        <td class="content-padding" style="padding: 24px 32px; background-color: #ffffff !important;">
+                            <div style="border-left: 4px solid hsl(20.5, 90.2%, 48.2%); padding-left: 16px; margin-bottom: 8px; background-color: #ffffff !important;">
+                                <div class="font-inter" style="font-size: 16px; font-style: italic; color: hsl(222.2, 84%, 4.9%) !important; line-height: 1.5; margin-bottom: 8px; background-color: #ffffff !important;">
                                     "{{quote.text}}"
                                 </div>
-                                <div class="font-inter" style="font-size: 12px; color: hsl(20.5, 90.2%, 48.2%); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">
+                                <div class="font-inter" style="font-size: 12px; color: hsl(20.5, 90.2%, 48.2%) !important; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; background-color: #ffffff !important;">
                                     Your Daily Business Fuel
                                 </div>
                             </div>
