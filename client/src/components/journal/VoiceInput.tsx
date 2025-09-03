@@ -167,31 +167,30 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
   // Compact mode - clean microphone button in bottom-right corner
   if (compact) {
     return (
-      <div className={`${className} relative`}>
-        <Button
-          type="button"
-          onClick={handleMicToggle}
-          disabled={isDisabled}
-          className={`
-            w-8 h-8 p-0 rounded-full transition-all duration-200 border-0 relative overflow-hidden
-            ${
-              isListening
-                ? 'bg-red-500 hover:bg-red-600 text-white shadow-md animate-pulse'
-                : 'bg-gray-200 hover:bg-gray-300 text-gray-600 shadow-sm hover:shadow-md'
-            }
-          `}
-          title={isListening ? 'Stop recording' : 'Start voice input'}
-          data-testid="button-mic-compact"
-        >
-          <Mic className="w-4 h-4" />
-          
-          {/* Simple pulsing ring for recording state */}
-          {isListening && (
-            <div className="absolute -inset-1 border-2 border-red-300 rounded-full animate-ping opacity-75"></div>
-          )}
-        </Button>
+      <Button
+        type="button"
+        onClick={handleMicToggle}
+        disabled={isDisabled}
+        className={`
+          ${className}
+          w-8 h-8 p-0 rounded-full transition-all duration-200 border-0 relative overflow-hidden z-10
+          ${
+            isListening
+              ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg animate-pulse'
+              : 'bg-gray-300 hover:bg-gray-400 text-gray-600 shadow-sm hover:shadow-md'
+          }
+        `}
+        title={isListening ? 'Stop recording' : 'Start voice input'}
+        data-testid="button-mic-compact"
+      >
+        <Mic className="w-4 h-4" />
         
-        {/* Live interim transcript overlay - positioned above the button */}
+        {/* Animated recording ring */}
+        {isListening && (
+          <div className="absolute -inset-1 border-2 border-red-300 rounded-full animate-ping opacity-75"></div>
+        )}
+        
+        {/* Live transcript overlay */}
         <AnimatePresence>
           {interimTranscript && isListening && (
             <motion.div
@@ -199,7 +198,7 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 5, scale: 0.95 }}
               transition={{ duration: 0.15 }}
-              className="absolute bottom-10 right-0 max-w-xs bg-white border border-gray-200 rounded-lg p-2 shadow-lg z-10"
+              className="absolute bottom-10 right-0 max-w-xs bg-white border border-gray-200 rounded-lg p-2 shadow-lg z-20"
               data-testid="overlay-interim"
             >
               <div className="flex items-start gap-2">
@@ -211,7 +210,7 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </Button>
     )
   }
 
