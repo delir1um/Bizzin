@@ -250,24 +250,47 @@
             line-height: 1.4;
         }
         
-        /* CTA Buttons */
-        .cta-button {
-            background: linear-gradient(135deg, #ea7a57 0%, #f97316 100%) !important;
-            border: none;
-            border-radius: 8px;
+        /* Button Styles - Email Client Compatible */
+        .btn-orange {
+            background-color: #ea7a57 !important;
+            border: none !important;
+            border-radius: 6px !important;
             color: #ffffff !important;
-            display: inline-block;
-            font-size: 14px;
-            font-weight: 600;
-            padding: 14px 24px;
-            text-align: center;
+            display: inline-block !important;
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            padding: 12px 20px !important;
+            text-align: center !important;
             text-decoration: none !important;
-            transition: all 0.2s ease;
+            line-height: 1.2 !important;
         }
         
-        .cta-button:hover {
-            background: linear-gradient(135deg, #e65100 0%, #ea7a57 100%) !important;
-            transform: translateY(-1px);
+        .btn-blue {
+            background-color: #3b82f6 !important;
+            border: none !important;
+            border-radius: 6px !important;
+            color: #ffffff !important;
+            display: inline-block !important;
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            padding: 12px 20px !important;
+            text-align: center !important;
+            text-decoration: none !important;
+            line-height: 1.2 !important;
+        }
+        
+        .btn-primary {
+            background-color: #ea7a57 !important;
+            border: none !important;
+            border-radius: 8px !important;
+            color: #ffffff !important;
+            display: inline-block !important;
+            font-size: 16px !important;
+            font-weight: 600 !important;
+            padding: 16px 32px !important;
+            text-align: center !important;
+            text-decoration: none !important;
+            line-height: 1.2 !important;
         }
         
         /* Footer */
@@ -484,9 +507,15 @@
                                         <p style="color: #94a3b8; font-size: 14px; margin-bottom: 24px; line-height: 1.5;">
                                             Create objectives with progress tracking, priority levels, and milestone management
                                         </p>
-                                        <a href="{{dashboardUrl}}/goals" class="cta-button" style="background: linear-gradient(135deg, #ea7a57 0%, #f97316 100%); border: none; border-radius: 8px; color: #ffffff; display: inline-block; font-size: 14px; font-weight: 600; padding: 14px 24px; text-decoration: none;">
-                                            Start Goal Tracking →
-                                        </a>
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                            <tr>
+                                                <td class="btn-blue" style="background-color: #3b82f6; border-radius: 6px; padding: 0;">
+                                                    <a href="{{dashboardUrl}}/goals" style="background-color: #3b82f6; border: none; border-radius: 6px; color: #ffffff; display: inline-block; font-size: 14px; font-weight: 600; padding: 12px 20px; text-align: center; text-decoration: none; line-height: 1.2;">
+                                                        Start Goal Tracking →
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
                                     </td>
                                 </tr>
                             </table>
@@ -512,9 +541,15 @@
                                             ✨ {{journalStatus.streakDays}} day streak! You're building an amazing habit.
                                         </p>
                                         {{/if}}
-                                        <a href="{{dashboardUrl}}/journal" class="cta-button" style="background: linear-gradient(135deg, #ea7a57 0%, #f97316 100%); border: none; border-radius: 8px; color: #ffffff; display: inline-block; font-size: 14px; font-weight: 600; padding: 14px 24px; text-decoration: none;">
-                                            {{journalCTA}}
-                                        </a>
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                            <tr>
+                                                <td class="btn-orange" style="background-color: #ea7a57; border-radius: 6px; padding: 0;">
+                                                    <a href="{{dashboardUrl}}/journal" style="background-color: #ea7a57; border: none; border-radius: 6px; color: #ffffff; display: inline-block; font-size: 14px; font-weight: 600; padding: 12px 20px; text-align: center; text-decoration: none; line-height: 1.2;">
+                                                        {{journalCTA}} ✨
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
                                     </td>
                                 </tr>
                             </table>
@@ -593,9 +628,15 @@
                                         <p style="color: #f8fafc; font-size: 15px; line-height: 1.5; margin-bottom: 20px; font-style: italic;">
                                             {{journalPrompt}}
                                         </p>
-                                        <a href="{{dashboardUrl}}/journal" class="cta-button" style="background: linear-gradient(135deg, #ea7a57 0%, #f97316 100%); border: none; border-radius: 8px; color: #ffffff; display: inline-block; font-size: 14px; font-weight: 600; padding: 14px 24px; text-decoration: none;">
-                                            {{journalCTA}} ✨
-                                        </a>
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                            <tr>
+                                                <td class="btn-orange" style="background-color: #ea7a57; border-radius: 6px; padding: 0;">
+                                                    <a href="{{dashboardUrl}}/journal" style="background-color: #ea7a57; border: none; border-radius: 6px; color: #ffffff; display: inline-block; font-size: 14px; font-weight: 600; padding: 12px 20px; text-align: center; text-decoration: none; line-height: 1.2;">
+                                                        {{journalCTA}} ✨
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
                                     </td>
                                 </tr>
                             </table>
@@ -605,9 +646,15 @@
                     <!-- Dashboard CTA -->
                     <tr>
                         <td style="text-align: center; padding: 24px 0;">
-                            <a href="{{dashboardUrl}}" class="cta-button" style="background: linear-gradient(135deg, #ea7a57 0%, #f97316 100%); border: none; border-radius: 8px; color: #ffffff; display: inline-block; font-size: 16px; font-weight: 600; padding: 16px 32px; text-decoration: none;">
-                                Open Your Dashboard 🚀
-                            </a>
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <td class="btn-primary" style="background-color: #ea7a57; border-radius: 8px; padding: 0;">
+                                        <a href="{{dashboardUrl}}" style="background-color: #ea7a57; border: none; border-radius: 8px; color: #ffffff; display: inline-block; font-size: 16px; font-weight: 600; padding: 16px 32px; text-align: center; text-decoration: none; line-height: 1.2;">
+                                            Open Your Dashboard 🚀
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
                         </td>
                     </tr>
 
