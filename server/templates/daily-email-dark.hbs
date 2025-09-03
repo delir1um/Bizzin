@@ -419,41 +419,45 @@
                         </td>
                     </tr>
 
-                    <!-- Stats Grid -->
+                    <!-- Dashboard Metrics Grid -->
                     <tr>
                         <td class="stats-container">
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="stats-grid">
                                 <tr>
+                                    <!-- Journal Writing Streak (Orange) -->
                                     <td width="25%" class="stats-cell" style="background-color: #1a1b2e; border: 1px solid #2a2d47; border-radius: 8px; padding: 20px 16px; text-align: center; vertical-align: top;">
-                                        <div class="stats-number" style="color: #ea7a57; font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 6px;">
-                                            {{stats.totalGoals}}
+                                        <div class="stats-number" style="color: #f97316; font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 6px;">
+                                            {{dashboardMetrics.journal.value}}
                                         </div>
                                         <div class="stats-label" style="color: #94a3b8; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px;">
-                                            TOTAL GOALS
+                                            {{dashboardMetrics.journal.label}}
                                         </div>
                                     </td>
+                                    <!-- Goal Progress Percentage (Blue) -->
                                     <td width="25%" class="stats-cell" style="background-color: #1a1b2e; border: 1px solid #2a2d47; border-radius: 8px; padding: 20px 16px; text-align: center; vertical-align: top;">
-                                        <div class="stats-number success" style="color: #10b981; font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 6px;">
-                                            {{stats.completedGoals}}
+                                        <div class="stats-number" style="color: #3b82f6; font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 6px;">
+                                            {{dashboardMetrics.goals.value}}
                                         </div>
                                         <div class="stats-label" style="color: #94a3b8; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px;">
-                                            COMPLETED
+                                            {{dashboardMetrics.goals.label}}
                                         </div>
                                     </td>
+                                    <!-- Training Completion Rate (Purple) -->
                                     <td width="25%" class="stats-cell" style="background-color: #1a1b2e; border: 1px solid #2a2d47; border-radius: 8px; padding: 20px 16px; text-align: center; vertical-align: top;">
-                                        <div class="stats-number" style="color: #ea7a57; font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 6px;">
-                                            {{stats.inProgressGoals}}
+                                        <div class="stats-number" style="color: #8b5cf6; font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 6px;">
+                                            {{dashboardMetrics.training.value}}
                                         </div>
                                         <div class="stats-label" style="color: #94a3b8; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px;">
-                                            IN PROGRESS
+                                            {{dashboardMetrics.training.label}}
                                         </div>
                                     </td>
+                                    <!-- Documents Stored (Green) -->
                                     <td width="25%" class="stats-cell" style="background-color: #1a1b2e; border: 1px solid #2a2d47; border-radius: 8px; padding: 20px 16px; text-align: center; vertical-align: top;">
-                                        <div class="stats-number" style="color: #ea7a57; font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 6px;">
-                                            {{stats.successRate}}%
+                                        <div class="stats-number" style="color: #22c55e; font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 6px;">
+                                            {{dashboardMetrics.documents.value}}
                                         </div>
                                         <div class="stats-label" style="color: #94a3b8; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px;">
-                                            SUCCESS RATE
+                                            {{dashboardMetrics.documents.label}}
                                         </div>
                                     </td>
                                 </tr>

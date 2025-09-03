@@ -922,6 +922,86 @@ export class EmailService {
     return suggestions.slice(0, 2); // Return top 2 suggestions
   }
 
+  // Calculate comprehensive dashboard metrics (matches dashboard cards)
+  private async calculateDashboardMetrics(userId: string, goals: any[], recentEntries: any[]): Promise<any> {
+    console.log('📊 Calculating dashboard metrics for user:', userId);
+
+    // 1. Journal Writing Streak (Orange)
+    const journalStreak = this.calculateJournalStreak(recentEntries || []);
+
+    // 2. Goal Progress Percentage (Blue)
+    let goalProgressPercentage = 0;
+    if (goals && goals.length > 0) {
+      const totalProgress = goals.reduce((sum: number, goal: any) => sum + (goal.progress || 0), 0);
+      goalProgressPercentage = Math.round(totalProgress / goals.length);
+    }
+
+    // 3. Training Completion Rate (Purple) 
+    let trainingCompletionRate = 0;
+    try {
+      // Get all podcast episodes
+      const { data: allEpisodes, error: episodesError } = await supabase
+        .from('podcast_episodes')
+        .select('id, duration');
+
+      if (!episodesError && allEpisodes) {
+        // Get user progress for all episodes
+        const { data: userProgress, error: progressError } = await supabase
+          .from('user_podcast_progress')
+          .select('episode_id, progress_seconds, completed')
+          .eq('user_id', userId);
+
+        if (!progressError && userProgress && allEpisodes.length > 0) {
+          let totalCompletionScore = 0;
+          
+          allEpisodes.forEach((episode: any) => {
+            const progress = userProgress.find((p: any) => p.episode_id === episode.id);
+            
+            if (progress?.completed) {
+              totalCompletionScore += 100; // Full completion
+            } else if (progress?.progress_seconds && progress.progress_seconds > 0) {
+              // Calculate partial completion percentage
+              const episodeCompletion = (progress.progress_seconds / episode.duration) * 100;
+              totalCompletionScore += Math.min(episodeCompletion, 100);
+            }
+            // Episodes with no progress contribute 0 to the score
+          });
+
+          trainingCompletionRate = Math.round(totalCompletionScore / allEpisodes.length);
+        }
+      }
+    } catch (error) {
+      console.warn('Training completion calculation error:', error);
+      trainingCompletionRate = 0;
+    }
+
+    // 4. Documents Saved Count (Green)
+    let documentCount = 0;
+    try {
+      const { data: documents, error: docsError } = await supabase
+        .from('documents')
+        .select('id')
+        .eq('user_id', userId);
+
+      if (!docsError && documents) {
+        documentCount = documents.length;
+      }
+    } catch (error) {
+      console.warn('Document count calculation error:', error);
+      documentCount = 0;
+    }
+
+    const dashboardMetrics = {
+      journalStreak,
+      goalProgressPercentage,
+      trainingCompletionRate,
+      documentCount
+    };
+
+    console.log('📊 Dashboard Metrics Calculated:', dashboardMetrics);
+    return dashboardMetrics;
+  }
+
   // Generate template data with state-aware logic (eliminates contradictions)
   private async generateSmartTemplateData(emailContent: DailyEmailContent, additionalData?: any) {
     const personalData = emailContent.personalization_data as any;
@@ -930,6 +1010,13 @@ export class EmailService {
 
     // Get time-based greeting data
     const greetingData = this.getTimeOfDayGreeting();
+
+    // Calculate comprehensive dashboard metrics
+    const dashboardMetrics = await this.calculateDashboardMetrics(
+      personalData.user_id, 
+      additionalData?.goals || [], 
+      additionalData?.recentEntries || []
+    );
     
     // Use the actual goal and journal data passed from the email generation
     const goals = additionalData?.goals || [];
@@ -1116,11 +1203,35 @@ export class EmailService {
       quote: {
         text: "Great things never come from comfort zones."
       },
+      // Legacy stats for backwards compatibility
       stats: {
         totalGoals,
         completedGoals: completedGoals.length,
         inProgressGoals: activeGoals.length,
         successRate
+      },
+      // NEW: Comprehensive Dashboard Metrics (matches dashboard cards)
+      dashboardMetrics: {
+        journal: {
+          value: dashboardMetrics.journalStreak,
+          label: dashboardMetrics.journalStreak === 1 ? 'Day Writing Streak' : 'Days Writing Streak',
+          color: '#f97316' // Orange
+        },
+        goals: {
+          value: `${dashboardMetrics.goalProgressPercentage}%`,
+          label: 'Weighted Progress',
+          color: '#3b82f6' // Blue
+        },
+        training: {
+          value: `${dashboardMetrics.trainingCompletionRate}%`,
+          label: 'Completion Rate',
+          color: '#8b5cf6' // Purple
+        },
+        documents: {
+          value: dashboardMetrics.documentCount,
+          label: 'Documents Stored',
+          color: '#22c55e' // Green
+        }
       },
       goalPreviews,
       journalStatus,
