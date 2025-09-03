@@ -52,6 +52,7 @@ export function VideoPlayer({
   const [showControls, setShowControls] = useState(true)
   const [hasError, setHasError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [bufferingProgress, setBufferingProgress] = useState(0)
   
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -65,6 +66,21 @@ export function VideoPlayer({
     const video = videoRef.current
     if (!video) return
 
+    // Optimize video loading for better streaming
+    video.setAttribute('preload', 'auto')
+    video.setAttribute('buffered', 'true')
+    
+    const handleLoadStart = () => {
+      setIsLoading(true)
+      setHasError(false)
+    }
+    
+    const handleLoadedData = () => {
+      // This fires when enough data is loaded to start playback
+      setIsLoading(false)
+      console.log('Video data loaded - ready for playback')
+    }
+
     const handleLoadedMetadata = () => {
       setDuration(video.duration)
       // Notify parent component of actual duration
@@ -75,9 +91,16 @@ export function VideoPlayer({
         video.currentTime = startTime
         setCurrentTime(startTime)
       }
-      // Auto-play video once metadata is loaded
-      setIsPlaying(true)
-      video.play().catch(console.error)
+    }
+    
+    const handleCanPlayThrough = () => {
+      // Video has buffered enough to play without interruption
+      console.log('Video can play through without buffering')
+      // Auto-play video once it can play smoothly
+      if (!isPlaying) {
+        setIsPlaying(true)
+        video.play().catch(console.error)
+      }
     }
 
     const handleTimeUpdate = () => {
@@ -107,20 +130,54 @@ export function VideoPlayer({
     const handleCanPlay = () => {
       setIsLoading(false)
       setHasError(false)
+      console.log('Video ready to play')
+    }
+    
+    const handleProgress = () => {
+      if (video.buffered.length > 0) {
+        const bufferedEnd = video.buffered.end(video.buffered.length - 1)
+        const bufferPercent = duration > 0 ? (bufferedEnd / duration) * 100 : 0
+        setBufferingProgress(bufferPercent)
+        console.log(`Video buffered: ${Math.round(bufferPercent)}%`)
+      }
+    }
+    
+    const handleWaiting = () => {
+      console.log('Video buffering...')
+    }
+    
+    const handlePlaying = () => {
+      setIsLoading(false)
+      console.log('Video playing smoothly')
     }
 
+    video.addEventListener('loadstart', handleLoadStart)
+    video.addEventListener('loadeddata', handleLoadedData)
     video.addEventListener('loadedmetadata', handleLoadedMetadata)
+    video.addEventListener('canplaythrough', handleCanPlayThrough)
     video.addEventListener('timeupdate', handleTimeUpdate)
     video.addEventListener('ended', handleEnded)
     video.addEventListener('error', handleError)
     video.addEventListener('canplay', handleCanPlay)
+    video.addEventListener('progress', handleProgress)
+    video.addEventListener('waiting', handleWaiting)
+    video.addEventListener('playing', handlePlaying)
+    
+    // Preload the video immediately
+    video.load()
 
     return () => {
+      video.removeEventListener('loadstart', handleLoadStart)
+      video.removeEventListener('loadeddata', handleLoadedData)
       video.removeEventListener('loadedmetadata', handleLoadedMetadata)
+      video.removeEventListener('canplaythrough', handleCanPlayThrough)
       video.removeEventListener('timeupdate', handleTimeUpdate)
       video.removeEventListener('ended', handleEnded)
       video.removeEventListener('error', handleError)
       video.removeEventListener('canplay', handleCanPlay)
+      video.removeEventListener('progress', handleProgress)
+      video.removeEventListener('waiting', handleWaiting)
+      video.removeEventListener('playing', handlePlaying)
     }
   }, [startTime, onTimeUpdate, onEnded, proxyVideoUrl])
 
@@ -271,7 +328,11 @@ export function VideoPlayer({
         className="w-full h-full"
         onClick={togglePlay}
         crossOrigin="anonymous"
-        preload="metadata"
+        preload="auto"
+        playsInline
+        muted={false}
+        controls={false}
+        style={{ backgroundColor: '#000' }}
       />
       
       {/* Loading State */}
@@ -280,6 +341,17 @@ export function VideoPlayer({
           <div className="flex flex-col items-center space-y-4">
             <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
             <p className="text-white text-sm">Loading video...</p>
+            {bufferingProgress > 0 && (
+              <div className="w-48 bg-gray-700 rounded-full h-1.5">
+                <div 
+                  className="bg-orange-500 h-1.5 rounded-full transition-all duration-300" 
+                  style={{ width: `${Math.min(bufferingProgress, 100)}%` }}
+                ></div>
+              </div>
+            )}
+            {bufferingProgress > 0 && (
+              <p className="text-white text-xs">{Math.round(bufferingProgress)}% buffered</p>
+            )}
           </div>
         </div>
       )}

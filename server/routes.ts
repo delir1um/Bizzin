@@ -473,6 +473,47 @@ ${new Date().toISOString().split('T')[0]}`;
     }
   });
 
+  // Handle HEAD requests for video proxy (for preloading)
+  app.head('/api/video-proxy/:videoKey(*)', async (req, res) => {
+    try {
+      const videoKey = req.params.videoKey;
+      
+      if (!process.env.CLOUDFLARE_ACCOUNT_ID || !process.env.CLOUDFLARE_R2_ACCESS_KEY_ID) {
+        return res.status(500).end();
+      }
+      
+      const { S3Client, HeadObjectCommand } = await import('@aws-sdk/client-s3');
+      const BUCKET_NAME = process.env.CLOUDFLARE_R2_BUCKET_NAME || 'bizzin-podcasts';
+      const s3Client = new S3Client({
+        region: 'auto',
+        endpoint: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+        credentials: {
+          accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID,
+          secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
+        }
+      });
+      
+      const command = new HeadObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: videoKey,
+      });
+      
+      const response = await s3Client.send(command);
+      
+      // Set headers for HEAD request
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Content-Type', response.ContentType || 'video/mp4');
+      res.header('Content-Length', response.ContentLength?.toString() || '0');
+      res.header('Accept-Ranges', 'bytes');
+      res.header('Cache-Control', 'public, max-age=3600, immutable');
+      res.status(200).end();
+      
+    } catch (error) {
+      console.error('HEAD request error:', error);
+      res.status(404).end();
+    }
+  });
+
   // Video proxy endpoint to serve R2 videos with CORS headers
   app.get('/api/video-proxy/:videoKey(*)', async (req, res) => {
     try {
@@ -517,9 +558,16 @@ ${new Date().toISOString().split('T')[0]}`;
       res.header('Access-Control-Allow-Headers', 'Range, Content-Type');
       res.header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
       
-      // Set appropriate content type and headers for video
+      // Set appropriate content type and headers for media streaming
       res.header('Content-Type', response.ContentType || 'video/mp4');
       res.header('Accept-Ranges', 'bytes');
+      
+      // Add caching headers for better performance
+      res.header('Cache-Control', 'public, max-age=3600, immutable');
+      res.header('ETag', `"${videoKey}-${response.ContentLength}"`);
+      
+      // Enable progressive streaming
+      res.header('Connection', 'keep-alive');
       
       if (response.ContentLength) {
         res.header('Content-Length', response.ContentLength.toString());
@@ -529,19 +577,24 @@ ${new Date().toISOString().split('T')[0]}`;
       const range = req.headers.range;
       if (range && response.ContentLength) {
         console.log('Range request received:', range);
-        // Close current response and make a new range request
-        const { GetObjectCommand } = await import('@aws-sdk/client-s3');
-        const rangeCommand = new GetObjectCommand({
-          Bucket: BUCKET_NAME,
-          Key: videoKey,
-          Range: range,
-        });
-        
-        const rangeResponse = await s3Client.send(rangeCommand);
         
         const parts = range.replace(/bytes=/, "").split("-");
         const start = parseInt(parts[0], 10);
-        const end = parts[1] ? parseInt(parts[1], 10) : response.ContentLength - 1;
+        let end = parts[1] ? parseInt(parts[1], 10) : response.ContentLength - 1;
+        
+        // Optimize buffering by requesting larger chunks for streaming
+        const chunkSize = 1024 * 1024; // 1MB chunks for better streaming
+        if (!parts[1]) { // If no end specified, request a larger initial chunk
+          end = Math.min(start + chunkSize - 1, response.ContentLength - 1);
+        }
+        
+        const rangeCommand = new GetObjectCommand({
+          Bucket: BUCKET_NAME,
+          Key: videoKey,
+          Range: `bytes=${start}-${end}`,
+        });
+        
+        const rangeResponse = await s3Client.send(rangeCommand);
         
         res.status(206);
         res.header('Content-Range', `bytes ${start}-${end}/${response.ContentLength}`);
@@ -549,7 +602,26 @@ ${new Date().toISOString().split('T')[0]}`;
         
         if (rangeResponse.Body) {
           const stream = rangeResponse.Body as any;
-          stream.pipe(res);
+          
+          // Add stream optimization
+          stream.on('data', (chunk: any) => {
+            if (!res.destroyed) {
+              res.write(chunk);
+            }
+          });
+          
+          stream.on('end', () => {
+            if (!res.destroyed) {
+              res.end();
+            }
+          });
+          
+          stream.on('error', (streamError: any) => {
+            console.error('Stream error:', streamError);
+            if (!res.destroyed && !res.headersSent) {
+              res.status(500).end();
+            }
+          });
         }
       } else {
         // Full file request

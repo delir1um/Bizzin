@@ -136,23 +136,23 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
       // Prefer dedicated audio URL for instant playback, fallback to video URL
       let audioSource = episode.audio_url || episode.video_url
       
-      // Only use proxy for video files (MP4), direct access for audio files (MP3, M4A, etc.)
-      if (audioSource && audioSource.includes('bizzin.r2.dev')) {
+      // Route all R2 files through proxy to avoid CORS issues and enable caching
+      if (audioSource && (audioSource.includes('bizzin.r2.dev') || audioSource.includes('.r2.cloudflarestorage.com'))) {
         const filename = audioSource.split('/').pop()
-        const extension = filename?.split('.').pop()?.toLowerCase()
-        
-        // Use proxy only for video files, direct access for audio files
-        if (extension === 'mp4' || extension === 'webm' || extension === 'mov') {
-          audioSource = `/api/video-proxy/videos/${filename}`
-        }
-        // For audio files (mp3, m4a, wav, etc.), use direct URL for instant loading
+        // Use proxy for all R2 files (both video and audio) for consistent performance
+        audioSource = `/api/video-proxy/videos/${filename}`
       }
       
       if (audioSource && audioSource.trim() !== '') {
         // Create audio element if it doesn't exist
         if (!audioRef.current) {
           audioRef.current = new Audio()
-          audioRef.current.preload = 'metadata'
+          audioRef.current.preload = 'auto'
+          audioRef.current.crossOrigin = 'anonymous'
+          
+          // Enable faster loading and buffering
+          audioRef.current.setAttribute('webkit-playsinline', 'true')
+          audioRef.current.setAttribute('playsinline', 'true')
           
           // Set up audio event listeners
           audioRef.current.addEventListener('loadstart', () => {
@@ -166,6 +166,26 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
           audioRef.current.addEventListener('loadedmetadata', () => {
             if (audioRef.current) {
               setActualDuration(audioRef.current.duration)
+              console.log('Audio metadata loaded, duration:', audioRef.current.duration)
+            }
+          })
+          
+          audioRef.current.addEventListener('loadeddata', () => {
+            setIsAudioLoading(false)
+            console.log('Audio data loaded - ready for playback')
+          })
+          
+          audioRef.current.addEventListener('canplaythrough', () => {
+            console.log('Audio can play through without buffering')
+          })
+          
+          audioRef.current.addEventListener('progress', () => {
+            if (audioRef.current) {
+              const buffered = audioRef.current.buffered
+              if (buffered.length > 0) {
+                const bufferedEnd = buffered.end(buffered.length - 1)
+                console.log('Audio buffered:', Math.round(bufferedEnd), 'seconds')
+              }
             }
           })
           
@@ -187,7 +207,16 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
         if (audioRef.current.src !== fullAudioSource) {
           console.log('Setting audio source:', fullAudioSource)
           audioRef.current.src = fullAudioSource
-          audioRef.current.load() // Reload with new source
+          
+          // Force immediate loading for faster start
+          audioRef.current.load()
+          
+          // Pre-buffer some content
+          setTimeout(() => {
+            if (audioRef.current && audioRef.current.readyState >= 2) {
+              console.log('Audio ready for playback')
+            }
+          }, 100)
         }
         
         // Remove any existing listeners before adding new ones
