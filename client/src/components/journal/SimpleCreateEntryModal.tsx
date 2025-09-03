@@ -180,23 +180,26 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
             )}
             
             <div className="space-y-2 sm:space-y-3">
-              <Textarea
-                placeholder="What's on your mind? Start typing or use voice input, and AI will analyze your business thoughts..."
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                className="min-h-[140px] sm:min-h-[120px] resize-none text-base sm:text-sm leading-relaxed"
-                rows={6}
-                autoFocus
-                data-testid="textarea-content"
-              />
-              
-              {/* Enhanced Voice Input Component */}
-              <VoiceInput
-                onTranscript={handleVoiceTranscript}
-                isDisabled={createEntryMutation.isPending}
-                language="en-US"
-                className="mt-2"
-              />
+              <div className="relative">
+                <Textarea
+                  placeholder="What's on your mind? Start typing or use voice input, and AI will analyze your business thoughts..."
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="min-h-[140px] sm:min-h-[120px] resize-none text-base sm:text-sm leading-relaxed pr-12"
+                  rows={6}
+                  autoFocus
+                  data-testid="textarea-content"
+                />
+                
+                {/* Integrated Voice Input Component */}
+                <VoiceInput
+                  onTranscript={handleVoiceTranscript}
+                  isDisabled={createEntryMutation.isPending}
+                  language="en-US"
+                  className="absolute bottom-3 right-3"
+                  compact={true}
+                />
+              </div>
             </div>
           </div>
 

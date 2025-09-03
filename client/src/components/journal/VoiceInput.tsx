@@ -11,9 +11,10 @@ interface VoiceInputProps {
   isDisabled?: boolean
   language?: string
   className?: string
+  compact?: boolean
 }
 
-export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US', className = '' }: VoiceInputProps) {
+export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US', className = '', compact = false }: VoiceInputProps) {
   const { toast } = useToast()
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null)
   const [showPermissionHelper, setShowPermissionHelper] = useState(false)
@@ -45,15 +46,17 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
     onStateChange: (newState) => {
       if (newState === 'listening') {
         setSessionStartTime(Date.now())
-        toast({
-          title: "🎤 Listening...",
-          description: "Start speaking your journal entry",
-          className: "border-blue-200 bg-blue-50 text-blue-800"
-        })
+        if (!compact) {
+          toast({
+            title: "🎤 Listening...",
+            description: "Start speaking your journal entry",
+            className: "border-blue-200 bg-blue-50 text-blue-800"
+          })
+        }
       } else if (newState === 'ready' && sessionStartTime) {
         const duration = Math.round((Date.now() - sessionStartTime) / 1000)
         setSessionStartTime(null)
-        if (duration > 3) {
+        if (duration > 3 && !compact) {
           toast({
             title: "🎤 Recording stopped",
             description: `Recorded for ${duration} seconds`,
@@ -127,6 +130,9 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
   const StateIcon = stateInfo.icon
 
   if (!isSupported) {
+    if (compact) {
+      return null // Don't show anything in compact mode if not supported
+    }
     return (
       <div className={`text-center p-4 border rounded-lg bg-gray-50 ${className}`}>
         <AlertCircle className="w-6 h-6 text-gray-400 mx-auto mb-2" />
@@ -141,6 +147,59 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
     )
   }
 
+  // Compact mode - just the microphone button
+  if (compact) {
+    return (
+      <div className={`${className}`}>
+        <Button
+          type="button"
+          onClick={handleMicToggle}
+          disabled={isDisabled || state === 'requesting-permission' || state === 'processing'}
+          className={`
+            w-8 h-8 p-0 rounded-full transition-all duration-300 border-0 shadow-sm
+            ${isListening 
+              ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-200' 
+              : 'bg-gray-100 hover:bg-orange-50 text-gray-500 hover:text-orange-600'
+            }
+            ${isListening ? 'animate-pulse' : ''}
+          `}
+          title={isListening ? 'Stop recording' : 'Start voice input'}
+          data-testid="button-mic-compact"
+        >
+          {isListening ? (
+            <div className="relative flex items-center justify-center">
+              <div className="w-2.5 h-2.5 bg-white rounded-full"></div>
+            </div>
+          ) : (
+            <Mic className="w-4 h-4" />
+          )}
+        </Button>
+        
+        {/* Live interim transcript overlay - positioned above the button */}
+        <AnimatePresence>
+          {interimTranscript && (
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+              transition={{ duration: 0.15 }}
+              className="absolute bottom-12 right-0 max-w-xs bg-blue-50 border border-blue-200 rounded-lg p-2 shadow-lg z-10"
+              data-testid="overlay-interim"
+            >
+              <div className="flex items-start gap-2">
+                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse flex-shrink-0 mt-1.5"></div>
+                <p className="text-xs text-blue-800 italic leading-relaxed">
+                  "{interimTranscript}"
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    )
+  }
+
+  // Full mode - existing implementation
   return (
     <div className={`space-y-3 ${className}`}>
       {/* Main Voice Control */}
@@ -322,7 +381,7 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
       {!isListening && !error && state === 'ready' && (
         <div className="text-center">
           <p className="text-xs text-gray-500">
-            Tap the microphone to start voice input, or type your entry below
+            Tap the microphone to start voice input
           </p>
         </div>
       )}
