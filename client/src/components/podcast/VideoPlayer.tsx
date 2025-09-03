@@ -55,6 +55,7 @@ export function VideoPlayer({
   const [isBuffering, setIsBuffering] = useState(false)
   const [bufferingProgress, setBufferingProgress] = useState(0)
   const [canPlayThrough, setCanPlayThrough] = useState(false)
+  const [isVideoReady, setIsVideoReady] = useState(false)
   
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -76,6 +77,7 @@ export function VideoPlayer({
     setCurrentTime(startTime)
     setDuration(0)
     setIsPlaying(false)
+    setIsVideoReady(false)
 
     // Optimize video loading for better streaming
     video.setAttribute('preload', 'auto')
@@ -99,8 +101,9 @@ export function VideoPlayer({
       setDuration(videoDuration)
       console.log('Video duration updated:', videoDuration, 'Episode duration:', Math.floor(videoDuration))
       
-      // Video metadata is loaded - we can hide loading now
+      // Video metadata is loaded - we can hide loading now and make it ready
       setIsLoading(false)
+      setIsVideoReady(true)
       
       // Notify parent component of actual duration
       if (onDurationUpdate) {
@@ -129,15 +132,18 @@ export function VideoPlayer({
 
     const handleTimeUpdate = () => {
       const time = video.currentTime
-      setCurrentTime(time)
       
-      // Also update duration if it changed (important for video files)
-      if (video.duration && video.duration !== duration) {
-        setDuration(video.duration)
+      // Only update if time has changed significantly (prevent rapid updates)
+      if (Math.abs(time - currentTime) > 0.1) {
+        setCurrentTime(time)
+        // Update parent with current time
+        onTimeUpdate(time)
       }
       
-      // Update parent with current time
-      onTimeUpdate(time)
+      // Also update duration if it changed (important for video files)
+      if (video.duration && video.duration !== duration && video.duration > 0) {
+        setDuration(video.duration)
+      }
     }
 
     const handleEnded = () => {
@@ -387,8 +393,8 @@ export function VideoPlayer({
         style={{ backgroundColor: '#000' }}
       />
       
-      {/* Loading State - Only show when video is actually loading */}
-      {isLoading && duration === 0 && !hasError && (
+      {/* Loading State - Only show when video duration is not available */}
+      {duration <= 0 && !hasError && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/90">
           <div className="flex flex-col items-center space-y-4">
             <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
