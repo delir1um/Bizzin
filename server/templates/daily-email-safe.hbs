@@ -128,7 +128,7 @@
             font-size: 14px;
         }
         
-        /* Dark mode prevention - force light theme */
+        /* Aggressive dark mode prevention - force light theme across all clients */
         @media (prefers-color-scheme: dark) {
             body, table, td, p, a, span, div, h1, h2, h3, h4, h5, h6 {
                 color: hsl(222.2, 84%, 4.9%) !important;
@@ -136,6 +136,30 @@
             }
             .bg-white { background-color: #ffffff !important; }
             .bg-slate { background-color: hsl(210, 40%, 98%) !important; }
+            .container, .main-container, .email-wrapper {
+                background-color: #ffffff !important;
+            }
+            .card, .stats-card, .goal-card {
+                background-color: #ffffff !important;
+                color: hsl(222.2, 84%, 4.9%) !important;
+            }
+        }
+        
+        /* Additional dark mode overrides for specific clients */
+        [data-ogsc] body, [data-ogsc] table, [data-ogsc] td, [data-ogsc] div, [data-ogsc] span, [data-ogsc] p {
+            color: hsl(222.2, 84%, 4.9%) !important;
+            background-color: #ffffff !important;
+        }
+        
+        /* Thunderbird and Outlook dark mode fixes */
+        .moz-text-html body, .moz-text-html table, .moz-text-html td {
+            color: hsl(222.2, 84%, 4.9%) !important;
+            background-color: #ffffff !important;
+        }
+        
+        /* Force container backgrounds */
+        body {
+            background-color: hsl(210, 40%, 98%) !important;
         }
         
         /* Gmail overrides */
@@ -160,13 +184,13 @@
         }
     </style>
 </head>
-<body class="font-inter" style="margin: 0; padding: 0; background-color: hsl(210, 40%, 98%);">
+<body class="font-inter" style="margin: 0; padding: 0; background-color: hsl(210, 40%, 98%) !important; color: hsl(222.2, 84%, 4.9%) !important;">
     <!-- Email wrapper -->
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: hsl(210, 40%, 98%);">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: hsl(210, 40%, 98%) !important;">
         <tr>
             <td align="center" style="padding: 32px 16px;">
                 <!-- Main container -->
-                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="640" class="container" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="640" class="container main-container" style="background-color: #ffffff !important; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                     
                     <!-- Header with Bizzin logo -->
                     <tr>
