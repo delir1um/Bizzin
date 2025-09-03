@@ -52,7 +52,9 @@ export function VideoPlayer({
   const [showControls, setShowControls] = useState(true)
   const [hasError, setHasError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [isBuffering, setIsBuffering] = useState(false)
   const [bufferingProgress, setBufferingProgress] = useState(0)
+  const [canPlayThrough, setCanPlayThrough] = useState(false)
   
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -77,8 +79,9 @@ export function VideoPlayer({
     
     const handleLoadedData = () => {
       // This fires when enough data is loaded to start playback
-      setIsLoading(false)
       console.log('Video data loaded - ready for playback')
+      setIsLoading(false)
+      setIsBuffering(false)
     }
 
     const handleLoadedMetadata = () => {
@@ -96,11 +99,11 @@ export function VideoPlayer({
     const handleCanPlayThrough = () => {
       // Video has buffered enough to play without interruption
       console.log('Video can play through without buffering')
-      // Auto-play video once it can play smoothly
-      if (!isPlaying) {
-        setIsPlaying(true)
-        video.play().catch(console.error)
-      }
+      setCanPlayThrough(true)
+      setIsLoading(false)
+      setIsBuffering(false)
+      // Don't auto-play immediately, let user control playback
+      // Auto-play is handled by the parent component
     }
 
     const handleTimeUpdate = () => {
@@ -128,7 +131,10 @@ export function VideoPlayer({
     }
 
     const handleCanPlay = () => {
-      setIsLoading(false)
+      // Only hide loading if we haven't started playing yet
+      if (!isPlaying) {
+        setIsLoading(false)
+      }
       setHasError(false)
       console.log('Video ready to play')
     }
@@ -144,10 +150,12 @@ export function VideoPlayer({
     
     const handleWaiting = () => {
       console.log('Video buffering...')
+      setIsBuffering(true)
     }
     
     const handlePlaying = () => {
       setIsLoading(false)
+      setIsBuffering(false)
       console.log('Video playing smoothly')
     }
 
@@ -335,23 +343,30 @@ export function VideoPlayer({
         style={{ backgroundColor: '#000' }}
       />
       
-      {/* Loading State */}
-      {isLoading && !hasError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+      {/* Loading State - Only show on initial load, not during playback buffering */}
+      {isLoading && !canPlayThrough && !hasError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/80">
           <div className="flex flex-col items-center space-y-4">
-            <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-white text-sm">Loading video...</p>
+            <div className="w-10 h-10 border-3 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-white text-sm font-medium">Preparing video...</p>
             {bufferingProgress > 0 && (
-              <div className="w-48 bg-gray-700 rounded-full h-1.5">
+              <div className="w-56 bg-gray-700 rounded-full h-2">
                 <div 
-                  className="bg-orange-500 h-1.5 rounded-full transition-all duration-300" 
+                  className="bg-orange-500 h-2 rounded-full transition-all duration-300" 
                   style={{ width: `${Math.min(bufferingProgress, 100)}%` }}
                 ></div>
               </div>
             )}
-            {bufferingProgress > 0 && (
-              <p className="text-white text-xs">{Math.round(bufferingProgress)}% buffered</p>
-            )}
+          </div>
+        </div>
+      )}
+      
+      {/* Buffering State - Show minimal indicator during playback buffering */}
+      {isBuffering && canPlayThrough && !hasError && (
+        <div className="absolute top-4 right-4">
+          <div className="bg-black/60 rounded-lg px-3 py-2 flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-white text-xs">Buffering...</span>
           </div>
         </div>
       )}
