@@ -255,23 +255,17 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
     setError(null)
     setRetryCount(0)
 
-    // Request microphone permission first
     try {
       updateState('requesting-permission')
       
-      // Try to get user media to ensure permission
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      stream.getTracks().forEach(track => track.stop()) // Stop the stream immediately
-      
-      updateState('processing')
-      
-      // Start recognition
+      // Start recognition directly - let it handle permission requests
       isStartingRef.current = true
       recognitionRef.current.start()
       
-    } catch (permissionError) {
-      console.error('Permission error:', permissionError)
-      setErrorState('permission-denied', 'Microphone permission is required for voice input')
+    } catch (startError) {
+      console.error('Speech recognition start error:', startError)
+      isStartingRef.current = false
+      setErrorState('start-failed', 'Failed to start voice input. Please try again.')
       updateState('ready')
     }
   }, [isSupported, state, setErrorState, updateState])
