@@ -173,17 +173,18 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
         disabled={isDisabled}
         className={`
           ${className}
-          w-8 h-8 p-0 rounded-full transition-all duration-200 border-0 relative overflow-hidden z-10
+          w-9 h-9 p-0 rounded-full transition-all duration-200 border-0 relative overflow-hidden
           ${
             isListening
               ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg animate-pulse'
-              : 'bg-gray-300 hover:bg-gray-400 text-gray-600 shadow-sm hover:shadow-md'
+              : 'bg-orange-200 hover:bg-orange-300 text-orange-700 shadow-sm hover:shadow-md'
           }
         `}
+        style={{ zIndex: 1000 }}
         title={isListening ? 'Stop recording' : 'Start voice input'}
         data-testid="button-mic-compact"
       >
-        <Mic className="w-4 h-4" />
+        <Mic className="w-5 h-5" />
         
         {/* Animated recording ring */}
         {isListening && (
@@ -198,7 +199,8 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 5, scale: 0.95 }}
               transition={{ duration: 0.15 }}
-              className="absolute bottom-10 right-0 max-w-xs bg-white border border-gray-200 rounded-lg p-2 shadow-lg z-20"
+              className="absolute bottom-12 right-0 max-w-xs bg-white border border-gray-200 rounded-lg p-2 shadow-lg"
+              style={{ zIndex: 1001 }}
               data-testid="overlay-interim"
             >
               <div className="flex items-start gap-2">
