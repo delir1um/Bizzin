@@ -297,6 +297,7 @@ export class EmailService {
       personalizationData: {
         userName,
         currentDate,
+        user_id: profile.user_id, // Add user_id to personalization data
         totalGoals: goals?.filter(g => ['in_progress', 'not_started'].includes(g.status))?.length || 0, // Only count active goals
         recentEntryCount: recentEntries?.length || 0, // Total entries (for context)
         thisWeekEntryCount: this.getEntriesThisWeek(recentEntries).length, // This week specifically
@@ -1011,9 +1012,14 @@ export class EmailService {
     // Get time-based greeting data
     const greetingData = this.getTimeOfDayGreeting();
 
-    // Calculate comprehensive dashboard metrics
+    // Calculate comprehensive dashboard metrics - Get user ID from multiple sources
+    const userId = (emailContent as any).user_id || 
+                  personalData.user_id || 
+                  additionalData?.profile?.user_id;
+    console.log('🔍 User ID for dashboard metrics:', userId);
+    
     const dashboardMetrics = await this.calculateDashboardMetrics(
-      personalData.user_id, 
+      userId, 
       additionalData?.goals || [], 
       additionalData?.recentEntries || []
     );
