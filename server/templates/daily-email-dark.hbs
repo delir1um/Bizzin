@@ -222,9 +222,10 @@
         }
         
         .progress-fill {
-            background: linear-gradient(90deg, #ea7a57 0%, #f97316 100%);
+            background-color: #ea7a57 !important;
             border-radius: 6px;
             height: 100%;
+            min-width: 3px;
         }
         
         .goal-meta {
@@ -456,7 +457,7 @@
                                                     {{/if}}
                                                     <!-- Progress Bar -->
                                                     <div class="progress-bar" style="background-color: #2a2d47; border-radius: 6px; height: 8px; margin-bottom: 10px; overflow: hidden;">
-                                                        <div class="progress-fill" style="background: linear-gradient(90deg, #ea7a57 0%, #f97316 100%); width: {{this.progress}}%; height: 100%; border-radius: 6px;"></div>
+                                                        <div class="progress-fill" style="background-color: #ea7a57 !important; width: {{this.progress}}%; height: 100%; border-radius: 6px; {{#if this.progress}}{{#if (gt this.progress 0)}}min-width: {{this.progress}}%;{{else}}min-width: 3px;{{/if}}{{else}}min-width: 3px;{{/if}}"></div>
                                                     </div>
                                                     <p class="goal-meta" style="color: #94a3b8; font-size: 12px; margin: 0;">
                                                         {{this.priority}} Priority • {{this.category}} • {{this.progress}}% Complete

@@ -1061,17 +1061,40 @@ export class EmailService {
       cta: "View Progress"
     });
 
-    // Goal previews with proper status mapping
-    const goalPreviews = activeGoals.slice(0, 3).map((goal: any) => ({
-      title: goal.title,
-      description: goal.description?.substring(0, 120) + (goal.description?.length > 120 ? '...' : '') || 'No description provided',
-      progress: goal.progress || 0,
-      priority: goal.priority || 'Medium',
-      category: goal.category || 'General',
-      dueDate: goal.deadline ? new Date(goal.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : null,
-      status: this.mapGoalStatus(goal.status, goal.progress || 0),
-      statusClass: this.getStatusClass(goal.status, goal.progress || 0)
-    }));
+    // Goal previews with proper progress calculation
+    const goalPreviews = activeGoals.slice(0, 3).map((goal: any) => {
+      // Calculate progress based on goal type
+      let progress = 0;
+      if (goal.goal_type === 'milestone' && goal.milestones?.length) {
+        const completedMilestones = goal.milestones.filter((m: any) => m.completed).length;
+        progress = Math.round((completedMilestones / goal.milestones.length) * 100);
+      } else if (goal.goal_type === 'manual' && goal.current_value && goal.target_value) {
+        progress = Math.min(100, Math.round((goal.current_value / goal.target_value) * 100));
+      } else {
+        // Fallback: use existing progress or estimate based on status
+        progress = goal.progress || (goal.status === 'completed' ? 100 : goal.status === 'in_progress' ? 50 : 0);
+      }
+      
+      console.log(`Goal "${goal.title}" progress calculation:`, {
+        goalType: goal.goal_type,
+        milestones: goal.milestones?.length || 0,
+        currentValue: goal.current_value,
+        targetValue: goal.target_value,
+        calculatedProgress: progress,
+        status: goal.status
+      });
+      
+      return {
+        title: goal.title,
+        description: goal.description?.substring(0, 120) + (goal.description?.length > 120 ? '...' : '') || 'No description provided',
+        progress: progress,
+        priority: goal.priority || 'Medium',
+        category: goal.category || 'General',
+        dueDate: goal.deadline ? new Date(goal.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : null,
+        status: this.mapGoalStatus(goal.status, progress),
+        statusClass: this.getStatusClass(goal.status, progress)
+      };
+    });
 
     // Business insight with state awareness
     let businessInsight = null;
