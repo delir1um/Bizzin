@@ -10,10 +10,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { useAuth } from "@/hooks/AuthProvider"
 import { supabase } from "@/lib/supabase"
-import { User, Settings, Mail, Phone, MapPin, Calendar, Save, AlertCircle, CheckCircle, Camera, Upload, Trash2, Crown, Users } from "lucide-react"
+import { User, Settings, Mail, Phone, MapPin, Calendar, Save, AlertCircle, CheckCircle, Camera, Upload, Trash2, Crown, Users, Bell } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PlanManagement } from "@/components/profile/PlanManagement"
 import { ReferralDashboard } from "@/components/referrals/ReferralDashboard"
+import { NotificationManagement } from "@/components/profile/NotificationManagement"
 import { motion, AnimatePresence } from "framer-motion"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
@@ -251,7 +252,7 @@ export default function ProfilePage() {
       </motion.div>
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full max-w-lg grid-cols-3">
+        <TabsList className="grid w-full max-w-2xl grid-cols-4">
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <Settings className="w-4 h-4" />
             Profile
@@ -263,6 +264,10 @@ export default function ProfilePage() {
           <TabsTrigger value="referrals" className="flex items-center gap-2">
             <Users className="w-4 h-4" />
             Referrals
+          </TabsTrigger>
+          <TabsTrigger value="notifications" className="flex items-center gap-2">
+            <Bell className="w-4 h-4" />
+            Notifications
           </TabsTrigger>
         </TabsList>
 
@@ -565,6 +570,10 @@ export default function ProfilePage() {
 
         <TabsContent value="referrals" className="space-y-6">
           <ReferralDashboard />
+        </TabsContent>
+
+        <TabsContent value="notifications" className="space-y-6">
+          <NotificationManagement />
         </TabsContent>
       </Tabs>
     </div>

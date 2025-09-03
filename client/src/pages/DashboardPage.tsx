@@ -15,7 +15,6 @@ import { GoalsStatsCard } from '@/components/dashboard/GoalsStatsCard'
 import { TrainingStatsCard } from '@/components/dashboard/TrainingStatsCard'
 import { DocSafeStatsCard } from '@/components/dashboard/DocSafeStatsCard'
 import { BizBuilderStatsCard } from '@/components/dashboard/BizBuilderStatsCard'
-import { EmailPreferencesCard } from '@/components/EmailPreferencesCard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -332,15 +331,6 @@ export function DashboardPage() {
             </motion.div>
           </motion.div>
 
-          {/* Daily Email Setup Section */}
-          <motion.div 
-            className="mt-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.7, ease: "easeOut" }}
-          >
-            <EmailPreferencesCard />
-          </motion.div>
         </motion.div>
 
         {/* Business Intelligence Section */}
