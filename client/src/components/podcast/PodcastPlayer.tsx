@@ -578,6 +578,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                 maxProgressReached={maxProgressReached}
                 className="flex-1 min-h-0"
                 isCompleted={isCompleted}
+                autoPlay={autoPlay && isVideoEpisode}
               />
               {/* Video Progress Display */}
               <div className="p-4 pt-2 flex justify-between items-center text-sm text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-900">

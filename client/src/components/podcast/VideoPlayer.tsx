@@ -28,6 +28,7 @@ interface VideoPlayerProps {
   maxProgressReached?: number // Maximum progress reached (for learning system)
   className?: string
   isCompleted?: boolean // Whether episode is completed (allows free navigation)
+  autoPlay?: boolean // Whether to auto-start playback
 }
 
 export function VideoPlayer({ 
@@ -40,9 +41,10 @@ export function VideoPlayer({
   startTime = 0,
   maxProgressReached = 0,
   className = "",
-  isCompleted = false
+  isCompleted = false,
+  autoPlay = false
 }: VideoPlayerProps) {
-  const [isPlaying, setIsPlaying] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(autoPlay)
   const [currentTime, setCurrentTime] = useState(startTime)
   const [duration, setDuration] = useState(0)
   const [volume, setVolume] = useState(75)
@@ -79,7 +81,10 @@ export function VideoPlayer({
 
     // Simple initialization
     setHasError(false)
-    setIsPlaying(false)
+    // Don't reset isPlaying if autoPlay is enabled
+    if (!autoPlay) {
+      setIsPlaying(false)
+    }
     
     const handleLoadedMetadata = () => {
       if (video.duration && video.duration > 0) {
@@ -94,6 +99,14 @@ export function VideoPlayer({
         if (startTime > 0) {
           video.currentTime = startTime
           setCurrentTime(startTime)
+        }
+        
+        // Auto-start playback if enabled
+        if (autoPlay) {
+          video.play().catch((error) => {
+            console.error('Auto-play failed:', error)
+            setIsPlaying(false)
+          })
         }
       }
     }
