@@ -85,7 +85,58 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
     await startListening()
   }
 
-  // Get state-specific styling and content
+  // Get state-specific styling and content for compact mode
+  const getCompactStateInfo = () => {
+    switch (state) {
+      case 'requesting-permission':
+        return {
+          bgColor: 'bg-gradient-to-r from-yellow-400 to-orange-500',
+          textColor: 'text-white',
+          shadow: 'shadow-lg shadow-yellow-200',
+          animation: 'animate-pulse',
+          icon: Volume2,
+          iconSize: 'w-3.5 h-3.5'
+        }
+      case 'listening':
+        return {
+          bgColor: 'bg-gradient-to-r from-red-500 to-pink-500',
+          textColor: 'text-white',
+          shadow: 'shadow-lg shadow-red-300',
+          animation: 'animate-pulse',
+          icon: null, // Custom recording dot
+          iconSize: ''
+        }
+      case 'processing':
+        return {
+          bgColor: 'bg-gradient-to-r from-blue-500 to-indigo-500',
+          textColor: 'text-white',
+          shadow: 'shadow-lg shadow-blue-200',
+          animation: 'animate-spin',
+          icon: Mic,
+          iconSize: 'w-3.5 h-3.5'
+        }
+      case 'error':
+        return {
+          bgColor: 'bg-gradient-to-r from-red-100 to-red-200',
+          textColor: 'text-red-700',
+          shadow: 'shadow-md shadow-red-100',
+          animation: '',
+          icon: AlertCircle,
+          iconSize: 'w-3.5 h-3.5'
+        }
+      default:
+        return {
+          bgColor: 'bg-gradient-to-r from-gray-100 to-gray-200 hover:from-orange-50 hover:to-orange-100',
+          textColor: 'text-gray-500 hover:text-orange-600',
+          shadow: 'shadow-sm hover:shadow-md hover:shadow-orange-100',
+          animation: '',
+          icon: Mic,
+          iconSize: 'w-4 h-4'
+        }
+    }
+  }
+
+  // Get state-specific styling and content for full mode
   const getStateInfo = () => {
     switch (state) {
       case 'requesting-permission':
@@ -147,33 +198,79 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
     )
   }
 
-  // Compact mode - just the microphone button
+  // Compact mode - just the microphone button with enhanced visual feedback
   if (compact) {
+    const compactState = getCompactStateInfo()
+    const CompactIcon = compactState.icon
+
     return (
-      <div className={`${className}`}>
+      <div className={`${className} relative`}>
         <Button
           type="button"
           onClick={handleMicToggle}
-          disabled={isDisabled || state === 'requesting-permission' || state === 'processing'}
+          disabled={isDisabled}
           className={`
-            w-8 h-8 p-0 rounded-full transition-all duration-300 border-0 shadow-sm
-            ${isListening 
-              ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-200' 
-              : 'bg-gray-100 hover:bg-orange-50 text-gray-500 hover:text-orange-600'
-            }
-            ${isListening ? 'animate-pulse' : ''}
+            w-9 h-9 p-0 rounded-full transition-all duration-300 border-0 relative overflow-hidden
+            ${compactState.bgColor} ${compactState.textColor} ${compactState.shadow}
+            ${compactState.animation}
+            transform hover:scale-105 active:scale-95
           `}
-          title={isListening ? 'Stop recording' : 'Start voice input'}
+          title={
+            state === 'listening' ? 'Stop recording' :
+            state === 'requesting-permission' ? 'Requesting microphone access' :
+            state === 'processing' ? 'Processing voice input' :
+            state === 'error' ? 'Voice input error - click to retry' :
+            'Start voice input'
+          }
           data-testid="button-mic-compact"
         >
-          {isListening ? (
-            <div className="relative flex items-center justify-center">
-              <div className="w-2.5 h-2.5 bg-white rounded-full"></div>
-            </div>
-          ) : (
-            <Mic className="w-4 h-4" />
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={state}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="flex items-center justify-center"
+            >
+              {state === 'listening' ? (
+                <div className="relative flex items-center justify-center">
+                  {/* Animated recording visualization */}
+                  <div className="absolute inset-0 bg-white/20 rounded-full animate-ping"></div>
+                  <div className="absolute inset-0.5 bg-white/30 rounded-full animate-pulse"></div>
+                  <div className="w-2.5 h-2.5 bg-white rounded-full z-10 animate-bounce"></div>
+                </div>
+              ) : CompactIcon ? (
+                <CompactIcon className={compactState.iconSize} />
+              ) : (
+                <Mic className="w-4 h-4" />
+              )}
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Background pulse effect for active states */}
+          {(state === 'listening' || state === 'requesting-permission') && (
+            <div className="absolute inset-0 bg-white/10 rounded-full animate-pulse"></div>
           )}
         </Button>
+
+        {/* Enhanced state indicator */}
+        {state !== 'ready' && state !== 'idle' && (
+          <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full flex items-center justify-center">
+            {state === 'listening' && (
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-sm"></div>
+            )}
+            {state === 'processing' && (
+              <div className="w-2 h-2 bg-blue-400 rounded-full animate-spin shadow-sm"></div>
+            )}
+            {state === 'error' && (
+              <div className="w-2 h-2 bg-red-400 rounded-full shadow-sm"></div>
+            )}
+            {state === 'requesting-permission' && (
+              <div className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce shadow-sm"></div>
+            )}
+          </div>
+        )}
         
         {/* Live interim transcript overlay - positioned above the button */}
         <AnimatePresence>
