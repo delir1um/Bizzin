@@ -57,8 +57,8 @@ export class EmailService {
         });
       });
 
-      // Try to load the bulletproof light template (no dark mode possible)
-      const templatePath = path.join(process.cwd(), 'server', 'templates', 'daily-email-bulletproof.hbs');
+      // Try to load the fullscreen white template (fills entire viewport)
+      const templatePath = path.join(process.cwd(), 'server', 'templates', 'daily-email-fullscreen.hbs');
       console.log('📍 Template path:', templatePath);
       
       // Check if file exists first
