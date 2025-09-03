@@ -88,6 +88,28 @@ export class EmailService {
   // Generate personalized daily email content
   async generateDailyEmailContent(userId: string): Promise<DailyEmailContent | null> {
     try {
+      // Get user email preferences first to check what content to include
+      const { data: emailSettings, error: emailError } = await supabase
+        .from('daily_email_settings')
+        .select('enabled, content_preferences')
+        .eq('user_id', userId)
+        .single();
+
+      if (emailError || !emailSettings?.enabled) {
+        console.log(`Email settings not found or disabled for user ${userId}`);
+        return null;
+      }
+
+      const contentPrefs = emailSettings.content_preferences || {
+        journal_prompts: true,
+        goal_summaries: true,
+        business_insights: true,
+        milestone_reminders: true
+      };
+
+      console.log('📧 Raw email settings from DB:', emailSettings);
+      console.log('📧 User content preferences:', contentPrefs);
+
       // Get user profile from user_profiles table and auth.users as fallback
       let { data: profile, error: profileError } = await supabase
         .from('user_profiles')
@@ -158,8 +180,8 @@ export class EmailService {
 
       console.log(`Found ${recentEntries?.length || 0} recent journal entries for user`);
 
-      // Generate personalized content using total goals for stats
-      const content = await this.generatePersonalizedContent(profile, goals || [], recentEntries || [], totalGoals);
+      // Generate personalized content using total goals for stats and user preferences
+      const content = await this.generatePersonalizedContent(profile, goals || [], recentEntries || [], totalGoals, contentPrefs);
       
       // Store generated content in database 
       const today = new Date().toISOString().split('T')[0];
@@ -216,12 +238,13 @@ export class EmailService {
     }
   }
 
-  // Generate personalized content based on user data
+  // Generate personalized content based on user data and preferences
   private async generatePersonalizedContent(
     profile: any, 
     goals: any[], 
     recentEntries: any[],
-    totalGoals?: number
+    totalGoals?: number,
+    contentPrefs?: any
   ) {
     const userName = profile.full_name?.split(' ')[0] || profile.full_name || 'there';
     const currentDate = new Date().toLocaleDateString('en-US', { 
@@ -231,20 +254,25 @@ export class EmailService {
       day: 'numeric' 
     });
 
-    // Analyze recent sentiment patterns
+    // Analyze recent sentiment patterns (always needed for base data)
     const sentimentTrend = this.analyzeSentimentTrend(recentEntries);
     
-    // Generate contextual journal prompt
-    const journalPrompt = this.generateJournalPrompt(profile, goals, sentimentTrend, recentEntries);
+    // Generate content based on user preferences
+    const journalPrompt = contentPrefs?.journal_prompts !== false 
+      ? this.generateJournalPrompt(profile, goals, sentimentTrend, recentEntries)
+      : "Journal prompts are disabled in your email preferences.";
     
-    // Create goals summary
-    const goalSummary = this.generateGoalSummary(goals);
+    const goalSummary = contentPrefs?.goal_summaries !== false 
+      ? this.generateGoalSummary(goals)
+      : "Goal summaries are disabled in your email preferences.";
     
-    // Generate business insights
-    const businessInsights = this.generateBusinessInsights(profile, goals, recentEntries, sentimentTrend);
+    const businessInsights = contentPrefs?.business_insights !== false 
+      ? this.generateBusinessInsights(profile, goals, recentEntries, sentimentTrend)
+      : "Business insights are disabled in your email preferences.";
     
-    // Create milestone reminders
-    const milestoneReminders = this.generateMilestoneReminders(goals);
+    const milestoneReminders = contentPrefs?.milestone_reminders !== false 
+      ? this.generateMilestoneReminders(goals)
+      : "Milestone reminders are disabled in your email preferences.";
 
     // Generate additional enhanced content for daily digest
     const motivationQuote = this.generateMotivationQuote();
