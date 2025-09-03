@@ -167,29 +167,41 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
   // Compact mode - clean microphone button in bottom-right corner
   if (compact) {
     return (
-      <Button
-        type="button"
-        onClick={handleMicToggle}
-        disabled={isDisabled}
-        className={`
-          ${className}
-          w-9 h-9 p-0 rounded-full transition-all duration-200 border-0 relative overflow-hidden
-          ${
-            isListening
-              ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg animate-pulse'
-              : 'bg-orange-200 hover:bg-orange-300 text-orange-700 shadow-sm hover:shadow-md'
-          }
-        `}
-        style={{ zIndex: 1000 }}
-        title={isListening ? 'Stop recording' : 'Start voice input'}
-        data-testid="button-mic-compact"
-      >
-        <Mic className="w-5 h-5" />
-        
-        {/* Animated recording ring */}
-        {isListening && (
-          <div className="absolute -inset-1 border-2 border-red-300 rounded-full animate-ping opacity-75"></div>
+      <div className={`${className} flex flex-col items-end`}>
+        {/* Permission Helper */}
+        {showPermissionHelper && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-2 p-2 bg-blue-50 border border-blue-200 rounded-md text-xs text-blue-700 max-w-48"
+          >
+            Click the microphone icon in your browser's address bar to allow access
+          </motion.div>
         )}
+        
+        <Button
+          type="button"
+          onClick={handleMicToggle}
+          disabled={isDisabled}
+          className={`
+            w-10 h-10 p-0 rounded-full transition-all duration-200 border-2 relative overflow-hidden
+            ${
+              isListening
+                ? 'bg-red-500 hover:bg-red-600 text-white border-red-400 shadow-lg animate-pulse'
+                : 'bg-orange-500 hover:bg-orange-600 text-white border-orange-400 shadow-md hover:shadow-lg'
+            }
+          `}
+          style={{ zIndex: 1000 }}
+          title={isListening ? 'Stop recording' : 'Start voice input'}
+          data-testid="button-mic-compact"
+        >
+          <Mic className="w-5 h-5" />
+          
+          {/* Animated recording ring */}
+          {isListening && (
+            <div className="absolute -inset-1 border-2 border-red-300 rounded-full animate-ping opacity-75"></div>
+          )}
+        </Button>
         
         {/* Live transcript overlay */}
         <AnimatePresence>
@@ -212,7 +224,7 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
             </motion.div>
           )}
         </AnimatePresence>
-      </Button>
+      </div>
     )
   }
 
