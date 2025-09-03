@@ -56,6 +56,7 @@ export function VideoPlayer({
   const [bufferingProgress, setBufferingProgress] = useState(0)
   const [canPlayThrough, setCanPlayThrough] = useState(false)
   const [isVideoReady, setIsVideoReady] = useState(false)
+  const [isSeeking, setIsSeeking] = useState(false)
   
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -78,6 +79,7 @@ export function VideoPlayer({
     setDuration(0)
     setIsPlaying(false)
     setIsVideoReady(false)
+    setIsSeeking(false)
 
     // Optimize video loading for better streaming
     video.setAttribute('preload', 'auto')
@@ -131,10 +133,13 @@ export function VideoPlayer({
     }
 
     const handleTimeUpdate = () => {
+      // Don't update time during seeking to prevent conflicts
+      if (isSeeking) return
+      
       const time = video.currentTime
       
       // Only update if time has changed significantly (prevent rapid updates)
-      if (Math.abs(time - currentTime) > 0.1) {
+      if (Math.abs(time - currentTime) > 0.2) {
         setCurrentTime(time)
         // Update parent with current time
         onTimeUpdate(time)
@@ -169,23 +174,29 @@ export function VideoPlayer({
     }
     
     const handleProgress = () => {
-      if (video.buffered.length > 0) {
+      if (video.buffered.length > 0 && duration > 0) {
         const bufferedEnd = video.buffered.end(video.buffered.length - 1)
-        const bufferPercent = duration > 0 ? (bufferedEnd / duration) * 100 : 0
-        setBufferingProgress(bufferPercent)
-        console.log(`Video buffered: ${Math.round(bufferPercent)}%`)
+        const bufferPercent = (bufferedEnd / duration) * 100
+        
+        // Only update if buffer progress changed significantly
+        if (Math.abs(bufferPercent - bufferingProgress) > 5) {
+          setBufferingProgress(bufferPercent)
+          console.log(`Video buffered: ${Math.round(bufferPercent)}%`)
+        }
       }
     }
     
     const handleWaiting = () => {
-      console.log('Video buffering...')
-      setIsBuffering(true)
+      // Only log buffering if we're actually playing
+      if (isPlaying) {
+        console.log('Video buffering during playback')
+        setIsBuffering(true)
+      }
     }
     
     const handlePlaying = () => {
       setIsLoading(false)
       setIsBuffering(false)
-      setIsPlaying(true)
       console.log('Video playing smoothly')
     }
 
@@ -206,9 +217,11 @@ export function VideoPlayer({
     const handlePlayEvent = () => {
       setIsPlaying(true)
       setIsLoading(false)
+      setIsBuffering(false)
     }
     const handlePauseEvent = () => {
       setIsPlaying(false)
+      setIsBuffering(false)
     }
     video.addEventListener('play', handlePlayEvent)
     video.addEventListener('pause', handlePauseEvent)
@@ -246,14 +259,11 @@ export function VideoPlayer({
     const video = videoRef.current
     if (!video || hasError || duration === 0) return
 
+    // Simple toggle without promise complications
     if (isPlaying) {
       video.pause()
-      setIsPlaying(false)
     } else {
-      video.play().then(() => {
-        setIsPlaying(true)
-        setIsLoading(false)
-      }).catch((error) => {
+      video.play().catch((error) => {
         console.error('Video play failed:', error)
         setHasError(true)
       })
@@ -262,14 +272,33 @@ export function VideoPlayer({
 
   const handleSeek = (value: number[]) => {
     const video = videoRef.current
-    if (!video) return
+    if (!video || duration <= 0 || isSeeking) return
 
     const newTime = value[0]
     // If episode is completed, allow seeking anywhere
     // Otherwise, allow seeking up to the maximum progress reached (for review)
     if (isCompleted || newTime <= Math.max(maxProgressReached, currentTime)) {
+      setIsSeeking(true)
+      
+      // Pause video during seeking to prevent conflicts
+      const wasPlaying = isPlaying
+      if (wasPlaying) {
+        video.pause()
+      }
+      
       video.currentTime = newTime
       setCurrentTime(newTime)
+      
+      // Clear buffering state when seeking
+      setIsBuffering(false)
+      
+      // Resume playback after a short delay if it was playing
+      setTimeout(() => {
+        setIsSeeking(false)
+        if (wasPlaying) {
+          video.play().catch(console.error)
+        }
+      }, 100)
     }
   }
 
