@@ -1,0 +1,51 @@
+injected.js:253  POST https://giahpkiwivxpocikndix.supabase.co/rest/v1/user_podcast_progress?on_conflict=user_id%2Cepisode_id 400 (Bad Request)
+window.fetch @ Network.js:219
+apply @ injected.js:253
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4213
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4234
+fulfilled @ @supabase_supabase-js.js?v=c9799909:4186
+Promise.then
+step @ @supabase_supabase-js.js?v=c9799909:4199
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4201
+__awaiter6 @ @supabase_supabase-js.js?v=c9799909:4183
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4224
+then @ @supabase_supabase-js.js?v=c9799909:89Understand this error
+Console.js:61 Schema cache issue detected, retrying without last_media_type: {code: 'PGRST204', details: null, hint: null, message: "Could not find the 'last_media_type' column of 'user_podcast_progress' in the schema cache"}
+Mt.forEach.n.<computed> @ Console.js:61
+updateProgress @ podcastService.ts:221
+await in updateProgress
+mutationFn @ usePodcastProgress.ts:100
+fn @ @tanstack_react-query.js?v=c9799909:1189
+run @ @tanstack_react-query.js?v=c9799909:494
+start @ @tanstack_react-query.js?v=c9799909:536
+execute @ @tanstack_react-query.js?v=c9799909:1225
+await in execute
+mutate @ @tanstack_react-query.js?v=c9799909:2630
+(anonymous) @ @tanstack_react-query.js?v=c9799909:3295
+(anonymous) @ PodcastPlayer.tsx:293
+safelyCallDestroy @ chunk-276SZO74.js?v=c9799909:16748
+commitHookEffectListUnmount @ chunk-276SZO74.js?v=c9799909:16875
+invokePassiveEffectUnmountInDEV @ chunk-276SZO74.js?v=c9799909:18363
+invokeEffectsInDev @ chunk-276SZO74.js?v=c9799909:19701
+commitDoubleInvokeEffectsInDEV @ chunk-276SZO74.js?v=c9799909:19682
+flushPassiveEffectsImpl @ chunk-276SZO74.js?v=c9799909:19503
+flushPassiveEffects @ chunk-276SZO74.js?v=c9799909:19447
+commitRootImpl @ chunk-276SZO74.js?v=c9799909:19416
+commitRoot @ chunk-276SZO74.js?v=c9799909:19277
+performSyncWorkOnRoot @ chunk-276SZO74.js?v=c9799909:18895
+flushSyncCallbacks @ chunk-276SZO74.js?v=c9799909:9119
+(anonymous) @ chunk-276SZO74.js?v=c9799909:18627Understand this warning
+Console.js:61 Progress saved successfully without media type
+Console.js:61 📱 [LOCALSTORAGE] Stored media type preference: {episodeId: '6462c1f1-b4a3-4af1-8eb7-f9d9be2b7f8d', mediaType: 'video'}
+Console.js:61 📱 [LOCALSTORAGE] Retrieved media type preference: {episodeId: '6462c1f1-b4a3-4af1-8eb7-f9d9be2b7f8d', mediaType: 'video'}
+Console.js:61 📱 [LOCALSTORAGE] Retrieved media type preference: {episodeId: '6462c1f1-b4a3-4af1-8eb7-f9d9be2b7f8d', mediaType: 'video'}
+Console.js:61 📱 [LOCALSTORAGE] Retrieved media type preference: {episodeId: '6462c1f1-b4a3-4af1-8eb7-f9d9be2b7f8d', mediaType: 'video'}
+Console.js:61 📱 [LOCALSTORAGE] Retrieved media type preference: {episodeId: '6462c1f1-b4a3-4af1-8eb7-f9d9be2b7f8d', mediaType: 'video'}
+Console.js:61 📱 [LOCALSTORAGE] Retrieved media type preference: {episodeId: '6462c1f1-b4a3-4af1-8eb7-f9d9be2b7f8d', mediaType: 'video'}
+Console.js:61 📱 [LOCALSTORAGE] Retrieved media type preference: {episodeId: '6462c1f1-b4a3-4af1-8eb7-f9d9be2b7f8d', mediaType: 'video'}
+Console.js:61 📱 [LOCALSTORAGE] Retrieved media type preference: {episodeId: '6462c1f1-b4a3-4af1-8eb7-f9d9be2b7f8d', mediaType: 'video'}
+Console.js:61 📱 [LOCALSTORAGE] Retrieved media type preference: {episodeId: '6462c1f1-b4a3-4af1-8eb7-f9d9be2b7f8d', mediaType: 'video'}
+Console.js:61 Video duration updated: 719.36 Episode duration: 719
+Console.js:61 Video duration updated: 719.36 Episode duration: 719
+Console.js:61 Video duration updated: 719.36 Episode duration: 719
+Console.js:61 Video duration updated: 719.36 Episode duration: 719

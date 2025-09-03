@@ -62,74 +62,36 @@ export function VideoPlayer({
   // Convert URL once and memoize it
   const proxyVideoUrl = convertToProxyUrl(videoUrl)
 
-  // Initialize video
+  // Initialize video with minimal event handling
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
 
-    // Reset states on video source change
-    setIsBuffering(false)
+    // Simple initialization
     setHasError(false)
-    setCurrentTime(startTime)
-    setDuration(0)
     setIsPlaying(false)
-    setIsSeeking(false)
-
-    // Optimize video loading for better streaming
-    video.setAttribute('preload', 'auto')
-    video.setAttribute('buffered', 'true')
     
-    const handleLoadStart = () => {
-      setHasError(false)
-      setIsBuffering(false)
-    }
-    
-    const handleLoadedData = () => {
-      // This fires when enough data is loaded to start playback
-      console.log('Video data loaded - ready for playback')
-    }
-
     const handleLoadedMetadata = () => {
-      const videoDuration = video.duration
-      setDuration(videoDuration)
-      console.log('Video duration updated:', videoDuration, 'Episode duration:', Math.floor(videoDuration))
-      
-      // Video metadata is loaded
-      
-      // Notify parent component of actual duration
-      if (onDurationUpdate) {
-        onDurationUpdate(videoDuration)
+      if (video.duration && video.duration > 0) {
+        setDuration(video.duration)
+        
+        // Notify parent of duration
+        if (onDurationUpdate) {
+          onDurationUpdate(video.duration)
+        }
+        
+        // Set start time
+        if (startTime > 0) {
+          video.currentTime = startTime
+          setCurrentTime(startTime)
+        }
       }
-      
-      // Set initial time - prevent jumping by ensuring currentTime is set properly
-      const initialTime = Math.max(0, startTime)
-      if (initialTime > 0 && initialTime < videoDuration) {
-        video.currentTime = initialTime
-        setCurrentTime(initialTime)
-      } else {
-        setCurrentTime(0)
-      }
-    }
-    
-    const handleCanPlayThrough = () => {
-      // Video has buffered enough to play without interruption
-      console.log('Video can play through without buffering')
-      setIsBuffering(false)
     }
 
     const handleTimeUpdate = () => {
-      // Don't update time during seeking to prevent conflicts
-      if (isSeeking) return
-      
-      const time = video.currentTime
-      
-      // Update time regularly for smooth progress tracking
-      setCurrentTime(time)
-      onTimeUpdate(time)
-      
-      // Also update duration if it changed (important for video files)
-      if (video.duration && video.duration !== duration && video.duration > 0) {
-        setDuration(video.duration)
+      if (!isSeeking) {
+        setCurrentTime(video.currentTime)
+        onTimeUpdate(video.currentTime)
       }
     }
 
@@ -139,85 +101,29 @@ export function VideoPlayer({
     }
 
     const handleError = () => {
-      console.error('Video loading failed for:', proxyVideoUrl)
       setHasError(true)
     }
 
-    const handleCanPlay = () => {
-      // Video can start playing
-      setIsBuffering(false)
-      setHasError(false)
-      console.log('Video ready to play')
-    }
-    
-    const handleProgress = () => {
-      if (video.buffered.length > 0 && duration > 0) {
-        const bufferedEnd = video.buffered.end(video.buffered.length - 1)
-        const bufferPercent = (bufferedEnd / duration) * 100
-        
-        // Only update if buffer progress changed significantly
-        if (Math.abs(bufferPercent - bufferingProgress) > 5) {
-          setBufferingProgress(bufferPercent)
-          console.log(`Video buffered: ${Math.round(bufferPercent)}%`)
-        }
-      }
-    }
-    
-    const handleWaiting = () => {
-      // Only log buffering if we're actually playing
-      if (isPlaying) {
-        console.log('Video buffering during playback')
-        setIsBuffering(true)
-      }
-    }
-    
-    const handlePlaying = () => {
-      setIsBuffering(false)
-      console.log('Video playing smoothly')
-    }
+    const handlePlay = () => setIsPlaying(true)
+    const handlePause = () => setIsPlaying(false)
 
-    // Add event listeners
-    video.addEventListener('loadstart', handleLoadStart)
-    video.addEventListener('loadeddata', handleLoadedData)
+    // Add only essential event listeners
     video.addEventListener('loadedmetadata', handleLoadedMetadata)
-    video.addEventListener('canplaythrough', handleCanPlayThrough)
     video.addEventListener('timeupdate', handleTimeUpdate)
     video.addEventListener('ended', handleEnded)
     video.addEventListener('error', handleError)
-    video.addEventListener('canplay', handleCanPlay)
-    video.addEventListener('progress', handleProgress)
-    video.addEventListener('waiting', handleWaiting)
-    video.addEventListener('playing', handlePlaying)
-    
-    // Add play/pause event listeners to sync state
-    const handlePlayEvent = () => {
-      setIsPlaying(true)
-    }
-    const handlePauseEvent = () => {
-      setIsPlaying(false)
-    }
-    video.addEventListener('play', handlePlayEvent)
-    video.addEventListener('pause', handlePauseEvent)
-    
-    // Preload the video immediately
-    video.load()
+    video.addEventListener('play', handlePlay)
+    video.addEventListener('pause', handlePause)
 
     return () => {
-      video.removeEventListener('loadstart', handleLoadStart)
-      video.removeEventListener('loadeddata', handleLoadedData)
       video.removeEventListener('loadedmetadata', handleLoadedMetadata)
-      video.removeEventListener('canplaythrough', handleCanPlayThrough)
       video.removeEventListener('timeupdate', handleTimeUpdate)
       video.removeEventListener('ended', handleEnded)
       video.removeEventListener('error', handleError)
-      video.removeEventListener('canplay', handleCanPlay)
-      video.removeEventListener('progress', handleProgress)
-      video.removeEventListener('waiting', handleWaiting)
-      video.removeEventListener('playing', handlePlaying)
-      video.removeEventListener('play', handlePlayEvent)
-      video.removeEventListener('pause', handlePauseEvent)
+      video.removeEventListener('play', handlePlay)
+      video.removeEventListener('pause', handlePause)
     }
-  }, [startTime, onTimeUpdate, onEnded, proxyVideoUrl])
+  }, [proxyVideoUrl])
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -388,7 +294,7 @@ export function VideoPlayer({
         className="w-full h-full"
         onClick={togglePlay}
         crossOrigin="anonymous"
-        preload="auto"
+        preload="metadata"
         playsInline
         muted={false}
         controls={false}
