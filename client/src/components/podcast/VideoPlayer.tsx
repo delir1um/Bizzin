@@ -68,6 +68,14 @@ export function VideoPlayer({
     const video = videoRef.current
     if (!video) return
 
+    // Reset states on video source change
+    setIsLoading(true)
+    setCanPlayThrough(false)
+    setIsBuffering(false)
+    setHasError(false)
+    setCurrentTime(startTime)
+    setDuration(0)
+
     // Optimize video loading for better streaming
     video.setAttribute('preload', 'auto')
     video.setAttribute('buffered', 'true')
@@ -75,6 +83,8 @@ export function VideoPlayer({
     const handleLoadStart = () => {
       setIsLoading(true)
       setHasError(false)
+      setCanPlayThrough(false)
+      setIsBuffering(false)
     }
     
     const handleLoadedData = () => {
@@ -85,14 +95,22 @@ export function VideoPlayer({
     }
 
     const handleLoadedMetadata = () => {
-      setDuration(video.duration)
+      const videoDuration = video.duration
+      setDuration(videoDuration)
+      console.log('Video duration updated:', videoDuration, 'Episode duration:', Math.floor(videoDuration))
+      
       // Notify parent component of actual duration
       if (onDurationUpdate) {
-        onDurationUpdate(video.duration)
+        onDurationUpdate(videoDuration)
       }
-      if (startTime > 0) {
-        video.currentTime = startTime
-        setCurrentTime(startTime)
+      
+      // Set initial time - prevent jumping by ensuring currentTime is set properly
+      const initialTime = Math.max(0, startTime)
+      if (initialTime > 0 && initialTime < videoDuration) {
+        video.currentTime = initialTime
+        setCurrentTime(initialTime)
+      } else {
+        setCurrentTime(0)
       }
     }
     
@@ -159,6 +177,7 @@ export function VideoPlayer({
       console.log('Video playing smoothly')
     }
 
+    // Add event listeners
     video.addEventListener('loadstart', handleLoadStart)
     video.addEventListener('loadeddata', handleLoadedData)
     video.addEventListener('loadedmetadata', handleLoadedMetadata)
@@ -170,6 +189,12 @@ export function VideoPlayer({
     video.addEventListener('progress', handleProgress)
     video.addEventListener('waiting', handleWaiting)
     video.addEventListener('playing', handlePlaying)
+    
+    // Add play/pause event listeners to sync state
+    const handlePlayEvent = () => setIsPlaying(true)
+    const handlePauseEvent = () => setIsPlaying(false)
+    video.addEventListener('play', handlePlayEvent)
+    video.addEventListener('pause', handlePauseEvent)
     
     // Preload the video immediately
     video.load()
@@ -186,6 +211,8 @@ export function VideoPlayer({
       video.removeEventListener('progress', handleProgress)
       video.removeEventListener('waiting', handleWaiting)
       video.removeEventListener('playing', handlePlaying)
+      video.removeEventListener('play', handlePlayEvent)
+      video.removeEventListener('pause', handlePauseEvent)
     }
   }, [startTime, onTimeUpdate, onEnded, proxyVideoUrl])
 
@@ -200,14 +227,20 @@ export function VideoPlayer({
 
   const togglePlay = () => {
     const video = videoRef.current
-    if (!video) return
+    if (!video || hasError || duration === 0) return
 
     if (isPlaying) {
       video.pause()
+      setIsPlaying(false)
     } else {
-      video.play()
+      video.play().then(() => {
+        setIsPlaying(true)
+        setIsLoading(false)
+      }).catch((error) => {
+        console.error('Video play failed:', error)
+        setHasError(true)
+      })
     }
-    setIsPlaying(!isPlaying)
   }
 
   const handleSeek = (value: number[]) => {
@@ -414,24 +447,24 @@ export function VideoPlayer({
           <div className="space-y-1">
             <div className="relative">
               <Slider
-                value={[isLoading ? 0 : currentTime]}
-                max={isLoading ? 100 : duration}
+                value={[duration > 0 ? currentTime : 0]}
+                max={duration > 0 ? duration : 100}
                 step={1}
                 onValueChange={handleSeek}
-                className={`w-full ${isLoading ? 'opacity-30 pointer-events-none' : ''}`}
-                disabled={isLoading}
+                className={`w-full ${duration === 0 ? 'opacity-30 pointer-events-none' : ''}`}
+                disabled={duration === 0}
               />
               {/* Visual indicator for completed progress */}
               <div 
                 className={`absolute top-0 left-0 h-2 rounded-full -z-10 ${
-                  isLoading ? 'bg-gray-400/20' : 'bg-orange-200/30'
+                  duration === 0 ? 'bg-gray-400/20' : 'bg-orange-200/30'
                 }`}
-                style={{ width: isLoading ? '0%' : `${(currentTime / duration) * 100}%` }}
+                style={{ width: duration === 0 ? '0%' : `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
               />
             </div>
-            <div className={`flex justify-between text-xs ${isLoading ? 'text-white/40' : 'text-white/80'}`}>
-              <span>{isLoading ? '--:--' : formatTime(currentTime)}</span>
-              <span>{isLoading ? '--:--' : formatTime(duration)}</span>
+            <div className={`flex justify-between text-xs ${duration === 0 ? 'text-white/40' : 'text-white/80'}`}>
+              <span>{duration === 0 ? '--:--' : formatTime(currentTime)}</span>
+              <span>{duration === 0 ? '--:--' : formatTime(duration)}</span>
             </div>
             <p className="text-xs text-white/60 text-center">
               {isCompleted 
