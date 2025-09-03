@@ -651,27 +651,236 @@ export class EmailService {
     return recommendations.slice(0, 2); // Return top 2 recommendations
   }
 
-  // Generate daily motivation quote
-  private generateMotivationQuote(): string {
-    const quotes = [
-      "Success is not final, failure is not fatal: it is the courage to continue that counts.",
-      "The way to get started is to quit talking and begin doing.",
-      "Don't be afraid to give yourself everything you've ever wanted in life.",
-      "Innovation distinguishes between a leader and a follower.",
-      "The only impossible journey is the one you never begin.",
-      "Opportunities don't happen. You create them.",
-      "Success is walking from failure to failure with no loss of enthusiasm.",
-      "The future depends on what you do today.",
-      "Dream it. Believe it. Build it.",
-      "Your limitation—it's only your imagination.",
-      "Push yourself, because no one else is going to do it for you.",
-      "Great things never come from comfort zones.",
-      "Dream bigger. Do bigger.",
-      "Success doesn't just find you. You have to go out and get it.",
-      "The harder you work for something, the greater you'll feel when you achieve it."
-    ];
+  // Generate daily motivation quote using centralized quote service
+  private generateMotivationQuote(): { text: string, author: string } {
+    // Import ES module dynamically - need to use import() for ES modules in Node.js
+    // For now, implement the daily selection logic directly to avoid async import
+    const businessQuotes = this.getBusinessQuotes();
+    const today = new Date();
+    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000);
+    const index = dayOfYear % businessQuotes.length;
+    const dailyQuote = businessQuotes[index];
     
-    return quotes[Math.floor(Math.random() * quotes.length)];
+    return {
+      text: dailyQuote.text,
+      author: dailyQuote.author + (dailyQuote.title ? `, ${dailyQuote.title}` : '')
+    };
+  }
+
+  // Get business quotes array - simplified for server use
+  private getBusinessQuotes() {
+    return [
+      {
+        id: 'jobs-001',
+        text: "Innovation distinguishes between a leader and a follower.",
+        author: "Steve Jobs",
+        title: "Co-founder, Apple Inc.",
+        category: 'innovation'
+      },
+      {
+        id: 'jobs-002',
+        text: "Your work is going to fill a large part of your life, and the only way to be truly satisfied is to do what you believe is great work.",
+        author: "Steve Jobs",
+        title: "Co-founder, Apple Inc.",
+        category: 'motivation'
+      },
+      {
+        id: 'jobs-003',
+        text: "Stay hungry, stay foolish.",
+        author: "Steve Jobs",
+        title: "Co-founder, Apple Inc.",
+        category: 'motivation'
+      },
+      {
+        id: 'gates-001',
+        text: "Your most unhappy customers are your greatest source of learning.",
+        author: "Bill Gates",
+        title: "Co-founder, Microsoft",
+        category: 'growth'
+      },
+      {
+        id: 'gates-002',
+        text: "Success is a lousy teacher. It seduces smart people into thinking they can't lose.",
+        author: "Bill Gates",
+        title: "Co-founder, Microsoft",
+        category: 'failure'
+      },
+      {
+        id: 'bezos-001',
+        text: "If you're competitor-focused, you have to wait until there is a competitor doing something. Being customer-focused allows you to be more pioneering.",
+        author: "Jeff Bezos",
+        title: "Founder, Amazon",
+        category: 'innovation'
+      },
+      {
+        id: 'bezos-002',
+        text: "I knew that if I failed I wouldn't regret that, but I knew the one thing I might regret is not trying.",
+        author: "Jeff Bezos",
+        title: "Founder, Amazon",
+        category: 'perseverance'
+      },
+      {
+        id: 'musk-001',
+        text: "When something is important enough, you do it even if the odds are not in your favor.",
+        author: "Elon Musk",
+        title: "CEO, Tesla & SpaceX",
+        category: 'perseverance'
+      },
+      {
+        id: 'musk-002',
+        text: "The first step is to establish that something is possible; then probability will occur.",
+        author: "Elon Musk",
+        title: "CEO, Tesla & SpaceX",
+        category: 'vision'
+      },
+      {
+        id: 'buffett-001',
+        text: "It takes 20 years to build a reputation and five minutes to ruin it. If you think about that, you'll do things differently.",
+        author: "Warren Buffett",
+        title: "CEO, Berkshire Hathaway",
+        category: 'leadership'
+      },
+      {
+        id: 'buffett-002',
+        text: "The most important investment you can make is in yourself.",
+        author: "Warren Buffett",
+        title: "CEO, Berkshire Hathaway",
+        category: 'growth'
+      },
+      {
+        id: 'branson-001',
+        text: "Business opportunities are like buses, there's always another one coming.",
+        author: "Richard Branson",
+        title: "Founder, Virgin Group",
+        category: 'success'
+      },
+      {
+        id: 'branson-002',
+        text: "If somebody offers you an amazing opportunity but you are not sure you can do it, say yes – then learn how to do it later!",
+        author: "Richard Branson",
+        title: "Founder, Virgin Group",
+        category: 'perseverance'
+      },
+      {
+        id: 'cuban-001',
+        text: "It doesn't matter how many times you fail. You only have to be right once and then everyone can tell you that you are an overnight success.",
+        author: "Mark Cuban",
+        title: "Entrepreneur & Investor",
+        category: 'failure'
+      },
+      {
+        id: 'cuban-002',
+        text: "Work like there is someone working 24 hours a day to take it away from you.",
+        author: "Mark Cuban",
+        title: "Entrepreneur & Investor",
+        category: 'motivation'
+      },
+      {
+        id: 'winfrey-001',
+        text: "The biggest adventure you can take is to live the life of your dreams.",
+        author: "Oprah Winfrey",
+        title: "Media Executive & Philanthropist",
+        category: 'vision'
+      },
+      {
+        id: 'winfrey-002',
+        text: "Turn your wounds into wisdom.",
+        author: "Oprah Winfrey",
+        title: "Media Executive & Philanthropist",
+        category: 'growth'
+      },
+      {
+        id: 'hoffman-001',
+        text: "Starting a company is like jumping off a cliff and assembling a plane on the way down.",
+        author: "Reid Hoffman",
+        title: "Co-founder, LinkedIn",
+        category: 'innovation'
+      },
+      {
+        id: 'hoffman-002',
+        text: "If you are not embarrassed by the first version of your product, you've launched too late.",
+        author: "Reid Hoffman",
+        title: "Co-founder, LinkedIn",
+        category: 'innovation'
+      },
+      {
+        id: 'blakely-001',
+        text: "Embrace what you don't know, especially in the beginning, because what you don't know can become your greatest asset.",
+        author: "Sara Blakely",
+        title: "Founder, Spanx",
+        category: 'perseverance'
+      },
+      {
+        id: 'blakely-002',
+        text: "The power of failure is that it shows you that you survived.",
+        author: "Sara Blakely",
+        title: "Founder, Spanx",
+        category: 'failure'
+      },
+      {
+        id: 'robbins-001',
+        text: "The quality of your life is the quality of your relationships.",
+        author: "Tony Robbins",
+        title: "Life Coach & Entrepreneur",
+        category: 'leadership'
+      },
+      {
+        id: 'robbins-002',
+        text: "Progress equals happiness.",
+        author: "Tony Robbins",
+        title: "Life Coach & Entrepreneur",
+        category: 'motivation'
+      },
+      {
+        id: 'angelou-001',
+        text: "If you don't like something, change it. If you can't change it, change your attitude.",
+        author: "Maya Angelou",
+        title: "Author & Civil Rights Activist",
+        category: 'leadership'
+      },
+      {
+        id: 'angelou-002',
+        text: "Nothing can dim the light that shines from within.",
+        author: "Maya Angelou",
+        title: "Author & Civil Rights Activist",
+        category: 'motivation'
+      },
+      {
+        id: 'business-001',
+        text: "Great things never come from comfort zones.",
+        author: "Neil Strauss",
+        title: "Author & Entrepreneur",
+        category: 'growth'
+      },
+      {
+        id: 'business-002',
+        text: "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+        author: "Winston Churchill",
+        title: "Former Prime Minister",
+        category: 'perseverance'
+      },
+      {
+        id: 'business-003',
+        text: "The way to get started is to quit talking and begin doing.",
+        author: "Walt Disney",
+        title: "Founder, Disney",
+        category: 'motivation'
+      },
+      {
+        id: 'business-004',
+        text: "Opportunities don't happen. You create them.",
+        author: "Chris Grosser",
+        title: "Entrepreneur",
+        category: 'success'
+      },
+      {
+        id: 'business-005',
+        text: "The future depends on what you do today.",
+        author: "Mahatma Gandhi",
+        title: "Leader & Philosopher",
+        category: 'vision'
+      }
+    ];
   }
 
   // Get the top priority goal with progress
@@ -1217,8 +1426,9 @@ export class EmailService {
       greetingEmoji: greetingData.greetingEmoji,
       partOfDay,
       formattedDate: new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
-      quote: {
-        text: "Great things never come from comfort zones."
+      quote: personalData?.motivationQuote || {
+        text: "Great things never come from comfort zones.",
+        author: "Anonymous"
       },
       // Legacy stats for backwards compatibility
       stats: {
