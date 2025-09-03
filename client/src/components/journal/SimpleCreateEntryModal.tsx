@@ -1,19 +1,16 @@
-import { useState, useRef, useEffect } from "react"
+import { useState } from "react"
 import { queryClient } from "@/lib/queryClient"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import { PlusCircle, Brain, Sparkles, X, Mic, MicOff, Volume2 } from "lucide-react"
+import { PlusCircle, Brain } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { useMutation } from "@tanstack/react-query"
 import { useToast } from "@/hooks/use-toast"
-import { format } from "date-fns"
-import { analyzeJournalEntry, initializeAISystem } from "@/lib/ai"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import { SuggestedTitleButton } from "./SuggestedTitleButton"
+import { VoiceInput } from "./VoiceInput"
 
 interface SimpleCreateEntryModalProps {
   isOpen: boolean
@@ -26,13 +23,6 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
   const [content, setContent] = useState("")
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [aiPreview, setAiPreview] = useState<any>(null)
-  const [isListening, setIsListening] = useState(false)
-  const [interimTranscript, setInterimTranscript] = useState("")
-  const recognitionRef = useRef<any>(null)
-  const finalTranscriptRef = useRef<string>("")
-  const [networkErrorCount, setNetworkErrorCount] = useState(0)
-  const [speechSupported, setSpeechSupported] = useState(true)
-  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const { toast } = useToast()
 
   const createEntryMutation = useMutation({
@@ -98,7 +88,6 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
     setContent("")
     setAiPreview(null)
     setIsAnalyzing(false)
-    stopListening()
     onClose()
   }
 
@@ -106,207 +95,15 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
     setTitle(suggestedTitle)
   }
 
-  // Enhanced speech recognition with environment detection
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-      
-      // Enhanced environment compatibility check
-      const isReplitEnvironment = window.location.hostname.includes('replit') || window.location.hostname.includes('repl.co')
-      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-      const isHTTPS = window.location.protocol === 'https:'
-      
-      // Speech recognition requires HTTPS in most browsers, except localhost
-      if (!SpeechRecognition || (!isHTTPS && !isLocalhost)) {
-        console.log('Speech recognition not available: Missing HTTPS or API support')
-        setSpeechSupported(false)
-        return
-      }
-
-      // Test speech recognition availability with a timeout
-      let testRecognition: any
-      try {
-        testRecognition = new SpeechRecognition()
-        testRecognition.continuous = false
-        testRecognition.interimResults = false
-        testRecognition.lang = 'en-US'
-        testRecognition.maxAlternatives = 1
-
-        // Test timeout to detect if service works
-        const testTimeout = setTimeout(() => {
-          console.log('Speech recognition test timeout - service likely unavailable')
-          setSpeechSupported(false)
-          try {
-            testRecognition?.abort()
-          } catch (e) {
-            // Ignore cleanup errors
-          }
-        }, 3000)
-
-        testRecognition.onstart = () => {
-          console.log('Speech recognition test successful')
-          clearTimeout(testTimeout)
-          testRecognition.stop()
-          
-          // Service works, set up the actual recognition
-          const recognition = new SpeechRecognition()
-          recognition.continuous = false
-          recognition.interimResults = false
-          recognition.lang = 'en-US'
-          recognition.maxAlternatives = 1
-
-          recognition.onstart = () => {
-            console.log('Speech recognition started')
-            setNetworkErrorCount(0)
-          }
-
-          recognition.onresult = (event: any) => {
-            const transcript = event.results[0][0].transcript
-            console.log('Speech result:', transcript)
-            
-            if (transcript && transcript.trim()) {
-              setContent(prev => {
-                const currentContent = prev.trim()
-                const newContent = currentContent + (currentContent ? ' ' : '') + transcript.trim()
-                return newContent
-              })
-              setNetworkErrorCount(0)
-            }
-          }
-
-          recognition.onerror = (event: any) => {
-            console.log('Speech recognition error:', event.error)
-            
-            if (event.error === 'not-allowed') {
-              setIsListening(false)
-              setSpeechSupported(false)
-              toast({
-                title: "Microphone permission needed",
-                description: "Click the microphone icon in your browser's address bar to enable voice input",
-                variant: "destructive"
-              })
-            } else if (event.error === 'network' || event.error === 'service-not-allowed') {
-              setIsListening(false)
-              // Don't show error toast for network issues - just silently disable
-              console.log('Voice input disabled due to service limitations')
-            } else if (event.error === 'audio-capture') {
-              setIsListening(false)
-              toast({
-                title: "Microphone not available",
-                description: "No microphone detected. Please connect a microphone to use voice input.",
-                variant: "destructive"
-              })
-            } else {
-              // For other errors, just log and continue
-              console.log(`Speech error: ${event.error}, continuing...`)
-            }
-          }
-
-          recognition.onend = () => {
-            console.log('Speech recognition ended')
-            setInterimTranscript("")
-            
-            // Only restart if user is still actively listening and no errors occurred
-            if (isListening && speechSupported) {
-              retryTimeoutRef.current = setTimeout(() => {
-                if (isListening && recognitionRef.current && speechSupported) {
-                  try {
-                    recognitionRef.current.start()
-                  } catch (e) {
-                    console.log('Restart failed, disabling voice input:', e)
-                    setIsListening(false)
-                  }
-                }
-              }, 500)
-            }
-          }
-
-          recognitionRef.current = recognition
-          setSpeechSupported(true)
-        }
-
-        testRecognition.onerror = (event: any) => {
-          console.log('Speech recognition test failed:', event.error)
-          clearTimeout(testTimeout)
-          setSpeechSupported(false)
-        }
-
-        // Start the test
-        testRecognition.start()
-
-      } catch (error) {
-        console.log('Speech recognition initialization failed:', error)
-        setSpeechSupported(false)
-      }
-    }
-
-    return () => {
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.stop()
-        } catch (e) {
-          console.log('Error stopping recognition:', e)
-        }
-      }
-      if (retryTimeoutRef.current) {
-        clearTimeout(retryTimeoutRef.current)
-      }
-    }
-  }, [toast, isListening])
-
-  const startListening = () => {
-    if (!speechSupported) {
-      console.log('Voice input not supported in this environment')
-      return
-    }
-    
-    if (!recognitionRef.current) {
-      console.log('Speech recognition not initialized')
-      return
-    }
-
-    try {
-      setInterimTranscript("")
-      finalTranscriptRef.current = ""
-      setIsListening(true)
-      recognitionRef.current.start()
-      
-      toast({
-        title: "Listening...",
-        description: "Start speaking your journal entry",
-        className: "border-blue-200 bg-blue-50 text-blue-800"
-      })
-    } catch (error) {
-      console.error('Error starting speech recognition:', error)
-      setIsListening(false)
-      setSpeechSupported(false)
-      toast({
-        title: "Voice input unavailable",
-        description: "Speech recognition is not working. Please type your journal entry instead.",
-        variant: "destructive"
+  // Handle voice input transcription
+  const handleVoiceTranscript = (transcript: string, isFinal: boolean) => {
+    if (isFinal && transcript.trim()) {
+      setContent(prev => {
+        const currentContent = prev.trim()
+        const newContent = currentContent + (currentContent ? ' ' : '') + transcript.trim()
+        return newContent
       })
     }
-  }
-
-  const stopListening = () => {
-    setIsListening(false) // Set this first to prevent auto-restart
-    setNetworkErrorCount(0)
-    
-    // Clear any pending retry timeout
-    if (retryTimeoutRef.current) {
-      clearTimeout(retryTimeoutRef.current)
-      retryTimeoutRef.current = null
-    }
-    
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.stop()
-      } catch (e) {
-        console.log('Error stopping recognition:', e)
-      }
-    }
-    setInterimTranscript("")
-    finalTranscriptRef.current = ""
   }
 
   // Generate a smart title from content
@@ -383,62 +180,23 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
             )}
             
             <div className="space-y-2 sm:space-y-3">
-              <div className="relative">
-                <Textarea
-                  placeholder="What's on your mind? Start typing or use voice input, and AI will analyze your business thoughts..."
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  className="min-h-[140px] sm:min-h-[120px] resize-none pr-14 sm:pr-12 text-base sm:text-sm leading-relaxed"
-                  rows={6}
-                  autoFocus
-                />
-                
-                {/* Voice Input Button - Only show when supported */}
-                {speechSupported && (
-                  <div className="absolute bottom-3 right-3 sm:bottom-3 sm:right-3">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={isListening ? "destructive" : "outline"}
-                      onClick={isListening ? stopListening : startListening}
-                      className={`w-12 h-12 sm:w-10 sm:h-10 p-0 transition-all duration-200 relative touch-manipulation ${
-                        isListening 
-                          ? 'bg-red-500 hover:bg-red-600 border-red-300 shadow-lg' 
-                          : 'hover:bg-orange-50 border-orange-200 text-orange-600'
-                      }`}
-                      title={isListening ? "Stop recording" : "Start voice input"}
-                      disabled={createEntryMutation.isPending}
-                    >
-                      {isListening ? (
-                        <div className="relative flex items-center justify-center">
-                          {/* Pulsing recording animation */}
-                          <div className="absolute inset-0 bg-red-400 rounded-full animate-ping opacity-75"></div>
-                          <div className="absolute inset-1 bg-red-300 rounded-full animate-pulse"></div>
-                          {/* Recording dot */}
-                          <div className="relative w-2 h-2 sm:w-3 sm:h-3 bg-white rounded-full z-10"></div>
-                        </div>
-                      ) : (
-                        <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
-                      )}
-                    </Button>
-                  </div>
-                )}
-              </div>
+              <Textarea
+                placeholder="What's on your mind? Start typing or use voice input, and AI will analyze your business thoughts..."
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="min-h-[140px] sm:min-h-[120px] resize-none text-base sm:text-sm leading-relaxed"
+                rows={6}
+                autoFocus
+                data-testid="textarea-content"
+              />
               
-              {/* Voice Status Indicator - Only show when supported and listening */}
-              {speechSupported && isListening && (
-                <div className="flex items-center gap-2 text-xs sm:text-sm text-red-600 bg-red-50 p-3 sm:p-3 rounded-md border border-red-200">
-                  <div className="flex items-center gap-2 w-full">
-                    {/* Simple recording indicator */}
-                    <div className="flex items-center gap-0.5 flex-shrink-0">
-                      <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                    </div>
-                    <span className="font-medium text-xs sm:text-sm">
-                      Listening... Speak a phrase and pause for it to appear
-                    </span>
-                  </div>
-                </div>
-              )}
+              {/* Enhanced Voice Input Component */}
+              <VoiceInput
+                onTranscript={handleVoiceTranscript}
+                isDisabled={createEntryMutation.isPending}
+                language="en-US"
+                className="mt-2"
+              />
             </div>
           </div>
 
