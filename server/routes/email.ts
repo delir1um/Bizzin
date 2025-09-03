@@ -36,22 +36,12 @@ router.delete('/content/cleanup', async (req, res) => {
 router.get('/debug/settings/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    console.log('🔍 Debugging settings for user:', userId);
-
     // Test the exact same query used by the scheduler
     const { data: setting, error } = await supabase
       .from('daily_email_settings')
       .select('*')
       .eq('user_id', userId)
       .single();
-
-    console.log('Settings query result from routes:', { 
-      hasData: !!setting, 
-      errorMessage: error?.message, 
-      errorCode: error?.code,
-      settingsId: setting?.id,
-      enabled: setting?.enabled
-    });
 
     res.json({
       userId,

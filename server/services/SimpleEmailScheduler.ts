@@ -134,21 +134,12 @@ export class SimpleEmailScheduler {
     try {
       console.log(`🧪 Manually sending test email for user ${userId}`);
       
-      // Get user email settings and profile separately - debug version
-      console.log(`🔍 Scheduler querying settings for user: ${userId}`);
+      // Get user email settings and profile separately
       const { data: setting, error } = await supabase
         .from('daily_email_settings')
         .select('*')
         .eq('user_id', userId)
         .single();
-
-      console.log('Scheduler settings query result:', { 
-        hasData: !!setting, 
-        errorMessage: error?.message, 
-        errorCode: error?.code,
-        settingsId: setting?.id,
-        enabled: setting?.enabled
-      });
 
       if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned, which is acceptable
         console.error('❌ Database error getting email settings:', error);
