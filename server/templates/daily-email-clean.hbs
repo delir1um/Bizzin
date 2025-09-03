@@ -14,10 +14,34 @@
         table, td { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
         img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
         
-        /* Force light theme everywhere */
-        body, table, td, p, a, span, div, h1, h2, h3, h4, h5, h6 {
+        /* Force light theme everywhere - aggressive overrides */
+        body, table, td, p, a, span, div, h1, h2, h3, h4, h5, h6, section, article, main, header, footer {
             color: #0F172A !important;
-            background-color: transparent !important;
+            background-color: #ffffff !important;
+        }
+        
+        /* Ensure all containers have white backgrounds */
+        * {
+            background-color: #ffffff !important;
+            color: #0F172A !important;
+        }
+        
+        /* Force light background on wrapper and containers */
+        body, html {
+            background: #F8FAFC !important;
+            background-color: #F8FAFC !important;
+        }
+        
+        /* Email client specific overrides */
+        .ReadMsgBody, .ExternalClass {
+            background-color: #F8FAFC !important;
+        }
+        
+        /* Goal preview and content areas */
+        .goal-preview, .content-area, .action-item {
+            background-color: #ffffff !important;
+            background: #ffffff !important;
+            color: #0F172A !important;
         }
         
         /* Inter font */
@@ -59,14 +83,21 @@
             font-size: 14px !important;
         }
         
-        /* Dark mode prevention */
+        /* Aggressive dark mode prevention */
         @media (prefers-color-scheme: dark) {
-            *, body, table, td, p, a, span, div, h1, h2, h3, h4, h5, h6 {
+            *, *::before, *::after, body, table, td, p, a, span, div, h1, h2, h3, h4, h5, h6, section, article, main, header, footer {
                 color: #0F172A !important;
-                background-color: transparent !important;
+                background-color: #ffffff !important;
+                background: #ffffff !important;
             }
             .clean-card, .stats-card {
                 background-color: #ffffff !important;
+                background: #ffffff !important;
+            }
+            /* Override any dark mode email client styles */
+            [data-ogsc] *, [data-ogsb] * {
+                background-color: #ffffff !important;
+                color: #0F172A !important;
             }
         }
         
