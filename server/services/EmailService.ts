@@ -1148,8 +1148,19 @@ export class EmailService {
       cta: "View Progress"
     });
 
+    // Sort active goals by priority (High > Medium > Low) and limit to 3
+    const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
+    const sortedActiveGoals = activeGoals.sort((a: any, b: any) => {
+      const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] || 2;
+      const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] || 2;
+      return bPriority - aPriority; // Higher priority first
+    });
+
+    const displayedGoals = sortedActiveGoals.slice(0, 3);
+    const remainingGoalsCount = Math.max(0, activeGoals.length - 3);
+
     // Goal previews with proper progress calculation
-    const goalPreviews = activeGoals.slice(0, 3).map((goal: any) => {
+    const goalPreviews = displayedGoals.map((goal: any) => {
       // Calculate progress based on goal type
       let progress = 0;
       if (goal.goal_type === 'milestone' && goal.milestones?.length) {
@@ -1238,6 +1249,15 @@ export class EmailService {
         }
       },
       goalPreviews,
+      // Goal management metadata for CTA button
+      goalManagement: {
+        totalActiveGoals: activeGoals.length,
+        displayedGoals: displayedGoals.length,
+        remainingGoalsCount,
+        showCTA: activeGoals.length > 0, // Always show CTA if user has goals
+        ctaText: remainingGoalsCount > 0 ? `View ${remainingGoalsCount} More Goals` : 'Manage All Goals',
+        ctaUrl: 'https://bizzin.co.za/goals'
+      },
       journalStatus,
       journalCTA,
       healthCheck: {
