@@ -138,12 +138,9 @@ export function VideoPlayer({
       
       const time = video.currentTime
       
-      // Only update if time has changed significantly (prevent rapid updates)
-      if (Math.abs(time - currentTime) > 0.2) {
-        setCurrentTime(time)
-        // Update parent with current time
-        onTimeUpdate(time)
-      }
+      // Update time regularly for smooth progress tracking
+      setCurrentTime(time)
+      onTimeUpdate(time)
       
       // Also update duration if it changed (important for video files)
       if (video.duration && video.duration !== duration && video.duration > 0) {
