@@ -16,11 +16,19 @@
     </xml>
     <![endif]-->
     <style type="text/css">
-        /* Reset everything to light mode */
+        /* Reset everything to solid white - no transparency */
         * { 
             background-color: #ffffff !important; 
             background: #ffffff !important; 
-            color: #1e293b !important; 
+            color: #1e293b !important;
+            opacity: 1 !important;
+        }
+        
+        /* Force all containers to solid white */
+        html, body, table, tr, td, div, span, p, h1, h2, h3, h4, h5, h6 {
+            background-color: #ffffff !important;
+            background: #ffffff !important;
+            opacity: 1 !important;
         }
         
         /* Email client overrides */
@@ -82,23 +90,25 @@
         .text-gray { color: #64748b !important; }
         .brand-orange { color: #ea7a57 !important; }
         
-        /* Card styles */
+        /* Card styles - solid white with visible borders */
         .email-card {
             background-color: #ffffff !important;
             background: #ffffff !important;
-            border: 1px solid #e2e8f0 !important;
+            border: 2px solid #d1d5db !important;
             border-radius: 8px !important;
             padding: 20px !important;
             margin-bottom: 16px !important;
+            opacity: 1 !important;
         }
         
         .stats-grid-card {
             background-color: #ffffff !important;
             background: #ffffff !important;
-            border: 1px solid #e2e8f0 !important;
+            border: 2px solid #d1d5db !important;
             border-radius: 8px !important;
             padding: 16px !important;
             text-align: center !important;
+            opacity: 1 !important;
         }
         
         /* Button */
@@ -139,13 +149,13 @@
 </head>
 <body style="margin: 0; padding: 0; background-color: #ffffff !important; background: #ffffff !important; color: #1e293b !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;">
     
-    <!-- Outer wrapper table -->
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #ffffff !important; background: #ffffff !important; margin: 0; padding: 0;">
+    <!-- Outer wrapper table with solid white background -->
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #ffffff !important; background: #ffffff !important; margin: 0; padding: 0; opacity: 1 !important;">
         <tr>
-            <td align="center" style="padding: 20px; background-color: #ffffff !important; background: #ffffff !important;">
+            <td align="center" style="padding: 40px 20px; background-color: #ffffff !important; background: #ffffff !important; opacity: 1 !important;">
                 
-                <!-- Main content container -->
-                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; background-color: #ffffff !important; background: #ffffff !important;">
+                <!-- Main content container with solid background -->
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; background-color: #ffffff !important; background: #ffffff !important; opacity: 1 !important; border: 3px solid #e5e7eb !important; border-radius: 12px !important; padding: 20px !important;">
                     
                     <!-- Header -->
                     <tr>
