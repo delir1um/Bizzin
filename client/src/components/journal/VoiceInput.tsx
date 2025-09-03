@@ -88,10 +88,18 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
 
   // Handle mic toggle
   const handleMicToggle = async () => {
+    console.log('Mic toggle clicked, current state:', state, 'isListening:', isListening)
     if (isListening) {
+      console.log('Stopping listening...')
       stopListening()
     } else {
-      await startListening()
+      console.log('Starting listening...')
+      try {
+        await startListening()
+        console.log('Start listening completed')
+      } catch (err) {
+        console.error('Start listening failed:', err)
+      }
     }
   }
 
@@ -182,27 +190,40 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
         <Button
           type="button"
           onClick={handleMicToggle}
-          disabled={isDisabled}
+          disabled={isDisabled || state === 'requesting-permission'}
           className={`
             w-10 h-10 p-0 rounded-full transition-all duration-200 border-2 relative overflow-hidden
             ${
-              isListening
+              state === 'listening'
                 ? 'bg-red-500 hover:bg-red-600 text-white border-red-400 shadow-lg animate-pulse'
+                : state === 'requesting-permission'
+                ? 'bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-400 shadow-md animate-pulse'
+                : state === 'error'
+                ? 'bg-red-200 hover:bg-red-300 text-red-700 border-red-400 shadow-sm'
                 : 'bg-gray-400 hover:bg-gray-500 text-white border-gray-300 shadow-md hover:shadow-lg'
             }
           `}
           style={{ zIndex: 1000 }}
-          title={isListening ? 'Click to stop recording' : 'Click to start voice input'}
+          title={
+            state === 'listening' ? 'Click to stop recording' :
+            state === 'requesting-permission' ? 'Requesting microphone permission...' :
+            state === 'error' ? 'Click to retry' :
+            'Click to start voice input'
+          }
           data-testid="button-mic-compact"
         >
-          {isListening ? (
+          {state === 'listening' ? (
             <MicOff className="w-5 h-5" />
+          ) : state === 'requesting-permission' ? (
+            <Volume2 className="w-5 h-5" />
+          ) : state === 'error' ? (
+            <AlertCircle className="w-5 h-5" />
           ) : (
             <Mic className="w-5 h-5" />
           )}
           
           {/* Animated recording ring */}
-          {isListening && (
+          {state === 'listening' && (
             <div className="absolute -inset-1 border-2 border-red-300 rounded-full animate-ping opacity-75"></div>
           )}
         </Button>
