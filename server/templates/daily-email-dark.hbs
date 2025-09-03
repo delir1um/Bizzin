@@ -477,6 +477,36 @@
                         </td>
                     </tr>
 
+                    <!-- Today's Reflection Prompt -->
+                    <tr>
+                        <td>
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="section-card" style="background-color: #1a1b2e; border: 1px solid #2a2d47; border-radius: 10px; margin-bottom: 20px;">
+                                <tr>
+                                    <td style="padding: 24px;">
+                                        <h3 class="section-title" style="color: #f8fafc; font-size: 16px; font-weight: 600; margin-bottom: 12px;">
+                                            <span class="section-icon" style="margin-right: 8px; font-size: 18px;">🎭</span>
+                                            Today's Reflection Prompt
+                                        </h3>
+                                        <p style="color: #f8fafc; font-size: 15px; line-height: 1.5; margin-bottom: 20px; font-style: italic;">
+                                            {{journalPrompt}}
+                                        </p>
+                                        <div style="text-align: center; padding: 4px 0;">
+                                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
+                                                <tr>
+                                                    <td style="background-color: #f97316; border-radius: 6px; padding: 0;">
+                                                        <a href="{{dashboardUrl}}/journal" style="background-color: #f97316; border: none; border-radius: 6px; color: #ffffff; display: inline-block; font-size: 14px; font-weight: 600; padding: 8px 16px; text-align: center; text-decoration: none; line-height: 1.3;">
+                                                            {{journalCTA}} ✨
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
                     {{#if (gt stats.totalGoals 0)}}
                     <!-- Active Goals Section -->
                     <tr>
@@ -562,41 +592,6 @@
                     </tr>
                     {{/if}}
 
-                    <!-- Journal Progress -->
-                    <tr>
-                        <td>
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="section-card" style="background-color: #1a1b2e; border: 1px solid #2a2d47; border-radius: 10px; margin-bottom: 20px;">
-                                <tr>
-                                    <td style="padding: 24px;">
-                                        <h3 class="section-title" style="color: #f8fafc; font-size: 16px; font-weight: 600; margin-bottom: 16px;">
-                                            <span class="section-icon" style="margin-right: 8px; font-size: 18px;">📝</span>
-                                            Journal Progress
-                                        </h3>
-                                        <p style="color: #f8fafc; font-size: 14px; line-height: 1.5; margin-bottom: 16px;">
-                                            {{journalStatus.message}}
-                                        </p>
-                                        {{#if journalStatus.streakDays}}
-                                        <p style="color: #ea7a57; font-size: 14px; font-weight: 600; margin-bottom: 20px;">
-                                            ✨ {{journalStatus.streakDays}} day streak! You're building an amazing habit.
-                                        </p>
-                                        {{/if}}
-                                        <div style="text-align: center; padding: 4px 0;">
-                                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
-                                                <tr>
-                                                    <td style="background-color: #f97316; border-radius: 6px; padding: 0;">
-                                                        <a href="{{dashboardUrl}}/journal" style="background-color: #f97316; border: none; border-radius: 6px; color: #ffffff; display: inline-block; font-size: 14px; font-weight: 600; padding: 8px 16px; text-align: center; text-decoration: none; line-height: 1.3;">
-                                                            {{journalCTA}} ✨
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                            </table>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-
                     <!-- Business Health Check -->
                     <tr>
                         <td>
@@ -650,36 +645,6 @@
                                             </p>
                                         </div>
                                         {{/each}}
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-
-                    <!-- Today's Journal Prompt -->
-                    <tr>
-                        <td>
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="section-card" style="background-color: #1a1b2e; border: 1px solid #2a2d47; border-radius: 10px; margin-bottom: 20px;">
-                                <tr>
-                                    <td style="padding: 24px;">
-                                        <h3 class="section-title" style="color: #f8fafc; font-size: 16px; font-weight: 600; margin-bottom: 12px;">
-                                            <span class="section-icon" style="margin-right: 8px; font-size: 18px;">🎭</span>
-                                            Today's Reflection Prompt
-                                        </h3>
-                                        <p style="color: #f8fafc; font-size: 15px; line-height: 1.5; margin-bottom: 20px; font-style: italic;">
-                                            {{journalPrompt}}
-                                        </p>
-                                        <div style="text-align: center; padding: 4px 0;">
-                                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
-                                                <tr>
-                                                    <td style="background-color: #f97316; border-radius: 6px; padding: 0;">
-                                                        <a href="{{dashboardUrl}}/journal" style="background-color: #f97316; border: none; border-radius: 6px; color: #ffffff; display: inline-block; font-size: 14px; font-weight: 600; padding: 8px 16px; text-align: center; text-decoration: none; line-height: 1.3;">
-                                                            {{journalCTA}} ✨
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                            </table>
-                                        </div>
                                     </td>
                                 </tr>
                             </table>
