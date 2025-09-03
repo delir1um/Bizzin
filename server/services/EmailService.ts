@@ -57,8 +57,8 @@ export class EmailService {
         });
       });
 
-      // Try to load the light template (dashboard-matching design)
-      const templatePath = path.join(process.cwd(), 'server', 'templates', 'daily-email-light.hbs');
+      // Try to load the bulletproof light template (no dark mode possible)
+      const templatePath = path.join(process.cwd(), 'server', 'templates', 'daily-email-bulletproof.hbs');
       console.log('📍 Template path:', templatePath);
       
       // Check if file exists first
