@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" lang="en">
+<head>
+    <!--[if gte mso 9]>
+    <xml>
+        <o:OfficeDocumentSettings>
+            <o:AllowPNG/>
+            <o:PixelsPerInch>96</o:PixelsPerInch>
+        </o:OfficeDocumentSettings>
+    </xml>
+    <![endif]-->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="color-scheme" content="light dark">
+    <meta name="supported-color-schemes" content="light dark">
+    <title>Your Daily Business Digest</title>
+    
+    <!--[if mso]>
+    <style type="text/css">
+        .outlook-bg { background-color: #0b0a1d !important; }
+        .outlook-text { color: #f8fafc !important; }
+        .outlook-orange { color: #ea7a57 !important; }
+        .outlook-gray { color: #94a3b8 !important; }
+    </style>
+    <![endif]-->
+    
+    <style type="text/css">
+        /* Universal reset and dark theme base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body, html {
+            background-color: #0b0a1d !important;
+            color: #f8fafc !important;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        
+        table {
+            border-collapse: collapse;
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+        
+        img {
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+            -ms-interpolation-mode: bicubic;
+        }
+        
+        /* Main container */
+        .email-container {
+            background-color: #0b0a1d;
+            padding: 20px 0;
+            width: 100%;
+        }
+        
+        .content-wrapper {
+            background-color: #0b0a1d;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header styles */
+        .header-section {
+            text-align: center;
+            padding: 32px 0 24px 0;
+            background-color: #0b0a1d;
+        }
+        
+        .brand-title {
+            color: #ea7a57 !important;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+        
+        .greeting-text {
+            color: #f8fafc !important;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .date-text {
+            color: #94a3b8 !important;
+            font-size: 14px;
+            font-weight: 400;
+        }
+        
+        /* Daily fuel quote section */
+        .daily-fuel {
+            background-color: #1a1b2e;
+            border-left: 4px solid #ea7a57;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid #2a2d47;
+        }
+        
+        .quote-text {
+            color: #f8fafc !important;
+            font-size: 18px;
+            font-style: italic;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+        
+        .fuel-label {
+            color: #ea7a57 !important;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+        }
+        
+        /* Stats grid */
+        .stats-container {
+            margin-bottom: 24px;
+        }
+        
+        .stats-grid {
+            width: 100%;
+        }
+        
+        .stats-cell {
+            background-color: #1a1b2e;
+            border: 1px solid #2a2d47;
+            border-radius: 8px;
+            padding: 20px 16px;
+            text-align: center;
+            vertical-align: top;
+        }
+        
+        .stats-number {
+            color: #ea7a57 !important;
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+        
+        .stats-number.success {
+            color: #10b981 !important;
+        }
+        
+        .stats-label {
+            color: #94a3b8 !important;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        
+        /* Card sections */
+        .section-card {
+            background-color: #1a1b2e;
+            border: 1px solid #2a2d47;
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            color: #f8fafc !important;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-icon {
+            margin-right: 8px;
+            font-size: 18px;
+        }
+        
+        /* Goal cards */
+        .goal-item {
+            background-color: #0f1019;
+            border: 1px solid #2a2d47;
+            border-radius: 8px;
+            padding: 18px;
+            margin-bottom: 12px;
+        }
+        
+        .goal-title {
+            color: #f8fafc !important;
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .goal-description {
+            color: #94a3b8 !important;
+            font-size: 13px;
+            line-height: 1.4;
+            margin-bottom: 14px;
+        }
+        
+        .progress-bar {
+            background-color: #2a2d47;
+            border-radius: 6px;
+            height: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #ea7a57 0%, #f97316 100%);
+            border-radius: 6px;
+            height: 100%;
+        }
+        
+        .goal-meta {
+            color: #94a3b8 !important;
+            font-size: 12px;
+            font-weight: 400;
+        }
+        
+        /* Action items */
+        .action-item {
+            border-bottom: 1px solid #2a2d47;
+            padding: 12px 0;
+        }
+        
+        .action-item:last-child {
+            border-bottom: none;
+        }
+        
+        .action-text {
+            color: #f8fafc !important;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        /* CTA Buttons */
+        .cta-button {
+            background: linear-gradient(135deg, #ea7a57 0%, #f97316 100%) !important;
+            border: none;
+            border-radius: 8px;
+            color: #ffffff !important;
+            display: inline-block;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 14px 24px;
+            text-align: center;
+            text-decoration: none !important;
+            transition: all 0.2s ease;
+        }
+        
+        .cta-button:hover {
+            background: linear-gradient(135deg, #e65100 0%, #ea7a57 100%) !important;
+            transform: translateY(-1px);
+        }
+        
+        /* Footer */
+        .footer-section {
+            text-align: center;
+            padding: 32px 0;
+            border-top: 1px solid #2a2d47;
+            margin-top: 24px;
+        }
+        
+        .footer-links {
+            margin-bottom: 20px;
+        }
+        
+        .footer-link {
+            color: #94a3b8 !important;
+            font-size: 12px;
+            text-decoration: none;
+            margin: 0 12px;
+        }
+        
+        .footer-link:hover {
+            color: #ea7a57 !important;
+        }
+        
+        .footer-text {
+            color: #94a3b8 !important;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+        
+        /* Mobile responsive */
+        @media screen and (max-width: 600px) {
+            .content-wrapper {
+                padding: 0 16px !important;
+            }
+            
+            .stats-grid {
+                width: 100% !important;
+            }
+            
+            .stats-cell {
+                display: block !important;
+                width: 100% !important;
+                margin-bottom: 8px !important;
+            }
+            
+            .mobile-center {
+                text-align: center !important;
+            }
+            
+            .mobile-full-width {
+                width: 100% !important;
+            }
+        }
+        
+        /* Dark mode enhancements */
+        @media (prefers-color-scheme: dark) {
+            body, html {
+                background-color: #0b0a1d !important;
+                color: #f8fafc !important;
+            }
+            
+            .section-card {
+                background-color: #1a1b2e !important;
+                border-color: #2a2d47 !important;
+            }
+        }
+    </style>
+</head>
+<body style="background-color: #0b0a1d; margin: 0; padding: 0; color: #f8fafc; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;">
+
+<!--[if mso]>
+<v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t">
+<v:fill type="tile" src="" color="#0b0a1d"/>
+</v:background>
+<![endif]-->
+
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #0b0a1d;">
+    <tr>
+        <td>
+            <div class="email-container">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" class="content-wrapper" style="background-color: #0b0a1d; max-width: 600px; margin: 0 auto;">
+                    
+                    <!-- Header Section -->
+                    <tr>
+                        <td class="header-section">
+                            <h1 class="brand-title" style="color: #ea7a57; font-size: 28px; font-weight: 700; margin-bottom: 16px; letter-spacing: -0.5px;">
+                                🅱️ Bizzin
+                            </h1>
+                            <h2 class="greeting-text" style="color: #f8fafc; font-size: 20px; font-weight: 600; margin-bottom: 8px;">
+                                {{timeOfDayGreeting}}, {{user.firstName}}! {{greetingEmoji}}
+                            </h2>
+                            <p class="date-text" style="color: #94a3b8; font-size: 14px; margin: 0;">
+                                Your daily business digest for {{formattedDate}}
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Daily Business Fuel Quote -->
+                    <tr>
+                        <td>
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="daily-fuel" style="background-color: #1a1b2e; border-left: 4px solid #ea7a57; border-radius: 8px; border: 1px solid #2a2d47; margin-bottom: 24px;">
+                                <tr>
+                                    <td style="padding: 24px;">
+                                        <p class="quote-text" style="color: #f8fafc; font-size: 18px; font-style: italic; line-height: 1.5; margin-bottom: 16px;">
+                                            "{{quote.text}}"
+                                        </p>
+                                        {{#if quote.author}}
+                                        <p style="color: #94a3b8; font-size: 14px; margin-bottom: 12px;">
+                                            — {{quote.author}}
+                                        </p>
+                                        {{/if}}
+                                        <div class="fuel-label" style="color: #ea7a57; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;">
+                                            💡 YOUR DAILY BUSINESS FUEL
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Stats Grid -->
+                    <tr>
+                        <td class="stats-container">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="stats-grid">
+                                <tr>
+                                    <td width="25%" class="stats-cell" style="background-color: #1a1b2e; border: 1px solid #2a2d47; border-radius: 8px; padding: 20px 16px; text-align: center; vertical-align: top;">
+                                        <div class="stats-number" style="color: #ea7a57; font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 6px;">
+                                            {{stats.totalGoals}}
+                                        </div>
+                                        <div class="stats-label" style="color: #94a3b8; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px;">
+                                            TOTAL GOALS
+                                        </div>
+                                    </td>
+                                    <td width="25%" class="stats-cell" style="background-color: #1a1b2e; border: 1px solid #2a2d47; border-radius: 8px; padding: 20px 16px; text-align: center; vertical-align: top;">
+                                        <div class="stats-number success" style="color: #10b981; font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 6px;">
+                                            {{stats.completedGoals}}
+                                        </div>
+                                        <div class="stats-label" style="color: #94a3b8; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px;">
+                                            COMPLETED
+                                        </div>
+                                    </td>
+                                    <td width="25%" class="stats-cell" style="background-color: #1a1b2e; border: 1px solid #2a2d47; border-radius: 8px; padding: 20px 16px; text-align: center; vertical-align: top;">
+                                        <div class="stats-number" style="color: #ea7a57; font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 6px;">
+                                            {{stats.inProgressGoals}}
+                                        </div>
+                                        <div class="stats-label" style="color: #94a3b8; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px;">
+                                            IN PROGRESS
+                                        </div>
+                                    </td>
+                                    <td width="25%" class="stats-cell" style="background-color: #1a1b2e; border: 1px solid #2a2d47; border-radius: 8px; padding: 20px 16px; text-align: center; vertical-align: top;">
+                                        <div class="stats-number" style="color: #ea7a57; font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 6px;">
+                                            {{stats.successRate}}%
+                                        </div>
+                                        <div class="stats-label" style="color: #94a3b8; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px;">
+                                            SUCCESS RATE
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    {{#if (gt stats.totalGoals 0)}}
+                    <!-- Active Goals Section -->
+                    <tr>
+                        <td>
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="section-card" style="background-color: #1a1b2e; border: 1px solid #2a2d47; border-radius: 10px; margin-bottom: 20px;">
+                                <tr>
+                                    <td style="padding: 24px;">
+                                        <h3 class="section-title" style="color: #f8fafc; font-size: 16px; font-weight: 600; margin-bottom: 16px;">
+                                            <span class="section-icon" style="margin-right: 8px; font-size: 18px;">🎯</span>
+                                            Your Active Goals
+                                        </h3>
+                                        {{#each goalPreviews}}
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="goal-item" style="background-color: #0f1019; border: 1px solid #2a2d47; border-radius: 8px; margin-bottom: 12px;">
+                                            <tr>
+                                                <td style="padding: 18px;">
+                                                    <h4 class="goal-title" style="color: #f8fafc; font-size: 15px; font-weight: 600; margin-bottom: 8px;">
+                                                        {{this.title}}
+                                                    </h4>
+                                                    {{#if this.description}}
+                                                    <p class="goal-description" style="color: #94a3b8; font-size: 13px; line-height: 1.4; margin-bottom: 14px;">
+                                                        {{this.description}}
+                                                    </p>
+                                                    {{/if}}
+                                                    <!-- Progress Bar -->
+                                                    <div class="progress-bar" style="background-color: #2a2d47; border-radius: 6px; height: 8px; margin-bottom: 10px; overflow: hidden;">
+                                                        <div class="progress-fill" style="background: linear-gradient(90deg, #ea7a57 0%, #f97316 100%); width: {{this.progress}}%; height: 100%; border-radius: 6px;"></div>
+                                                    </div>
+                                                    <p class="goal-meta" style="color: #94a3b8; font-size: 12px; margin: 0;">
+                                                        {{this.priority}} Priority • {{this.category}} • {{this.progress}}% Complete
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        {{/each}}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    {{else}}
+                    <!-- No Goals CTA -->
+                    <tr>
+                        <td>
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="section-card" style="background-color: #1a1b2e; border: 1px solid #2a2d47; border-radius: 10px; margin-bottom: 20px;">
+                                <tr>
+                                    <td style="padding: 40px 24px; text-align: center;">
+                                        <h3 style="color: #f8fafc; font-size: 18px; font-weight: 600; margin-bottom: 12px;">
+                                            🚀 Ready to Set Your Business Goals?
+                                        </h3>
+                                        <p style="color: #94a3b8; font-size: 14px; margin-bottom: 24px; line-height: 1.5;">
+                                            Create objectives with progress tracking, priority levels, and milestone management
+                                        </p>
+                                        <a href="{{dashboardUrl}}/goals" class="cta-button" style="background: linear-gradient(135deg, #ea7a57 0%, #f97316 100%); border: none; border-radius: 8px; color: #ffffff; display: inline-block; font-size: 14px; font-weight: 600; padding: 14px 24px; text-decoration: none;">
+                                            Start Goal Tracking →
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    {{/if}}
+
+                    <!-- Journal Progress -->
+                    <tr>
+                        <td>
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="section-card" style="background-color: #1a1b2e; border: 1px solid #2a2d47; border-radius: 10px; margin-bottom: 20px;">
+                                <tr>
+                                    <td style="padding: 24px;">
+                                        <h3 class="section-title" style="color: #f8fafc; font-size: 16px; font-weight: 600; margin-bottom: 16px;">
+                                            <span class="section-icon" style="margin-right: 8px; font-size: 18px;">📝</span>
+                                            Journal Progress
+                                        </h3>
+                                        <p style="color: #f8fafc; font-size: 14px; line-height: 1.5; margin-bottom: 16px;">
+                                            {{journalStatus.message}}
+                                        </p>
+                                        {{#if journalStatus.streakDays}}
+                                        <p style="color: #ea7a57; font-size: 14px; font-weight: 600; margin-bottom: 20px;">
+                                            ✨ {{journalStatus.streakDays}} day streak! You're building an amazing habit.
+                                        </p>
+                                        {{/if}}
+                                        <a href="{{dashboardUrl}}/journal" class="cta-button" style="background: linear-gradient(135deg, #ea7a57 0%, #f97316 100%); border: none; border-radius: 8px; color: #ffffff; display: inline-block; font-size: 14px; font-weight: 600; padding: 14px 24px; text-decoration: none;">
+                                            {{journalCTA}}
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Business Health Check -->
+                    <tr>
+                        <td>
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="section-card" style="background-color: #1a1b2e; border: 1px solid #2a2d47; border-radius: 10px; margin-bottom: 20px;">
+                                <tr>
+                                    <td style="padding: 24px;">
+                                        <h3 class="section-title" style="color: #f8fafc; font-size: 16px; font-weight: 600; margin-bottom: 16px;">
+                                            <span class="section-icon" style="margin-right: 8px; font-size: 18px;">📊</span>
+                                            Business Health Check
+                                        </h3>
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                            <tr>
+                                                <td width="50%" style="vertical-align: top; padding-right: 12px;">
+                                                    <h4 style="color: #f8fafc; font-size: 13px; font-weight: 500; margin-bottom: 6px;">
+                                                        Reflection Consistency
+                                                    </h4>
+                                                    <p style="color: #94a3b8; font-size: 13px; margin: 0;">
+                                                        {{healthCheck.reflectionStatus}}
+                                                    </p>
+                                                </td>
+                                                <td width="50%" style="vertical-align: top; padding-left: 12px;">
+                                                    <h4 style="color: #f8fafc; font-size: 13px; font-weight: 500; margin-bottom: 6px;">
+                                                        Business Sentiment
+                                                    </h4>
+                                                    <p style="color: #94a3b8; font-size: 13px; margin: 0;">
+                                                        {{healthCheck.sentimentStatus}}
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Today's Action Items -->
+                    <tr>
+                        <td>
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="section-card" style="background-color: #1a1b2e; border: 1px solid #2a2d47; border-radius: 10px; margin-bottom: 20px;">
+                                <tr>
+                                    <td style="padding: 24px;">
+                                        <h3 class="section-title" style="color: #f8fafc; font-size: 16px; font-weight: 600; margin-bottom: 16px;">
+                                            <span class="section-icon" style="margin-right: 8px; font-size: 18px;">✅</span>
+                                            Your Focus for Today
+                                        </h3>
+                                        {{#each actionItems}}
+                                        <div class="action-item" style="border-bottom: 1px solid #2a2d47; padding: 12px 0;">
+                                            <p class="action-text" style="color: #f8fafc; font-size: 14px; line-height: 1.4; margin: 0;">
+                                                • {{this.text}}
+                                            </p>
+                                        </div>
+                                        {{/each}}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Today's Journal Prompt -->
+                    <tr>
+                        <td>
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="section-card" style="background-color: #1a1b2e; border: 1px solid #2a2d47; border-radius: 10px; margin-bottom: 20px;">
+                                <tr>
+                                    <td style="padding: 24px;">
+                                        <h3 class="section-title" style="color: #f8fafc; font-size: 16px; font-weight: 600; margin-bottom: 12px;">
+                                            <span class="section-icon" style="margin-right: 8px; font-size: 18px;">🎭</span>
+                                            Today's Reflection Prompt
+                                        </h3>
+                                        <p style="color: #f8fafc; font-size: 15px; line-height: 1.5; margin-bottom: 20px; font-style: italic;">
+                                            {{journalPrompt}}
+                                        </p>
+                                        <a href="{{dashboardUrl}}/journal" class="cta-button" style="background: linear-gradient(135deg, #ea7a57 0%, #f97316 100%); border: none; border-radius: 8px; color: #ffffff; display: inline-block; font-size: 14px; font-weight: 600; padding: 14px 24px; text-decoration: none;">
+                                            {{journalCTA}} ✨
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Dashboard CTA -->
+                    <tr>
+                        <td style="text-align: center; padding: 24px 0;">
+                            <a href="{{dashboardUrl}}" class="cta-button" style="background: linear-gradient(135deg, #ea7a57 0%, #f97316 100%); border: none; border-radius: 8px; color: #ffffff; display: inline-block; font-size: 16px; font-weight: 600; padding: 16px 32px; text-decoration: none;">
+                                Open Your Dashboard 🚀
+                            </a>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td class="footer-section" style="text-align: center; padding: 32px 0; border-top: 1px solid #2a2d47; margin-top: 24px;">
+                            <h3 style="color: #f8fafc; font-size: 16px; font-weight: 600; margin-bottom: 16px;">
+                                Keep building your business success with Bizzin 💼
+                            </h3>
+                            <div class="footer-links" style="margin-bottom: 20px;">
+                                <a href="{{dashboardUrl}}/notifications" class="footer-link" style="color: #94a3b8; font-size: 12px; text-decoration: none; margin: 0 12px;">Manage Notifications</a>
+                                <span style="color: #94a3b8; font-size: 12px;">•</span>
+                                <a href="{{dashboardUrl}}/profile" class="footer-link" style="color: #94a3b8; font-size: 12px; text-decoration: none; margin: 0 12px;">Email Preferences</a>
+                                <span style="color: #94a3b8; font-size: 12px;">•</span>
+                                <a href="https://bizzin.co.za" class="footer-link" style="color: #94a3b8; font-size: 12px; text-decoration: none; margin: 0 12px;">Visit Bizzin</a>
+                            </div>
+                            <p class="footer-text" style="color: #94a3b8; font-size: 11px; line-height: 1.5; margin: 0;">
+                                © 2025 Bizzin. All rights reserved.<br>
+                                Developed by CloudFusion
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </div>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>

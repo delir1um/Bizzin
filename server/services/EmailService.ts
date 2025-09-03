@@ -57,8 +57,8 @@ export class EmailService {
         });
       });
 
-      // Try to load the Shortwave-optimized template (gradient hack for dark mode)
-      const templatePath = path.join(process.cwd(), 'server', 'templates', 'daily-email-shortwave.hbs');
+      // Try to load the cross-client compatible dark template
+      const templatePath = path.join(process.cwd(), 'server', 'templates', 'daily-email-dark.hbs');
       console.log('📍 Template path:', templatePath);
       
       // Check if file exists first
