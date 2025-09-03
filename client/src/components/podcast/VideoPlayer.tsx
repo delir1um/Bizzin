@@ -51,11 +51,8 @@ export function VideoPlayer({
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [showControls, setShowControls] = useState(true)
   const [hasError, setHasError] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
   const [isBuffering, setIsBuffering] = useState(false)
   const [bufferingProgress, setBufferingProgress] = useState(0)
-  const [canPlayThrough, setCanPlayThrough] = useState(false)
-  const [isVideoReady, setIsVideoReady] = useState(false)
   const [isSeeking, setIsSeeking] = useState(false)
   
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -71,14 +68,11 @@ export function VideoPlayer({
     if (!video) return
 
     // Reset states on video source change
-    setIsLoading(true)
-    setCanPlayThrough(false)
     setIsBuffering(false)
     setHasError(false)
     setCurrentTime(startTime)
     setDuration(0)
     setIsPlaying(false)
-    setIsVideoReady(false)
     setIsSeeking(false)
 
     // Optimize video loading for better streaming
@@ -86,17 +80,13 @@ export function VideoPlayer({
     video.setAttribute('buffered', 'true')
     
     const handleLoadStart = () => {
-      setIsLoading(true)
       setHasError(false)
-      setCanPlayThrough(false)
       setIsBuffering(false)
     }
     
     const handleLoadedData = () => {
       // This fires when enough data is loaded to start playback
       console.log('Video data loaded - ready for playback')
-      setIsLoading(false)
-      setIsVideoReady(true)
     }
 
     const handleLoadedMetadata = () => {
@@ -104,9 +94,7 @@ export function VideoPlayer({
       setDuration(videoDuration)
       console.log('Video duration updated:', videoDuration, 'Episode duration:', Math.floor(videoDuration))
       
-      // Video metadata is loaded - we can hide loading now and make it ready
-      setIsLoading(false)
-      setIsVideoReady(true)
+      // Video metadata is loaded
       
       // Notify parent component of actual duration
       if (onDurationUpdate) {
@@ -126,11 +114,7 @@ export function VideoPlayer({
     const handleCanPlayThrough = () => {
       // Video has buffered enough to play without interruption
       console.log('Video can play through without buffering')
-      setCanPlayThrough(true)
-      setIsLoading(false)
       setIsBuffering(false)
-      setIsVideoReady(true)
-      // Don't auto-play immediately, let user control playbook
     }
 
     const handleTimeUpdate = () => {
@@ -157,16 +141,12 @@ export function VideoPlayer({
     const handleError = () => {
       console.error('Video loading failed for:', proxyVideoUrl)
       setHasError(true)
-      setIsLoading(false)
     }
 
     const handleCanPlay = () => {
-      // Video can start playing - ensure loading is hidden
-      setIsLoading(false)
+      // Video can start playing
       setIsBuffering(false)
       setHasError(false)
-      setCanPlayThrough(true)
-      setIsVideoReady(true)
       console.log('Video ready to play')
     }
     
@@ -192,7 +172,6 @@ export function VideoPlayer({
     }
     
     const handlePlaying = () => {
-      setIsLoading(false)
       setIsBuffering(false)
       console.log('Video playing smoothly')
     }
@@ -213,12 +192,9 @@ export function VideoPlayer({
     // Add play/pause event listeners to sync state
     const handlePlayEvent = () => {
       setIsPlaying(true)
-      setIsLoading(false)
-      setIsBuffering(false)
     }
     const handlePauseEvent = () => {
       setIsPlaying(false)
-      setIsBuffering(false)
     }
     video.addEventListener('play', handlePlayEvent)
     video.addEventListener('pause', handlePauseEvent)

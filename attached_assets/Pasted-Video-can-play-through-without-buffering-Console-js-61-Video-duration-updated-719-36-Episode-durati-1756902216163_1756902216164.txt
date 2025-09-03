@@ -1,0 +1,52 @@
+Video can play through without buffering
+Console.js:61 Video duration updated: 719.36 Episode duration: 719
+Console.js:61 Video duration updated: 719.36 Episode duration: 719
+Console.js:61 Video data loaded - ready for playback
+Console.js:61 Video ready to play
+Console.js:61 Video playing smoothly
+Console.js:61 Video can play through without buffering
+Console.js:61 Video duration updated: 719.36 Episode duration: 719
+Console.js:61 Video duration updated: 719.36 Episode duration: 719
+Console.js:61 Video data loaded - ready for playback
+Console.js:61 Video ready to play
+Console.js:61 Video can play through without buffering
+Console.js:61 Video duration updated: 719.36 Episode duration: 719
+Console.js:61 Video duration updated: 719.36 Episode duration: 719
+Console.js:61 Video data loaded - ready for playback
+Console.js:61 Video ready to play
+Console.js:61 Video can play through without buffering
+Console.js:61 Video duration updated: 719.36 Episode duration: 719
+Console.js:61 Video duration updated: 719.36 Episode duration: 719
+Console.js:61 Video data loaded - ready for playback
+Console.js:61 Video ready to play
+Console.js:61 Video can play through without buffering
+Console.js:61 Video duration updated: 719.36 Episode duration: 719
+Console.js:61 Video duration updated: 719.36 Episode duration: 719
+Console.js:61 Video data loaded - ready for playback
+Console.js:61 Video ready to play
+Console.js:61 Video can play through without buffering
+Console.js:61 Video duration updated: 719.36 Episode duration: 719
+Console.js:61 Video duration updated: 719.36 Episode duration: 719
+Console.js:61 Video data loaded - ready for playback
+Console.js:61 Video ready to play
+Console.js:61 Video can play through without buffering
+Console.js:61 Video duration updated: 719.36 Episode duration: 719
+Console.js:61 Video duration updated: 719.36 Episode duration: 719
+Console.js:61 Video data loaded - ready for playback
+Console.js:61 Video ready to play
+Console.js:61 Video can play through without buffering
+Console.js:61 Video duration updated: 719.36 Episode duration: 719
+Console.js:61 Video duration updated: 719.36 Episode duration: 719
+Console.js:61 Video data loaded - ready for playback
+Console.js:61 Video ready to play
+Console.js:61 Video can play through without buffering
+Console.js:61 Video duration updated: 719.36 Episode duration: 719
+Console.js:61 Video duration updated: 719.36 Episode duration: 719
+Console.js:61 Video data loaded - ready for playback
+Console.js:61 Video ready to play
+Console.js:61 Video can play through without buffering
+Console.js:61 Video duration updated: 719.36 Episode duration: 719
+Console.js:61 Video duration updated: 719.36 Episode duration: 719
+Console.js:61 Video data loaded - ready for playback
+Console.js:61 Video ready to play
+Console.js:61 Video can play through without buffering
