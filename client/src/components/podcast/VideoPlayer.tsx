@@ -152,9 +152,11 @@ export function VideoPlayer({
     }
 
     const handleCanPlay = () => {
-      // Video can start playing - hide loading overlay
-      setIsLoading(false)
-      setIsBuffering(false)
+      // Video can start playing - ensure loading is hidden
+      if (duration > 0) {
+        setIsLoading(false)
+        setIsBuffering(false)
+      }
       setHasError(false)
       setCanPlayThrough(true)
       console.log('Video ready to play')
@@ -385,8 +387,8 @@ export function VideoPlayer({
         style={{ backgroundColor: '#000' }}
       />
       
-      {/* Loading State - Only show when video metadata is not loaded */}
-      {duration === 0 && !hasError && (
+      {/* Loading State - Only show when video is actually loading */}
+      {isLoading && duration === 0 && !hasError && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/90">
           <div className="flex flex-col items-center space-y-4">
             <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
@@ -396,7 +398,7 @@ export function VideoPlayer({
       )}
       
       {/* Buffering State - Show minimal indicator during playback buffering */}
-      {isBuffering && canPlayThrough && !hasError && (
+      {isBuffering && duration > 0 && !hasError && (
         <div className="absolute top-4 right-4">
           <div className="bg-black/60 rounded-lg px-3 py-2 flex items-center gap-2">
             <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
