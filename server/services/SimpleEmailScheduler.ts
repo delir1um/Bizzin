@@ -282,6 +282,23 @@ export class SimpleEmailScheduler {
         throw new Error(`Failed to generate email content for user ${setting.user_id}`);
       }
 
+      // FETCH GOALS AND ENTRIES FOR REAL DATA IN EMAIL (same as test emails)
+      const [goalsResult, entriesResult] = await Promise.all([
+        supabase
+          .from('goals')
+          .select(`*, milestones(*)`)
+          .eq('user_id', setting.user_id),
+        supabase
+          .from('journal_entries')
+          .select('*')
+          .eq('user_id', setting.user_id)
+          .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+          .order('created_at', { ascending: false })
+      ]);
+
+      const goals = goalsResult.data || [];
+      const recentEntries = entriesResult.data || [];
+
       const result = await this.emailService.sendDailyEmail(
         emailContent,
         profileData.email,
@@ -291,7 +308,9 @@ export class SimpleEmailScheduler {
             business_type: profileData.business_type || 'Business',
             email: profileData.email,
             user_id: setting.user_id
-          }
+          },
+          goals: goals,
+          recentEntries: recentEntries
         }
       );
 

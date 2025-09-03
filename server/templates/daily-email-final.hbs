@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light only">
+    <meta name="supported-color-schemes" content="light">
+    <title>Your Daily Business Digest</title>
+    <style>
+        /* FORCE LIGHT MODE - NO EXCEPTIONS */
+        * {
+            background-color: #ffffff !important;
+            color: #1e293b !important;
+        }
+        
+        body, html {
+            background-color: #ffffff !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        
+        /* Override email client containers */
+        .ReadMsgBody, .ExternalClass {
+            background-color: #ffffff !important;
+            width: 100% !important;
+        }
+        
+        /* Apple Mail / Gmail overrides */
+        @media (prefers-color-scheme: dark) {
+            * {
+                background-color: #ffffff !important;
+                color: #1e293b !important;
+                -webkit-text-fill-color: #1e293b !important;
+            }
+        }
+        
+        .brand-orange { color: #ea7a57 !important; }
+        .text-gray { color: #64748b !important; }
+        .text-dark { color: #1e293b !important; }
+        
+        .card {
+            background-color: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 8px !important;
+            padding: 20px !important;
+            margin-bottom: 16px !important;
+        }
+        
+        .stats-card {
+            background-color: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 8px !important;
+            padding: 16px !important;
+            text-align: center !important;
+            margin-bottom: 8px !important;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #ea7a57 0%, #e65100 100%) !important;
+            color: #ffffff !important;
+            padding: 12px 20px !important;
+            border-radius: 6px !important;
+            text-decoration: none !important;
+            font-weight: 500 !important;
+            display: inline-block !important;
+            font-size: 14px !important;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #f1f5f9 !important;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ea7a57 0%, #e65100 100%) !important;
+            border-radius: 4px;
+        }
+        
+        .goal-card {
+            background-color: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 8px !important;
+            padding: 16px !important;
+            margin-bottom: 12px !important;
+        }
+        
+        /* Mobile */
+        @media only screen and (max-width: 600px) {
+            .container { width: 100% !important; padding: 12px !important; }
+            .stats-grid { display: block !important; }
+            .stats-col { display: block !important; width: 100% !important; margin-bottom: 8px !important; }
+        }
+    </style>
+</head>
+<body style="background-color: #ffffff !important; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;">
+    
+    <div style="background-color: #ffffff !important; width: 100%; min-height: 100vh; padding: 20px 0;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff !important;">
+            
+            <!-- Header -->
+            <div style="text-align: center; padding: 24px 0; background-color: #ffffff !important;">
+                <h1 class="brand-orange" style="font-size: 24px; font-weight: 700; margin-bottom: 12px;">
+                    🅱️ Bizzin
+                </h1>
+                <h2 class="text-dark" style="font-size: 18px; font-weight: 600; margin-bottom: 6px;">
+                    Good {{partOfDay}}, {{user.firstName}}!
+                </h2>
+                <p class="text-gray" style="font-size: 14px; margin: 0;">
+                    Your daily business digest for {{formattedDate}}
+                </p>
+            </div>
+
+            <!-- Quote Section -->
+            <div class="card" style="border-left: 4px solid #ea7a57 !important;">
+                <p style="font-size: 16px; font-style: italic; margin-bottom: 8px; line-height: 1.5; color: #1e293b !important;">
+                    "{{quote.text}}"
+                </p>
+                <div class="brand-orange" style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                    YOUR DAILY BUSINESS FUEL
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div style="display: flex; gap: 8px; margin-bottom: 20px; background-color: #ffffff !important;" class="stats-grid">
+                <div style="flex: 1;" class="stats-col">
+                    <div class="stats-card">
+                        <div class="brand-orange" style="font-size: 28px; font-weight: 700; line-height: 1; margin-bottom: 4px;">
+                            {{stats.totalGoals}}
+                        </div>
+                        <div class="text-gray" style="font-size: 10px; font-weight: 500;">
+                            TOTAL GOALS
+                        </div>
+                    </div>
+                </div>
+                <div style="flex: 1;" class="stats-col">
+                    <div class="stats-card">
+                        <div style="font-size: 28px; font-weight: 700; color: #10b981 !important; line-height: 1; margin-bottom: 4px;">
+                            {{stats.completedGoals}}
+                        </div>
+                        <div class="text-gray" style="font-size: 10px; font-weight: 500;">
+                            COMPLETED
+                        </div>
+                    </div>
+                </div>
+                <div style="flex: 1;" class="stats-col">
+                    <div class="stats-card">
+                        <div class="brand-orange" style="font-size: 28px; font-weight: 700; line-height: 1; margin-bottom: 4px;">
+                            {{stats.inProgressGoals}}
+                        </div>
+                        <div class="text-gray" style="font-size: 10px; font-weight: 500;">
+                            IN PROGRESS
+                        </div>
+                    </div>
+                </div>
+                <div style="flex: 1;" class="stats-col">
+                    <div class="stats-card">
+                        <div class="brand-orange" style="font-size: 28px; font-weight: 700; line-height: 1; margin-bottom: 4px;">
+                            {{stats.successRate}}%
+                        </div>
+                        <div class="text-gray" style="font-size: 10px; font-weight: 500;">
+                            SUCCESS RATE
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{#if (gt stats.totalGoals 0)}}
+            <!-- Active Goals Section -->
+            <div class="card">
+                <h3 class="text-dark" style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">
+                    Your Active Goals
+                </h3>
+                {{#each goalPreviews}}
+                <div class="goal-card">
+                    <h4 class="text-dark" style="font-size: 15px; font-weight: 600; margin-bottom: 8px;">
+                        {{this.title}}
+                    </h4>
+                    {{#if this.description}}
+                    <p class="text-gray" style="font-size: 13px; line-height: 1.4; margin-bottom: 12px;">
+                        {{this.description}}
+                    </p>
+                    {{/if}}
+                    <!-- Progress bar -->
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{this.progress}}%;"></div>
+                    </div>
+                    <p class="text-gray" style="font-size: 12px; margin: 0;">
+                        {{this.priority}} Priority • {{this.category}} • {{this.progress}}% Complete
+                    </p>
+                </div>
+                {{/each}}
+            </div>
+            {{else}}
+            <!-- No Goals CTA -->
+            <div class="card" style="text-align: center; padding: 32px 20px !important;">
+                <h3 class="text-dark" style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">
+                    Set and Track Your Business Goals
+                </h3>
+                <p class="text-gray" style="font-size: 14px; margin-bottom: 20px; line-height: 1.5;">
+                    Create objectives with progress tracking, priority levels, and milestone management
+                </p>
+                <a href="{{dashboardUrl}}/goals" class="btn">
+                    Start Goal Tracking →
+                </a>
+            </div>
+            {{/if}}
+
+            <!-- Journal Progress -->
+            <div class="card">
+                <h3 class="text-dark" style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">
+                    📝 Journal Progress
+                </h3>
+                <p class="text-gray" style="font-size: 13px; line-height: 1.5; margin-bottom: 12px;">
+                    {{journalStatus.message}}
+                </p>
+                {{#if journalStatus.streakDays}}
+                <p class="brand-orange" style="font-size: 12px; font-weight: 600; margin-bottom: 12px;">
+                    {{journalStatus.streakDays}} day streak! You're building an amazing habit.
+                </p>
+                {{/if}}
+                <a href="{{dashboardUrl}}/journal" class="btn">{{journalCTA}}</a>
+            </div>
+
+            <!-- Business Health Check -->
+            <div class="card">
+                <h3 class="text-dark" style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">
+                    📊 Business Health Check
+                </h3>
+                <div style="display: flex; gap: 24px; background-color: #ffffff !important;">
+                    <div style="flex: 1; background-color: #ffffff !important;">
+                        <h4 class="text-dark" style="font-size: 13px; font-weight: 500; margin-bottom: 4px;">
+                            Reflection Consistency
+                        </h4>
+                        <p class="text-gray" style="font-size: 13px; margin: 0;">
+                            {{healthCheck.reflectionStatus}}
+                        </p>
+                    </div>
+                    <div style="flex: 1; background-color: #ffffff !important;">
+                        <h4 class="text-dark" style="font-size: 13px; font-weight: 500; margin-bottom: 4px;">
+                            Business Sentiment
+                        </h4>
+                        <p class="text-gray" style="font-size: 13px; margin: 0;">
+                            {{healthCheck.sentimentStatus}}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Today's Action Items -->
+            <div class="card">
+                <h3 class="text-dark" style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">
+                    Today's Action Items
+                </h3>
+                {{#each actionItems}}
+                <div style="padding: 8px 0; border-bottom: 1px solid #f1f5f9; background-color: #ffffff !important;">
+                    <p class="text-dark" style="font-size: 13px; line-height: 1.4; margin: 0;">
+                        • {{this.text}}
+                    </p>
+                </div>
+                {{/each}}
+            </div>
+
+            <!-- Today's Journal Prompt -->
+            <div class="card">
+                <h3 class="text-dark" style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">
+                    📝 Today's Journal Prompt
+                </h3>
+                <p class="text-gray" style="font-size: 13px; line-height: 1.5; margin-bottom: 16px;">
+                    {{journalPrompt}}
+                </p>
+                <a href="{{dashboardUrl}}/journal" class="btn">{{journalCTA}}</a>
+            </div>
+
+            <!-- Dashboard CTA -->
+            <div style="text-align: center; padding: 20px 0; background-color: #ffffff !important;">
+                <a href="{{dashboardUrl}}" class="btn" style="padding: 16px 32px; font-size: 15px;">
+                    Open Your Dashboard
+                </a>
+            </div>
+
+            <!-- Footer -->
+            <div style="text-align: center; padding: 24px 0; background-color: #ffffff !important;">
+                <p class="text-dark" style="font-size: 15px; font-weight: 500; margin-bottom: 12px;">
+                    Keep building your business success with Bizzin
+                </p>
+                <div style="margin-bottom: 16px; background-color: #ffffff !important;">
+                    <a href="{{dashboardUrl}}/notifications" class="text-gray" style="font-size: 12px; text-decoration: none; margin: 0 8px;">Manage Notifications</a>
+                    <span class="text-gray" style="font-size: 12px;">•</span>
+                    <a href="{{dashboardUrl}}/profile" class="text-gray" style="font-size: 12px; text-decoration: none; margin: 0 8px;">Email Preferences</a>
+                    <span class="text-gray" style="font-size: 12px;">•</span>
+                    <a href="https://bizzin.co.za" class="text-gray" style="font-size: 12px; text-decoration: none; margin: 0 8px;">Visit Bizzin</a>
+                </div>
+                <p class="text-gray" style="font-size: 11px; line-height: 1.4; margin: 0;">
+                    © 2025 Bizzin. All rights reserved.<br>
+                    Developed by CloudFusion
+                </p>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

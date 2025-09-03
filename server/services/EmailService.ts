@@ -57,8 +57,8 @@ export class EmailService {
         });
       });
 
-      // Try to load the fullscreen white template (fills entire viewport)
-      const templatePath = path.join(process.cwd(), 'server', 'templates', 'daily-email-fullscreen.hbs');
+      // Try to load the final light template (fixes dark mode and data issues)
+      const templatePath = path.join(process.cwd(), 'server', 'templates', 'daily-email-final.hbs');
       console.log('📍 Template path:', templatePath);
       
       // Check if file exists first
