@@ -32,6 +32,41 @@ router.delete('/content/cleanup', async (req, res) => {
   }
 });
 
+// Debug settings access endpoint - tests exact same query as scheduler
+router.get('/debug/settings/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    console.log('🔍 Debugging settings for user:', userId);
+
+    // Test the exact same query used by the scheduler
+    const { data: setting, error } = await supabase
+      .from('daily_email_settings')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    console.log('Settings query result from routes:', { 
+      hasData: !!setting, 
+      errorMessage: error?.message, 
+      errorCode: error?.code,
+      settingsId: setting?.id,
+      enabled: setting?.enabled
+    });
+
+    res.json({
+      userId,
+      settings: setting,
+      settingsError: error?.message,
+      errorCode: error?.code,
+      hasSettings: !!setting,
+      queryMethod: 'routes-supabase-client'
+    });
+  } catch (error) {
+    console.error('Debug settings error:', error);
+    res.status(500).json({ error: 'Debug failed' });
+  }
+});
+
 // Debug profile endpoint  
 router.get('/debug/profile/:userId', async (req, res) => {
   try {

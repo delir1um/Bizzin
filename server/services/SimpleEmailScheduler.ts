@@ -1,11 +1,5 @@
 import { EmailService } from './EmailService.js';
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase client for server-side use
-const supabase = createClient(
-  process.env.VITE_SUPABASE_URL!,
-  process.env.VITE_SUPABASE_ANON_KEY!
-);
+import { supabase } from '../lib/supabase.js';
 
 export class SimpleEmailScheduler {
   private emailService: EmailService;
@@ -140,31 +134,55 @@ export class SimpleEmailScheduler {
     try {
       console.log(`🧪 Manually sending test email for user ${userId}`);
       
-      // Get user email settings and profile separately
+      // Get user email settings and profile separately - debug version
+      console.log(`🔍 Scheduler querying settings for user: ${userId}`);
       const { data: setting, error } = await supabase
         .from('daily_email_settings')
         .select('*')
         .eq('user_id', userId)
         .single();
 
-      if (error || !setting) {
-        console.error('❌ User email settings not found:', error);
+      console.log('Scheduler settings query result:', { 
+        hasData: !!setting, 
+        errorMessage: error?.message, 
+        errorCode: error?.code,
+        settingsId: setting?.id,
+        enabled: setting?.enabled
+      });
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned, which is acceptable
+        console.error('❌ Database error getting email settings:', error);
         return false;
       }
 
-      // Get user profile separately
-      const { data: userProfile, error: profileError } = await supabase
-        .from('user_profiles')
-        .select('email, full_name, business_type')
-        .eq('user_id', userId)
-        .single();
+      if (!setting) {
+        console.error('❌ No email settings found for user:', userId);
+        return false;
+      }
 
-      // Use fallback if profile not found
-      const profileData = userProfile || {
+      // Get user profile from the debug endpoint method which we know works
+      // Use Supabase auth admin to get user data 
+      let profileData = {
         email: 'anton@cloudfusion.co.za', // fallback for testing
         full_name: 'Anton Bosch',
         business_type: 'Technology Solutions'
       };
+      
+      try {
+        const authResult = await supabase.auth.admin.getUserById(userId);
+        const authUser = authResult.data?.user;
+        if (authUser) {
+          profileData = {
+            email: authUser.email || profileData.email,
+            full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'Entrepreneur',
+            business_type: authUser.user_metadata?.business_type || 'Business'
+          };
+        }
+      } catch (error) {
+        console.log('Using fallback profile data for testing');
+      }
+
+      // profileData is now set above
       // Generate email content first
       const emailContent = await this.emailService.generateDailyEmailContent(userId);
       
@@ -219,18 +237,26 @@ export class SimpleEmailScheduler {
         return { success: true, userId: setting.user_id }; // Not an error, just already sent
       }
 
-      // Get user profile for this user
-      const { data: userProfile } = await supabase
-        .from('user_profiles')
-        .select('email, full_name, business_type')
-        .eq('user_id', setting.user_id)
-        .single();
-
-      const profileData = userProfile || {
-        email: 'anton@cloudfusion.co.za',
+      // Get user profile using auth method (same as test emails)
+      let profileData = {
+        email: 'fallback@example.com',
         full_name: 'Entrepreneur',
         business_type: 'Business'
       };
+      
+      try {
+        const authResult = await supabase.auth.admin.getUserById(setting.user_id);
+        const authUser = authResult.data?.user;
+        if (authUser) {
+          profileData = {
+            email: authUser.email || profileData.email,
+            full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'Entrepreneur',
+            business_type: authUser.user_metadata?.business_type || 'Business'
+          };
+        }
+      } catch (error) {
+        console.log(`Using fallback profile data for user ${setting.user_id}`);
+      }
       
       // Generate email content first
       const emailContent = await this.emailService.generateDailyEmailContent(setting.user_id);
@@ -259,7 +285,7 @@ export class SimpleEmailScheduler {
           .insert({
             user_id: setting.user_id,
             email_type: 'daily_digest',
-            email_address: userProfile?.email,
+            email_address: profileData.email,
             sent_at: new Date().toISOString(),
             status: 'sent',
             retry_count: retryCount
