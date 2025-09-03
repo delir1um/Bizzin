@@ -11,15 +11,19 @@ export class EmailService {
   private templates: Map<string, HandlebarsTemplateDelegate> = new Map();
 
   constructor() {
-    // Initialize email transporter with SMTP2GO
+    // Initialize email transporter with SMTP2GO for production
     this.transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || 'mail.smtp2go.com',
       port: parseInt(process.env.SMTP_PORT || '2525'),
       secure: false, // Use STARTTLS
       auth: {
-        user: process.env.SMTP_USER || 'bizzin',  // Keep original working username
+        user: process.env.SMTP_USER || 'bizzin',  // Production verified username
         pass: process.env.SMTP_PASSWORD || process.env.EMAIL_APP_PASSWORD,
       },
+      // Production optimizations
+      pool: true,
+      maxConnections: 5,
+      maxMessages: 100,
     });
   }
 

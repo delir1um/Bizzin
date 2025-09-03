@@ -54,8 +54,10 @@ export class SimpleEmailScheduler {
       const currentHour = southAfricaTime.getHours();
       const currentMinute = southAfricaTime.getMinutes();
       
-      // Only process on exact minute marks to avoid duplicate sends
-      if (currentMinute !== 0) {
+      // Production: Only process on exact minute marks to avoid duplicate sends
+      // Development: Allow testing at any time
+      const isProduction = process.env.NODE_ENV === 'production';
+      if (isProduction && currentMinute !== 0) {
         return;
       }
 

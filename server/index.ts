@@ -52,8 +52,9 @@ app.use((req, res, next) => {
   
   const server = await registerRoutes(app);
   
-  // Initialize single email system - SimpleEmailScheduler (most reliable for this use case)
+  // Initialize single email system - SimpleEmailScheduler (production ready)
   console.log('📧 Initializing unified email system...');
+  console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
   const { simpleEmailScheduler } = await import('./services/SimpleEmailScheduler.js');
   simpleEmailScheduler.start().catch(error => {
     console.error('❌ Failed to start email scheduler:', error);
