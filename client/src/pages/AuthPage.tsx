@@ -79,7 +79,7 @@ export default function AuthPage() {
     setMessage("")
     
     try {
-      const response = await fetch('/api/email/password-reset', {
+      const response = await fetch('/api/email/system/test-password-reset', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

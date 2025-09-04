@@ -9,6 +9,7 @@ const router = express.Router();
 
 // Custom password reset endpoint using our email service
 router.post('/password-reset', async (req, res) => {
+  console.log('🔥 Password reset endpoint hit:', req.body);
   try {
     const { email } = req.body;
     
@@ -16,14 +17,22 @@ router.post('/password-reset', async (req, res) => {
       return res.status(400).json({ error: 'Email is required' });
     }
 
-    // Check if user exists by email
-    const { data: users, error: authError } = await supabase.auth.admin.listUsers();
-    const authUser = users?.users?.find(user => user.email === email);
+    // Check if user exists by email (using direct database query)
+    console.log(`🔍 Checking user existence for: ${email}`);
     
-    if (authError || !authUser) {
+    const { data: userData, error: userError } = await supabase
+      .from('auth.users')
+      .select('id, email')
+      .eq('email', email)
+      .single();
+    
+    if (userError || !userData) {
+      console.log(`❌ User not found: ${email}`, userError?.message);
       // Don't reveal if user exists or not for security
       return res.json({ message: 'If an account with this email exists, you will receive a password reset link.' });
     }
+    
+    console.log(`✅ User found: ${email} (ID: ${userData.id})`);
 
     // Generate secure reset token
     const resetToken = crypto.randomBytes(32).toString('hex');
@@ -33,7 +42,7 @@ router.post('/password-reset', async (req, res) => {
     const { error: tokenError } = await supabase
       .from('password_reset_tokens')
       .upsert({
-        user_id: authUser.id,
+        user_id: userData.id,
         email: email,
         token: resetToken,
         expires_at: expiresAt.toISOString(),
