@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" lang="en">
+<head>
+    <!--[if gte mso 9]>
+    <xml>
+        <o:OfficeDocumentSettings>
+            <o:AllowPNG/>
+            <o:PixelsPerInch>96</o:PixelsPerInch>
+        </o:OfficeDocumentSettings>
+    </xml>
+    <![endif]-->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="color-scheme" content="light dark">
+    <meta name="supported-color-schemes" content="light dark">
+    <title>{{title}}</title>
+    
+    <!--[if mso]>
+    <style type="text/css">
+        .outlook-bg { background-color: #0b0a1d !important; }
+        .outlook-text { color: #f8fafc !important; }
+        .outlook-orange { color: #f97316 !important; }
+        .outlook-gray { color: #94a3b8 !important; }
+    </style>
+    <![endif]-->
+    
+    <style type="text/css">
+        /* Universal reset and dark theme base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body, html {
+            background-color: #0b0a1d !important;
+            color: #f8fafc !important;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        
+        table {
+            border-collapse: collapse;
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+        
+        img {
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+            -ms-interpolation-mode: bicubic;
+        }
+        
+        /* Main container */
+        .email-container {
+            background-color: #0b0a1d;
+            padding: 20px 0;
+            width: 100%;
+        }
+        
+        .content-wrapper {
+            background-color: #0b0a1d;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header styles */
+        .header-section {
+            text-align: center;
+            padding: 32px 0 24px 0;
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            border-radius: 12px 12px 0 0;
+            margin-bottom: 0;
+        }
+        
+        .brand-title {
+            color: #ffffff !important;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+            font-style: italic;
+        }
+        
+        .header-subtitle {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-size: 16px;
+            font-weight: 400;
+            margin-bottom: 0;
+        }
+        
+        /* Content card */
+        .content-card {
+            background-color: #1a1b2e;
+            border: 1px solid #2a2d47;
+            border-radius: 0 0 12px 12px;
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+        
+        .message-title {
+            color: #f8fafc !important;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        
+        .message-content {
+            color: #cbd5e1 !important;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        
+        /* Button styles */
+        .cta-button {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            color: #ffffff !important;
+            padding: 16px 32px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            display: inline-block;
+            margin: 16px auto;
+            text-align: center;
+            border: none;
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+        }
+        
+        .cta-button:hover {
+            background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
+            box-shadow: 0 6px 16px rgba(249, 115, 22, 0.4);
+        }
+        
+        /* Footer */
+        .footer-section {
+            text-align: center;
+            padding: 24px 0;
+            color: #64748b !important;
+            font-size: 14px;
+        }
+        
+        .footer-links a {
+            color: #f97316 !important;
+            text-decoration: none;
+            margin: 0 8px;
+        }
+        
+        /* Responsive design */
+        @media only screen and (max-width: 600px) {
+            .content-wrapper {
+                padding: 0 16px;
+            }
+            
+            .content-card {
+                padding: 24px;
+            }
+            
+            .brand-title {
+                font-size: 28px;
+            }
+            
+            .message-title {
+                font-size: 20px;
+            }
+        }
+        
+        /* Email client specific fixes */
+        [data-ogsc] .content-card {
+            background-color: #1a1b2e !important;
+        }
+        
+        [data-ogsc] .header-section {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+        }
+        
+        /* Force dark theme for better branding */
+        [data-color-scheme="light"] .email-container,
+        [data-color-scheme="auto"] .email-container {
+            background-color: #0b0a1d !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #0b0a1d;">
+            <tr>
+                <td style="padding: 0;">
+                    <div class="content-wrapper">
+                        <!-- Header with Bizzin branding -->
+                        <div class="header-section">
+                            <h1 class="brand-title"><em>Bizzin</em></h1>
+                            <p class="header-subtitle">{{headerMessage}}</p>
+                        </div>
+                        
+                        <!-- Main content card -->
+                        <div class="content-card">
+                            <h2 class="message-title">{{messageTitle}}</h2>
+                            <p class="message-content">{{messageContent}}</p>
+                            
+                            {{#if showButton}}
+                            <div style="text-align: center; margin: 24px 0;">
+                                <a href="{{buttonLink}}" class="cta-button">{{buttonText}}</a>
+                            </div>
+                            {{/if}}
+                            
+                            {{#if additionalContent}}
+                            <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #2a2d47;">
+                                {{{additionalContent}}}
+                            </div>
+                            {{/if}}
+                        </div>
+                        
+                        <!-- Footer -->
+                        <div class="footer-section">
+                            <p>You're receiving this email because you have a <em>Bizzin</em> account.</p>
+                            <p class="footer-links">
+                                <a href="{{platformUrl}}">Dashboard</a> |
+                                <a href="{{platformUrl}}/profile">Profile Settings</a> |
+                                <a href="{{platformUrl}}/support">Support</a>
+                            </p>
+                            <p style="margin-top: 16px; font-size: 12px;">
+                                © 2025 <em>Bizzin</em>. Empowering entrepreneurs across South Africa.
+                            </p>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

@@ -8,7 +8,7 @@ import { supabase } from '../lib/supabase.js';
 
 export class EmailService {
   private transporter: nodemailer.Transporter;
-  private templates: Map<string, HandlebarsTemplateDelegate> = new Map();
+  public templates: Map<string, HandlebarsTemplateDelegate> = new Map();
 
   constructor() {
     // Initialize email transporter with SMTP2GO for production
@@ -57,24 +57,28 @@ export class EmailService {
         });
       });
 
-      // Try to load the cross-client compatible dark template
-      const templatePath = path.join(process.cwd(), 'server', 'templates', 'daily-email-dark.hbs');
-      console.log('📍 Template path:', templatePath);
-      
-      // Check if file exists first
-      try {
-        await fs.access(templatePath);
-        console.log('✅ Template file exists');
-      } catch (accessError) {
-        console.error('❌ Template file access error:', accessError);
-        throw new Error(`Template file not accessible: ${templatePath}`);
+      // Load all email templates
+      const templates = [
+        { name: 'daily-email', file: 'daily-email-dark.hbs' },
+        { name: 'signup-confirmation', file: 'signup-confirmation.hbs' },
+        { name: 'password-reset', file: 'password-reset.hbs' },
+        { name: 'base-system', file: 'base-system-email.hbs' }
+      ];
+
+      for (const template of templates) {
+        const templatePath = path.join(process.cwd(), 'server', 'templates', template.file);
+        console.log(`📍 Loading template ${template.name}:`, templatePath);
+        
+        try {
+          await fs.access(templatePath);
+          const templateSource = await fs.readFile(templatePath, 'utf-8');
+          const compiledTemplate = handlebars.compile(templateSource);
+          this.templates.set(template.name, compiledTemplate);
+          console.log(`✅ Template ${template.name} loaded (${templateSource.length} chars)`);
+        } catch (error: any) {
+          console.warn(`⚠️ Template ${template.name} not found, skipping:`, error.message);
+        }
       }
-      
-      const templateSource = await fs.readFile(templatePath, 'utf-8');
-      console.log('📝 Template source length:', templateSource.length);
-      
-      const compiledTemplate = handlebars.compile(templateSource);
-      this.templates.set('daily-email', compiledTemplate);
       
       console.log('✅ Email templates loaded successfully');
       console.log('📋 Available templates:', Array.from(this.templates.keys()));
@@ -1426,7 +1430,7 @@ export class EmailService {
       greetingEmoji: greetingData.greetingEmoji,
       partOfDay,
       formattedDate: new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
-      quote: emailContent?.motivationQuote || personalData?.motivationQuote || {
+      quote: emailContent?.motivation_quote || personalData?.motivationQuote || {
         text: "Great things never come from comfort zones.",
         author: "Anonymous"
       },
@@ -1655,5 +1659,60 @@ Visit Bizzin to add your journal entry and update your goals!
       console.error('Error getting users for daily emails:', error);
       return [];
     }
+  }
+
+  // Send system emails using unified Bizzin branding
+  async sendSystemEmail(templateName: string, recipientEmail: string, templateData: any): Promise<boolean> {
+    try {
+      await this.loadTemplates();
+      
+      const template = this.templates.get(templateName);
+      if (!template) {
+        console.error(`❌ Template ${templateName} not found. Available:`, Array.from(this.templates.keys()));
+        return false;
+      }
+
+      // Add Bizzin platform URL to all system emails
+      const enhancedData = {
+        ...templateData,
+        SiteURL: process.env.NODE_ENV === 'production' ? 'https://bizzin.co.za' : 'http://localhost:5000',
+        platformUrl: process.env.NODE_ENV === 'production' ? 'https://bizzin.co.za' : 'http://localhost:5000'
+      };
+
+      const htmlContent = template(enhancedData);
+      
+      const mailOptions = {
+        from: '"Bizzin" <notifications@bizzin.co.za>',
+        to: recipientEmail,
+        subject: templateData.subject || 'Message from Bizzin',
+        html: htmlContent
+      };
+
+      await this.transporter.sendMail(mailOptions);
+      console.log(`✅ System email sent successfully to ${recipientEmail} using template ${templateName}`);
+      return true;
+      
+    } catch (error: any) {
+      console.error(`❌ Failed to send system email to ${recipientEmail}:`, error.message);
+      return false;
+    }
+  }
+
+  // Send welcome confirmation email
+  async sendWelcomeEmail(userEmail: string, confirmationUrl: string): Promise<boolean> {
+    return this.sendSystemEmail('signup-confirmation', userEmail, {
+      subject: 'Welcome to Bizzin - Confirm Your Account',
+      Email: userEmail,
+      ConfirmationURL: confirmationUrl
+    });
+  }
+
+  // Send password reset email
+  async sendPasswordResetEmail(userEmail: string, resetUrl: string): Promise<boolean> {
+    return this.sendSystemEmail('password-reset', userEmail, {
+      subject: 'Reset Your Bizzin Password',
+      Email: userEmail,
+      RedirectTo: resetUrl
+    });
   }
 }

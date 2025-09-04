@@ -409,4 +409,64 @@ router.get('/unsubscribe', async (req, res) => {
   }
 });
 
+// System email testing endpoints
+router.post('/system/test-welcome', async (req, res) => {
+  try {
+    const { email, confirmationUrl } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+    
+    const testConfirmationUrl = confirmationUrl || 'https://bizzin.co.za/auth/confirm?token=test-token-123';
+    const success = await simpleEmailScheduler.emailService.sendWelcomeEmail(email, testConfirmationUrl);
+    
+    if (success) {
+      res.json({ message: 'Welcome email sent successfully', email, confirmationUrl: testConfirmationUrl });
+    } else {
+      res.status(500).json({ error: 'Failed to send welcome email' });
+    }
+  } catch (error) {
+    console.error('Welcome email test error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.post('/system/test-password-reset', async (req, res) => {
+  try {
+    const { email, resetUrl } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+    
+    const testResetUrl = resetUrl || 'https://bizzin.co.za/auth/reset-password?token=test-reset-token-456';
+    const success = await simpleEmailScheduler.emailService.sendPasswordResetEmail(email, testResetUrl);
+    
+    if (success) {
+      res.json({ message: 'Password reset email sent successfully', email, resetUrl: testResetUrl });
+    } else {
+      res.status(500).json({ error: 'Failed to send password reset email' });
+    }
+  } catch (error) {
+    console.error('Password reset email test error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get available email templates
+router.get('/templates', async (req, res) => {
+  try {
+    await simpleEmailScheduler.emailService.loadTemplates();
+    const availableTemplates = Array.from(simpleEmailScheduler.emailService.templates.keys());
+    res.json({ 
+      templates: availableTemplates,
+      message: 'All templates loaded successfully' 
+    });
+  } catch (error) {
+    console.error('Templates listing error:', error);
+    res.status(500).json({ error: 'Failed to load templates' });
+  }
+});
+
 export default router;

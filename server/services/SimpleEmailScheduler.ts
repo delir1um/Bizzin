@@ -2,7 +2,7 @@ import { EmailService } from './EmailService.js';
 import { supabase } from '../lib/supabase.js';
 
 export class SimpleEmailScheduler {
-  private emailService: EmailService;
+  public emailService: EmailService;
   private intervalId: NodeJS.Timeout | null = null;
   private isRunning = false;
 
