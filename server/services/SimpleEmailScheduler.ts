@@ -1,10 +1,12 @@
 import { EmailService } from './EmailService.js';
 import { supabase } from '../lib/supabase.js';
+import * as cron from 'node-cron';
 
 export class SimpleEmailScheduler {
   public emailService: EmailService;
-  private intervalId: NodeJS.Timeout | null = null;
+  private cronTask: cron.ScheduledTask | null = null;
   private isRunning = false;
+  private currentlyProcessing = false;
 
   constructor() {
     this.emailService = new EmailService();
@@ -21,15 +23,15 @@ export class SimpleEmailScheduler {
     // Load email templates
     await this.emailService.loadTemplates();
     
-    // Check every minute for users who need emails
-    this.intervalId = setInterval(() => {
+    // Run at the top of every hour (0 minutes)
+    this.cronTask = cron.schedule('0 * * * *', () => {
       this.checkAndSendEmails().catch(error => {
         console.error('❌ Error in email check:', error);
       });
-    }, 60 * 1000); // Every 60 seconds
+    });
     
     this.isRunning = true;
-    console.log('✅ Simple Email Scheduler started - checking every minute');
+    console.log('✅ Simple Email Scheduler started - running hourly at :00 minutes (Africa/Johannesburg timezone)');
     
     // Run initial check immediately
     this.checkAndSendEmails().catch(error => {
@@ -38,32 +40,41 @@ export class SimpleEmailScheduler {
   }
 
   stop() {
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
+    if (this.cronTask) {
+      this.cronTask.stop();
+      this.cronTask.destroy();
+      this.cronTask = null;
     }
     this.isRunning = false;
+    this.currentlyProcessing = false;
     console.log('🛑 Simple Email Scheduler stopped');
   }
 
   private async checkAndSendEmails() {
+    // Prevent concurrent processing
+    if (this.currentlyProcessing) {
+      console.log('⚠️ Email processing already in progress, skipping this run');
+      return;
+    }
+
+    this.currentlyProcessing = true;
+    
     try {
-      // Get current South Africa time (UTC+2)
+      // Get current time in South Africa timezone
       const now = new Date();
-      const southAfricaTime = new Date(now.getTime() + (2 * 60 * 60 * 1000));
+      const southAfricaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Africa/Johannesburg' }));
       const currentHour = southAfricaTime.getHours();
-      const currentMinute = southAfricaTime.getMinutes();
       
-      // Production: Only process on exact minute marks to avoid duplicate sends
-      // Development: Allow testing at any time
-      const isProduction = process.env.NODE_ENV === 'production';
-      if (isProduction && currentMinute !== 0) {
+      // Extra safety: ensure we're at the top of the hour
+      const currentMinute = southAfricaTime.getMinutes();
+      if (currentMinute > 5) {
+        console.log(`⚠️ Not at top of hour (${currentMinute} minutes past), skipping to prevent duplicates`);
         return;
       }
 
-      console.log(`⏰ Checking for emails to send at ${currentHour}:00 SA time`);
+      console.log(`⏰ Processing emails for ${currentHour}:00 SA time (minute: ${currentMinute})`);
 
-      // OPTIMIZATION: Only query users scheduled for THIS hour
+      // Only query users scheduled for THIS hour
       const currentTimeSlot = `${currentHour.toString().padStart(2, '0')}:00`;
       const { data: emailSettings, error } = await supabase
         .from('daily_email_settings')
@@ -128,6 +139,8 @@ export class SimpleEmailScheduler {
 
     } catch (error) {
       console.error('❌ Critical error in email scheduler:', error);
+    } finally {
+      this.currentlyProcessing = false;
     }
   }
 
@@ -239,19 +252,41 @@ export class SimpleEmailScheduler {
     const MAX_RETRIES = 3;
     
     try {
-      // Check if email was already sent today
+      // Check if email was already sent today with stronger duplicate protection
       const today = southAfricaTime.toISOString().split('T')[0];
-      const { data: existingEmail } = await supabase
+      
+      // First, try to insert a delivery lock to prevent race conditions
+      const lockId = `${setting.user_id}-${today}-daily_digest`;
+      const { data: existingEmail, error: checkError } = await supabase
         .from('email_delivery_log')
-        .select('id')
+        .select('id, status')
         .eq('user_id', setting.user_id)
         .eq('email_type', 'daily_digest')
         .gte('sent_at', `${today}T00:00:00.000Z`)
+        .order('sent_at', { ascending: false })
         .limit(1);
 
       if (existingEmail && existingEmail.length > 0) {
-        console.log(`⚠️ Email already sent today for user ${setting.user_id}`);
+        console.log(`⚠️ Email already processed today for user ${setting.user_id} (status: ${existingEmail[0].status})`);
         return { success: true, userId: setting.user_id }; // Not an error, just already sent
+      }
+
+      // Create processing lock to prevent race conditions
+      const { error: lockError } = await supabase
+        .from('email_delivery_log')
+        .insert({
+          user_id: setting.user_id,
+          email_type: 'daily_digest',
+          email_address: 'processing@temp.com', // Temporary placeholder
+          sent_at: new Date().toISOString(),
+          status: 'processing',
+          retry_count: retryCount
+        });
+
+      // If we can't create the lock (duplicate key), another process is handling this
+      if (lockError && lockError.code === '23505') {
+        console.log(`⚠️ Another process is handling email for user ${setting.user_id}`);
+        return { success: true, userId: setting.user_id };
       }
 
       // Get user profile using auth method (same as test emails)
@@ -315,21 +350,35 @@ export class SimpleEmailScheduler {
       );
 
       if (result) {
-        // Log successful delivery
+        // Update the processing lock to mark as sent
         await supabase
           .from('email_delivery_log')
-          .insert({
-            user_id: setting.user_id,
-            email_type: 'daily_digest',
+          .update({
             email_address: profileData.email,
-            sent_at: new Date().toISOString(),
             status: 'sent',
-            retry_count: retryCount
-          });
+            sent_at: new Date().toISOString()
+          })
+          .eq('user_id', setting.user_id)
+          .eq('email_type', 'daily_digest')
+          .eq('status', 'processing')
+          .gte('sent_at', `${today}T00:00:00.000Z`);
 
         console.log(`✅ Email sent successfully to ${profileData.email}${retryCount > 0 ? ` (retry ${retryCount})` : ''}`);
         return { success: true, userId: setting.user_id };
       } else {
+        // Update lock to mark as failed
+        await supabase
+          .from('email_delivery_log')
+          .update({
+            email_address: profileData.email,
+            status: 'failed',
+            error_message: 'Email service returned false'
+          })
+          .eq('user_id', setting.user_id)
+          .eq('email_type', 'daily_digest')
+          .eq('status', 'processing')
+          .gte('sent_at', `${today}T00:00:00.000Z`);
+        
         throw new Error('Email service returned false');
       }
     } catch (error: any) {
@@ -343,24 +392,19 @@ export class SimpleEmailScheduler {
         return this.processSingleUser(setting, southAfricaTime, retryCount + 1);
       }
       
-      // Log final failure after all retries  
-      const { data: failedUserProfile } = await supabase
-        .from('user_profiles')
-        .select('email')
-        .eq('user_id', setting.user_id)
-        .single();
-
+      // Update processing lock to mark final failure
+      const today = southAfricaTime.toISOString().split('T')[0];
       await supabase
         .from('email_delivery_log')
-        .insert({
-          user_id: setting.user_id,
-          email_type: 'daily_digest',
-          email_address: failedUserProfile?.email || 'unknown@example.com',
-          sent_at: new Date().toISOString(),
+        .update({
           status: 'failed',
           error_message: `Failed after ${MAX_RETRIES} retries: ${error.message}`,
           retry_count: retryCount
-        });
+        })
+        .eq('user_id', setting.user_id)
+        .eq('email_type', 'daily_digest')
+        .eq('status', 'processing')
+        .gte('sent_at', `${today}T00:00:00.000Z`);
 
       return { success: false, userId: setting.user_id };
     }
@@ -383,7 +427,9 @@ export class SimpleEmailScheduler {
   getStatus() {
     return {
       running: this.isRunning,
-      next_check: this.isRunning ? 'Every minute on the hour' : 'Not scheduled'
+      processing: this.currentlyProcessing,
+      next_check: this.isRunning ? 'Every hour at :00 minutes (Africa/Johannesburg)' : 'Not scheduled',
+      cron_expression: '0 * * * *'
     };
   }
 }
