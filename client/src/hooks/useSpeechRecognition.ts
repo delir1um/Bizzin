@@ -183,28 +183,30 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
 
       switch (event.error) {
         case 'not-allowed':
-          setErrorState('permission-denied', 'Microphone permission denied. Please enable it in your browser settings.')
+          setErrorState('permission-denied', 'Microphone permission denied. Click the microphone icon in your browser address bar to allow access.')
           break
         case 'no-speech':
           // Don't treat no-speech as an error - just continue listening
           console.log('No speech detected, continuing to listen...')
-          break
+          return // Don't update state for no-speech
         case 'audio-capture':
-          setErrorState('no-microphone', 'No microphone detected. Please connect a microphone.')
+          setErrorState('no-microphone', 'No microphone detected. Please connect a microphone and try again.')
           break
         case 'network':
           setErrorState('network-error', 'Network error occurred. Check your internet connection.', true)
           break
         case 'aborted':
-          if (state === 'listening') {
-            setErrorState('aborted', 'Recording was interrupted. Trying again...', true)
-          }
-          break
+          // Don't treat aborted as an error - user likely stopped manually
+          console.log('Speech recognition aborted')
+          updateState('ready')
+          return
         case 'language-not-supported':
           setErrorState('language-error', `Language ${language} is not supported.`)
           break
         default:
-          setErrorState('unknown-error', `Speech recognition error: ${event.error}`, true)
+          console.log('Speech recognition error (ignored):', event.error)
+          updateState('ready')
+          return
       }
     }
 
@@ -248,6 +250,16 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
     try {
       updateState('requesting-permission')
       
+      // Check if recognition is already running and stop it first
+      try {
+        recognitionRef.current.stop()
+      } catch (e) {
+        // Ignore stop errors
+      }
+      
+      // Small delay to ensure clean state
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
       // Start recognition directly - let it handle permission requests
       isStartingRef.current = true
       recognitionRef.current.start()
@@ -255,7 +267,7 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
     } catch (startError) {
       console.error('Speech recognition start error:', startError)
       isStartingRef.current = false
-      setErrorState('start-failed', 'Failed to start voice input. Please try again.')
+      setErrorState('start-failed', 'Failed to start voice input. Please check microphone permissions.')
       updateState('ready')
     }
   }, [isSupported, state, setErrorState, updateState])

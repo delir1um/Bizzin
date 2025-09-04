@@ -104,15 +104,38 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
     } else {
       console.log('Starting listening...')
       setLocalIsRecording(true) // Immediate visual feedback
+      
+      // Show immediate feedback toast
+      toast({
+        title: "🎤 Starting recording...",
+        description: "Please allow microphone access if prompted",
+        className: "border-blue-200 bg-blue-50 text-blue-800",
+        duration: 2000
+      })
+      
       try {
         await startListening()
         console.log('Start listening completed')
+        
+        // If speech recognition fails, reset visual state after a delay
+        setTimeout(() => {
+          if (!isListening && state === 'ready') {
+            setLocalIsRecording(false)
+            toast({
+              title: "Voice input not working",
+              description: "Please check microphone permissions and try again. You can still type your journal entry.",
+              variant: "destructive",
+              duration: 5000
+            })
+          }
+        }, 2000)
+        
       } catch (err) {
         console.error('Start listening failed:', err)
         setLocalIsRecording(false) // Reset on error
         toast({
           title: "Voice input error",
-          description: "Could not start voice recording. Please check your microphone permissions.",
+          description: "Could not start voice recording. Please check your microphone permissions or try typing instead.",
           variant: "destructive"
         })
       }
