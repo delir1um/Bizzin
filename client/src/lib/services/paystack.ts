@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { ReferralService } from './referrals'
 
 export interface PaystackConfig {
   reference: string
@@ -109,6 +110,14 @@ export class PaystackService {
 
       if (usageError) {
         console.error('Error updating usage limits:', usageError)
+      }
+
+      // Process referral bonuses if user was referred
+      try {
+        await ReferralService.activateReferralBonuses(user.id)
+      } catch (referralError) {
+        console.error('Error processing referral bonuses:', referralError)
+        // Don't fail the payment process if referral bonus fails
       }
 
       return true

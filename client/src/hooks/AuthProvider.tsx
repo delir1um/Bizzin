@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react"
 import { Session, User } from "@supabase/supabase-js"
 import { supabase } from "@/lib/supabase"
+import { ReferralService } from "@/lib/services/referrals"
 
 type AuthContextType = {
   user: User | null
@@ -24,19 +25,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(data.session.user)
         
         // Update last_login for existing session (non-blocking)
-        supabase
+        const updatePromise = supabase
           .from('user_profiles')
           .update({ 
             last_login: new Date().toISOString(),
             updated_at: new Date().toISOString()
           })
           .eq('user_id', data.session.user.id)
-          .then(() => {
-            // Login time updated
-          })
-          .catch((error: any) => {
-            // Could not update login time
-          })
+          
+        updatePromise.then(() => {
+          // Login time updated
+        }).catch((error: any) => {
+          // Could not update login time
+        })
       }
       setLoading(false)
     }
@@ -45,21 +46,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session)
       setUser(session?.user ?? null)
       
-      // Update last_login when user signs in (non-blocking)
+      // Handle user sign-in events  
       if (event === 'SIGNED_IN' && session?.user) {
-        supabase
+        // Update last_login (non-blocking)
+        const loginUpdatePromise = supabase
           .from('user_profiles')
           .update({ 
             last_login: new Date().toISOString(),
             updated_at: new Date().toISOString()
           })
           .eq('user_id', session.user.id)
-          .then(() => {
-            // Login time updated on sign in
-          })
-          .catch((error: any) => {
-            // Could not update login time
-          })
+          
+        loginUpdatePromise.then(() => {
+          // Login time updated on sign in
+        }).catch((error: any) => {
+          // Could not update login time
+        })
+          
+        // Check if this user needs referral stats initialization
+        // This happens on first login after signup
+        const initializePromise = ReferralService.getReferralStats(session.user.id)
+        initializePromise.then((stats) => {
+          if (!stats && session.user?.email) {
+            // User doesn't have referral stats yet, initialize them
+            return ReferralService.initializeUserReferralStats(session.user.id, session.user.email)
+          }
+        }).catch((error: any) => {
+          console.error('Failed to initialize referral stats:', error)
+        })
       }
     })
 

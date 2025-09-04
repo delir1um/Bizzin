@@ -35,6 +35,50 @@ export interface ReferralDashboard {
 
 export class ReferralService {
   /**
+   * Generate a unique referral code for a user
+   */
+  static generateReferralCode(email: string): string {
+    // Create a hash from email and timestamp for uniqueness
+    const baseString = email.toLowerCase().replace(/[^a-z0-9]/g, '')
+    const timestamp = Date.now().toString(36)
+    const randomPart = Math.random().toString(36).substring(2, 8)
+    
+    // Take first 4 chars from email, 4 from timestamp, 2 random
+    const code = (baseString.substring(0, 4) + timestamp.substring(-4) + randomPart.substring(0, 2)).toUpperCase()
+    return code
+  }
+
+  /**
+   * Initialize referral stats for a new user
+   */
+  static async initializeUserReferralStats(userId: string, email: string): Promise<boolean> {
+    try {
+      const referralCode = this.generateReferralCode(email)
+      
+      const { error } = await supabase
+        .from('user_referral_stats')
+        .insert({
+          user_id: userId,
+          referral_code: referralCode,
+          total_referrals: 0,
+          active_referrals: 0,
+          bonus_days_earned: 0,
+          bonus_days_used: 0
+        })
+
+      if (error) {
+        console.error('Error initializing referral stats:', error)
+        return false
+      }
+      
+      return true
+    } catch (error) {
+      console.error('Error in initializeUserReferralStats:', error)
+      return false
+    }
+  }
+
+  /**
    * Get user's referral statistics
    */
   static async getReferralStats(userId: string): Promise<ReferralStats | null> {
@@ -128,6 +172,18 @@ export class ReferralService {
         return false
       }
 
+      // Check if referral already exists (duplicate prevention)
+      const { data: existingReferral } = await supabase
+        .from('referrals')
+        .select('id')
+        .eq('referee_id', newUserId)
+        .single()
+
+      if (existingReferral) {
+        console.log('Referral already exists for this user')
+        return true // Don't error, just indicate it's already processed
+      }
+
       // Create referral record
       const { error: referralError } = await supabase
         .from('referrals')
@@ -139,6 +195,11 @@ export class ReferralService {
         })
 
       if (referralError) {
+        // Handle unique constraint violations gracefully
+        if (referralError.code === '23505') {
+          console.log('Referral already exists (unique constraint)')
+          return true
+        }
         console.error('Error creating referral record:', referralError)
         return false
       }
@@ -212,6 +273,114 @@ export class ReferralService {
       return true
     } catch (error) {
       console.error('Error copying to clipboard:', error)
+      return false
+    }
+  }
+
+  /**
+   * Activate referral bonuses when referee subscribes to paid plan
+   * Gives 30 days to referee and 10 days to referrer
+   */
+  static async activateReferralBonuses(refereeUserId: string): Promise<boolean> {
+    try {
+      // Find the referral record for this user
+      const { data: referralData, error: referralError } = await supabase
+        .from('referrals')
+        .select('*')
+        .eq('referee_id', refereeUserId)
+        .eq('is_active', false)
+        .single()
+
+      if (referralError || !referralData) {
+        // User wasn't referred or referral already activated
+        return true
+      }
+
+      // Calculate bonus expiration dates
+      const now = new Date()
+      const refereeExpiration = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000)) // 30 days
+      const referrerBonusDays = 10
+
+      // 1. Update the referee's plan with 30 days bonus
+      const { error: planUpdateError } = await supabase
+        .from('user_plans')
+        .update({
+          referral_days_remaining: 30,
+          expires_at: refereeExpiration.toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', refereeUserId)
+
+      if (planUpdateError) {
+        console.error('Error updating referee plan with bonus:', planUpdateError)
+        return false
+      }
+
+      // 2. Activate the referral record
+      const { error: activationError } = await supabase
+        .from('referrals')
+        .update({
+          is_active: true,
+          activation_date: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', referralData.id)
+
+      if (activationError) {
+        console.error('Error activating referral record:', activationError)
+        return false
+      }
+
+      // 3. Award 10 days bonus to the referrer
+      const { data: referrerStats, error: statsError } = await supabase
+        .from('user_referral_stats')
+        .select('*')
+        .eq('user_id', referralData.referrer_id)
+        .single()
+
+      if (!statsError && referrerStats) {
+        const newBonusDays = referrerStats.bonus_days_earned + referrerBonusDays
+        const newActiveReferrals = referrerStats.active_referrals + 1
+
+        // Update referrer's bonus stats
+        const { error: referrerUpdateError } = await supabase
+          .from('user_referral_stats')
+          .update({
+            active_referrals: newActiveReferrals,
+            bonus_days_earned: newBonusDays,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', referralData.referrer_id)
+
+        if (referrerUpdateError) {
+          console.error('Error updating referrer bonus:', referrerUpdateError)
+        }
+
+        // 4. Apply bonus days to referrer's current plan if they have one
+        const { data: referrerPlan } = await supabase
+          .from('user_plans')
+          .select('*')
+          .eq('user_id', referralData.referrer_id)
+          .single()
+
+        if (referrerPlan && referrerPlan.plan_type === 'premium') {
+          // Extend their existing premium plan by 10 days
+          const currentExpiry = new Date(referrerPlan.expires_at || now)
+          const extendedExpiry = new Date(currentExpiry.getTime() + (referrerBonusDays * 24 * 60 * 60 * 1000))
+          
+          await supabase
+            .from('user_plans')
+            .update({
+              expires_at: extendedExpiry.toISOString(),
+              updated_at: new Date().toISOString()
+            })
+            .eq('user_id', referralData.referrer_id)
+        }
+      }
+
+      return true
+    } catch (error) {
+      console.error('Error processing referral bonuses:', error)
       return false
     }
   }
