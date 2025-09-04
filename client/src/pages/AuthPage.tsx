@@ -28,6 +28,7 @@ export default function AuthPage() {
   const [, setLocation] = useLocation()
   const [referralCode, setReferralCode] = useState<string | null>(null)
   const [referralValid, setReferralValid] = useState(false)
+  const [isResettingPassword, setIsResettingPassword] = useState(false)
   const { theme } = useTheme()
   
   const currentLogo = brizzinLogoDark // Always use dark version
@@ -63,6 +64,32 @@ export default function AuthPage() {
     }
     checkSession()
   }, [setLocation])
+
+  const handlePasswordReset = async (email: string) => {
+    if (!email) {
+      setMessage("Please enter your email address first")
+      return
+    }
+
+    setIsResettingPassword(true)
+    setMessage("")
+    
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`
+      })
+      
+      if (error) {
+        setMessage(error.message)
+      } else {
+        setMessage("Check your email for password reset instructions")
+      }
+    } catch (error) {
+      setMessage("Failed to send reset email. Please try again.")
+    } finally {
+      setIsResettingPassword(false)
+    }
+  }
 
   const onSubmit = async (data: FormData) => {
     setMessage("")
@@ -170,9 +197,24 @@ export default function AuthPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Password
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Password
+                  </label>
+                  {mode === "signIn" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const emailValue = (document.querySelector('input[type="email"]') as HTMLInputElement)?.value
+                        handlePasswordReset(emailValue)
+                      }}
+                      disabled={isResettingPassword}
+                      className="text-xs text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300 transition-colors disabled:opacity-50"
+                    >
+                      {isResettingPassword ? "Sending..." : "Forgot password?"}
+                    </button>
+                  )}
+                </div>
                 <Input
                   type="password"
                   placeholder="Enter your password"
