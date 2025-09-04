@@ -195,39 +195,44 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
           onClick={handleMicToggle}
           disabled={isDisabled || state === 'requesting-permission'}
           className={`
-            w-10 h-10 p-0 rounded-full transition-all duration-200 border-2 relative overflow-hidden
+            w-12 h-12 p-0 transition-all duration-200 relative overflow-hidden border-0 shadow-lg
             ${
               state === 'listening'
-                ? 'bg-red-500 hover:bg-red-600 text-white border-red-400 shadow-lg animate-pulse'
+                ? 'bg-white rounded-lg'
                 : state === 'requesting-permission'
-                ? 'bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-400 shadow-md animate-pulse'
+                ? 'bg-yellow-500 hover:bg-yellow-600 rounded-full shadow-md animate-pulse'
                 : state === 'error'
-                ? 'bg-red-200 hover:bg-red-300 text-red-700 border-red-400 shadow-sm'
-                : 'bg-gray-400 hover:bg-gray-500 text-white border-gray-300 shadow-md hover:shadow-lg'
+                ? 'bg-red-200 hover:bg-red-300 rounded-full shadow-sm'
+                : 'bg-white hover:bg-gray-50 rounded-full shadow-md hover:shadow-lg'
             }
           `}
           style={{ zIndex: 1000 }}
           title={
-            state === 'listening' ? 'Click to stop recording' :
+            state === 'listening' ? 'Tap to stop recording' :
             state === 'requesting-permission' ? 'Requesting microphone permission...' :
-            state === 'error' ? 'Click to retry' :
-            'Click to start voice input'
+            state === 'error' ? 'Tap to retry' :
+            'Tap to start recording'
           }
           data-testid="button-mic-compact"
         >
           {state === 'listening' ? (
-            <MicOff className="w-5 h-5" />
+            // iPhone-style red square when recording
+            <div className="w-5 h-5 bg-red-500 rounded-sm animate-pulse"></div>
           ) : state === 'requesting-permission' ? (
-            <Volume2 className="w-5 h-5" />
+            <Volume2 className="w-5 h-5 text-white" />
           ) : state === 'error' ? (
-            <AlertCircle className="w-5 h-5" />
+            <AlertCircle className="w-5 h-5 text-red-700" />
           ) : (
-            <Mic className="w-5 h-5" />
+            // iPhone-style red circle when ready to record
+            <div className="w-7 h-7 bg-red-500 rounded-full"></div>
           )}
           
-          {/* Animated recording ring */}
+          {/* Animated recording ring - iPhone style */}
           {state === 'listening' && (
-            <div className="absolute -inset-1 border-2 border-red-300 rounded-full animate-ping opacity-75"></div>
+            <>
+              <div className="absolute -inset-1 border-2 border-red-400 rounded-lg animate-ping opacity-60"></div>
+              <div className="absolute -inset-2 border border-red-300 rounded-lg animate-pulse opacity-30"></div>
+            </>
           )}
         </Button>
         
@@ -268,9 +273,16 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
             onClick={handleMicToggle}
             disabled={isDisabled || state === 'requesting-permission' || state === 'processing'}
             className={`
-              w-12 h-12 p-0 rounded-full transition-all duration-300 relative overflow-hidden
-              ${stateInfo.color}
-              ${stateInfo.pulse ? 'animate-pulse' : ''}
+              w-14 h-14 p-0 transition-all duration-300 relative overflow-hidden border-0 shadow-lg
+              ${
+                state === 'listening'
+                  ? 'bg-white rounded-lg'
+                  : state === 'requesting-permission'
+                  ? 'bg-yellow-500 hover:bg-yellow-600 rounded-full animate-pulse'
+                  : state === 'error'
+                  ? 'bg-red-200 hover:bg-red-300 rounded-full'
+                  : 'bg-white hover:bg-gray-50 rounded-full shadow-md hover:shadow-lg'
+              }
               ${isListening ? 'shadow-lg shadow-red-300 dark:shadow-red-900/30' : ''}
             `}
             aria-pressed={isListening}
@@ -288,18 +300,26 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
                 className="flex items-center justify-center"
               >
                 {isListening ? (
-                  <div className="relative flex items-center justify-center">
-                    {/* Pulsing background */}
-                    <div className="absolute inset-0 bg-red-400 rounded-full animate-ping opacity-75"></div>
-                    <div className="absolute inset-1 bg-red-300 rounded-full animate-pulse"></div>
-                    {/* Recording indicator */}
-                    <div className="relative w-3 h-3 bg-white rounded-full z-10"></div>
-                  </div>
+                  // iPhone-style red square when recording
+                  <div className="w-6 h-6 bg-red-500 rounded-sm animate-pulse"></div>
+                ) : state === 'requesting-permission' ? (
+                  <Volume2 className="w-6 h-6 text-white" />
+                ) : state === 'error' ? (
+                  <AlertCircle className="w-6 h-6 text-red-700" />
                 ) : (
-                  <StateIcon className="w-5 h-5" />
+                  // iPhone-style red circle when ready to record
+                  <div className="w-8 h-8 bg-red-500 rounded-full"></div>
                 )}
               </motion.div>
             </AnimatePresence>
+            
+            {/* Animated recording ring - iPhone style */}
+            {state === 'listening' && (
+              <>
+                <div className="absolute -inset-1 border-2 border-red-400 rounded-lg animate-ping opacity-60"></div>
+                <div className="absolute -inset-2 border border-red-300 rounded-lg animate-pulse opacity-30"></div>
+              </>
+            )}
           </Button>
 
           {/* Confidence indicator */}

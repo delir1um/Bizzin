@@ -149,7 +149,7 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
           finalTranscript += transcript
           setConfidence(confidence * 100)
           
-          // Call result callback
+          // Call result callback with ONLY the new final transcript
           onResult?.({
             transcript: transcript.trim(),
             isFinal: true,
