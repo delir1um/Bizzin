@@ -29,6 +29,7 @@ export default function AuthPage() {
   const [referralCode, setReferralCode] = useState<string | null>(null)
   const [referralValid, setReferralValid] = useState(false)
   const [isResettingPassword, setIsResettingPassword] = useState(false)
+  const [showResetForm, setShowResetForm] = useState(false)
   const { theme } = useTheme()
   
   const currentLogo = brizzinLogoDark // Always use dark version
@@ -83,12 +84,23 @@ export default function AuthPage() {
         setMessage(error.message)
       } else {
         setMessage("Check your email for password reset instructions")
+        setShowResetForm(false) // Hide reset form after successful send
       }
     } catch (error) {
       setMessage("Failed to send reset email. Please try again.")
     } finally {
       setIsResettingPassword(false)
     }
+  }
+
+  const handleForgotPasswordClick = () => {
+    setShowResetForm(true)
+    setMessage("")
+  }
+
+  const handleBackToSignIn = () => {
+    setShowResetForm(false)
+    setMessage("")
   }
 
   const onSubmit = async (data: FormData) => {
@@ -148,14 +160,18 @@ export default function AuthPage() {
             <img src={currentLogo} alt="Bizzin Logo" className="h-full object-contain" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-            {mode === "signUp" ? (
+            {showResetForm ? (
+              "Reset Your Password"
+            ) : mode === "signUp" ? (
               <>Join <span className="italic">Bizzin</span></>
             ) : (
               "Welcome Back"
             )}
           </h1>
           <p className="text-slate-600 dark:text-slate-300">
-            {mode === "signUp" 
+            {showResetForm 
+              ? "Enter your email address and we'll send you a reset link"
+              : mode === "signUp" 
               ? "Create your account to start building your business" 
               : "Sign in to continue your business journey"
             }
@@ -179,112 +195,161 @@ export default function AuthPage() {
 
         <Card className="shadow-xl border-0 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
           <CardContent className="p-8 space-y-6">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Email Address
-                </label>
-                <Input 
-                  placeholder="Enter your email" 
-                  {...register("email")}
-                  className="h-12 border-slate-200 dark:border-slate-600 focus:border-orange-500 focus:ring-orange-500"
-                />
-                {errors.email && (
-                  <p className="text-sm text-red-500 flex items-center gap-1">
-                    <span>⚠</span> {errors.email.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Password
-                  </label>
-                  {mode === "signIn" && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const emailValue = (document.querySelector('input[type="email"]') as HTMLInputElement)?.value
-                        handlePasswordReset(emailValue)
-                      }}
-                      disabled={isResettingPassword}
-                      className="text-xs text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300 transition-colors disabled:opacity-50"
-                    >
-                      {isResettingPassword ? "Sending..." : "Forgot password?"}
-                    </button>
-                  )}
-                </div>
-                <Input
-                  type="password"
-                  placeholder="Enter your password"
-                  {...register("password")}
-                  className="h-12 border-slate-200 dark:border-slate-600 focus:border-orange-500 focus:ring-orange-500"
-                />
-                {errors.password && (
-                  <p className="text-sm text-red-500 flex items-center gap-1">
-                    <span>⚠</span> {errors.password.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Referral Code Field - Only show for signup */}
-              {mode === "signUp" && (
+            {showResetForm ? (
+              <div className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Referral Code (Optional)
+                    Email Address
                   </label>
-                  <Input
-                    placeholder="Enter referral code"
-                    {...register("referralCode")}
-                    defaultValue={referralCode || ""}
+                  <Input 
+                    placeholder="Enter your email address" 
+                    {...register("email")}
                     className="h-12 border-slate-200 dark:border-slate-600 focus:border-orange-500 focus:ring-orange-500"
                   />
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Got a referral code? You'll get <strong>30 days free</strong> when you upgrade to premium!
-                  </p>
-                </div>
-              )}
-
-              <Button 
-                className="w-full h-12 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 mt-6" 
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    {mode === "signUp" ? "Creating Account..." : "Signing In..."}
-                  </div>
-                ) : (
-                  mode === "signUp" ? "Create Account" : "Sign In"
-                )}
-              </Button>
-            </form>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-slate-200 dark:border-slate-600" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white dark:bg-slate-800 px-2 text-slate-500">
-                  {mode === "signIn" ? (
-                    <>New to <span className="italic">Bizzin</span>?</>
-                  ) : (
-                    "Already have an account?"
+                  {errors.email && (
+                    <p className="text-sm text-red-500 flex items-center gap-1">
+                      <span>⚠</span> {errors.email.message}
+                    </p>
                   )}
-                </span>
-              </div>
-            </div>
+                </div>
 
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={() => setMode(mode === "signIn" ? "signUp" : "signIn")}
-                className="text-orange-600 hover:text-orange-700 font-medium transition-colors"
-              >
-                {mode === "signIn" ? "Create a free account" : "Sign in to your account"}
-              </button>
-            </div>
+                <Button 
+                  type="button"
+                  onClick={() => {
+                    const emailValue = (document.querySelector('input[type="email"]') as HTMLInputElement)?.value
+                    handlePasswordReset(emailValue)
+                  }}
+                  disabled={isResettingPassword}
+                  className="w-full h-12 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200" 
+                >
+                  {isResettingPassword ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      Sending Reset Email...
+                    </div>
+                  ) : (
+                    "Send Reset Email"
+                  )}
+                </Button>
+
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={handleBackToSignIn}
+                    className="text-orange-600 hover:text-orange-700 font-medium transition-colors text-sm"
+                  >
+                    Back to Sign In
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Email Address
+                  </label>
+                  <Input 
+                    placeholder="Enter your email" 
+                    {...register("email")}
+                    className="h-12 border-slate-200 dark:border-slate-600 focus:border-orange-500 focus:ring-orange-500"
+                  />
+                  {errors.email && (
+                    <p className="text-sm text-red-500 flex items-center gap-1">
+                      <span>⚠</span> {errors.email.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Password
+                    </label>
+                    {mode === "signIn" && (
+                      <button
+                        type="button"
+                        onClick={handleForgotPasswordClick}
+                        className="text-xs text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300 transition-colors"
+                      >
+                        Forgot password?
+                      </button>
+                    )}
+                  </div>
+                  <Input
+                    type="password"
+                    placeholder="Enter your password"
+                    {...register("password")}
+                    className="h-12 border-slate-200 dark:border-slate-600 focus:border-orange-500 focus:ring-orange-500"
+                  />
+                  {errors.password && (
+                    <p className="text-sm text-red-500 flex items-center gap-1">
+                      <span>⚠</span> {errors.password.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Referral Code Field - Only show for signup */}
+                {mode === "signUp" && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Referral Code (Optional)
+                    </label>
+                    <Input
+                      placeholder="Enter referral code"
+                      {...register("referralCode")}
+                      defaultValue={referralCode || ""}
+                      className="h-12 border-slate-200 dark:border-slate-600 focus:border-orange-500 focus:ring-orange-500"
+                    />
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Got a referral code? You'll get <strong>30 days free</strong> when you upgrade to premium!
+                    </p>
+                  </div>
+                )}
+
+                <Button 
+                  className="w-full h-12 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 mt-6" 
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      {mode === "signUp" ? "Creating Account..." : "Signing In..."}
+                    </div>
+                  ) : (
+                    mode === "signUp" ? "Create Account" : "Sign In"
+                  )}
+                </Button>
+              </form>
+            )}
+
+            {!showResetForm && (
+              <>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-slate-200 dark:border-slate-600" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white dark:bg-slate-800 px-2 text-slate-500">
+                      {mode === "signIn" ? (
+                        <>New to <span className="italic">Bizzin</span>?</>
+                      ) : (
+                        "Already have an account?"
+                      )}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setMode(mode === "signIn" ? "signUp" : "signIn")}
+                    className="text-orange-600 hover:text-orange-700 font-medium transition-colors"
+                  >
+                    {mode === "signIn" ? "Create a free account" : "Sign in to your account"}
+                  </button>
+                </div>
+              </>
+            )}
 
             {message && (
               <div className={`p-3 rounded-lg text-sm text-center ${
