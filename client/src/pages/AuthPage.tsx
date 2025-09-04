@@ -79,18 +79,23 @@ export default function AuthPage() {
       } else {
         // Process referral if code provided (from form or URL)
         const codeToProcess = referralCode || data.referralCode
-        if (codeToProcess && signUpData.user) {
-          // Validate the code first
-          const isValid = await ReferralService.validateReferralCode(codeToProcess)
-          if (isValid) {
-            const success = await ReferralService.processReferralSignup(codeToProcess, signUpData.user.id)
-            if (success) {
-              setMessage("Account created! Check your email for confirmation. Welcome bonus applied - you'll get 30 days free when you upgrade!")
+        if (codeToProcess && codeToProcess.trim() && signUpData.user) {
+          try {
+            // Validate the code first
+            const isValid = await ReferralService.validateReferralCode(codeToProcess)
+            if (isValid) {
+              const success = await ReferralService.processReferralSignup(codeToProcess, signUpData.user.id)
+              if (success) {
+                setMessage("Account created! Check your email for confirmation. Welcome bonus applied - you'll get 30 days free when you upgrade!")
+              } else {
+                setMessage("Account created! Check your email for confirmation.")
+              }
             } else {
-              setMessage("Account created! Check your email for confirmation.")
+              setMessage("Account created! Check your email for confirmation. (Invalid referral code)")
             }
-          } else {
-            setMessage("Account created! Check your email for confirmation. (Invalid referral code)")
+          } catch (referralError) {
+            console.error('Error processing referral:', referralError)
+            setMessage("Account created! Check your email for confirmation.")
           }
         } else {
           setMessage("Check your email for confirmation.")
