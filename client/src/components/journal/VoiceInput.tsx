@@ -89,7 +89,7 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
   // Handle mic toggle
   const handleMicToggle = async () => {
     console.log('Mic toggle clicked, current state:', state, 'isListening:', isListening)
-    if (isListening) {
+    if (isListening || state === 'listening') {
       console.log('Stopping listening...')
       stopListening()
     } else {

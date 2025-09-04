@@ -127,12 +127,12 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
     recognition.maxAlternatives = 1
 
     recognition.onstart = () => {
-      console.log('Speech recognition started')
+      console.log('Speech recognition started - updating state to listening')
       isStartingRef.current = false
-      updateState('listening')
-      setRetryCount(0)
       setError(null)
       setConfidence(null) // Reset confidence on new session
+      setRetryCount(0)
+      updateState('listening')
     }
 
     recognition.onresult = (event: any) => {
@@ -185,7 +185,22 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
           setErrorState('permission-denied', 'Microphone permission denied. Please enable it in your browser settings.')
           break
         case 'no-speech':
-          setErrorState('no-speech', 'No speech detected. Try speaking closer to your microphone.', true)
+          // Don't treat no-speech as an error in continuous mode - just restart
+          if (continuous && state === 'listening') {
+            console.log('No speech detected, continuing to listen...')
+            // Auto-restart without changing state
+            if (recognitionRef.current && !isStartingRef.current) {
+              try {
+                isStartingRef.current = true
+                recognitionRef.current.start()
+              } catch (e) {
+                console.log('Auto-restart failed:', e)
+                updateState('ready')
+              }
+            }
+          } else {
+            setErrorState('no-speech', 'No speech detected. Try speaking closer to your microphone.', true)
+          }
           break
         case 'audio-capture':
           setErrorState('no-microphone', 'No microphone detected. Please connect a microphone.')
@@ -207,12 +222,13 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
     }
 
     recognition.onend = () => {
-      console.log('Speech recognition ended')
+      console.log('Speech recognition ended, current state:', state)
       isStartingRef.current = false
       setInterimTranscript('')
       
-      // Only auto-restart if we're still in listening state and it's continuous mode
-      if (state === 'listening' && continuous && retryCount < maxRetries) {
+      // Only auto-restart if we're still in listening state and it's continuous mode and no critical errors
+      if (state === 'listening' && continuous && retryCount < maxRetries && !error || error?.retryable) {
+        console.log('Auto-restarting speech recognition...')
         setRetryCount(prev => prev + 1) // Increment retry count
         retryTimeoutRef.current = window.setTimeout(() => {
           if (state === 'listening' && recognitionRef.current && !isStartingRef.current) {
@@ -224,8 +240,9 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
               updateState('ready')
             }
           }
-        }, retryDelay)
+        }, 100) // Shorter delay for better UX
       } else if (state === 'listening') {
+        console.log('Ending listening state, returning to ready')
         updateState('ready')
       }
     }
