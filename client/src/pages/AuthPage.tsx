@@ -88,10 +88,10 @@ export default function AuthPage() {
               if (success) {
                 setMessage("Account created! Check your email for confirmation. Welcome bonus applied - you'll get 30 days free when you upgrade!")
               } else {
-                setMessage("Account created! Check your email for confirmation.")
+                setMessage("Account created! Check your email for confirmation. (Referral could not be processed)")
               }
             } else {
-              setMessage("Account created! Check your email for confirmation. (Invalid referral code)")
+              setMessage("Account created! Check your email for confirmation. (Referral code not found)")
             }
           } catch (referralError) {
             console.error('Error processing referral:', referralError)
