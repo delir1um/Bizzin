@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Bizzin</title>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; 
+            background-color: #0b0a1d; 
+            color: #ffffff; 
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background-color: #0b0a1d; 
+        }
+        .header { 
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); 
+            padding: 32px 24px; 
+            text-align: center; 
+        }
+        .logo { 
+            font-size: 28px; 
+            font-weight: 700; 
+            color: #ffffff; 
+            letter-spacing: -0.02em; 
+        }
+        .content { 
+            padding: 40px 24px; 
+            background-color: #1a1a2e; 
+            margin: 0; 
+        }
+        .welcome-text { 
+            font-size: 18px; 
+            line-height: 1.6; 
+            margin-bottom: 24px; 
+        }
+        .cta-button { 
+            display: inline-block; 
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); 
+            color: #ffffff; 
+            padding: 16px 32px; 
+            text-decoration: none; 
+            border-radius: 8px; 
+            font-weight: 600; 
+            margin: 24px 0; 
+        }
+        .footer { 
+            padding: 24px; 
+            text-align: center; 
+            color: #94a3b8; 
+            font-size: 14px; 
+        }
+        .footer a { 
+            color: #f97316; 
+            text-decoration: none; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Bizzin</div>
+        </div>
+        
+        <div class="content">
+            <div class="welcome-text">
+                Hi {{.Email}},<br><br>
+                
+                Welcome to Bizzin! We're excited to have you join our community of entrepreneurs.<br><br>
+                
+                To get started, please confirm your email address by clicking the button below:
+            </div>
+            
+            <div style="text-align: center;">
+                <a href="{{.ConfirmationURL}}" class="cta-button">Confirm Your Account</a>
+            </div>
+            
+            <div style="margin-top: 24px; font-size: 14px; color: #94a3b8;">
+                If the button doesn't work, copy and paste this link into your browser:<br>
+                {{.ConfirmationURL}}
+            </div>
+        </div>
+        
+        <div class="footer">
+            Thanks,<br>
+            The Bizzin Team<br><br>
+            <a href="{{.SiteURL}}">Visit Dashboard</a> | 
+            <a href="{{.SiteURL}}/support">Get Support</a>
+        </div>
+    </div>
+</body>
+</html>
