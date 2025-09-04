@@ -18,6 +18,7 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
   const { toast } = useToast()
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null)
   const [showPermissionHelper, setShowPermissionHelper] = useState(false)
+  const [localIsRecording, setLocalIsRecording] = useState(false)
 
   const {
     state,
@@ -63,6 +64,7 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
     },
     onStateChange: (newState) => {
       if (newState === 'listening') {
+        setLocalIsRecording(true)
         setSessionStartTime(Date.now())
         toast({
           title: "🎤 Recording started",
@@ -70,6 +72,7 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
           className: "border-green-200 bg-green-50 text-green-800"
         })
       } else if (newState === 'ready' && sessionStartTime) {
+        setLocalIsRecording(false)
         const duration = Math.round((Date.now() - sessionStartTime) / 1000)
         setSessionStartTime(null)
         if (duration > 1) {
@@ -79,6 +82,8 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
             className: "border-gray-200 bg-gray-50 text-gray-800"
           })
         }
+      } else {
+        setLocalIsRecording(false)
       }
     }
   })
@@ -92,16 +97,24 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
   // Handle mic toggle
   const handleMicToggle = async () => {
     console.log('Mic toggle clicked, current state:', state, 'isListening:', isListening)
-    if (isListening || state === 'listening') {
+    if (isListening || state === 'listening' || localIsRecording) {
       console.log('Stopping listening...')
+      setLocalIsRecording(false)
       stopListening()
     } else {
       console.log('Starting listening...')
+      setLocalIsRecording(true) // Immediate visual feedback
       try {
         await startListening()
         console.log('Start listening completed')
       } catch (err) {
         console.error('Start listening failed:', err)
+        setLocalIsRecording(false) // Reset on error
+        toast({
+          title: "Voice input error",
+          description: "Could not start voice recording. Please check your microphone permissions.",
+          variant: "destructive"
+        })
       }
     }
   }
@@ -197,7 +210,7 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
           className={`
             w-12 h-12 p-0 transition-all duration-200 relative overflow-hidden border-0 shadow-lg
             ${
-              state === 'listening'
+              (state === 'listening' || isListening || localIsRecording)
                 ? 'bg-white rounded-lg'
                 : state === 'requesting-permission'
                 ? 'bg-yellow-500 hover:bg-yellow-600 rounded-full shadow-md animate-pulse'
@@ -215,7 +228,7 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
           }
           data-testid="button-mic-compact"
         >
-          {state === 'listening' ? (
+          {(state === 'listening' || isListening || localIsRecording) ? (
             // iPhone-style red square when recording
             <div className="w-5 h-5 bg-red-500 rounded-sm animate-pulse"></div>
           ) : state === 'requesting-permission' ? (
@@ -228,7 +241,7 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
           )}
           
           {/* Animated recording ring - iPhone style */}
-          {state === 'listening' && (
+          {(state === 'listening' || isListening || localIsRecording) && (
             <>
               <div className="absolute -inset-1 border-2 border-red-400 rounded-lg animate-ping opacity-60"></div>
               <div className="absolute -inset-2 border border-red-300 rounded-lg animate-pulse opacity-30"></div>

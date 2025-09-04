@@ -186,22 +186,8 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
           setErrorState('permission-denied', 'Microphone permission denied. Please enable it in your browser settings.')
           break
         case 'no-speech':
-          // Don't treat no-speech as an error in continuous mode - just restart
-          if (continuous && state === 'listening') {
-            console.log('No speech detected, continuing to listen...')
-            // Auto-restart without changing state
-            if (recognitionRef.current && !isStartingRef.current) {
-              try {
-                isStartingRef.current = true
-                recognitionRef.current.start()
-              } catch (e) {
-                console.log('Auto-restart failed:', e)
-                updateState('ready')
-              }
-            }
-          } else {
-            setErrorState('no-speech', 'No speech detected. Try speaking closer to your microphone.', true)
-          }
+          // Don't treat no-speech as an error - just continue listening
+          console.log('No speech detected, continuing to listen...')
           break
         case 'audio-capture':
           setErrorState('no-microphone', 'No microphone detected. Please connect a microphone.')
@@ -227,22 +213,8 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
       isStartingRef.current = false
       setInterimTranscript('')
       
-      // Only auto-restart if we're still in listening state and it's continuous mode and no critical errors
-      if (state === 'listening' && continuous && retryCount < maxRetries && !error || error?.retryable) {
-        console.log('Auto-restarting speech recognition...')
-        setRetryCount(prev => prev + 1) // Increment retry count
-        retryTimeoutRef.current = window.setTimeout(() => {
-          if (state === 'listening' && recognitionRef.current && !isStartingRef.current) {
-            try {
-              isStartingRef.current = true
-              recognitionRef.current.start()
-            } catch (e) {
-              console.log('Auto-restart failed:', e)
-              updateState('ready')
-            }
-          }
-        }, 100) // Shorter delay for better UX
-      } else if (state === 'listening') {
+      // Don't auto-restart - let user manually control recording
+      if (state === 'listening') {
         console.log('Ending listening state, returning to ready')
         updateState('ready')
       }

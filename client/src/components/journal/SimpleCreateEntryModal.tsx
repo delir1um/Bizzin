@@ -98,9 +98,17 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
   // Handle voice input transcription
   const handleVoiceTranscript = (transcript: string, isFinal: boolean) => {
     if (isFinal && transcript.trim()) {
+      // Only append the new transcript, don't accumulate
       setContent(prev => {
         const currentContent = prev.trim()
-        const newContent = currentContent + (currentContent ? ' ' : '') + transcript.trim()
+        const cleanTranscript = transcript.trim()
+        
+        // Check if this transcript is already at the end of content to prevent duplication
+        if (currentContent.endsWith(cleanTranscript)) {
+          return prev // Don't add if already present
+        }
+        
+        const newContent = currentContent + (currentContent ? ' ' : '') + cleanTranscript
         return newContent
       })
     }
