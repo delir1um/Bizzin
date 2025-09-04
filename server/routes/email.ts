@@ -2,9 +2,114 @@
 import express from 'express';
 import { simpleEmailScheduler } from '../services/SimpleEmailScheduler.js';
 import { supabase } from '../lib/supabase.js';
+import crypto from 'crypto';
 
 const router = express.Router();
 // Use the same email scheduler instance from server startup
+
+// Custom password reset endpoint using our email service
+router.post('/password-reset', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    // Check if user exists by email
+    const { data: users, error: authError } = await supabase.auth.admin.listUsers();
+    const authUser = users?.users?.find(user => user.email === email);
+    
+    if (authError || !authUser) {
+      // Don't reveal if user exists or not for security
+      return res.json({ message: 'If an account with this email exists, you will receive a password reset link.' });
+    }
+
+    // Generate secure reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 3600000); // 1 hour from now
+    
+    // Store reset token in database
+    const { error: tokenError } = await supabase
+      .from('password_reset_tokens')
+      .upsert({
+        user_id: authUser.id,
+        email: email,
+        token: resetToken,
+        expires_at: expiresAt.toISOString(),
+        used: false
+      });
+
+    if (tokenError) {
+      console.error('Error storing reset token:', tokenError);
+      return res.status(500).json({ error: 'Failed to process reset request' });
+    }
+
+    // Send password reset email using our email service
+    const resetUrl = `${process.env.NODE_ENV === 'production' ? 'https://bizzin.co.za' : 'http://localhost:5000'}/reset-password?token=${resetToken}`;
+    
+    const emailSent = await simpleEmailScheduler.emailService.sendPasswordResetEmail(email, resetUrl);
+    
+    if (emailSent) {
+      console.log(`✅ Password reset email sent to ${email}`);
+      res.json({ message: 'Password reset email sent successfully' });
+    } else {
+      console.error(`❌ Failed to send password reset email to ${email}`);
+      res.status(500).json({ error: 'Failed to send reset email' });
+    }
+    
+  } catch (error) {
+    console.error('Password reset error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Handle password reset token verification and update
+router.post('/password-reset/verify', async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: 'Token and new password are required' });
+    }
+
+    // Verify reset token
+    const { data: resetData, error: resetError } = await supabase
+      .from('password_reset_tokens')
+      .select('*')
+      .eq('token', token)
+      .eq('used', false)
+      .gt('expires_at', new Date().toISOString())
+      .single();
+
+    if (resetError || !resetData) {
+      return res.status(400).json({ error: 'Invalid or expired reset token' });
+    }
+
+    // Update user password
+    const { error: updateError } = await supabase.auth.admin.updateUserById(
+      resetData.user_id,
+      { password: newPassword }
+    );
+
+    if (updateError) {
+      console.error('Error updating password:', updateError);
+      return res.status(500).json({ error: 'Failed to update password' });
+    }
+
+    // Mark token as used
+    await supabase
+      .from('password_reset_tokens')
+      .update({ used: true })
+      .eq('token', token);
+
+    res.json({ message: 'Password updated successfully' });
+    
+  } catch (error) {
+    console.error('Password reset verify error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // Clean up email content (for testing)
 router.delete('/content/cleanup', async (req, res) => {

@@ -79,15 +79,21 @@ export default function AuthPage() {
     setMessage("")
     
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`
+      const response = await fetch('/api/email/password-reset', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email })
       })
       
-      if (error) {
-        setMessage(error.message)
-      } else {
+      const data = await response.json()
+      
+      if (response.ok) {
         setMessage("Check your email for password reset instructions")
         setShowResetForm(false) // Hide reset form after successful send
+      } else {
+        setMessage(data.error || "Failed to send reset email")
       }
     } catch (error) {
       setMessage("Failed to send reset email. Please try again.")
