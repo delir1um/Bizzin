@@ -532,7 +532,7 @@ router.post('/system/test-welcome', async (req, res) => {
       return res.status(400).json({ error: 'Email is required' });
     }
     
-    const testConfirmationUrl = confirmationUrl || 'https://bizzin.co.za/auth/confirm?token=test-token-123';
+    const testConfirmationUrl = confirmationUrl || 'https://bizzin.co.za/auth?mode=email_confirmation&token=test-token-123';
     const success = await simpleEmailScheduler.emailService.sendWelcomeEmail(email, testConfirmationUrl);
     
     if (success) {
@@ -554,7 +554,7 @@ router.post('/system/test-password-reset', async (req, res) => {
       return res.status(400).json({ error: 'Email is required' });
     }
     
-    const testResetUrl = resetUrl || 'https://bizzin.co.za/auth/reset-password?token=test-reset-token-456';
+    const testResetUrl = resetUrl || 'https://bizzin.co.za/reset-password?token=test-reset-token-456';
     const success = await simpleEmailScheduler.emailService.sendPasswordResetEmail(email, testResetUrl);
     
     if (success) {
