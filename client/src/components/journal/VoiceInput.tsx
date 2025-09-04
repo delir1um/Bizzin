@@ -82,6 +82,9 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
       }
     }
   })
+  
+  // Debug state after hook initialization
+  console.log('VoiceInput render - state:', state, 'isListening:', isListening, 'compact:', compact)
 
   // Calculate session duration
   const sessionDuration = sessionStartTime ? Math.round((Date.now() - sessionStartTime) / 1000) : 0

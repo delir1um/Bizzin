@@ -70,6 +70,7 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
 
   // Update state and notify listeners
   const updateState = useCallback((newState: SpeechState) => {
+    console.log('updateState called: -> ', newState)
     setState(newState)
     onStateChange?.(newState)
   }, [onStateChange])
