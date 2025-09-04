@@ -37,8 +37,11 @@ export default function AuthPage() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({ resolver: zodResolver(schema) })
+
+  const emailValue = watch('email')
 
   // Check for referral code in URL and validate it
   useEffect(() => {
@@ -67,8 +70,8 @@ export default function AuthPage() {
   }, [setLocation])
 
   const handlePasswordReset = async (email: string) => {
-    if (!email) {
-      setMessage("Please enter your email address first")
+    if (!email || email.trim() === '') {
+      setMessage("Please enter your email address")
       return
     }
 
@@ -96,6 +99,7 @@ export default function AuthPage() {
   const handleForgotPasswordClick = () => {
     setShowResetForm(true)
     setMessage("")
+    // Clear any previous form errors when switching to reset mode
   }
 
   const handleBackToSignIn = () => {
@@ -215,10 +219,7 @@ export default function AuthPage() {
 
                 <Button 
                   type="button"
-                  onClick={() => {
-                    const emailValue = (document.querySelector('input[type="email"]') as HTMLInputElement)?.value
-                    handlePasswordReset(emailValue)
-                  }}
+                  onClick={() => handlePasswordReset(emailValue)}
                   disabled={isResettingPassword}
                   className="w-full h-12 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200" 
                 >
