@@ -131,8 +131,8 @@
             text-align: center;
         }
         
-        /* Button styles */
-        .cta-button {
+        /* Action link styles */
+        .action-link {
             background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
             color: #ffffff !important;
             padding: 18px 40px;
@@ -143,8 +143,6 @@
             display: inline-block;
             margin: 16px auto;
             text-align: center;
-            border: none;
-            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
         }
         
         /* Next steps section */
@@ -172,13 +170,11 @@
             position: relative;
         }
         
-        .step-item::before {
-            content: "✓";
-            color: #10b981;
-            font-weight: bold;
-            position: absolute;
-            left: 0;
-            top: 0;
+        .step-item {
+            color: #cbd5e1 !important;
+            font-size: 14px;
+            margin-bottom: 12px;
+            padding-left: 0px;
         }
         
         /* Footer */
@@ -254,7 +250,7 @@
                             </p>
                             
                             <div style="text-align: center; margin: 32px 0;">
-                                <a href="{{ConfirmationURL}}" class="cta-button">Confirm Your Account</a>
+                                <a href="{{ConfirmationURL}}" class="action-link">Confirm Your Account</a>
                             </div>
                             
                             <!-- Next steps section -->
