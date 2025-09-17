@@ -192,10 +192,166 @@ function generateFallbackAnalysis(text: string) {
     energy,
     emotions: [primary_mood.toLowerCase()],
     insights: generateContextualInsights(text, primary_mood, business_category),
-    business_category,
+    business_category: business_category.toLowerCase(), // Fix casing consistency
     ai_heading: generateFallbackHeading(text),
     analysis_source: 'enhanced-analysis'
   };
+}
+
+// Tokenization and proximity analysis functions for context-aware detection
+interface TokenMatch {
+  pattern: string;
+  startIndex: number;
+  endIndex: number;
+  tokens: string[];
+}
+
+function tokenizeText(text: string): string[] {
+  // Normalize contractions first to match negation indicators
+  const normalized = text.toLowerCase()
+    .replace(/can't/g, 'cannot')
+    .replace(/won't/g, 'will not')
+    .replace(/n't/g, ' not')
+    .replace(/[']/g, ''); // Remove remaining apostrophes
+  
+  // Split on whitespace and punctuation, keeping meaningful words
+  return normalized
+    .split(/[\s\.,;:!?\-\(\)\[\]{}"]+/)
+    .filter(token => token.length > 0);
+}
+
+function findMilestoneMatches(tokens: string[], patterns: string[]): TokenMatch[] {
+  const matches: TokenMatch[] = [];
+  
+  for (const pattern of patterns) {
+    const patternTokens = pattern.split(/\s+/);
+    
+    // Find all occurrences of this pattern in the token array using sliding window
+    for (let i = 0; i <= tokens.length - patternTokens.length; i++) {
+      const candidate = tokens.slice(i, i + patternTokens.length);
+      
+      // Strict token sequence matching only - no global fallbacks
+      if (candidate.join(' ') === pattern) {
+        matches.push({
+          pattern,
+          startIndex: i,
+          endIndex: i + patternTokens.length,
+          tokens: candidate
+        });
+        
+        // Continue to find ALL occurrences, not just first
+      }
+    }
+  }
+  
+  return matches;
+}
+
+function analyzeProximityContext(
+  tokens: string[], 
+  match: TokenMatch, 
+  windowSize: number = 8
+): {
+  hasLocalNegation: boolean;
+  hasLocalFuture: boolean;
+  hasLocalOutcome: boolean;
+  hasLocalPast: boolean;
+  contextTokens: string[];
+} {
+  const start = Math.max(0, match.startIndex - windowSize);
+  const end = Math.min(tokens.length, match.endIndex + windowSize);
+  const contextTokens = tokens.slice(start, end);
+  const contextText = contextTokens.join(' ');
+  
+  // Local negation indicators within proximity window (normalized for tokenization)
+  const negationIndicators = [
+    'not', 'never', 'cannot', 'unable', 'failed to', 'yet to',
+    'pending', 'waiting', 'seeking', 'apply', 'applying', 'to get', 'to be',
+    'aiming', 'want to', 'hoping', 'plan to', 'planning to', 'trying to',
+    'need to', 'should', 'would like', 'wish to', 'intend to', 'expect to'
+  ];
+  
+  // Local future indicators within proximity window
+  const futureIndicators = [
+    'will be', 'going to', 'soon be', 'eventually', 'next', 'upcoming',
+    'future', 'when we', 'once we', 'after we', 'before we'
+  ];
+  
+  // Local outcome verbs that indicate completion
+  const outcomeVerbs = [
+    'received', 'awarded', 'obtained', 'secured', 'closed', 'launched',
+    'signed', 'met', 'achieved', 'completed', 'granted', 'delivered'
+  ];
+  
+  // Local past indicators that suggest completion
+  const pastIndicators = [
+    'today', 'yesterday', 'last week', 'last month', 'just', 'finally', 'successfully'
+  ];
+  
+  return {
+    hasLocalNegation: negationIndicators.some(neg => contextText.includes(neg)),
+    hasLocalFuture: futureIndicators.some(fut => contextText.includes(fut)),
+    hasLocalOutcome: outcomeVerbs.some(verb => contextText.includes(verb)),
+    hasLocalPast: pastIndicators.some(past => contextText.includes(past)),
+    contextTokens
+  };
+}
+
+// Enhanced milestone detection using proximity-based context analysis
+function detectProximityBasedMilestones(
+  text: string,
+  sentiment: { type: string; confidence: number }
+): boolean {
+  const tokens = tokenizeText(text);
+  
+  // Strong business milestone patterns with contextual analysis
+  const strongMilestonePatterns = [
+    'patent approved', 'patent awarded', 'patent application approved', 'patent application was approved',
+    'patent approval received', 'regulatory approval received',
+    'certification approval received', 'fda approval received', 'compliance approval received',
+    'certification approved', 'certification awarded', 'certification obtained', 'certification received',
+    'iso 27001 certified', 'compliance certified', 'officially certified',
+    'deal closed', 'contract signed', 'funding secured', 'investment closed',
+    'product launched', 'milestone reached', 'goal achieved', 'target met'
+  ];
+  
+  const milestoneMatches = findMilestoneMatches(tokens, strongMilestonePatterns);
+  
+  if (milestoneMatches.length === 0) {
+    return false;
+  }
+  
+  console.log(`🔍 PROXIMITY: Found ${milestoneMatches.length} milestone patterns`);
+  
+  // Analyze each milestone match for local context
+  for (const match of milestoneMatches) {
+    const context = analyzeProximityContext(tokens, match);
+    
+    console.log(`🔍 PROXIMITY: Analyzing "${match.pattern}":`); 
+    console.log(`  - Local negation: ${context.hasLocalNegation}`);
+    console.log(`  - Local future: ${context.hasLocalFuture}`);
+    console.log(`  - Local outcome: ${context.hasLocalOutcome}`);
+    console.log(`  - Local past: ${context.hasLocalPast}`);
+    console.log(`  - Context: [${context.contextTokens.join(' ')}]`);
+    
+    // PROXIMITY-BASED ACHIEVEMENT LOGIC:
+    // Only classify as achievement if local context confirms completion
+    const positiveConfident = sentiment.type === 'positive' && sentiment.confidence > 0.7;
+    
+    const localContextualAchievement = (!context.hasLocalNegation && !context.hasLocalFuture && 
+                                      (context.hasLocalOutcome || context.hasLocalPast || positiveConfident)) ||
+                                     (context.hasLocalOutcome && positiveConfident);
+    
+    if (localContextualAchievement) {
+      console.log(`✅ PROXIMITY: "${match.pattern}" confirmed as achievement by local context`);
+      return true;
+    } else {
+      console.log(`❌ PROXIMITY: "${match.pattern}" blocked by local context - likely planning/aspiration`);
+    }
+  }
+  
+  console.log(`🔍 PROXIMITY: No milestone patterns passed local context analysis`);
+  return false;
 }
 
 // Semantic business context detection for mood refinements
@@ -255,60 +411,159 @@ function detectBusinessContext(
   };
 }
 
-// Semantic business category detection using AI analysis
+// Enhanced semantic business category detection using multi-emotion AI analysis
 function detectSemanticBusinessCategory(
   sentiment: { type: string; confidence: number },
   emotion: string,
   emotionScore: number,
   lowerText: string,
-  mood: string
+  mood: string,
+  allEmotions?: any[] // New parameter for multiple emotions
 ): string {
   
-  // Use AI sentiment/emotion combinations to determine business context
+  // Extract top 3 emotions for better categorization
+  const topEmotions = allEmotions ? allEmotions.slice(0, 3).map(e => e.label) : [emotion];
+  const hasEmotion = (targetEmotions: string[]) => targetEmotions.some(e => topEmotions.includes(e));
+  const getEmotionScore = (emotionName: string) => {
+    const found = allEmotions?.find(e => e.label === emotionName);
+    return found ? found.score : (emotionName === emotion ? emotionScore : 0);
+  };
+
+  // Enhanced category mappings with better thresholds and multi-emotion support
   const categoryMappings = [
     {
-      // Strong positive emotions with high confidence = achievement
-      condition: (s: any, e: string, es: number) => 
-        (s.type === 'positive' && s.confidence > 0.8) && 
-        (['joy', 'surprise'].includes(e) && es > 0.5),
+      // Enhanced Achievement: More intelligent detection for business milestones with contextual analysis
+      condition: (s: any, e: string, es: number) => {
+        const achievementEmotions = hasEmotion(['joy', 'surprise']);
+        const hasAchievementKeywords = containsAchievementIndicators(lowerText);
+        const positiveConfident = s.type === 'positive' && s.confidence > 0.7;
+        const moderatePositive = s.type === 'positive' && s.confidence > 0.5;
+        const neutralButPositive = s.type === 'neutral' && s.confidence < 0.8 && achievementEmotions;
+        
+        // Strong business milestone patterns with contextual analysis
+        const strongMilestonePatterns = [
+          'patent approved', 'patent awarded', 'patent approval received', 'regulatory approval received',
+          'certification approval received', 'fda approval received', 'compliance approval received',
+          'certification approved', 'certification awarded', 'certification obtained', 'certification received',
+          'iso 27001 certified', 'compliance certified', 'officially certified',
+          'deal closed', 'contract signed', 'funding secured', 'investment closed',
+          'product launched', 'milestone reached', 'goal achieved', 'target met'
+        ];
+        
+        // Use proximity-based milestone detection instead of global substring matching
+        const hasMilestonePattern = detectProximityBasedMilestones(lowerText, s);
+        
+        // Clear business outcome indicators used in conditions
+        const businessOutcomeWords = ['awarded', 'secured', 'closed', 'launched', 'completed', 'achieved'];
+        const hasBusinessOutcome = businessOutcomeWords.some(word => lowerText.includes(word));
+        
+        // Achievement conditions with contextual guards:
+        // 1. Milestone patterns that pass contextual analysis
+        // 2. Achievement keywords + positive sentiment + business outcomes
+        // 3. Achievement keywords + achievement emotions + moderate positive sentiment
+        return (hasMilestonePattern) ||
+               (hasAchievementKeywords && positiveConfident && hasBusinessOutcome) ||
+               (hasAchievementKeywords && achievementEmotions && moderatePositive);
+      },
       category: 'achievement',
-      weight: 0.9
+      weight: 0.95  // Increased weight to prioritize achievements over other categories
     },
     {
-      // Negative emotions with business stress indicators = challenge  
-      condition: (s: any, e: string, es: number) =>
-        (s.type === 'negative' && s.confidence > 0.6) &&
-        (['anger', 'sadness', 'fear'].includes(e) && es > 0.4),
+      // Enhanced Growth: Mixed positive emotions + growth keywords OR excitement about expansion
+      condition: (s: any, e: string, es: number) => {
+        const growthEmotions = hasEmotion(['joy', 'surprise', 'neutral', 'optimism']);
+        const hasGrowthKeywords = containsGrowthIndicators(lowerText);
+        const positiveOrNeutral = s.type === 'positive' || (s.type === 'neutral' && s.confidence < 0.8);
+        
+        return (hasGrowthKeywords && positiveOrNeutral) ||
+               (growthEmotions && hasGrowthKeywords) ||
+               (s.type === 'positive' && s.confidence > 0.8 && hasGrowthKeywords);
+      },
+      category: 'growth',
+      weight: 0.85
+    },
+    {
+      // Enhanced Planning: Any planning keywords + non-negative sentiment OR strategic thinking
+      condition: (s: any, e: string, es: number) => {
+        const planningKeywords = containsPlanningIndicators(lowerText);
+        const neutralOrPositive = s.type !== 'negative' || s.confidence < 0.7;
+        const strategicMoods = ['focused', 'analytical', 'contemplative'].includes(mood);
+        
+        return (planningKeywords && neutralOrPositive) ||
+               (strategicMoods && planningKeywords) ||
+               (hasEmotion(['neutral']) && planningKeywords && s.confidence < 0.9);
+      },
+      category: 'planning',  
+      weight: 0.8
+    },
+    {
+      // Enhanced Learning: Learning keywords but don't override clear achievements  
+      condition: (s: any, e: string, es: number) => {
+        const learningKeywords = containsLearningIndicators(lowerText);
+        const curiousEmotions = hasEmotion(['neutral', 'surprise', 'contemplative']);
+        const mixedEmotions = allEmotions && allEmotions.length > 1 && 
+                              Math.abs(allEmotions[0].score - allEmotions[1].score) < 0.3;
+        const nonNegative = s.type !== 'negative' || s.confidence < 0.6;
+        
+        // Don't classify as learning if it's clearly an achievement (with contextual analysis)
+        const hasAchievementKeywords = containsAchievementIndicators(lowerText);
+        
+        // Use proximity-based milestone detection for learning condition too
+        const contextualAchievement = detectProximityBasedMilestones(lowerText, s);
+        
+        // If it's clearly an achievement (based on context), don't classify as learning
+        if (contextualAchievement || (hasAchievementKeywords && s.type === 'positive' && s.confidence > 0.7)) {
+          return false;
+        }
+        
+        return learningKeywords && (nonNegative || curiousEmotions || mixedEmotions) ||
+               (['curious', 'analytical', 'contemplative'].includes(mood) && learningKeywords);
+      },
+      category: 'learning',
+      weight: 0.9  // High priority but not higher than achievements
+    },
+    {
+      // Challenge: Negative emotions + challenge indicators (keeping existing but refined)
+      condition: (s: any, e: string, es: number) => {
+        const challengeEmotions = hasEmotion(['anger', 'sadness', 'fear', 'disgust']);
+        const hasChallengeKeywords = containsChallengeIndicators(lowerText);
+        const strongNegative = s.type === 'negative' && s.confidence > 0.6;
+        
+        return (strongNegative && challengeEmotions) ||
+               (hasChallengeKeywords && (challengeEmotions || strongNegative));
+      },
       category: 'challenge',
       weight: 0.8
     },
     {
-      // Positive sentiment + surprise/curiosity + neutral emotions = growth
-      condition: (s: any, e: string, es: number) =>
-        (s.type === 'positive' && s.confidence > 0.6) &&
-        (['surprise', 'neutral'].includes(e)) &&
-        containsGrowthIndicators(lowerText),
-      category: 'growth',
-      weight: 0.7
-    },
-    {
-      // Neutral sentiment + focus emotions = planning
-      condition: (s: any, e: string, es: number) =>
-        (s.type === 'neutral' || (s.type === 'positive' && s.confidence < 0.7)) &&
-        mood === 'focused' &&
-        containsPlanningIndicators(lowerText),
-      category: 'planning',  
-      weight: 0.7
-    },
-    {
-      // Mixed emotions or reflective moods = learning/reflection
-      condition: (s: any, e: string, es: number) =>
-        ['reflective', 'contemplative', 'curious'].includes(mood) ||
-        (es < 0.6 && s.confidence < 0.8), // Lower confidence = more reflective
+      // Reflection: Neutral emotions + reflective content OR low confidence mixed signals
+      condition: (s: any, e: string, es: number) => {
+        const reflectiveMoods = ['reflective', 'contemplative', 'thoughtful'].includes(mood);
+        const neutralEmotions = hasEmotion(['neutral']) && es > 0.4;
+        const lowConfidenceMixed = es < 0.6 && s.confidence < 0.8;
+        
+        return reflectiveMoods || (neutralEmotions && !containsGrowthIndicators(lowerText) && !containsPlanningIndicators(lowerText)) || lowConfidenceMixed;
+      },
       category: 'reflection',
       weight: 0.6
     }
   ];
+  
+  // Debug logging for categorization
+  console.log(`🔍 CATEGORY DEBUG: Text contains:`);
+  console.log(`  - Learning keywords: ${containsLearningIndicators(lowerText)}`);
+  console.log(`  - Achievement keywords: ${containsAchievementIndicators(lowerText)}`);
+  console.log(`  - Growth keywords: ${containsGrowthIndicators(lowerText)}`);
+  console.log(`  - Planning keywords: ${containsPlanningIndicators(lowerText)}`);
+  console.log(`  - Challenge keywords: ${containsChallengeIndicators(lowerText)}`);
+  
+  // Test each category condition individually
+  const debugResults = categoryMappings.map(mapping => ({
+    category: mapping.category,
+    weight: mapping.weight,
+    matches: mapping.condition(sentiment, emotion, emotionScore)
+  }));
+  console.log(`🔍 CATEGORY CONDITIONS:`, debugResults);
   
   // Find best matching category based on AI analysis
   const matches = categoryMappings
@@ -316,36 +571,179 @@ function detectSemanticBusinessCategory(
     .sort((a, b) => b.weight - a.weight);
     
   if (matches.length > 0) {
+    console.log(`🔍 MATCHED CATEGORY: ${matches[0].category} (weight ${matches[0].weight})`);
     return matches[0].category;
   }
   
-  // Fallback using business context clues
-  if (containsAchievementIndicators(lowerText)) return 'achievement';
-  if (containsChallengeIndicators(lowerText)) return 'challenge';
-  if (containsGrowthIndicators(lowerText)) return 'growth';
-  if (containsPlanningIndicators(lowerText)) return 'planning';
+  console.log(`🔍 NO CATEGORY MATCHES - Using fallback logic`);
   
+  // Enhanced fallback using business context clues with balanced priorities
+  if (containsLearningIndicators(lowerText)) {
+    console.log(`🔍 FALLBACK: Learning keywords detected`);
+    return 'learning';
+  }
+  if (containsAchievementIndicators(lowerText)) {
+    console.log(`🔍 FALLBACK: Achievement keywords detected`);
+    return 'achievement';
+  }
+  if (containsGrowthIndicators(lowerText)) {
+    console.log(`🔍 FALLBACK: Growth keywords detected`);
+    return 'growth';
+  }
+  if (containsPlanningIndicators(lowerText)) {
+    console.log(`🔍 FALLBACK: Planning keywords detected`);
+    return 'planning';
+  }
+  if (containsChallengeIndicators(lowerText)) {
+    console.log(`🔍 FALLBACK: Challenge keywords detected`);
+    return 'challenge';
+  }
+  
+  console.log(`🔍 FALLBACK: No keywords detected - defaulting to reflection`);
   return 'reflection';
 }
 
-// Helper functions for semantic business indicators
+// Enhanced helper functions for semantic business indicators
 function containsAchievementIndicators(text: string): boolean {
-  const indicators = ['million', 'breakthrough', 'exceeded', 'success', 'won', 'signed', 'closed'];
-  return indicators.some(indicator => text.includes(indicator));
+  // Specific achievement milestone phrases - only compound phrases, no generic words
+  const specificMilestones = [
+    // Financial achievements - specific compound phrases only
+    'revenue exceeded', 'profit exceeded', 'funding secured', 'investment closed', 
+    'revenue milestone', 'sales milestone', 'revenue breakthrough', 'profit breakthrough',
+    'million in revenue', 'million in funding', 'million in sales', 'record revenue', 'record sales',
+    
+    // Patent and regulatory achievements - specific compound phrases only
+    'patent approved', 'patent awarded', 'patent granted', 'patent received',
+    'patent application approved', 'patent application was approved', 'patent application awarded',
+    'regulatory approval received', 'fda approval received', 'certification approved',
+    'compliance approval received', 'license granted', 'certification received',
+    
+    // Product and business launches
+    'product launched', 'product shipped', 'beta launched', 'public launch',
+    'soft launch', 'milestone reached', 'goal achieved', 'target met', 
+    'objective completed', 'project completed', 'project delivered', 'project finished',
+    
+    // Deal and contract wins - specific compound phrases only
+    'deal closed', 'contract signed', 'contract awarded', 'contract won',
+    'partnership signed', 'agreement signed', 'enterprise deal', 'major client',
+    
+    // Recognition and awards
+    'award received', 'award won', 'recognition received', 'featured in',
+    'published in', 'selected for', 'nominated for', 'honored with',
+    'excellence award', 'achievement award',
+    
+    // Business success indicators - specific only
+    'successful launch', 'breakthrough achieved', 'market leader', 'customer win'
+  ];
+  
+  // Enhanced procedural guard patterns - if these are found, it's NOT an achievement
+  const proceduralGuards = [
+    // Procedural approvals
+    'approved to proceed', 'approval needed', 'approval required',
+    'waiting for approval', 'seeking approval', 'request approval',
+    'approval process', 'pending approval', 'needs approval',
+    'submit for approval', 'approval workflow', 'approval status',
+    
+    // Process and planning language
+    'proceed with', 'needed for', 'required for', 'planning for',
+    'preparing for', 'getting ready for', 'working towards',
+    
+    // Reflection and learning contexts
+    'reflecting on', 'learning about', 'thinking about',
+    'considering whether', 'evaluating the', 'reviewing the',
+    'discussing the', 'analyzing the',
+    
+    // Budget and administrative approvals
+    'budget approval', 'expense approval', 'spending approval',
+    'approval for budget', 'approval for expense', 'approval for spending',
+    'administrative approval', 'procedural approval'
+  ];
+  
+  // Check for procedural language first
+  const lowerText = text.toLowerCase();
+  const hasGuard = proceduralGuards.some(guard => lowerText.includes(guard));
+  
+  if (hasGuard) {
+    return false;
+  }
+  
+  // Check for achievement milestones with proper case handling
+  return specificMilestones.some(milestone => lowerText.includes(milestone));
 }
 
 function containsChallengeIndicators(text: string): boolean {
-  const indicators = ['problem', 'difficult', 'crisis', 'failed', 'fired', 'issue'];
+  const indicators = [
+    // Direct problems
+    'problem', 'issue', 'crisis', 'failed', 'failure', 'error', 'mistake',
+    // Emotional challenges
+    'difficult', 'challenging', 'struggle', 'stuck', 'blocked', 'frustrated',
+    // Personnel issues
+    'fired', 'quit', 'resigned', 'terminated', 'conflict', 'disagreement',
+    // Financial stress
+    'cash flow', 'debt', 'loss', 'expensive', 'costly', 'budget',
+    // Operational challenges
+    'delayed', 'behind', 'overwhelmed', 'stressed', 'pressure', 'urgent',
+    // External pressures
+    'competitor', 'threat', 'risk', 'concern', 'worry', 'accident'
+  ];
   return indicators.some(indicator => text.includes(indicator));
 }
 
 function containsGrowthIndicators(text: string): boolean {
-  const indicators = ['scaling', 'expansion', 'growing', 'increase', 'hiring', 'new team'];
+  const indicators = [
+    // Revenue growth
+    'revenue increase', 'sales growth', 'income growth', 'profit growth',
+    // Business scaling
+    'scaling', 'expansion', 'growing', 'expand', 'scale', 'increase',
+    // Team growth
+    'hiring', 'new team', 'staff', 'employees', 'recruiting', 'onboarding',
+    // Market expansion
+    'market', 'customers', 'clients', 'user growth', 'subscriber',
+    // Product growth
+    'new product', 'features', 'development', 'innovation', 'upgrade',
+    // Opportunity language
+    'opportunity', 'potential', 'promising', 'exciting', 'momentum',
+    // Investment and funding
+    'funding', 'investment', 'capital', 'round', 'investor'
+  ];
   return indicators.some(indicator => text.includes(indicator));
 }
 
 function containsPlanningIndicators(text: string): boolean {
-  const indicators = ['strategy', 'planning', 'considering', 'roadmap', 'next quarter'];
+  const indicators = [
+    // Strategic planning
+    'strategy', 'strategic', 'planning', 'plan', 'roadmap', 'timeline',
+    // Future thinking
+    'future', 'next quarter', 'next year', 'upcoming', 'coming',
+    // Decision making
+    'considering', 'deciding', 'evaluating', 'analyzing', 'reviewing',
+    // Goal setting
+    'goal', 'objectives', 'target', 'milestone', 'priority', 'focus',
+    // Resource planning
+    'budget', 'allocation', 'resources', 'investment', 'spend',
+    // Process planning
+    'process', 'procedure', 'system', 'framework', 'structure',
+    // Research and preparation
+    'research', 'investigating', 'exploring', 'preparing', 'getting ready'
+  ];
+  return indicators.some(indicator => text.includes(indicator));
+}
+
+function containsLearningIndicators(text: string): boolean {
+  const indicators = [
+    // Learning language
+    'learned', 'learning', 'lesson', 'insight', 'understanding', 'realized',
+    // Knowledge acquisition
+    'discovered', 'found out', 'figured out', 'understand', 'knowledge',
+    // Skill development
+    'training', 'course', 'workshop', 'conference', 'seminar', 'education',
+    // Reflection and analysis
+    'reflecting', 'thinking about', 'analyzing', 'reviewing', 'considering',
+    // Experience processing
+    'experience', 'feedback', 'observation', 'notice', 'pattern',
+    // Research and study
+    'research', 'study', 'investigation', 'analysis', 'examination'
+  ];
   return indicators.some(indicator => text.includes(indicator));
 }
 
@@ -740,7 +1138,8 @@ router.post('/analyze', async (req, res) => {
       emotionLabel,
       emotionScore,
       lowerText,
-      primaryMood
+      primaryMood,
+      sortedEmotion // Pass all emotions for better categorization
     );
     
     console.log(`🔍 SEMANTIC CATEGORIZATION: ${normalizedSentiment.type} + ${emotionLabel} + context -> ${category.toUpperCase()}`);

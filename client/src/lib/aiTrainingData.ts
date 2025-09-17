@@ -368,9 +368,9 @@ export class AITrainingValidator {
     let norm1 = 0;
     let norm2 = 0;
     
-    const allWords = new Set([...freq1.keys(), ...freq2.keys()]);
+    const allWords = new Set([...Array.from(freq1.keys()), ...Array.from(freq2.keys())]);
     
-    for (const word of allWords) {
+    for (const word of Array.from(allWords)) {
       const f1 = freq1.get(word) || 0;
       const f2 = freq2.get(word) || 0;
       
