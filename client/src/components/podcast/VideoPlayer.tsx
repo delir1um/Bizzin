@@ -70,16 +70,6 @@ export function VideoPlayer({
     allowedForwardRef.current = Math.max(allowedForwardRef.current, maxProgressReached, startTime)
   }, [maxProgressReached, startTime])
 
-  // Sync with parent currentTime when provided
-  useEffect(() => {
-    if (startTime > 0 && Math.abs(currentTime - startTime) > 1) {
-      setCurrentTime(startTime)
-      if (videoRef.current && videoRef.current.duration > 0) {
-        videoRef.current.currentTime = startTime
-      }
-    }
-  }, [startTime])
-
   // Initialize video with minimal event handling
   useEffect(() => {
     const video = videoRef.current
