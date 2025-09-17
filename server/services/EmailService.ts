@@ -1328,9 +1328,10 @@ export class EmailService {
         return false;
       }
 
-      // Generate smart template data with no contradictions - pass real goal data
+      // Generate smart template data with no contradictions - pass filtered active goals only
+      const activeGoals = (additionalData?.goals || []).filter((g: any) => ['in_progress', 'not_started'].includes(g.status));
       const templateData = await this.generateSmartTemplateData(emailContent, {
-        goals: additionalData?.goals || [],
+        goals: activeGoals,
         recentEntries: additionalData?.recentEntries || [],
         profile: additionalData?.profile
       });
