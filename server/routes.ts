@@ -578,42 +578,35 @@ ${new Date().toISOString().split('T')[0]}`;
 
   // Video proxy endpoint to serve R2 videos with CORS headers
   app.get('/api/video-proxy/:videoKey(*)', async (req, res) => {
-    let videoKey = '';
-    let isVideo = false;
-    let isLargeVideo = false; // Define at function scope to fix LSP errors
+    const videoKey = req.params.videoKey;
+    console.log('🎬 Video proxy request for:', videoKey);
+    
+    // ALWAYS try public endpoint first (production strategy)
+    const publicUrl = `https://pub-b3498cd071e1420b9d379a5510ba4bb8.r2.dev/${videoKey}`;
     
     try {
-      videoKey = req.params.videoKey;
-      isVideo = videoKey.toLowerCase().includes('.mp4') || videoKey.toLowerCase().includes('.webm') || videoKey.toLowerCase().includes('.mov');
-      const bucketName = process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || process.env.CLOUDFLARE_R2_BUCKET_NAME || 'pub-b3498cd071e1420b9d379a5510ba4bb8';
+      // Build fetch headers
+      const upstreamHeaders: HeadersInit = {};
+      if (req.headers.range) {
+        upstreamHeaders['Range'] = req.headers.range as string;
+      }
       
-      console.log('🎬 GET: Video proxy request for:', videoKey, 'isVideo:', isVideo, 'bucketName:', bucketName, 'environment:', process.env.NODE_ENV, 'timestamp:', new Date().toISOString());
+      console.log('🌐 Trying public endpoint:', publicUrl);
+      const upstreamResponse = await fetch(publicUrl, {
+        method: 'GET',
+        headers: upstreamHeaders
+      });
       
-      // Fast path for public buckets - no credentials needed, direct proxy
-      if (bucketName.startsWith('pub-')) {
-        console.log('🚀 GET: Public bucket fast path for:', videoKey);
-        const upstreamUrl = `https://${bucketName}.r2.dev/${videoKey}`;
-        
-        // Build fetch headers
-        const upstreamHeaders: Record<string, string> = {};
-        if (req.headers.range) {
-          upstreamHeaders['Range'] = req.headers.range;
-        }
-        
-        console.log('Proxying to:', upstreamUrl, 'with headers:', upstreamHeaders);
-        
-        const upstreamResponse = await fetch(upstreamUrl, {
-          method: 'GET',
-          headers: upstreamHeaders
-        });
-        
-        console.log('Upstream response:', upstreamResponse.status, upstreamResponse.statusText);
-        
-        // Set CORS headers first
-        res.header('Access-Control-Allow-Origin', '*');
-        res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
-        res.header('Access-Control-Allow-Headers', 'Range, Content-Type');
-        res.header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
+      console.log('🌐 Public endpoint response:', upstreamResponse.status, upstreamResponse.statusText);
+      
+      // Set CORS headers for all responses
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Range, Content-Type');
+      res.header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
+      
+      if (upstreamResponse.ok) {
+        console.log('✅ SUCCESS: Public endpoint worked');
         
         // Copy relevant headers from upstream
         const contentType = upstreamResponse.headers.get('content-type');
@@ -630,7 +623,7 @@ ${new Date().toISOString().split('T')[0]}`;
         if (cacheControl) res.header('Cache-Control', cacheControl);
         if (etag) res.header('ETag', etag);
         
-        // Set status code from upstream (200, 206 for range, 404 for not found, etc.)
+        // Set status code from upstream
         res.status(upstreamResponse.status);
         
         if (upstreamResponse.body) {
@@ -651,7 +644,7 @@ ${new Date().toISOString().split('T')[0]}`;
                 res.end();
               }
             } catch (streamError) {
-              console.error('Stream error for', videoKey, ':', streamError);
+              console.error('❌ Stream error for', videoKey, ':', streamError);
               if (!res.destroyed && !res.headersSent) {
                 res.status(500).end();
               }
@@ -660,7 +653,7 @@ ${new Date().toISOString().split('T')[0]}`;
           
           // Handle client disconnect
           req.on('close', () => {
-            console.log('🔌 Client disconnected from public bucket proxy:', videoKey);
+            console.log('🔌 Client disconnected from proxy:', videoKey);
             reader.cancel();
           });
           
@@ -674,337 +667,83 @@ ${new Date().toISOString().split('T')[0]}`;
           res.end();
           return;
         }
+      } else {
+        console.log('❌ Public endpoint failed:', upstreamResponse.status);
+        // Try S3 SDK fallback if credentials exist
+        throw new Error(`Public endpoint failed: ${upstreamResponse.status}`);
       }
       
-      // Fallback to S3 SDK for private buckets
-      console.log('📦 GET: Private bucket path for:', videoKey);
+    } catch (publicError) {
+      console.error('❌ Public endpoint error, trying S3 fallback:', (publicError as Error).message);
+      
+      // Fallback to S3 SDK if credentials are available
+      const bucketName = process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || process.env.CLOUDFLARE_R2_BUCKET_NAME || 'pub-b3498cd071e1420b9d379a5510ba4bb8';
       const accountId = process.env.VITE_CLOUDFLARE_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID;
       const accessKeyId = process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID || process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
       const secretAccessKey = process.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY || process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
       
       if (!accountId || !accessKeyId || !secretAccessKey) {
-        console.error('Missing Cloudflare credentials for private bucket:', {
-          hasAccountId: !!accountId,
-          hasAccessKeyId: !!accessKeyId,
-          hasSecretAccessKey: !!secretAccessKey
+        console.error('❌ No S3 credentials available for fallback');
+        return res.status(500).json({ 
+          error: 'Video proxy failed',
+          details: 'Public endpoint failed and no credentials for private bucket fallback'
         });
-        return res.status(500).json({ error: 'Server configuration error: Missing R2 credentials for private bucket' });
       }
       
-      const { S3Client, GetObjectCommand, HeadObjectCommand } = await import('@aws-sdk/client-s3');
-      
-      // Production-optimized configuration for large video files
-      // PRODUCTION FIX: Always try public endpoint first, regardless of bucket name
-      const knownPublicBucket = 'pub-b3498cd071e1420b9d379a5510ba4bb8';
-      const publicEndpoint = `https://${knownPublicBucket}.r2.dev/${videoKey}`;
-      
-      console.log('🔧 R2 Strategy: Trying public endpoint first for production compatibility');
-      console.log('🔧 Public endpoint:', publicEndpoint);
-      console.log('🔧 Bucket config debug:', {
-        envBucketName: bucketName,
-        usingKnownPublic: knownPublicBucket,
-        accountId: accountId?.substring(0, 8) + '...'
-      });
-      
-      // TRY PUBLIC ENDPOINT FIRST
       try {
-        console.log('🌐 Attempting public R2 endpoint first...');
-        const publicResponse = await fetch(publicEndpoint, {
-          method: 'GET',
-          headers: req.headers.range ? { 'Range': req.headers.range } : {}
-        });
+        const { S3Client, GetObjectCommand } = await import('@aws-sdk/client-s3');
         
-        console.log('🌐 Public R2 response:', {
-          status: publicResponse.status,
-          statusText: publicResponse.statusText,
-          contentType: publicResponse.headers.get('content-type'),
-          contentLength: publicResponse.headers.get('content-length')
-        });
-        
-        if (publicResponse.ok) {
-          console.log('✅ SUCCESS: Using public R2 endpoint');
-          
-          // Forward all important headers
-          res.header('Access-Control-Allow-Origin', '*');
-          res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
-          res.header('Access-Control-Allow-Headers', 'Range, Content-Type');
-          res.header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
-          
-          // Copy headers from upstream
-          const contentType = publicResponse.headers.get('content-type');
-          const contentLength = publicResponse.headers.get('content-length');
-          const contentRange = publicResponse.headers.get('content-range');
-          const acceptRanges = publicResponse.headers.get('accept-ranges');
-          const cacheControl = publicResponse.headers.get('cache-control');
-          const etag = publicResponse.headers.get('etag');
-          
-          if (contentType) res.header('Content-Type', contentType);
-          if (contentLength) res.header('Content-Length', contentLength);
-          if (contentRange) res.header('Content-Range', contentRange);
-          if (acceptRanges) res.header('Accept-Ranges', acceptRanges);
-          if (cacheControl) res.header('Cache-Control', cacheControl);
-          if (etag) res.header('ETag', etag);
-          
-          // Set status and stream response
-          res.status(publicResponse.status);
-          
-          if (publicResponse.body) {
-            const reader = publicResponse.body.getReader();
-            const pump = async () => {
-              try {
-                while (true) {
-                  const { done, value } = await reader.read();
-                  if (done) break;
-                  res.write(value);
-                }
-                res.end();
-              } catch (streamError) {
-                console.error('❌ Public stream error:', streamError);
-                if (!res.headersSent) {
-                  res.status(500).json({ error: 'Stream error', details: (streamError as Error).message });
-                }
-              }
-            };
-            await pump();
-            return;
-          } else {
-            res.end();
-            return;
+        const s3Client = new S3Client({
+          region: 'auto',
+          endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+          credentials: {
+            accessKeyId,
+            secretAccessKey,
           }
-        } else {
-          console.log('⚠️ Public endpoint failed, falling back to private S3...', {
-            status: publicResponse.status,
-            statusText: publicResponse.statusText
-          });
-        }
-      } catch (publicError) {
-        console.error('❌ Public endpoint error, falling back to private S3:', {
-          error: (publicError as Error).message,
-          code: (publicError as any).code
-        });
-      }
-      
-      // FALLBACK TO PRIVATE S3 SDK IF PUBLIC FAILED
-      console.log('🔄 Falling back to private S3 SDK...');
-      const endpoint = `https://${accountId}.r2.cloudflarestorage.com`;
-      
-      const s3Client = new S3Client({
-        region: 'auto',
-        endpoint,
-        credentials: {
-          accessKeyId,
-          secretAccessKey,
-        },
-        maxAttempts: 3,
-        retryMode: 'adaptive'
-      });
-      
-      // Handle large video files differently in production
-      isLargeVideo = isVideo && (videoKey.includes('.mp4') || videoKey.includes('.webm'));
-      console.log('Video handling setup:', { isVideo, isLargeVideo, videoKey, accountId: accountId?.substring(0, 8) + '...' });
-      if (isLargeVideo) {
-        console.log(`🎬 Large video detected: ${videoKey}, applying production optimizations`);
-      }
-      
-      // Set CORS headers first
-      res.header('Access-Control-Allow-Origin', '*');
-      res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
-      res.header('Access-Control-Allow-Headers', 'Range, Content-Type');
-      res.header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
-      
-      // Check if this is a range request - if so, get file metadata first
-      const range = req.headers.range;
-      
-      if (range) {
-        console.log('Range request for:', videoKey, 'Range:', range);
-        
-        // Get file metadata first
-        const headCommand = new HeadObjectCommand({
-          Bucket: bucketName,
-          Key: videoKey,
         });
         
-        const headResponse = await s3Client.send(headCommand);
-        const fileSize = headResponse.ContentLength || 0;
-        
-        console.log('File metadata:', {
-          ContentType: headResponse.ContentType,
-          ContentLength: fileSize,
-        });
-        
-        // Set headers based on metadata
-        res.header('Content-Type', headResponse.ContentType || (isVideo ? 'video/mp4' : 'audio/mp3'));
-        res.header('Accept-Ranges', 'bytes');
-        res.header('Cache-Control', 'public, max-age=3600, immutable');
-        res.header('ETag', `"${videoKey}-${fileSize}"`);
-        
-        // Parse range
-        const parts = range.replace(/bytes=/, "").split("-");
-        const start = parseInt(parts[0], 10);
-        let end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-        
-        // Optimize chunk size for video vs audio - smaller chunks for large videos in production
-        let chunkSize;
-        if (isLargeVideo && fileSize > 100 * 1024 * 1024) { // Files larger than 100MB
-          chunkSize = 2 * 1024 * 1024; // 2MB chunks for very large videos
-          console.log(`📦 Using 2MB chunks for large video (${Math.round(fileSize / 1024 / 1024)}MB)`);
-        } else if (isVideo) {
-          chunkSize = 5 * 1024 * 1024; // 5MB for regular videos
-        } else {
-          chunkSize = 1024 * 1024; // 1MB for audio
-        }
-        
-        if (!parts[1]) { // If no end specified, request a larger initial chunk
-          end = Math.min(start + chunkSize - 1, fileSize - 1);
-        }
-        
-        console.log(`Serving range bytes ${start}-${end}/${fileSize} (chunk: ${end - start + 1} bytes)`);
-        
-        const rangeCommand = new GetObjectCommand({
-          Bucket: bucketName,
-          Key: videoKey,
-          Range: `bytes=${start}-${end}`,
-        });
-        
-        const rangeResponse = await s3Client.send(rangeCommand);
-        
-        res.status(206);
-        res.header('Content-Range', `bytes ${start}-${end}/${fileSize}`);
-        res.header('Content-Length', rangeResponse.ContentLength?.toString() || '0');
-        
-        if (rangeResponse.Body) {
-          const stream = rangeResponse.Body as any;
-          
-          // Enhanced error handling for large videos
-          stream.on('error', (streamError: any) => {
-            console.error(`❌ Stream error for ${videoKey} (${isLargeVideo ? 'large video' : 'regular'}):`, {
-              error: streamError.message,
-              code: streamError.code,
-              fileSize: Math.round(fileSize / 1024 / 1024) + 'MB'
-            });
-            if (!res.destroyed && !res.headersSent) {
-              res.status(500).end();
-            }
-          });
-          
-          // Handle connection close with logging
-          req.on('close', () => {
-            if (isLargeVideo) {
-              console.log(`🔌 Client disconnected from large video: ${videoKey}`);
-            }
-            if (stream.destroy) stream.destroy();
-          });
-          
-          // Add timeout protection for large files
-          req.on('timeout', () => {
-            console.error(`⏰ Request timeout for ${videoKey}`);
-            if (stream.destroy) stream.destroy();
-          });
-          
-          stream.pipe(res);
-        }
-      } else {
-        // Full file request
-        console.log('Full file request for:', videoKey);
+        // Set CORS headers
+        res.header('Access-Control-Allow-Origin', '*');
+        res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+        res.header('Access-Control-Allow-Headers', 'Range, Content-Type');
+        res.header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
         
         const command = new GetObjectCommand({
           Bucket: bucketName,
           Key: videoKey,
+          Range: req.headers.range as string
         });
         
         const response = await s3Client.send(command);
-        console.log('R2 response received:', {
-          ContentType: response.ContentType,
-          ContentLength: response.ContentLength,
-          hasBody: !!response.Body
-        });
+        console.log('📦 S3 fallback successful');
         
-        // Set appropriate content type and headers for media streaming
+        // Set headers
+        const isVideo = videoKey.toLowerCase().includes('.mp4') || videoKey.toLowerCase().includes('.webm') || videoKey.toLowerCase().includes('.mov');
         res.header('Content-Type', response.ContentType || (isVideo ? 'video/mp4' : 'audio/mp3'));
         res.header('Accept-Ranges', 'bytes');
         res.header('Cache-Control', 'public, max-age=3600, immutable');
-        res.header('ETag', `"${videoKey}-${response.ContentLength}"`);
         
         if (response.ContentLength) {
           res.header('Content-Length', response.ContentLength.toString());
         }
         
+        if (req.headers.range) {
+          res.status(206);
+        }
+        
         if (response.Body) {
           const stream = response.Body as any;
-          
-          // For large videos, we should avoid full file downloads - suggest range requests
-          if (isLargeVideo && response.ContentLength && response.ContentLength > 50 * 1024 * 1024) {
-            console.warn(`⚠️ Full download requested for large video ${videoKey} (${Math.round(response.ContentLength / 1024 / 1024)}MB) - this may cause memory issues`);
-            
-            // Suggest range request to client
-            res.header('Accept-Ranges', 'bytes');
-            res.header('X-Large-File-Warning', 'Consider using range requests for better performance');
-          }
-          
-          stream.on('error', (streamError: any) => {
-            console.error(`❌ Full stream error for ${videoKey} (${isLargeVideo ? 'large video' : 'regular'}):`, {
-              error: streamError.message,
-              code: streamError.code,
-              contentLength: response.ContentLength
-            });
-            if (!res.headersSent) {
-              res.status(500).json({ error: 'Stream error', details: streamError.message });
-            }
-          });
-          
-          // Handle connection close for full downloads
-          req.on('close', () => {
-            if (isLargeVideo) {
-              console.log(`🔌 Client disconnected from full large video: ${videoKey}`);
-            }
-            if (stream.destroy) stream.destroy();
-          });
-          
           stream.pipe(res);
         } else {
-          console.error('No body in R2 response');
           res.status(404).json({ error: 'Video not found' });
         }
-      }
-      
-    } catch (error) {
-      const errorDetails = {
-        videoKey: videoKey || 'unknown',
-        isVideo,
-        isLargeVideo,
-        errorName: (error as Error).name,
-        errorMessage: (error as Error).message,
-        errorCode: (error as any).Code,
-        httpStatusCode: (error as any).$metadata?.httpStatusCode,
-        timestamp: new Date().toISOString()
-      };
-      
-      console.error(`❌ Video proxy error:`, errorDetails);
-      
-      if (!res.headersSent) {
-        // Enhanced error messages for large video debugging
-        if ((error as any).$metadata?.httpStatusCode === 404) {
-          res.status(404).json({ 
-            error: 'Video not found',
-            details: 'The requested video file does not exist.' 
-          });
-        } else if ((error as Error).name === 'TimeoutError' || (error as any).code === 'ETIMEDOUT') {
-          res.status(504).json({ 
-            error: 'Video loading timeout',
-            details: isLargeVideo ? 'Large video file timed out - try refreshing or use a faster connection' : 'Video loading timed out' 
-          });
-        } else if ((error as Error).message?.includes('memory') || (error as Error).message?.includes('ENOMEM')) {
-          res.status(503).json({ 
-            error: 'Server memory limit',
-            details: 'Video file too large for current server resources - please try again later' 
-          });
-        } else {
-          res.status(500).json({ 
-            error: 'Failed to proxy video',
-            details: (error as Error).message,
-            isLargeFile: isLargeVideo
-          });
-        }
+        
+      } catch (s3Error) {
+        console.error('❌ S3 fallback failed:', (s3Error as Error).message);
+        res.status(500).json({ 
+          error: 'Video proxy failed',
+          details: 'Both public endpoint and S3 fallback failed'
+        });
       }
     }
   });
