@@ -483,38 +483,55 @@ ${new Date().toISOString().split('T')[0]}`;
       
       console.log('🎬 HEAD: Video proxy request for:', videoKey, 'bucketName:', bucketName);
       
-      // Fast path for public buckets - no credentials needed
-      if (bucketName.startsWith('pub-')) {
-        console.log('🚀 HEAD: Public bucket fast path for:', videoKey);
-        const upstreamUrl = `https://${bucketName}.r2.dev/${videoKey}`;
-        
-        const upstreamResponse = await fetch(upstreamUrl, {
+      // PRODUCTION FIX: Always try public endpoint first, regardless of bucket name
+      const knownPublicBucket = 'pub-b3498cd071e1420b9d379a5510ba4bb8';
+      const publicUrl = `https://${knownPublicBucket}.r2.dev/${videoKey}`;
+      
+      console.log('🔧 HEAD: Trying public endpoint first for production compatibility');
+      console.log('🔧 HEAD: Public URL:', publicUrl);
+      
+      try {
+        const upstreamResponse = await fetch(publicUrl, {
           method: 'HEAD',
           headers: {
             'Range': req.headers.range || ''
           }
         });
         
-        console.log('HEAD upstream response:', upstreamResponse.status, upstreamResponse.statusText);
+        console.log('🌐 HEAD: Public response:', upstreamResponse.status, upstreamResponse.statusText);
         
-        // Set CORS headers
-        res.header('Access-Control-Allow-Origin', '*');
-        res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
-        res.header('Access-Control-Allow-Headers', 'Range, Content-Type');
-        res.header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
-        
-        // Copy relevant headers from upstream
-        const contentType = upstreamResponse.headers.get('content-type') || 'video/mp4';
-        const contentLength = upstreamResponse.headers.get('content-length') || '0';
-        const acceptRanges = upstreamResponse.headers.get('accept-ranges') || 'bytes';
-        const cacheControl = upstreamResponse.headers.get('cache-control') || 'public, max-age=3600, immutable';
-        
-        res.header('Content-Type', contentType);
-        res.header('Content-Length', contentLength);
-        res.header('Accept-Ranges', acceptRanges);
-        res.header('Cache-Control', cacheControl);
-        
-        return res.status(upstreamResponse.status).end();
+        if (upstreamResponse.ok) {
+          console.log('✅ HEAD: SUCCESS using public endpoint');
+          
+          // Set CORS headers
+          res.header('Access-Control-Allow-Origin', '*');
+          res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+          res.header('Access-Control-Allow-Headers', 'Range, Content-Type');
+          res.header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
+          
+          // Copy relevant headers from upstream
+          const contentType = upstreamResponse.headers.get('content-type') || 'video/mp4';
+          const contentLength = upstreamResponse.headers.get('content-length') || '0';
+          const acceptRanges = upstreamResponse.headers.get('accept-ranges') || 'bytes';
+          const cacheControl = upstreamResponse.headers.get('cache-control') || 'public, max-age=3600, immutable';
+          
+          res.header('Content-Type', contentType);
+          res.header('Content-Length', contentLength);
+          res.header('Accept-Ranges', acceptRanges);
+          res.header('Cache-Control', cacheControl);
+          
+          return res.status(upstreamResponse.status).end();
+        } else {
+          console.log('⚠️ HEAD: Public endpoint failed, falling back to private S3...', {
+            status: upstreamResponse.status,
+            statusText: upstreamResponse.statusText
+          });
+        }
+      } catch (publicHeadError) {
+        console.error('❌ HEAD: Public endpoint error, falling back to private S3:', {
+          error: (publicHeadError as Error).message,
+          code: (publicHeadError as any).code
+        });
       }
       
       // Fallback to S3 SDK for private buckets
@@ -677,19 +694,99 @@ ${new Date().toISOString().split('T')[0]}`;
       const { S3Client, GetObjectCommand, HeadObjectCommand } = await import('@aws-sdk/client-s3');
       
       // Production-optimized configuration for large video files
-      // Check if we should use public R2 dev endpoint based on bucket format
-      const isPublicR2 = bucketName.startsWith('pub-') || process.env.CLOUDFLARE_R2_PUBLIC_ENDPOINT;
-      const endpoint = isPublicR2 
-        ? `https://${bucketName}.r2.dev` 
-        : `https://${accountId}.r2.cloudflarestorage.com`;
+      // PRODUCTION FIX: Always try public endpoint first, regardless of bucket name
+      const knownPublicBucket = 'pub-b3498cd071e1420b9d379a5510ba4bb8';
+      const publicEndpoint = `https://${knownPublicBucket}.r2.dev/${videoKey}`;
       
-      console.log('🔧 R2 Endpoint configuration:', {
-        bucketName,
-        isPublicR2,
-        endpoint,
-        accountId: accountId?.substring(0, 8) + '...',
-        credentialsValid: !!(accountId && accessKeyId && secretAccessKey)
+      console.log('🔧 R2 Strategy: Trying public endpoint first for production compatibility');
+      console.log('🔧 Public endpoint:', publicEndpoint);
+      console.log('🔧 Bucket config debug:', {
+        envBucketName: bucketName,
+        usingKnownPublic: knownPublicBucket,
+        accountId: accountId?.substring(0, 8) + '...'
       });
+      
+      // TRY PUBLIC ENDPOINT FIRST
+      try {
+        console.log('🌐 Attempting public R2 endpoint first...');
+        const publicResponse = await fetch(publicEndpoint, {
+          method: 'GET',
+          headers: req.headers.range ? { 'Range': req.headers.range } : {}
+        });
+        
+        console.log('🌐 Public R2 response:', {
+          status: publicResponse.status,
+          statusText: publicResponse.statusText,
+          contentType: publicResponse.headers.get('content-type'),
+          contentLength: publicResponse.headers.get('content-length')
+        });
+        
+        if (publicResponse.ok) {
+          console.log('✅ SUCCESS: Using public R2 endpoint');
+          
+          // Forward all important headers
+          res.header('Access-Control-Allow-Origin', '*');
+          res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+          res.header('Access-Control-Allow-Headers', 'Range, Content-Type');
+          res.header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
+          
+          // Copy headers from upstream
+          const contentType = publicResponse.headers.get('content-type');
+          const contentLength = publicResponse.headers.get('content-length');
+          const contentRange = publicResponse.headers.get('content-range');
+          const acceptRanges = publicResponse.headers.get('accept-ranges');
+          const cacheControl = publicResponse.headers.get('cache-control');
+          const etag = publicResponse.headers.get('etag');
+          
+          if (contentType) res.header('Content-Type', contentType);
+          if (contentLength) res.header('Content-Length', contentLength);
+          if (contentRange) res.header('Content-Range', contentRange);
+          if (acceptRanges) res.header('Accept-Ranges', acceptRanges);
+          if (cacheControl) res.header('Cache-Control', cacheControl);
+          if (etag) res.header('ETag', etag);
+          
+          // Set status and stream response
+          res.status(publicResponse.status);
+          
+          if (publicResponse.body) {
+            const reader = publicResponse.body.getReader();
+            const pump = async () => {
+              try {
+                while (true) {
+                  const { done, value } = await reader.read();
+                  if (done) break;
+                  res.write(value);
+                }
+                res.end();
+              } catch (streamError) {
+                console.error('❌ Public stream error:', streamError);
+                if (!res.headersSent) {
+                  res.status(500).json({ error: 'Stream error', details: (streamError as Error).message });
+                }
+              }
+            };
+            await pump();
+            return;
+          } else {
+            res.end();
+            return;
+          }
+        } else {
+          console.log('⚠️ Public endpoint failed, falling back to private S3...', {
+            status: publicResponse.status,
+            statusText: publicResponse.statusText
+          });
+        }
+      } catch (publicError) {
+        console.error('❌ Public endpoint error, falling back to private S3:', {
+          error: (publicError as Error).message,
+          code: (publicError as any).code
+        });
+      }
+      
+      // FALLBACK TO PRIVATE S3 SDK IF PUBLIC FAILED
+      console.log('🔄 Falling back to private S3 SDK...');
+      const endpoint = `https://${accountId}.r2.cloudflarestorage.com`;
       
       const s3Client = new S3Client({
         region: 'auto',

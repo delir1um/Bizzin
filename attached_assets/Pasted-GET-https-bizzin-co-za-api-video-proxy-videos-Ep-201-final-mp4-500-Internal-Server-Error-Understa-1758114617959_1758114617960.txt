@@ -1,0 +1,32 @@
+GET https://bizzin.co.za/api/video-proxy/videos/Ep%201_final.mp4 500 (Internal Server Error)Understand this error
+index-CrKwPchS.js:1675 🔍 [CLICK LOG] PodcastPlayer - Audio toggle clicked: {episodeId: '6462c1f1-b4a3-4af1-8eb7-f9d9be2b7f8d', title: 'EP01', previousMediaType: 'video', newMediaType: 'audio', currentTime: 393, …}
+index-CrKwPchS.js:1675  HEAD https://bizzin.co.za/api/video-proxy/audio/Ep%201_final.mp3 404 (Not Found)
+AWe @ index-CrKwPchS.js:1675
+(anonymous) @ index-CrKwPchS.js:1675
+await in (anonymous)
+(anonymous) @ index-CrKwPchS.js:1675
+zd @ index-CrKwPchS.js:161
+Iye @ index-CrKwPchS.js:174
+Oye @ index-CrKwPchS.js:174
+Rye @ index-CrKwPchS.js:174
+Mye @ index-CrKwPchS.js:174
+x1e @ index-CrKwPchS.js:174
+km @ index-CrKwPchS.js:174
+b1e @ index-CrKwPchS.js:174
+Ff @ index-CrKwPchS.js:174
+bz @ index-CrKwPchS.js:174
+Rd @ index-CrKwPchS.js:91
+(anonymous) @ index-CrKwPchS.js:174Understand this error
+index-CrKwPchS.js:1675 🔄 Audio file not in organized path, trying fallback: /api/video-proxy/videos/Ep 1_final.mp3
+index-CrKwPchS.js:1675 ✅ Audio file found in legacy path: /api/video-proxy/videos/Ep 1_final.mp3
+index-CrKwPchS.js:1675 🎵 Final audio source determined: /api/video-proxy/videos/Ep 1_final.mp3
+index-CrKwPchS.js:1675 Setting final audio source: https://bizzin.co.za/api/video-proxy/videos/Ep 1_final.mp3
+index-CrKwPchS.js:1675 Audio metadata loaded, duration: 719.358667
+index-CrKwPchS.js:1675 Audio data loaded - ready for playback
+index-CrKwPchS.js:1675 Audio can play through without buffering
+index-CrKwPchS.js:1675 Audio ready for playback
+index-CrKwPchS.js:1675 🔍 [CLICK LOG] PodcastPlayer - Video toggle clicked: {episodeId: '6462c1f1-b4a3-4af1-8eb7-f9d9be2b7f8d', title: 'EP01', previousMediaType: 'audio', newMediaType: 'video', currentTime: 393, …}
+index-CrKwPchS.js:1675 Audio buffered: 401 seconds
+index-CrKwPchS.js:1675 Audio buffered: 507 seconds
+index-CrKwPchS.js:1675 Audio buffered: 603 seconds
+Ep%201_final.mp4:1  GET https://bizzin.co.za/api/video-proxy/videos/Ep%201_final.mp4 500 (Internal Server Error)Understand this error
