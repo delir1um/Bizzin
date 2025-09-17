@@ -465,47 +465,70 @@ export function JournalPage() {
 
   // Calculate enhanced statistics
   const calculateStats = () => {
-    // Calculate writing streak
+    // Calculate writing streak - improved logic for consecutive days
     const sortedEntries = [...entries].sort((a, b) => 
       new Date(b.entry_date || b.created_at || '').getTime() - 
       new Date(a.entry_date || a.created_at || '').getTime()
     )
     
     let streak = 0
-    const today = new Date()
+    const today = startOfDay(new Date())
     let checkDate = new Date(today)
     
-    for (let i = 0; i < 30; i++) { // Check last 30 days
+    // First check if there's an entry today, if not, start from yesterday
+    const hasEntryToday = sortedEntries.some(entry => {
+      const entryDate = startOfDay(new Date(entry.entry_date || entry.created_at || ''))
+      return entryDate.getTime() === today.getTime()
+    })
+    
+    if (!hasEntryToday) {
+      // If no entry today, start checking from yesterday
+      checkDate.setDate(checkDate.getDate() - 1)
+    }
+    
+    // Check consecutive days (up to 365 days to handle long streaks)
+    for (let i = 0; i < 365; i++) {
       const hasEntry = sortedEntries.some(entry => {
-        const entryDate = new Date(entry.entry_date || entry.created_at || '')
-        return entryDate.toDateString() === checkDate.toDateString()
+        const entryDate = startOfDay(new Date(entry.entry_date || entry.created_at || ''))
+        return entryDate.getTime() === checkDate.getTime()
       })
       
       if (hasEntry) {
         streak++
-      } else if (streak > 0) {
+        checkDate.setDate(checkDate.getDate() - 1) // Move to previous day
+      } else {
         break // Streak broken
       }
-      
-      checkDate.setDate(checkDate.getDate() - 1)
     }
     
-    // Calculate dominant mood
+    // Calculate dominant mood - improved to handle capitalization
     const moodCounts = entries.reduce((acc, entry) => {
-      const mood = entry.mood || entry.sentiment_data?.primary_mood
+      let mood = entry.mood || entry.sentiment_data?.primary_mood
       if (mood) {
+        // Normalize mood to lowercase for consistent counting
+        mood = mood.toLowerCase()
         acc[mood] = (acc[mood] || 0) + 1
       }
       return acc
     }, {} as Record<string, number>)
     
-    const dominantMood = Object.entries(moodCounts)
-      .sort((a, b) => (b[1] as number) - (a[1] as number))[0]?.[0] || 'Mixed'
+    const dominantMoodEntry = Object.entries(moodCounts)
+      .sort((a, b) => (b[1] as number) - (a[1] as number))[0]
     
-    // Calculate business growth entries (Achievement, Growth categories)
+    // Capitalize first letter for display, fallback to 'Mixed'
+    const dominantMood = dominantMoodEntry 
+      ? dominantMoodEntry[0].charAt(0).toUpperCase() + dominantMoodEntry[0].slice(1)
+      : 'Mixed'
+    
+    // Calculate business growth entries - FIXED: use lowercase categories
     const growthEntries = entries.filter(entry => {
-      const category = entry.category || entry.sentiment_data?.business_category
-      return category === 'Achievement' || category === 'Growth' || category === 'Success'
+      const category = (entry.category || entry.sentiment_data?.business_category || '').toLowerCase()
+      // Include all growth-related categories that indicate business progress
+      return category === 'achievement' || 
+             category === 'growth' || 
+             category === 'success' ||
+             category === 'planning' || // Strategic business planning
+             category === 'learning'    // Business learning and development
     }).length
     
     // Calculate average confidence
