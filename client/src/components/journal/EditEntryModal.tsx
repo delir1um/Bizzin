@@ -81,8 +81,8 @@ export function EditEntryModal({ isOpen, onClose, entry, onDeleteEntry }: EditEn
         title: entry.title || "",
         content: entry.content || "",
         entry_date: entry.entry_date ? format(new Date(entry.entry_date), 'yyyy-MM-dd') : (entry.created_at ? format(new Date(entry.created_at), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')),
-        mood: entry.mood || "",
-        category: entry.category || "",
+        mood: entry.mood || entry.sentiment_data?.primary_mood || "",
+        category: entry.category || entry.sentiment_data?.business_category || "",
       })
     }
   }, [entry?.id, isOpen, reset]) // Only depend on entry.id and isOpen, not displayData
