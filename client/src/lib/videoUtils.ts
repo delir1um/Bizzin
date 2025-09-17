@@ -8,10 +8,19 @@
 export function convertToProxyUrl(videoUrl: string): string {
   if (!videoUrl) return videoUrl;
   
-  // DIRECT R2 APPROACH: Return R2 URLs directly, no proxy conversion
+  // CONVERT ALL R2 URLs TO PUBLIC R2 (both private and public)
   if (videoUrl.includes('.r2.cloudflarestorage.com/') || videoUrl.includes('.r2.dev/')) {
-    console.log('🔗 Using direct R2 URL:', videoUrl);
-    return videoUrl; // Return the R2 URL directly
+    // Extract the key (path) from any R2 URL
+    try {
+      const url = new URL(videoUrl);
+      const key = url.pathname.substring(1); // Remove leading slash
+      const publicUrl = `https://pub-b3498cd071e1420b9d379a5510ba4bb8.r2.dev/${key}`;
+      console.log('🔄 Converting R2 URL to public:', videoUrl, '->', publicUrl);
+      return publicUrl;
+    } catch (error) {
+      console.warn('Failed to parse R2 URL:', videoUrl);
+      return videoUrl;
+    }
   }
   
   // Convert proxy URLs back to direct R2 URLs if needed
@@ -33,10 +42,19 @@ export function convertToProxyUrl(videoUrl: string): string {
 export function convertToProxyUrlWithFallback(videoUrl: string, preferredMediaType?: 'audio' | 'video'): string {
   if (!videoUrl) return videoUrl;
   
-  // DIRECT R2 APPROACH: Return R2 URLs directly
+  // CONVERT ALL R2 URLs TO PUBLIC R2 (both private and public)
   if (videoUrl.includes('.r2.cloudflarestorage.com/') || videoUrl.includes('.r2.dev/')) {
-    console.log('🔗 Using direct R2 URL with fallback:', videoUrl);
-    return videoUrl; // Return the R2 URL directly
+    // Extract the key (path) from any R2 URL
+    try {
+      const url = new URL(videoUrl);
+      const key = url.pathname.substring(1); // Remove leading slash
+      const publicUrl = `https://pub-b3498cd071e1420b9d379a5510ba4bb8.r2.dev/${key}`;
+      console.log('🔄 Converting R2 URL to public with fallback:', videoUrl, '->', publicUrl);
+      return publicUrl;
+    } catch (error) {
+      console.warn('Failed to parse R2 URL:', videoUrl);
+      return videoUrl;
+    }
   }
   
   // Convert proxy URLs to direct R2 URLs
