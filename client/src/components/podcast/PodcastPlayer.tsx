@@ -166,6 +166,10 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
             
             audioRef.current.addEventListener('canplay', () => {
               setIsAudioLoading(false)
+              // Auto-play if switching to audio while playing
+              if (isPlaying && !isVideoEpisode) {
+                audioRef.current?.play().catch(console.error)
+              }
             })
             
             audioRef.current.addEventListener('loadedmetadata', () => {
@@ -178,6 +182,10 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
             audioRef.current.addEventListener('loadeddata', () => {
               setIsAudioLoading(false)
               console.log('Audio data loaded - ready for playback')
+              // Auto-play if switching to audio while playing
+              if (isPlaying && !isVideoEpisode) {
+                audioRef.current?.play().catch(console.error)
+              }
             })
             
             audioRef.current.addEventListener('canplaythrough', () => {
@@ -473,10 +481,15 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                         hasVideo,
                         hasBothFormats
                       });
+                      const wasPlaying = isPlaying
                       setCurrentMediaType('video')
                       // Pause audio when switching to video
                       if (audioRef.current) {
                         audioRef.current.pause()
+                      }
+                      // Maintain playing state when switching to video
+                      if (wasPlaying) {
+                        setIsPlaying(true)
                       }
                     }}
                     className={`px-2 py-1 text-xs rounded ${
@@ -504,11 +517,9 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
                       });
                       const wasPlaying = isPlaying
                       setCurrentMediaType('audio')
-                      // Continue with the same progress when switching to audio
-                      // Auto-start audio playback when user explicitly switches to audio mode
-                      if (!wasPlaying) {
-                        setIsPlaying(true) // Start audio automatically when user clicks audio toggle
-                      }
+                      // Maintain playing state when switching to audio
+                      // If it was playing, continue playing; if not, start audio automatically
+                      setIsPlaying(true)
                     }}
                     className={`px-2 py-1 text-xs rounded ${
                       currentMediaType === 'audio'
