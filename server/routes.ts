@@ -525,11 +525,12 @@ ${new Date().toISOString().split('T')[0]}`;
   app.get('/api/video-proxy/:videoKey(*)', async (req, res) => {
     let videoKey = '';
     let isVideo = false;
+    let isLargeVideo = false; // Define at function scope to fix LSP errors
     
     try {
       videoKey = req.params.videoKey;
       isVideo = videoKey.toLowerCase().includes('.mp4') || videoKey.toLowerCase().includes('.webm') || videoKey.toLowerCase().includes('.mov');
-      console.log('Video proxy request for:', videoKey, 'isVideo:', isVideo);
+      console.log('🎬 Video proxy request for:', videoKey, 'isVideo:', isVideo, 'environment:', process.env.NODE_ENV, 'timestamp:', new Date().toISOString());
       
       // Validate environment variables - try both VITE_ prefixed and non-prefixed versions
       const accountId = process.env.VITE_CLOUDFLARE_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID;
@@ -555,11 +556,12 @@ ${new Date().toISOString().split('T')[0]}`;
         ? `https://${bucketName}.r2.dev` 
         : `https://${accountId}.r2.cloudflarestorage.com`;
       
-      console.log('R2 Endpoint configuration:', {
+      console.log('🔧 R2 Endpoint configuration:', {
         bucketName,
         isPublicR2,
         endpoint,
-        accountId: accountId?.substring(0, 8) + '...'
+        accountId: accountId?.substring(0, 8) + '...',
+        credentialsValid: !!(accountId && accessKeyId && secretAccessKey)
       });
       
       const s3Client = new S3Client({
@@ -574,7 +576,8 @@ ${new Date().toISOString().split('T')[0]}`;
       });
       
       // Handle large video files differently in production
-      const isLargeVideo = isVideo && (videoKey.includes('.mp4') || videoKey.includes('.webm'));
+      isLargeVideo = isVideo && (videoKey.includes('.mp4') || videoKey.includes('.webm'));
+      console.log('Video handling setup:', { isVideo, isLargeVideo, videoKey, accountId: accountId?.substring(0, 8) + '...' });
       if (isLargeVideo) {
         console.log(`🎬 Large video detected: ${videoKey}, applying production optimizations`);
       }
@@ -744,7 +747,7 @@ ${new Date().toISOString().split('T')[0]}`;
       const errorDetails = {
         videoKey: videoKey || 'unknown',
         isVideo,
-        isLargeVideo: (typeof isLargeVideo !== 'undefined') ? isLargeVideo : false,
+        isLargeVideo,
         errorName: (error as Error).name,
         errorMessage: (error as Error).message,
         errorCode: (error as any).Code,
@@ -764,7 +767,7 @@ ${new Date().toISOString().split('T')[0]}`;
         } else if ((error as Error).name === 'TimeoutError' || (error as any).code === 'ETIMEDOUT') {
           res.status(504).json({ 
             error: 'Video loading timeout',
-            details: ((typeof isLargeVideo !== 'undefined') && isLargeVideo) ? 'Large video file timed out - try refreshing or use a faster connection' : 'Video loading timed out' 
+            details: isLargeVideo ? 'Large video file timed out - try refreshing or use a faster connection' : 'Video loading timed out' 
           });
         } else if ((error as Error).message?.includes('memory') || (error as Error).message?.includes('ENOMEM')) {
           res.status(503).json({ 
@@ -775,7 +778,7 @@ ${new Date().toISOString().split('T')[0]}`;
           res.status(500).json({ 
             error: 'Failed to proxy video',
             details: (error as Error).message,
-            isLargeFile: (typeof isLargeVideo !== 'undefined') ? isLargeVideo : false
+            isLargeFile: isLargeVideo
           });
         }
       }
