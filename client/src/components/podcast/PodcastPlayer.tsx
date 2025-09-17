@@ -313,10 +313,18 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
     }
   }, [volume, isMuted, playbackSpeed, isVideoEpisode])
 
-  // Save progress when component unmounts (player closed)
+  // Track if progress was already saved during intentional close
+  const progressSavedRef = useRef(false)
+  
+  // Reset progress saved flag when episode changes
+  useEffect(() => {
+    progressSavedRef.current = false
+  }, [episode.id])
+
+  // Save progress when component unmounts (player closed) - only if not already saved
   useEffect(() => {
     return () => {
-      if (currentTime > 0) {
+      if (currentTime > 0 && !progressSavedRef.current) {
         console.log('🔚 [UNMOUNT SAVE] Saving progress on unmount:', {
           episodeId: episode.id,
           currentTime,
@@ -361,6 +369,10 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
         isVideoEpisode,
         mediaType: isVideoEpisode ? 'video' : 'audio'
       });
+      
+      // Mark that progress has been saved to prevent double save on unmount
+      progressSavedRef.current = true
+      
       updateProgress.mutate({
         episodeId: episode.id,
         progressSeconds: Math.floor(currentTime),
