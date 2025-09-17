@@ -476,276 +476,35 @@ ${new Date().toISOString().split('T')[0]}`;
   });
 
   // Handle HEAD requests for video proxy (for preloading)
-  app.head('/api/video-proxy/:videoKey(*)', async (req, res) => {
-    try {
-      const videoKey = req.params.videoKey;
-      const bucketName = process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || process.env.CLOUDFLARE_R2_BUCKET_NAME || 'pub-b3498cd071e1420b9d379a5510ba4bb8';
-      
-      console.log('🎬 HEAD: Video proxy request for:', videoKey, 'bucketName:', bucketName);
-      
-      // PRODUCTION FIX: Always try public endpoint first, regardless of bucket name
-      const knownPublicBucket = 'pub-b3498cd071e1420b9d379a5510ba4bb8';
-      const publicUrl = `https://${knownPublicBucket}.r2.dev/${videoKey}`;
-      
-      console.log('🔧 HEAD: Trying public endpoint first for production compatibility');
-      console.log('🔧 HEAD: Public URL:', publicUrl);
-      
-      try {
-        const upstreamResponse = await fetch(publicUrl, {
-          method: 'HEAD',
-          headers: {
-            'Range': req.headers.range || ''
-          }
-        });
-        
-        console.log('🌐 HEAD: Public response:', upstreamResponse.status, upstreamResponse.statusText);
-        
-        if (upstreamResponse.ok) {
-          console.log('✅ HEAD: SUCCESS using public endpoint');
-          
-          // Set CORS headers
-          res.header('Access-Control-Allow-Origin', '*');
-          res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
-          res.header('Access-Control-Allow-Headers', 'Range, Content-Type');
-          res.header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
-          
-          // Copy relevant headers from upstream
-          const contentType = upstreamResponse.headers.get('content-type') || 'video/mp4';
-          const contentLength = upstreamResponse.headers.get('content-length') || '0';
-          const acceptRanges = upstreamResponse.headers.get('accept-ranges') || 'bytes';
-          const cacheControl = upstreamResponse.headers.get('cache-control') || 'public, max-age=3600, immutable';
-          
-          res.header('Content-Type', contentType);
-          res.header('Content-Length', contentLength);
-          res.header('Accept-Ranges', acceptRanges);
-          res.header('Cache-Control', cacheControl);
-          
-          return res.status(upstreamResponse.status).end();
-        } else {
-          console.log('⚠️ HEAD: Public endpoint failed, falling back to private S3...', {
-            status: upstreamResponse.status,
-            statusText: upstreamResponse.statusText
-          });
-        }
-      } catch (publicHeadError) {
-        console.error('❌ HEAD: Public endpoint error, falling back to private S3:', {
-          error: (publicHeadError as Error).message,
-          code: (publicHeadError as any).code
-        });
-      }
-      
-      // Fallback to S3 SDK for private buckets
-      console.log('📦 HEAD: Private bucket path for:', videoKey);
-      const accountId = process.env.VITE_CLOUDFLARE_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID;
-      const accessKeyId = process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID || process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
-      const secretAccessKey = process.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY || process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
-      
-      if (!accountId || !accessKeyId || !secretAccessKey) {
-        console.error('Private bucket HEAD request missing credentials');
-        return res.status(500).end();
-      }
-      
-      const { S3Client, HeadObjectCommand } = await import('@aws-sdk/client-s3');
-      const s3Client = new S3Client({
-        region: 'auto',
-        endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-        credentials: {
-          accessKeyId,
-          secretAccessKey,
-        }
-      });
-      
-      const command = new HeadObjectCommand({
-        Bucket: bucketName,
-        Key: videoKey,
-      });
-      
-      const response = await s3Client.send(command);
-      
-      // Set headers for HEAD request
-      res.header('Access-Control-Allow-Origin', '*');
-      res.header('Content-Type', response.ContentType || 'video/mp4');
-      res.header('Content-Length', response.ContentLength?.toString() || '0');
-      res.header('Accept-Ranges', 'bytes');
-      res.header('Cache-Control', 'public, max-age=3600, immutable');
-      res.status(200).end();
-      
-    } catch (error) {
-      console.error('HEAD request error:', error);
-      res.status(404).end();
-    }
+  app.head('/api/video-proxy/:videoKey(*)', (req, res) => {
+    const videoKey = req.params.videoKey;
+    const publicUrl = `https://pub-b3498cd071e1420b9d379a5510ba4bb8.r2.dev/${encodeURI(videoKey)}`;
+    
+    console.log('🔄 HEAD REDIRECT: Redirecting to public R2:', publicUrl);
+    
+    // Set CORS headers
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Range, Content-Type');
+    
+    // 302 redirect to public R2 URL
+    res.redirect(302, publicUrl);
   });
 
   // Video proxy endpoint to serve R2 videos with CORS headers
-  app.get('/api/video-proxy/:videoKey(*)', async (req, res) => {
+  app.get('/api/video-proxy/:videoKey(*)', (req, res) => {
     const videoKey = req.params.videoKey;
-    console.log('🎬 Video proxy request for:', videoKey);
+    const publicUrl = `https://pub-b3498cd071e1420b9d379a5510ba4bb8.r2.dev/${encodeURI(videoKey)}`;
     
-    // ALWAYS try public endpoint first (production strategy)
-    const publicUrl = `https://pub-b3498cd071e1420b9d379a5510ba4bb8.r2.dev/${videoKey}`;
+    console.log('🔄 GET REDIRECT: Redirecting to public R2:', publicUrl);
     
-    try {
-      // Build fetch headers
-      const upstreamHeaders: HeadersInit = {};
-      if (req.headers.range) {
-        upstreamHeaders['Range'] = req.headers.range as string;
-      }
-      
-      console.log('🌐 Trying public endpoint:', publicUrl);
-      const upstreamResponse = await fetch(publicUrl, {
-        method: 'GET',
-        headers: upstreamHeaders
-      });
-      
-      console.log('🌐 Public endpoint response:', upstreamResponse.status, upstreamResponse.statusText);
-      
-      // Set CORS headers for all responses
-      res.header('Access-Control-Allow-Origin', '*');
-      res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
-      res.header('Access-Control-Allow-Headers', 'Range, Content-Type');
-      res.header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
-      
-      if (upstreamResponse.ok) {
-        console.log('✅ SUCCESS: Public endpoint worked');
-        
-        // Copy relevant headers from upstream
-        const contentType = upstreamResponse.headers.get('content-type');
-        const contentLength = upstreamResponse.headers.get('content-length');
-        const contentRange = upstreamResponse.headers.get('content-range');
-        const acceptRanges = upstreamResponse.headers.get('accept-ranges');
-        const cacheControl = upstreamResponse.headers.get('cache-control');
-        const etag = upstreamResponse.headers.get('etag');
-        
-        if (contentType) res.header('Content-Type', contentType);
-        if (contentLength) res.header('Content-Length', contentLength);
-        if (contentRange) res.header('Content-Range', contentRange);
-        if (acceptRanges) res.header('Accept-Ranges', acceptRanges);
-        if (cacheControl) res.header('Cache-Control', cacheControl);
-        if (etag) res.header('ETag', etag);
-        
-        // Set status code from upstream
-        res.status(upstreamResponse.status);
-        
-        if (upstreamResponse.body) {
-          // Stream the response body
-          const reader = upstreamResponse.body.getReader();
-          
-          const pump = async () => {
-            try {
-              while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                
-                if (!res.destroyed) {
-                  res.write(Buffer.from(value));
-                }
-              }
-              if (!res.destroyed) {
-                res.end();
-              }
-            } catch (streamError) {
-              console.error('❌ Stream error for', videoKey, ':', streamError);
-              if (!res.destroyed && !res.headersSent) {
-                res.status(500).end();
-              }
-            }
-          };
-          
-          // Handle client disconnect
-          req.on('close', () => {
-            console.log('🔌 Client disconnected from proxy:', videoKey);
-            reader.cancel();
-          });
-          
-          req.on('error', () => {
-            reader.cancel();
-          });
-          
-          await pump();
-          return;
-        } else {
-          res.end();
-          return;
-        }
-      } else {
-        console.log('❌ Public endpoint failed:', upstreamResponse.status);
-        // Try S3 SDK fallback if credentials exist
-        throw new Error(`Public endpoint failed: ${upstreamResponse.status}`);
-      }
-      
-    } catch (publicError) {
-      console.error('❌ Public endpoint error, trying S3 fallback:', (publicError as Error).message);
-      
-      // Fallback to S3 SDK if credentials are available
-      const bucketName = process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || process.env.CLOUDFLARE_R2_BUCKET_NAME || 'pub-b3498cd071e1420b9d379a5510ba4bb8';
-      const accountId = process.env.VITE_CLOUDFLARE_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID;
-      const accessKeyId = process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID || process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
-      const secretAccessKey = process.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY || process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
-      
-      if (!accountId || !accessKeyId || !secretAccessKey) {
-        console.error('❌ No S3 credentials available for fallback');
-        return res.status(500).json({ 
-          error: 'Video proxy failed',
-          details: 'Public endpoint failed and no credentials for private bucket fallback'
-        });
-      }
-      
-      try {
-        const { S3Client, GetObjectCommand } = await import('@aws-sdk/client-s3');
-        
-        const s3Client = new S3Client({
-          region: 'auto',
-          endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-          credentials: {
-            accessKeyId,
-            secretAccessKey,
-          }
-        });
-        
-        // Set CORS headers
-        res.header('Access-Control-Allow-Origin', '*');
-        res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
-        res.header('Access-Control-Allow-Headers', 'Range, Content-Type');
-        res.header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
-        
-        const command = new GetObjectCommand({
-          Bucket: bucketName,
-          Key: videoKey,
-          Range: req.headers.range as string
-        });
-        
-        const response = await s3Client.send(command);
-        console.log('📦 S3 fallback successful');
-        
-        // Set headers
-        const isVideo = videoKey.toLowerCase().includes('.mp4') || videoKey.toLowerCase().includes('.webm') || videoKey.toLowerCase().includes('.mov');
-        res.header('Content-Type', response.ContentType || (isVideo ? 'video/mp4' : 'audio/mp3'));
-        res.header('Accept-Ranges', 'bytes');
-        res.header('Cache-Control', 'public, max-age=3600, immutable');
-        
-        if (response.ContentLength) {
-          res.header('Content-Length', response.ContentLength.toString());
-        }
-        
-        if (req.headers.range) {
-          res.status(206);
-        }
-        
-        if (response.Body) {
-          const stream = response.Body as any;
-          stream.pipe(res);
-        } else {
-          res.status(404).json({ error: 'Video not found' });
-        }
-        
-      } catch (s3Error) {
-        console.error('❌ S3 fallback failed:', (s3Error as Error).message);
-        res.status(500).json({ 
-          error: 'Video proxy failed',
-          details: 'Both public endpoint and S3 fallback failed'
-        });
-      }
-    }
+    // Set CORS headers
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Range, Content-Type');
+    
+    // 302 redirect to public R2 URL
+    res.redirect(302, publicUrl);
   });
 
   // R2 file listing endpoint
