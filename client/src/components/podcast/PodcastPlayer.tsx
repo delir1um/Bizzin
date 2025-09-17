@@ -434,7 +434,11 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
 
   const currentProgress = Math.min(PodcastService.getCompletionPercentage(currentTime, actualDuration), 100)
   const maxProgress = Math.min(PodcastService.getCompletionPercentage(maxProgressReached, actualDuration), 100)
-  const isCompleted = PodcastService.isEpisodeCompleted(maxProgressReached, actualDuration)
+  
+  // Check completion from both current session progress AND historical database record
+  const isCompletedFromCurrentSession = PodcastService.isEpisodeCompleted(maxProgressReached, actualDuration)
+  const isCompletedFromDatabase = existingProgress?.completed === true
+  const isCompleted = isCompletedFromCurrentSession || isCompletedFromDatabase
   
   // Display progress should show the maximum reached, not current position for completed episodes
   const displayProgress = isCompleted ? Math.max(maxProgress, 95) : currentProgress
