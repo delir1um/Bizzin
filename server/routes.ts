@@ -256,7 +256,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const accountId = process.env.VITE_CLOUDFLARE_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID;
       const accessKeyId = process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID || process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
       const secretAccessKey = process.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY || process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
-      const bucketName = process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || process.env.CLOUDFLARE_R2_BUCKET_NAME || 'bizzin-podcasts';
+      const bucketName = process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || process.env.CLOUDFLARE_R2_BUCKET_NAME || 'pub-b3498cd071e1420b9d379a5510ba4bb8';
       
       if (!accountId || !accessKeyId || !secretAccessKey) {
         console.error('Missing Cloudflare credentials:', {
@@ -288,7 +288,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         accessKeyLength: accessKeyId?.length || 0,
         secretKeyLength: secretAccessKey?.length || 0,
         accessKeyPrefix: process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID?.substring(0, 8) + '...',
-        bucketName: BUCKET_NAME
+        bucketName: bucketName
       })
 
       // Skip ListBuckets test - proceed directly to upload
@@ -297,10 +297,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Converting base64 to buffer...')
       const buffer = Buffer.from(fileData, 'base64')
       const fileExtension = fileName.split('.').pop()
-      const key = `videos/${episodeId}.${fileExtension}`
+      const isAudioFile = fileName.toLowerCase().includes('.mp3') || fileName.toLowerCase().includes('.wav') || fileName.toLowerCase().includes('.m4a')
+      const folder = isAudioFile ? 'audio' : 'videos'
+      const key = `${folder}/${episodeId}.${fileExtension}`
+      
+      console.log(`File organization: ${fileName} -> ${folder}/ (isAudio: ${isAudioFile})`)
       
       console.log('Upload details:', {
-        bucket: BUCKET_NAME,
+        bucket: bucketName,
         key,
         bufferSize: buffer.length
       })
@@ -480,7 +484,7 @@ ${new Date().toISOString().split('T')[0]}`;
       const accountId = process.env.VITE_CLOUDFLARE_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID;
       const accessKeyId = process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID || process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
       const secretAccessKey = process.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY || process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
-      const bucketName = process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || process.env.CLOUDFLARE_R2_BUCKET_NAME || 'bizzin-podcasts';
+      const bucketName = process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || process.env.CLOUDFLARE_R2_BUCKET_NAME || 'pub-b3498cd071e1420b9d379a5510ba4bb8';
       
       if (!accountId || !accessKeyId || !secretAccessKey) {
         return res.status(500).end();
@@ -531,7 +535,7 @@ ${new Date().toISOString().split('T')[0]}`;
       const accountId = process.env.VITE_CLOUDFLARE_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID;
       const accessKeyId = process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID || process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
       const secretAccessKey = process.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY || process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
-      const bucketName = process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || process.env.CLOUDFLARE_R2_BUCKET_NAME || 'bizzin-podcasts';
+      const bucketName = process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || process.env.CLOUDFLARE_R2_BUCKET_NAME || 'pub-b3498cd071e1420b9d379a5510ba4bb8';
       
       if (!accountId || !accessKeyId || !secretAccessKey) {
         console.error('Missing Cloudflare credentials:', {
@@ -545,9 +549,22 @@ ${new Date().toISOString().split('T')[0]}`;
       const { S3Client, GetObjectCommand, HeadObjectCommand } = await import('@aws-sdk/client-s3');
       
       // Production-optimized configuration for large video files
+      // Check if we should use public R2 dev endpoint based on bucket format
+      const isPublicR2 = bucketName.startsWith('pub-') || process.env.CLOUDFLARE_R2_PUBLIC_ENDPOINT;
+      const endpoint = isPublicR2 
+        ? `https://${bucketName}.r2.dev` 
+        : `https://${accountId}.r2.cloudflarestorage.com`;
+      
+      console.log('R2 Endpoint configuration:', {
+        bucketName,
+        isPublicR2,
+        endpoint,
+        accountId: accountId?.substring(0, 8) + '...'
+      });
+      
       const s3Client = new S3Client({
         region: 'auto',
-        endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+        endpoint,
         credentials: {
           accessKeyId,
           secretAccessKey,
@@ -727,7 +744,7 @@ ${new Date().toISOString().split('T')[0]}`;
       const errorDetails = {
         videoKey: videoKey || 'unknown',
         isVideo,
-        isLargeVideo: isLargeVideo || false,
+        isLargeVideo: (typeof isLargeVideo !== 'undefined') ? isLargeVideo : false,
         errorName: (error as Error).name,
         errorMessage: (error as Error).message,
         errorCode: (error as any).Code,
@@ -747,7 +764,7 @@ ${new Date().toISOString().split('T')[0]}`;
         } else if ((error as Error).name === 'TimeoutError' || (error as any).code === 'ETIMEDOUT') {
           res.status(504).json({ 
             error: 'Video loading timeout',
-            details: isLargeVideo ? 'Large video file timed out - try refreshing or use a faster connection' : 'Video loading timed out' 
+            details: ((typeof isLargeVideo !== 'undefined') && isLargeVideo) ? 'Large video file timed out - try refreshing or use a faster connection' : 'Video loading timed out' 
           });
         } else if ((error as Error).message?.includes('memory') || (error as Error).message?.includes('ENOMEM')) {
           res.status(503).json({ 
@@ -758,7 +775,7 @@ ${new Date().toISOString().split('T')[0]}`;
           res.status(500).json({ 
             error: 'Failed to proxy video',
             details: (error as Error).message,
-            isLargeFile: isLargeVideo
+            isLargeFile: (typeof isLargeVideo !== 'undefined') ? isLargeVideo : false
           });
         }
       }

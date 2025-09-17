@@ -137,10 +137,12 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
       let audioSource = episode.audio_url || episode.video_url
       
       // Route all R2 files through proxy to avoid CORS issues and enable caching
-      if (audioSource && (audioSource.includes('bizzin.r2.dev') || audioSource.includes('.r2.cloudflarestorage.com'))) {
+      if (audioSource && (audioSource.includes('.r2.dev') || audioSource.includes('.r2.cloudflarestorage.com'))) {
         const filename = audioSource.split('/').pop()
-        // Use proxy for all R2 files (both video and audio) for consistent performance
-        audioSource = `/api/video-proxy/videos/${filename}`
+        // Route through proxy with correct folder structure
+        const isAudioFile = filename?.toLowerCase().includes('.mp3') || filename?.toLowerCase().includes('.wav') || filename?.toLowerCase().includes('.m4a')
+        const folder = isAudioFile ? 'audio' : 'videos'
+        audioSource = `/api/video-proxy/${folder}/${filename}`
       }
       
       if (audioSource && audioSource.trim() !== '') {

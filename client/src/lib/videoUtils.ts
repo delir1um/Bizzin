@@ -11,7 +11,7 @@ export function convertToProxyUrl(videoUrl: string): string {
   // If it's already a proxy URL, return as-is
   if (videoUrl.startsWith('/api/video-proxy/')) return videoUrl;
   
-  // Check if it's a direct R2 URL that needs conversion
+  // Check if it's a direct R2 URL that needs conversion (all R2 endpoints)
   if (videoUrl.includes('.r2.cloudflarestorage.com/') || videoUrl.includes('.r2.dev/')) {
     // Extract the key (path after the domain)
     try {
