@@ -747,7 +747,7 @@ function containsLearningIndicators(text: string): boolean {
   return indicators.some(indicator => text.includes(indicator));
 }
 
-// AI-driven contextual insights generation
+// AI-driven contextual insights generation - enhanced for comprehensive ~100 word business intelligence
 function generateAIContextualInsights(
   text: string,
   category: string,
@@ -757,83 +757,72 @@ function generateAIContextualInsights(
   mood: string
 ): string[] {
   
-  // Generate insights based on specific AI analysis patterns
-  const insightGenerators = [
-    {
-      // High confidence positive achievement patterns
-      condition: () => 
-        category === 'achievement' && 
-        sentiment.type === 'positive' && 
-        sentiment.confidence > 0.9 &&
-        ['joy', 'surprise'].includes(emotion),
-      insights: [
-        'Success patterns become your competitive moat when properly understood and systematized. Document what worked, why it worked, and how to replicate these conditions. Your ability to repeat successes consistently separates good businesses from great ones.',
-        'High-confidence achievements like this often signal market validation. Consider how this success can inform your strategic roadmap and resource allocation decisions.'
-      ]
-    },
-    {
-      // Challenge with determination (anger + negative but manageable confidence)
-      condition: () =>
-        category === 'challenge' &&
-        emotion === 'anger' &&
-        sentiment.confidence < 0.8 &&
-        mood !== 'frustrated',
-      insights: [
-        'Challenges that evoke strong emotions often contain the most valuable learning opportunities. Channel this energy into systematic problem-solving and team alignment.',
-        'Every significant business challenge tests both strategy and execution. Use this experience to strengthen your decision-making frameworks and crisis response capabilities.'
-      ]
-    },
-    {
-      // Growth with mixed emotions (uncertainty but positive direction)
-      condition: () =>
-        category === 'growth' &&
-        sentiment.type === 'positive' &&
-        emotionScore < 0.7,
-      insights: [
-        'Growth phases naturally bring both excitement and uncertainty. Focus on building scalable systems while maintaining the agility to adapt quickly to market feedback.',
-        'Sustainable growth requires balancing aggressive expansion with operational excellence. Monitor both opportunity capture and quality consistency metrics.'
-      ]
-    },
-    {
-      // Reflective or learning states with low confidence
-      condition: () =>
-        (category === 'reflection' || category === 'learning') &&
-        (sentiment.confidence < 0.7 || emotionScore < 0.6),
-      insights: [
-        'Periods of reflection and lower certainty often precede breakthrough insights. Document your thinking process to capture emerging patterns and hypotheses.',
-        'Business intuition develops through careful analysis of both successes and challenges. Trust the learning process while staying grounded in data and market feedback.'
-      ]
-    },
-    {
-      // Planning with focused energy
-      condition: () =>
-        category === 'planning' &&
-        mood === 'focused' &&
-        emotion === 'neutral',
-      insights: [
-        'Strategic planning sessions benefit from clear-headed analysis and systematic thinking. Connect your tactical decisions to long-term vision through measurable milestones.',
-        'Effective planning balances ambitious goals with realistic execution capacity. Consider both market opportunities and internal capabilities when setting priorities.'
-      ]
+  // Enhanced context detection for business scenarios
+  const lowerText = text.toLowerCase();
+  const hasTeam = /team|colleagues|staff|employees|hire|hiring|manage|leadership|delegate|culture|morale|quit|fired|performance|leave/i.test(text);
+  const hasRevenue = /revenue|sales|income|profit|customers|clients|money|pricing|costs|budget|cash flow|margins/i.test(text);
+  const hasStrategy = /strategy|plan|growth|expansion|market|competition|roadmap|pivot|vision|goals|objectives|scaling/i.test(text);
+  const hasOperations = /operations|process|workflow|efficiency|productivity|systems|automation|equipment|safety|quality/i.test(text);
+  const hasLegal = /legal|compliance|regulation|lawsuit|osha|investigation|insurance|liability|audit|accident|incident|injury/i.test(text);
+  const hasFinancing = /funding|investment|investor|fundraising|valuation|equity|loan|capital|burn rate|series|round/i.test(text);
+  const hasMetrics = /data|analytics|metrics|numbers|performance|results|kpi|measure|track|report|dashboard/i.test(text);
+  const hasChallenges = /problem|issue|difficulty|obstacle|setback|challenge|struggle|crisis|risk|threat|failure/i.test(text);
+  const hasOpportunity = /opportunity|opportunities|potential|promising|new|innovation|breakthrough|partnership|deal/i.test(text);
+  
+  let insight = "";
+  
+  // Crisis and legal scenarios (highest priority)
+  if (hasChallenges && (hasLegal || /accident|incident|injury|hospitalized|osha|lawsuit|investigation/i.test(text))) {
+    insight = `This crisis demands immediate multi-layered leadership combining human empathy with strategic business thinking. Beyond addressing safety and legal concerns, you're facing interconnected operational, financial, and cultural challenges requiring systematic crisis management. Document everything meticulously for compliance, engage legal counsel proactively, and transform this setback into competitive advantage by implementing comprehensive protocols that demonstrate industry leadership. Use this moment to strengthen team loyalty through transparent communication and reinforce your commitment to employee welfare as a core business value that attracts talent and customers.`;
+  }
+  // Strategic growth and scaling scenarios
+  else if ((category === 'growth' || hasStrategy || hasFinancing) && sentiment.confidence > 0.7) {
+    if (hasFinancing || /funding|investment|fundraising|series|round/i.test(text)) {
+      insight = `Fundraising success depends on narrative coherence and metric progression rather than perfect numbers. Investors back founders who demonstrate clear thinking about market timing, competitive differentiation, and scalable unit economics. Prepare by creating compelling stories connecting current traction to future market opportunity, emphasizing unique insights and execution capabilities. Focus on metrics showing sustainable growth patterns rather than vanity numbers, and articulate assumptions about customer behavior, market size, and competitive response with supporting evidence. This funding creates runway for strategic experiments that compound into lasting advantages.`;
+    } else if (sentiment.type === 'positive' && (emotion === 'joy' || mood === 'confident')) {
+      insight = `Your strategic confidence indicates readiness for accelerated growth, but channel this energy into systematic execution rather than opportunistic moves. Successful scaling requires strengthening three core pillars simultaneously: operational systems handling 3x current volume, team structures with clear accountability, and financial controls providing real-time visibility. Document current processes, identify bottlenecks before they become critical, and establish metrics that predict problems rather than just report them. This foundation work prevents the chaos that kills momentum during rapid growth phases.`;
+    } else {
+      insight = `Strategic moments like this separate good businesses from great ones. Your planning approach should balance ambitious vision with pragmatic execution by breaking long-term goals into quarterly experiments with measurable outcomes. Focus on identifying 2-3 key leverage points that could transform your business trajectory, then allocate disproportionate resources to testing these hypotheses quickly. Remember that strategy is as much about what you choose not to do as what you pursue - selective focus often beats comprehensive coverage in competitive markets.`;
     }
-  ];
-  
-  // Find matching insight generators
-  const applicableGenerators = insightGenerators.filter(gen => gen.condition());
-  
-  if (applicableGenerators.length > 0) {
-    // Return insights from the most specific generator
-    const selectedGenerator = applicableGenerators[0];
-    return selectedGenerator.insights.slice(0, 1); // Return one primary insight
   }
-  
-  // Fallback insights based on sentiment/emotion combination
-  if (sentiment.type === 'positive' && sentiment.confidence > 0.8) {
-    return ['Strong positive momentum creates opportunities for strategic advancement. Consider how to leverage this energy for maximum business impact.'];
-  } else if (sentiment.type === 'negative' && sentiment.confidence > 0.7) {
-    return ['Challenging periods test business resilience and leadership capability. Focus on systematic problem-solving and team communication during difficult times.'];
-  } else {
-    return ['Business progress often involves periods of reflection and recalibration. Use this time to strengthen your strategic thinking and market understanding.'];
+  // Team and personnel challenges
+  else if (hasTeam && (hasChallenges || mood === 'frustrated' || mood === 'conflicted')) {
+    if (/quit|fired|performance|leave|leaving|hiring/i.test(text)) {
+      insight = `Personnel transitions create both immediate operational challenges and strategic opportunities to strengthen your organization. Beyond filling the role, use this moment to evaluate whether the position structure needs redesigning, what knowledge gaps need documenting, and how to prevent similar disruptions through better retention strategies. Great leaders turn departures into team-building opportunities by redistributing responsibilities based on individual strengths, creating development paths for remaining members, and implementing succession planning that reduces single-person dependencies across all critical functions. This systematic approach builds antifragile organizations.`;
+    } else {
+      insight = `Team challenges often signal misalignment between individual capabilities, role expectations, and organizational systems rather than personal failures. Address this systematically by clarifying decision-making authority, establishing communication protocols preventing information bottlenecks, and creating feedback loops surfacing problems early. Consider whether your current team structure matches business complexity, and invest in training or process improvements before adding headcount. Strong teams emerge from shared accountability and clear systems, not just talent density or cultural fit.`;
+    }
   }
+  // Revenue and financial performance
+  else if (hasRevenue && sentiment.confidence > 0.6) {
+    if (sentiment.type === 'positive' && (emotion === 'joy' || mood === 'accomplished')) {
+      insight = `Revenue success creates perfect conditions for strategic investment in competitive advantages that compound over time. Rather than just celebrating, analyze what specific actions drove these results so you can systematically replicate and scale them. Consider reinvesting profits in three areas: technology or systems improving unit economics, team capabilities reducing your personal bottlenecks, and market research identifying adjacent opportunities. Document current customer acquisition and retention processes while they're working, because this knowledge becomes invaluable during future growth phases or economic challenges.`;
+    } else if (mood === 'stressed' || mood === 'uncertain') {
+      insight = `Revenue pressure often stems from misalignment between customer value perception and your pricing strategy or delivery model. Get closer to customers' actual decision-making processes, understand what alternatives they're considering, and identify where your value proposition might be unclear. Use this stress as motivation to build more predictable revenue streams through better customer segmentation, clearer service packaging, and systematic follow-up processes. Focus on metrics that predict future revenue rather than just measuring past performance to gain leading indicators.`;
+    }
+  }
+  // Operational and process optimization
+  else if (hasOperations || hasMetrics || mood === 'focused') {
+    insight = `Operational focus creates sustainable competitive advantages that are difficult for competitors to replicate. Your systematic approach should prioritize identifying and eliminating highest-impact inefficiencies first - usually communication delays, approval bottlenecks, or redundant processes slowing decision-making. Build measurement systems tracking leading indicators rather than just outcomes, and create feedback loops helping your team identify problems before they impact customers. This operational discipline compounds over time, eventually becoming significant cost advantage and quality differentiator in your market position.`;
+  }
+  // Achievement and milestone recognition
+  else if (category === 'achievement' || mood === 'accomplished' || mood === 'proud') {
+    insight = `Achievement moments should be leveraged immediately while confidence and momentum are high. Document what specific decisions, systems, or team behaviors contributed to this success so you can replicate the model systematically across other areas. Use this energy to tackle the next level of challenges that would have seemed overwhelming previously - success builds capability and risk tolerance creating compounding advantages. Share this win strategically with stakeholders, customers, or industry contacts to strengthen relationships and attract new opportunities. Momentum attracts momentum in business ecosystems.`;
+  }
+  // Learning, uncertainty, and research scenarios  
+  else if (category === 'learning' || category === 'reflection' || mood === 'uncertain' || mood === 'reflective') {
+    insight = `Uncertainty signals you're operating at the edge of your current knowledge, which is exactly where innovation and competitive advantages are discovered. Transform these questions into systematic experiments with measurable outcomes rather than abstract analysis. Design small tests that validate or disprove your assumptions quickly and cheaply, focusing on uncertainties that would most impact your business if resolved. This experimental mindset converts ambiguity into data-driven decisions and builds your confidence for handling future unknowns systematically.`;
+  }
+  // Challenge and problem-solving scenarios
+  else if (category === 'challenge' || hasChallenges) {
+    insight = `Business challenges often contain the seeds of your next competitive breakthrough when approached systematically rather than reactively. Break this challenge into its component parts: what assumptions are being tested, what resources could be reallocated, and what alternative approaches haven't been considered. Use this pressure to strengthen decision-making frameworks and build organizational resilience that serves you long-term. The most successful entrepreneurs view obstacles as market feedback about opportunities to create value others haven't recognized yet.`;
+  }
+  // Default comprehensive business intelligence
+  else {
+    insight = `Every business experience contains patterns and lessons that compound into superior decision-making over time. Your current situation represents specific market feedback about customer needs, operational effectiveness, or competitive positioning that should be documented and analyzed systematically. Consider what this moment reveals about your business model's strengths and vulnerabilities, what assumptions might need testing, and how this experience should influence your resource allocation going forward. The most successful entrepreneurs extract maximum learning from both positive and challenging experiences to build pattern recognition.`;
+  }
+
+  return [insight];
 }
 
 // Generate semantic headings based on AI analysis
@@ -1115,7 +1104,7 @@ router.post('/analyze', async (req, res) => {
                           moodMapping.default_neutral;
     
     primaryMood = semanticMapping.mood;
-    energy = semanticMapping.energy;
+    energy = semanticMapping.energy as 'high' | 'medium' | 'low';
     
     console.log(`🔍 SEMANTIC MAPPING: ${emotionLabel} (${emotionScore}) + ${normalizedSentiment.type} (${normalizedSentiment.confidence}) -> ${primaryMood} with ${energy} energy`);
 
@@ -1127,7 +1116,7 @@ router.post('/analyze', async (req, res) => {
     
     if (businessContext.override) {
       primaryMood = businessContext.mood;
-      energy = businessContext.energy;
+      energy = businessContext.energy as 'high' | 'medium' | 'low';
       console.log(`🔍 BUSINESS CONTEXT OVERRIDE: ${businessContext.reason} -> ${primaryMood}`);
     }
 
