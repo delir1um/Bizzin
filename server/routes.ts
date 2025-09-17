@@ -519,9 +519,13 @@ ${new Date().toISOString().split('T')[0]}`;
 
   // Video proxy endpoint to serve R2 videos with CORS headers
   app.get('/api/video-proxy/:videoKey(*)', async (req, res) => {
+    let videoKey = '';
+    let isVideo = false;
+    
     try {
-      const videoKey = req.params.videoKey;
-      console.log('Video proxy request for:', videoKey);
+      videoKey = req.params.videoKey;
+      isVideo = videoKey.toLowerCase().includes('.mp4') || videoKey.toLowerCase().includes('.webm') || videoKey.toLowerCase().includes('.mov');
+      console.log('Video proxy request for:', videoKey, 'isVideo:', isVideo);
       
       // Validate environment variables - try both VITE_ prefixed and non-prefixed versions
       const accountId = process.env.VITE_CLOUDFLARE_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID;
@@ -538,7 +542,7 @@ ${new Date().toISOString().split('T')[0]}`;
         return res.status(500).json({ error: 'Server configuration error: Missing R2 credentials' });
       }
       
-      const { S3Client, GetObjectCommand } = await import('@aws-sdk/client-s3');
+      const { S3Client, GetObjectCommand, HeadObjectCommand } = await import('@aws-sdk/client-s3');
       
       const s3Client = new S3Client({
         region: 'auto',
@@ -549,55 +553,50 @@ ${new Date().toISOString().split('T')[0]}`;
         }
       });
       
-      console.log('Fetching video from R2 with key:', videoKey, 'from bucket:', bucketName);
-      
-      const command = new GetObjectCommand({
-        Bucket: bucketName,
-        Key: videoKey,
-      });
-      
-      const response = await s3Client.send(command);
-      console.log('R2 response received:', {
-        ContentType: response.ContentType,
-        ContentLength: response.ContentLength,
-        hasBody: !!response.Body
-      });
-      
-      // Set CORS headers
+      // Set CORS headers first
       res.header('Access-Control-Allow-Origin', '*');
       res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
       res.header('Access-Control-Allow-Headers', 'Range, Content-Type');
       res.header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
       
-      // Set appropriate content type and headers for media streaming
-      res.header('Content-Type', response.ContentType || 'video/mp4');
-      res.header('Accept-Ranges', 'bytes');
-      
-      // Add caching headers for better performance
-      res.header('Cache-Control', 'public, max-age=3600, immutable');
-      res.header('ETag', `"${videoKey}-${response.ContentLength}"`);
-      
-      // Enable progressive streaming
-      res.header('Connection', 'keep-alive');
-      
-      if (response.ContentLength) {
-        res.header('Content-Length', response.ContentLength.toString());
-      }
-      
-      // For range requests, we need to make a new request to R2 with the range
+      // Check if this is a range request - if so, get file metadata first
       const range = req.headers.range;
-      if (range && response.ContentLength) {
-        console.log('Range request received:', range);
+      
+      if (range) {
+        console.log('Range request for:', videoKey, 'Range:', range);
         
+        // Get file metadata first
+        const headCommand = new HeadObjectCommand({
+          Bucket: bucketName,
+          Key: videoKey,
+        });
+        
+        const headResponse = await s3Client.send(headCommand);
+        const fileSize = headResponse.ContentLength || 0;
+        
+        console.log('File metadata:', {
+          ContentType: headResponse.ContentType,
+          ContentLength: fileSize,
+        });
+        
+        // Set headers based on metadata
+        res.header('Content-Type', headResponse.ContentType || (isVideo ? 'video/mp4' : 'audio/mp3'));
+        res.header('Accept-Ranges', 'bytes');
+        res.header('Cache-Control', 'public, max-age=3600, immutable');
+        res.header('ETag', `"${videoKey}-${fileSize}"`);
+        
+        // Parse range
         const parts = range.replace(/bytes=/, "").split("-");
         const start = parseInt(parts[0], 10);
-        let end = parts[1] ? parseInt(parts[1], 10) : response.ContentLength - 1;
+        let end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
         
-        // Optimize buffering by requesting larger chunks for streaming
-        const chunkSize = 1024 * 1024; // 1MB chunks for better streaming
+        // Optimize chunk size for video vs audio
+        const chunkSize = isVideo ? 5 * 1024 * 1024 : 1024 * 1024; // 5MB for video, 1MB for audio
         if (!parts[1]) { // If no end specified, request a larger initial chunk
-          end = Math.min(start + chunkSize - 1, response.ContentLength - 1);
+          end = Math.min(start + chunkSize - 1, fileSize - 1);
         }
+        
+        console.log(`Serving range bytes ${start}-${end}/${fileSize} (chunk: ${end - start + 1} bytes)`);
         
         const rangeCommand = new GetObjectCommand({
           Bucket: bucketName,
@@ -608,40 +607,57 @@ ${new Date().toISOString().split('T')[0]}`;
         const rangeResponse = await s3Client.send(rangeCommand);
         
         res.status(206);
-        res.header('Content-Range', `bytes ${start}-${end}/${response.ContentLength}`);
+        res.header('Content-Range', `bytes ${start}-${end}/${fileSize}`);
         res.header('Content-Length', rangeResponse.ContentLength?.toString() || '0');
         
         if (rangeResponse.Body) {
           const stream = rangeResponse.Body as any;
           
-          // Add stream optimization
-          stream.on('data', (chunk: any) => {
-            if (!res.destroyed) {
-              res.write(chunk);
-            }
-          });
-          
-          stream.on('end', () => {
-            if (!res.destroyed) {
-              res.end();
-            }
-          });
-          
           stream.on('error', (streamError: any) => {
-            console.error('Stream error:', streamError);
+            console.error(`Stream error for ${videoKey}:`, streamError);
             if (!res.destroyed && !res.headersSent) {
               res.status(500).end();
             }
           });
+          
+          // Handle connection close
+          req.on('close', () => {
+            if (stream.destroy) stream.destroy();
+          });
+          
+          stream.pipe(res);
         }
       } else {
         // Full file request
+        console.log('Full file request for:', videoKey);
+        
+        const command = new GetObjectCommand({
+          Bucket: bucketName,
+          Key: videoKey,
+        });
+        
+        const response = await s3Client.send(command);
+        console.log('R2 response received:', {
+          ContentType: response.ContentType,
+          ContentLength: response.ContentLength,
+          hasBody: !!response.Body
+        });
+        
+        // Set appropriate content type and headers for media streaming
+        res.header('Content-Type', response.ContentType || (isVideo ? 'video/mp4' : 'audio/mp3'));
+        res.header('Accept-Ranges', 'bytes');
+        res.header('Cache-Control', 'public, max-age=3600, immutable');
+        res.header('ETag', `"${videoKey}-${response.ContentLength}"`);
+        
+        if (response.ContentLength) {
+          res.header('Content-Length', response.ContentLength.toString());
+        }
+        
         if (response.Body) {
           const stream = response.Body as any;
           
-          // Handle stream errors
           stream.on('error', (streamError: any) => {
-            console.error('Stream error:', streamError);
+            console.error(`Stream error for ${videoKey}:`, streamError);
             if (!res.headersSent) {
               res.status(500).json({ error: 'Stream error' });
             }
@@ -655,19 +671,28 @@ ${new Date().toISOString().split('T')[0]}`;
       }
       
     } catch (error) {
-      console.error('Video proxy error:', error);
+      console.error(`Video proxy error for ${videoKey || 'unknown'}:`, error);
       console.error('Error details:', {
         name: (error as Error).name,
         message: (error as Error).message,
         code: (error as any).Code,
-        statusCode: (error as any).$metadata?.httpStatusCode
+        statusCode: (error as any).$metadata?.httpStatusCode,
+        isVideo: isVideo
       });
       
       if (!res.headersSent) {
-        res.status(500).json({ 
-          error: 'Failed to proxy video',
-          details: (error as Error).message 
-        });
+        // More specific error messages
+        if ((error as any).$metadata?.httpStatusCode === 404) {
+          res.status(404).json({ 
+            error: 'Video not found',
+            details: 'The requested video file does not exist.' 
+          });
+        } else {
+          res.status(500).json({ 
+            error: 'Failed to proxy video',
+            details: (error as Error).message 
+          });
+        }
       }
     }
   });
