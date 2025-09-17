@@ -120,12 +120,32 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
   const totalDuration = episodes.reduce((acc, ep) => acc + ep.duration, 0)
   const totalDurationHours = (totalDuration / 3600).toFixed(1)
   
-  // Get actual completed episodes count for this series
+  // Calculate series progress including partial progress
+  const progressPercentage = useMemo(() => {
+    if (!episodes.length || !allProgress) return 0
+    
+    let totalProgressPercentage = 0
+    
+    for (const episode of episodes) {
+      const episodeProgress = allProgress.find(p => p.episode_id === episode.id)
+      if (episodeProgress) {
+        // Calculate individual episode progress percentage
+        const episodeProgressPercentage = PodcastService.getCompletionPercentage(
+          episodeProgress.progress_seconds, 
+          episode.duration
+        )
+        totalProgressPercentage += episodeProgressPercentage
+      }
+      // If no progress found, this episode contributes 0% to the series total
+    }
+    
+    return Math.round(totalProgressPercentage / episodes.length)
+  }, [episodes, allProgress])
+  
+  // Get actual completed episodes count for this series (for display text)
   const seriesCompletedCount = completedEpisodes?.filter(ep => 
     ep.episode?.series === seriesName
   ).length || 0
-  
-  const progressPercentage = episodes.length > 0 ? (seriesCompletedCount / episodes.length) * 100 : 0
   
   // Get most common difficulty level
   const difficulties = episodes.map(ep => ep.difficulty).filter(Boolean)
@@ -254,7 +274,7 @@ export function SeriesPage({ seriesSlug }: SeriesPageProps) {
                       {seriesInfo.name} Series Progress
                     </h3>
                     <p className={`text-sm ${seriesInfo.color} opacity-80`}>
-                      {seriesCompletedCount} of {episodes.length} episodes completed
+                      {progressPercentage}% average progress across {episodes.length} episode{episodes.length !== 1 ? 's' : ''}
                     </p>
                   </div>
                 </div>
