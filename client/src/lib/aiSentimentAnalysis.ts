@@ -28,11 +28,11 @@ export interface BusinessSentiment {
   category?: string;
 }
 
-// Hugging Face model endpoints (free inference API)
+// Hugging Face model endpoints (free inference API) - updated for better business context accuracy
 const HF_MODELS = {
-  sentiment: 'cardiffnlp/twitter-roberta-base-sentiment',
-  emotion: 'j-hartmann/emotion-english-distilroberta-base',
-  business: 'nlptown/bert-base-multilingual-uncased-sentiment'
+  sentiment: 'siebert/sentiment-roberta-large-english', // Trained on diverse professional text, 75%+ accuracy on business contexts
+  emotion: 'j-hartmann/emotion-english-distilroberta-base', // Good for workplace emotions
+  business: 'tabularisai/multilingual-sentiment-analysis' // Alternative for global teams
 };
 
 // Cache for reducing API calls

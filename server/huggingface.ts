@@ -8,10 +8,11 @@ interface HuggingFaceResponse {
   score: number;
 }
 
-// Hugging Face model endpoints
+// Hugging Face model endpoints - updated for better business context accuracy
 const HF_MODELS = {
-  sentiment: 'cardiffnlp/twitter-roberta-base-sentiment',
-  emotion: 'j-hartmann/emotion-english-distilroberta-base'
+  sentiment: 'siebert/sentiment-roberta-large-english', // Trained on diverse professional text, 75%+ accuracy on business contexts
+  emotion: 'j-hartmann/emotion-english-distilroberta-base', // Good for workplace emotions
+  business_sentiment: 'tabularisai/multilingual-sentiment-analysis' // Alternative for global teams
 };
 
 // API usage tracking and error handling
@@ -198,6 +199,45 @@ function generateFallbackAnalysis(text: string) {
   };
 }
 
+// Normalize sentiment labels for backward compatibility between different models
+function normalizeSentimentLabel(label: string, score: number): { type: 'positive' | 'negative' | 'neutral', confidence: number } {
+  const lowerLabel = label.toLowerCase();
+  
+  // Handle siebert/sentiment-roberta-large-english format (new)
+  if (lowerLabel === 'positive') {
+    return { type: 'positive', confidence: score };
+  }
+  if (lowerLabel === 'negative') {
+    return { type: 'negative', confidence: score };
+  }
+  
+  // Handle cardiffnlp/twitter-roberta-base-sentiment format (old, backward compatibility)
+  if (label === 'LABEL_2') {
+    return { type: 'positive', confidence: score };
+  }
+  if (label === 'LABEL_0') {
+    return { type: 'negative', confidence: score };
+  }
+  if (label === 'LABEL_1') {
+    return { type: 'neutral', confidence: score };
+  }
+  
+  // Handle other potential formats
+  if (lowerLabel.includes('pos')) {
+    return { type: 'positive', confidence: score };
+  }
+  if (lowerLabel.includes('neg')) {
+    return { type: 'negative', confidence: score };
+  }
+  if (lowerLabel.includes('neutral')) {
+    return { type: 'neutral', confidence: score };
+  }
+  
+  // Default fallback
+  console.warn(`⚠️ Unknown sentiment label format: ${label}, defaulting to neutral`);
+  return { type: 'neutral', confidence: 0.5 };
+}
+
 // Analyze sentiment using Hugging Face models with fallback protection
 router.post('/analyze', async (req, res) => {
   try {
@@ -262,17 +302,19 @@ router.post('/analyze', async (req, res) => {
       allEmotion: sortedEmotion
     });
 
-    // Map sentiment to business mood using REAL AI data
+    // Map sentiment to business mood using REAL AI data with backward compatibility
     let primaryMood = 'focused';
     let energy: 'high' | 'medium' | 'low' = 'medium';
     
     const sentimentLabel = topSentiment?.label || '';
     const sentimentScore = topSentiment?.score || 0.5;
     
-    // LABEL_2 = positive, LABEL_1 = neutral, LABEL_0 = negative for cardiffnlp model
-    console.log(`🔍 SENTIMENT MAPPING: ${sentimentLabel} (${sentimentScore}) -> setting primaryMood`);
-    if (sentimentLabel === 'LABEL_2' || sentimentLabel === 'POSITIVE') {
-      if (sentimentScore > 0.8) {
+    // Unified sentiment processing for both old and new model formats
+    const normalizedSentiment = normalizeSentimentLabel(sentimentLabel, sentimentScore);
+    console.log(`🔍 SENTIMENT MAPPING: ${sentimentLabel} (${sentimentScore}) -> ${normalizedSentiment.type} with confidence ${normalizedSentiment.confidence}`);
+    
+    if (normalizedSentiment.type === 'positive') {
+      if (normalizedSentiment.confidence > 0.8) {
         primaryMood = 'excited';
         energy = 'high';
         console.log(`🔍 Set to excited (positive high confidence)`);
@@ -281,8 +323,8 @@ router.post('/analyze', async (req, res) => {
         energy = 'medium';
         console.log(`🔍 Set to optimistic (positive low confidence)`);
       }
-    } else if (sentimentLabel === 'LABEL_0' || sentimentLabel === 'NEGATIVE') {
-      if (sentimentScore > 0.7) {
+    } else if (normalizedSentiment.type === 'negative') {
+      if (normalizedSentiment.confidence > 0.7) {
         primaryMood = 'frustrated';
         energy = 'low';
         console.log(`🔍 Set to frustrated (negative high confidence)`);
@@ -291,16 +333,15 @@ router.post('/analyze', async (req, res) => {
         energy = 'medium';
         console.log(`🔍 Set to concerned (negative low confidence)`);
       }
-    } else if (sentimentLabel === 'LABEL_1' || sentimentLabel === 'NEUTRAL') {
-      // Neutral sentiment should be focused, not frustrated
+    } else if (normalizedSentiment.type === 'neutral') {
       primaryMood = 'focused';
       energy = 'medium';
-      console.log(`🔍 Set to focused (neutral)`);
+      console.log(`🔍 Set to focused (neutral sentiment)`);
     } else {
       // Fallback for unknown labels
       primaryMood = 'focused';
       energy = 'medium';
-      console.log(`🔍 Set to focused (unknown label)`);
+      console.log(`🔍 Set to focused (unknown sentiment label: ${sentimentLabel})`);
     }
 
     // Override with emotion data when it's stronger and more specific
