@@ -11,8 +11,7 @@ interface HuggingFaceResponse {
 // Hugging Face model endpoints - updated for better business context accuracy
 const HF_MODELS = {
   sentiment: 'siebert/sentiment-roberta-large-english', // Trained on diverse professional text, 75%+ accuracy on business contexts
-  emotion: 'j-hartmann/emotion-english-distilroberta-base', // Good for workplace emotions
-  business_sentiment: 'tabularisai/multilingual-sentiment-analysis' // Alternative for global teams
+  emotion: 'j-hartmann/emotion-english-distilroberta-base' // Good for workplace emotions
 };
 
 // API usage tracking and error handling
@@ -276,10 +275,10 @@ router.post('/analyze', async (req, res) => {
     let flatEmotionData = emotionData;
     
     // Handle nested array format from HF API
-    if (Array.isArray(sentimentData[0]) && Array.isArray(sentimentData[0])) {
+    if (Array.isArray(sentimentData) && Array.isArray(sentimentData[0])) {
       flatSentimentData = sentimentData[0];
     }
-    if (Array.isArray(emotionData[0]) && Array.isArray(emotionData[0])) {
+    if (Array.isArray(emotionData) && Array.isArray(emotionData[0])) {
       flatEmotionData = emotionData[0];
     }
     
@@ -385,193 +384,44 @@ router.post('/analyze', async (req, res) => {
       }
     }
 
-    // Enhanced business context mood adjustment based on test failures
+    // Streamlined context-specific mood adjustments
     const lowerTextForMood = text.toLowerCase();
     
-    // Context-specific mood overrides based on actual business scenarios  
-    if (lowerTextForMood.includes('doubt') || lowerTextForMood.includes('uncertain') || 
-        lowerTextForMood.includes('questioning') || lowerTextForMood.includes('right problem')) {
+    // Apply context overrides only for clear patterns
+    if (lowerTextForMood.includes('accident') || lowerTextForMood.includes('injured')) {
       primaryMood = 'reflective';
       energy = 'low';
-    } else if (lowerTextForMood.includes('crashed') || lowerTextForMood.includes('technical failure') || 
-               lowerTextForMood.includes('urgent crisis') || lowerTextForMood.includes('scrambling')) {
+    } else if (lowerTextForMood.includes('crashed') || lowerTextForMood.includes('crisis')) {
       primaryMood = 'frustrated';
       energy = 'high';
-    } else if (lowerTextForMood.includes('steady') || lowerTextForMood.includes('regular') || 
-               lowerTextForMood.includes('under control') || lowerTextForMood.includes('reviewing')) {
-      primaryMood = 'optimistic';
-      energy = 'medium';
-    } else if (lowerTextForMood.includes('success') || lowerTextForMood.includes('incredible') || 
-               lowerTextForMood.includes('downloads') || lowerTextForMood.includes('4.8 stars')) {
+    } else if (lowerTextForMood.includes('success') || lowerTextForMood.includes('incredible')) {
       primaryMood = 'excited';
       energy = 'high';
-    } else if (lowerTextForMood.includes('funding') || lowerTextForMood.includes('runway') || 
-               lowerTextForMood.includes('projections') || lowerTextForMood.includes('march') ||
-               lowerTextForMood.includes('investment advisor') || lowerTextForMood.includes('series a') ||
-               lowerTextForMood.includes('pitch deck') || lowerTextForMood.includes('raising') ||
-               lowerTextForMood.includes('investor') || lowerTextForMood.includes('capital') ||
-               lowerTextForMood.includes('burn rate') || lowerTextForMood.includes('scale') ||
-               lowerTextForMood.includes('expand to') || lowerTextForMood.includes('demonstrate')) {
+    } else if (lowerTextForMood.includes('funding') || lowerTextForMood.includes('investment')) {
       primaryMood = 'focused';
       energy = 'high';
     }
-    
-    // Don't mark positive achievements as stressed/concerned
-    if ((lowerTextForMood.includes('competitor') || lowerTextForMood.includes('challenge')) && 
-        (lowerTextForMood.includes('success') || lowerTextForMood.includes('incredible') || lowerTextForMood.includes('downloads'))) {
-      primaryMood = 'excited';
-      energy = 'high';
-    }
 
-    // Business category detection using AI sentiment + context
+    // Streamlined category detection
     const lowerText = text.toLowerCase();
     let category = 'reflection';
     
-    // Debug logging for category detection
-    console.log('🔍 Category detection debug:', {
-      text: text.substring(0, 100) + '...',
-      lowerText: lowerText.substring(0, 100) + '...',
-      sentiment: primaryMood,
-      hasRevenue: lowerText.includes('revenue'),
-      hasQ3: lowerText.includes('q3'),
-      hasHit: lowerText.includes('hit'),
-      hasMillion: lowerText.includes('million'),
-      hasUp: lowerText.includes('up'),
-      hasGrowth: lowerText.includes('growth'),
-      hasPressure: lowerText.includes('pressure'),
-      hasInvestorExpectations: lowerText.includes('investor expectations')
-    });
-    
-    // Planning patterns - check FIRST to catch business model changes and funding discussions
-    if (lowerText.includes('considering') || lowerText.includes('debating') || lowerText.includes('thinking about') ||
-        lowerText.includes('pivot') || lowerText.includes('freemium') || lowerText.includes('subscription model') || 
-        lowerText.includes('pricing') || lowerText.includes('business model') || lowerText.includes('plan') || 
-        lowerText.includes('strategy') || lowerText.includes('roadmap') || lowerText.includes('timeline') || 
-        lowerText.includes('future') || lowerText.includes('prepare') || lowerText.includes('government') || lowerText.includes('bid') ||
-        // Funding planning patterns
-        lowerText.includes('funding') || lowerText.includes('investment advisor') || lowerText.includes('series a') ||
-        lowerText.includes('series b') || lowerText.includes('raising') || lowerText.includes('pitch deck') ||
-        lowerText.includes('runway') || lowerText.includes('burn rate') || lowerText.includes('capital') ||
-        (lowerText.includes('investor') && (lowerText.includes('meet') || lowerText.includes('discuss') || lowerText.includes('advisor')))) {
-      category = 'planning';
-    }
-    
-    // GROWTH PATTERNS FIRST - ongoing scaling operations  
-    const growthKeywords = ((lowerText.includes('growing') && lowerText.includes('monthly')) || 
-             (lowerText.includes('scaling') && lowerText.includes('infrastructure')) ||
-             (lowerText.includes('customer base') && lowerText.includes('growing')) ||
-             (lowerText.includes('hired') && lowerText.includes('engineers') && lowerText.includes('quarter')) ||
-             (lowerText.includes('competitor') && (lowerText.includes('prefer') || lowerText.includes('validation'))) ||
-             (lowerText.includes('expansion') || lowerText.includes('expanding')) || 
-             lowerText.includes('accelerate') || 
-             (lowerText.includes('markets') && (lowerText.includes('expanding') || lowerText.includes('growth'))) ||
-             (lowerText.includes('accelerating') && lowerText.includes('growth')) ||
-             (lowerText.includes('customer acquisition') && lowerText.includes('strategy')));
-
-    // ACHIEVEMENT PATTERNS - completed successes, specific wins
-    const achievementKeywords = (lowerText.includes('contract') || lowerText.includes('deal') || lowerText.includes('signed') || 
-             lowerText.includes('closed') || lowerText.includes('won') || lowerText.includes('achieved') || 
-             lowerText.includes('completed') || lowerText.includes('milestone') || lowerText.includes('breakthrough') ||
-             lowerText.includes('success') || lowerText.includes('record') || lowerText.includes('incredible') ||
-             lowerText.includes('launch') || lowerText.includes('downloads') || lowerText.includes('stars') ||
-             lowerText.includes('exceeded') || lowerText.includes('celebration') ||
-             // Positive revenue indicators (specific results, not ongoing growth)
-             (lowerText.includes('revenue') && (lowerText.includes('hit') || lowerText.includes('up') || 
-              lowerText.includes('million') || /\d+%/.test(text))) ||
-             // Quarterly results with positive metrics
-             ((lowerText.includes('q1') || lowerText.includes('q2') || lowerText.includes('q3') || lowerText.includes('q4')) &&
-              (lowerText.includes('hit') || lowerText.includes('up') || lowerText.includes('million') || 
-               lowerText.includes('exceeded')))) && !growthKeywords;
-    
-    const negativeContext = lowerText.includes('consideration') || lowerText.includes('thinking about');
-    
-    // Challenge patterns - only if NOT clearly an achievement
-    const challengeKeywords = lowerText.includes('problem') || 
-        (lowerText.includes('challenge') && !achievementKeywords) ||  // Don't mark achievements with "challenge" word as challenges
-        lowerText.includes('difficult') ||
-        (lowerText.includes('down') && !lowerText.includes('costs are down') && !lowerText.includes('down 15%') && !lowerText.includes('down by') && !lowerText.includes('downloads')) || 
-        lowerText.includes('outage') || lowerText.includes('issue') ||
-        lowerText.includes('error') || lowerText.includes('failed') || lowerText.includes('quit') ||
-        lowerText.includes('resigned') || lowerText.includes('resignation') || lowerText.includes('burnout') ||
-        lowerText.includes('setback') || lowerText.includes('risk') || lowerText.includes('delays') ||
-        lowerText.includes('struggling') || lowerText.includes('work-life balance') || lowerText.includes('overwhelming') ||
-        lowerText.includes('exhausted') || lowerText.includes('70-hour') || lowerText.includes('barely sleeping') ||
-        lowerText.includes('cancelled') || lowerText.includes('missing family') || lowerText.includes('sustainable') ||
-        (lowerText.includes('pressure') && !lowerText.includes('investor expectations')) || 
-        lowerText.includes('stress') || lowerText.includes('overwhelm') ||
-        lowerText.includes('handed in her') || lowerText.includes('handed in his') || lowerText.includes('leaving') ||
-        lowerText.includes('departing') || lowerText.includes('losing her knowledge') || lowerText.includes('major setback') ||
-        // Workplace safety and accident indicators - highest priority for safety incidents
-        lowerText.includes('accident') || lowerText.includes('injured') || lowerText.includes('injury') || 
-        lowerText.includes('hospitalized') || lowerText.includes('surgery') || lowerText.includes('recovery') ||
-        lowerText.includes('safety protocol') || lowerText.includes('osha') || lowerText.includes('insurance premium') ||
-        lowerText.includes('workplace accident') || lowerText.includes('forklift operator') || 
-        lowerText.includes('feel terrible') || lowerText.includes('could have prevented') ||
-        // Technical crisis indicators
-        lowerText.includes('crashed') || lowerText.includes('scrambling') || lowerText.includes('lost') ||
-        (lowerText.includes('demo') && lowerText.includes('investors') && lowerText.includes('hours')) ||
-        lowerText.includes('impact') && (lowerText.includes('series') || lowerText.includes('timing'));
-    
-    const positiveContext = lowerText.includes('launched') && (lowerText.includes('success') || lowerText.includes('download') || 
-          lowerText.includes('positive') || lowerText.includes('response') || lowerText.includes('already'));
-    
-    console.log('🔍 Category detection debug:', {
-      challengeKeywords,
-      growthKeywords,
-      achievementKeywords,
-      positiveContext,
-      negativeContext,
-      hasDown: lowerText.includes('down'),
-      hasDownloads: lowerText.includes('downloads'),
-      hasCrashed: lowerText.includes('crashed'),
-      hasScrambling: lowerText.includes('scrambling'),
-      hasPositiveDown: lowerText.includes('costs are down') || lowerText.includes('down 15%') || lowerText.includes('down by'),
-      pressureFound: lowerText.includes('pressure'),
-      hasInvestorExpectations: lowerText.includes('investor expectations'),
-      pressureCondition: (lowerText.includes('pressure') && !lowerText.includes('investor expectations'))
-    });
-    
-    // PRIORITIZE CHALLENGES FIRST for crisis situations
-    if (challengeKeywords && !positiveContext) {
+    // Simplified category detection with core patterns
+    if (lowerText.includes('accident') || lowerText.includes('injured') || lowerText.includes('crisis') || 
+        lowerText.includes('problem') || lowerText.includes('difficult') || lowerText.includes('failed')) {
       category = 'challenge';
       console.log('🔍 Categorized as CHALLENGE');
-    }
-    // Then growth for ongoing scaling operations
-    else if (growthKeywords && !challengeKeywords && !negativeContext) {
-      category = 'growth';
-      console.log('🔍 Categorized as GROWTH');
-    }
-    // Then achievements for specific completed successes
-    else if (achievementKeywords && !negativeContext) {
+    } else if (lowerText.includes('success') || lowerText.includes('achieved') || lowerText.includes('milestone') ||
+               lowerText.includes('breakthrough') || lowerText.includes('exceeded') || lowerText.includes('won')) {
       category = 'achievement';
       console.log('🔍 Categorized as ACHIEVEMENT');
-    }
-    // Planning patterns - strategy, plans, future, pivots (but not growth activities)
-    else if ((lowerText.includes('plan') || lowerText.includes('strategy') || lowerText.includes('roadmap') ||
-             lowerText.includes('timeline') || lowerText.includes('future') || lowerText.includes('prepare') ||
-             lowerText.includes('pivot') || lowerText.includes('considering') || lowerText.includes('debating') ||
-             lowerText.includes('freemium') || lowerText.includes('subscription model') || lowerText.includes('pricing') ||
-             lowerText.includes('business model') || lowerText.includes('government') || lowerText.includes('bid') ||
-             // Funding and investment planning
-             (lowerText.includes('funding') && (lowerText.includes('discuss') || lowerText.includes('raising') || lowerText.includes('series'))) ||
-             (lowerText.includes('investor') && (lowerText.includes('advisor') || lowerText.includes('meeting') || lowerText.includes('pitch'))) ||
-             lowerText.includes('runway') || lowerText.includes('burn rate')) &&
-             // Exclude if it's clearly growth activity
-             !growthKeywords) {
+    } else if (lowerText.includes('growing') || lowerText.includes('scaling') || lowerText.includes('expansion')) {
+      category = 'growth';
+      console.log('🔍 Categorized as GROWTH');
+    } else if (lowerText.includes('plan') || lowerText.includes('strategy') || lowerText.includes('considering') ||
+               lowerText.includes('funding') || lowerText.includes('investment')) {
       category = 'planning';
-    }
-    // Reflection patterns - retrospective analysis and introspection  
-    else if (lowerText.includes('analyzing') || lowerText.includes('analyze') || lowerText.includes('analysis') ||
-             (lowerText.includes('understand') && lowerText.includes('why')) ||
-             (lowerText.includes('what worked') && lowerText.includes('what did not')) ||
-             lowerText.includes('dropped') || lowerText.includes('conversion') ||
-             lowerText.includes('retrospective') || lowerText.includes('reviewing')) {
-      category = 'reflection';
-    }
-    // Learning patterns - feedback, insights, learned
-    else if (lowerText.includes('learned') || lowerText.includes('feedback') || lowerText.includes('insight') ||
-             lowerText.includes('realize') || lowerText.includes('suggestion') ||
-             lowerText.includes('customer feedback') || lowerText.includes('prefer')) {
+    } else if (lowerText.includes('learned') || lowerText.includes('feedback') || lowerText.includes('insight')) {
       category = 'learning';
     }
 
@@ -583,195 +433,64 @@ router.post('/analyze', async (req, res) => {
     const rawConfidence = Math.max(sentimentConfidence, emotionConfidence);
     const finalConfidence = Math.round(Math.min(95, Math.max(75, rawConfidence * 100)));
     
-    // Generate AI-powered heading based on content analysis
-    // Intelligent heading generator using the same content understanding as insights
-    const generateIntelligentHeading = (
-      text: string,
-      category: string,
-      mood: string,
-      energy: string,
-      insights: string[]
-    ): string => {
+    // Simplified heading generation
+    const generateIntelligentHeading = (text: string, category: string): string => {
       const lowerText = text.toLowerCase();
       
-      // Use the same content understanding that generates insights to create headings
-      // This ensures consistency between the heading and the AI-generated insights
-      
+      // Simple heading patterns based on content
       if (category === 'challenge') {
-        // Analyze what type of challenge based on insights content
-        if (lowerText.includes('accident') || lowerText.includes('injured') || lowerText.includes('safety') || lowerText.includes('hospitalized')) {
-          return 'Workplace safety incident';
-        }
-        if (lowerText.includes('burnout') || lowerText.includes('70-hour') || lowerText.includes('overwhelm') || 
-            lowerText.includes('family dinner') || lowerText.includes('weekend plans') || 
-            (lowerText.includes('hours') && lowerText.includes('week'))) {
-          if (lowerText.includes('delegate') || lowerText.includes('hire') || lowerText.includes('coo')) return 'Addressing burnout through delegation';
-          return 'Managing founder burnout';
-        }
-        if (lowerText.includes('competitor') || lowerText.includes('competition') || lowerText.includes('funding')) {
-          return 'Navigating competitive pressure';
-        }
-        if (lowerText.includes('technical') || lowerText.includes('database') || lowerText.includes('system')) {
-          return 'Technical challenges resolved';
-        }
-        if (lowerText.includes('team') || lowerText.includes('employee') || lowerText.includes('staff')) {
-          return 'Team management challenges';
-        }
-        if (lowerText.includes('revenue') || lowerText.includes('cash flow') || lowerText.includes('financial')) {
-          return 'Financial pressure response';
-        }
+        if (lowerText.includes('accident') || lowerText.includes('injured')) return 'Workplace safety incident';
+        if (lowerText.includes('technical') || lowerText.includes('system')) return 'Technical challenges resolved';
+        if (lowerText.includes('revenue') || lowerText.includes('financial')) return 'Financial pressure response';
         return 'Business challenge navigation';
       }
       
       if (category === 'achievement') {
-        if (lowerText.includes('deal') || lowerText.includes('signed') || lowerText.includes('contract')) {
-          return 'Major deal closed successfully';
-        }
-        if (lowerText.includes('launch') || lowerText.includes('product') || lowerText.includes('feature')) {
-          return 'Product launch success story';
-        }
-        if (lowerText.includes('milestone') || lowerText.includes('goal') || lowerText.includes('target')) {
-          return 'Business milestone achieved';
-        }
-        if (lowerText.includes('funding') || lowerText.includes('investment') || lowerText.includes('raised')) {
-          return 'Investment milestone reached';
-        }
-        if (lowerText.includes('revenue') || lowerText.includes('sales') || lowerText.includes('growth')) {
-          if (lowerText.includes('q1') || lowerText.includes('q2') || lowerText.includes('q3') || lowerText.includes('q4')) {
-            if (lowerText.includes('hit') || lowerText.includes('million') || /\d+%/.test(text)) {
-              return 'Outstanding quarterly performance';
-            }
-            return 'Quarterly results celebration';
-          }
-          if (lowerText.includes('hit') && lowerText.includes('million')) {
-            return 'Revenue milestone achieved';
-          }
-          return 'Revenue breakthrough success';
-        }
+        if (lowerText.includes('revenue') || lowerText.includes('million')) return 'Revenue breakthrough success';
+        if (lowerText.includes('deal') || lowerText.includes('signed')) return 'Major deal closed successfully';
+        if (lowerText.includes('launch') || lowerText.includes('product')) return 'Product launch success story';
         return 'Business success milestone';
       }
       
-      if (category === 'growth') {
-        if (lowerText.includes('revenue') || lowerText.includes('sales') || lowerText.includes('clients')) {
-          return 'Revenue scaling insights';
-        }
-        if (lowerText.includes('team') || lowerText.includes('hiring')) {
-          return 'Team scaling strategies';
-        }
-        if (lowerText.includes('competitor') || lowerText.includes('funding')) {
-          return 'Growth through competition';
-        }
-        return 'Business scaling update';
-      }
-      
-      if (category === 'planning') {
-        if (lowerText.includes('pivot') || lowerText.includes('business model') || lowerText.includes('pricing')) {
-          return 'Business model strategy';
-        }
-        if (lowerText.includes('strategy') || lowerText.includes('roadmap')) {
-          return 'Strategic planning session';
-        }
-        if (lowerText.includes('budget') || lowerText.includes('financial')) {
-          return 'Financial planning insights';
-        }
-        return 'Future planning discussion';
-      }
-      
-      if (category === 'learning') {
-        if (lowerText.includes('presentation') || lowerText.includes('conference') || lowerText.includes('summit')) {
-          return 'Industry event learnings';
-        }
-        if (lowerText.includes('customer') || lowerText.includes('feedback')) {
-          return 'Customer insights gained';
-        }
-        return 'Business learning reflection';
-      }
-      
-      // Fallback based on content and mood
-      if (mood === 'excited' && energy === 'high') return 'Positive business momentum';
-      if (mood === 'reflective' && energy === 'low') return 'Strategic business thinking';
-      if (mood === 'frustrated') return 'Business challenge review';
+      if (category === 'growth') return 'Business scaling update';
+      if (category === 'planning') return 'Strategic planning session';
+      if (category === 'learning') return 'Business learning reflection';
       
       return 'Business journal entry';
     };
 
-    // Generate contextual insights based on content analysis
-    const insights: string[] = [];
-    
-    // Content-aware insight generation
-    const generateContextualInsights = (text: string, category: string, mood: string): string[] => {
-      const contextualInsights: string[] = [];
+    // Simplified insights generation
+    const generateContextualInsights = (text: string, category: string): string[] => {
       const lowerText = text.toLowerCase();
       
       if (category === 'challenge') {
-        if (lowerText.includes('accident') || lowerText.includes('injured') || lowerText.includes('safety') || lowerText.includes('hospitalized')) {
-          contextualInsights.push('Workplace safety incidents remind us that employee wellbeing must always be the top priority in business operations. Use this experience to strengthen safety protocols, invest in better equipment, and create a culture where team members feel safe reporting potential hazards. A company that truly protects its people builds lasting loyalty and trust.');
-        } else if (lowerText.includes('competitor') || lowerText.includes('raised') || lowerText.includes('funding')) {
-          contextualInsights.push('Competitive pressure creates opportunity - it validates market demand and forces innovation. Focus on execution speed and customer experience over feature parity. Study their moves carefully, then build something distinctly better rather than just different.');
-        } else if (lowerText.includes('database') || lowerText.includes('technical') || lowerText.includes('system')) {
-          contextualInsights.push('Technical failures expose infrastructure weaknesses before they become catastrophic. Build redundancy and monitoring systems now, not after the next outage. Every technical crisis is a learning opportunity that strengthens your operational foundation.');
-        } else if (lowerText.includes('employee') || lowerText.includes('staff') || lowerText.includes('team')) {
-          contextualInsights.push('Team challenges signal cultural or process gaps that compound over time. Address root causes through better communication and clearer expectations, not just symptoms. The patterns you see now predict the culture you\'ll have at scale.');
-        } else if (lowerText.includes('burnout') || lowerText.includes('exhausted') || lowerText.includes('overwhelming')) {
-          contextualInsights.push('Burnout is a leading indicator of unsustainable practices that will limit your growth potential. Delegate tasks that don\'t require your unique expertise and systematize recurring decisions. Your capacity to think strategically is your most valuable asset - protect it.');
-        } else if (lowerText.includes('cash flow') || lowerText.includes('revenue')) {
-          contextualInsights.push('Financial pressure demands creative solutions that often lead to breakthrough innovations. Focus intensely on customer value and operational efficiency rather than just cutting costs. Cash constraints force prioritization that makes businesses stronger.');
-        } else {
-          contextualInsights.push('Every challenge contains valuable market intelligence that your competitors don\'t have. Document what you learn and how you solve problems - these insights become your competitive advantage. Difficult periods build the resilience that separates successful entrepreneurs from those who give up.');
+        if (lowerText.includes('accident') || lowerText.includes('injured')) {
+          return ['Workplace safety incidents remind us that employee wellbeing must always be the top priority in business operations. Use this experience to strengthen safety protocols, invest in better equipment, and create a culture where team members feel safe reporting potential hazards. A company that truly protects its people builds lasting loyalty and trust.'];
         }
-      } else if (category === 'growth') {
-        if (lowerText.includes('competitor') || lowerText.includes('funding')) {
-          contextualInsights.push('Market validation through competition proves there\'s demand worth fighting for. Study their strategies and customer acquisition methods, then build something distinctly better. Competition means the market is ready - now execution determines the winner.');
-        } else if (lowerText.includes('revenue') || lowerText.includes('sales') || lowerText.includes('clients')) {
-          contextualInsights.push('Revenue growth without operational scaling creates future bottlenecks that limit your potential. Invest in systems, processes, and team capacity before you desperately need them. Today\'s growth decisions determine tomorrow\'s scaling ability.');
-        } else if (lowerText.includes('team') || lowerText.includes('hiring')) {
-          contextualInsights.push('Growing teams require evolving leadership skills and clearer communication structures. Your role must shift from doing everything to enabling others to excel. Build the culture and processes that work at 10x your current size.');
-        } else {
-          contextualInsights.push('Sustainable growth balances ambitious goals with realistic execution capacity. Monitor both your growth metrics and your team\'s ability to deliver quality consistently. Growth that compromises quality creates long-term problems.');
-        }
-      } else if (category === 'achievement') {
-        if (lowerText.includes('signed') || lowerText.includes('deal') || lowerText.includes('contract')) {
-          contextualInsights.push('Major deals validate your value proposition and prove market demand for your solution. Analyze exactly why this succeeded - what messaging resonated, which features mattered most, how the decision process unfolded. Document these patterns to replicate success with future prospects.');
-        } else if (lowerText.includes('milestone') || lowerText.includes('goal') || lowerText.includes('target')) {
-          contextualInsights.push('Milestone achievements prove your strategic direction and execution capability. Use this momentum to tackle bigger challenges and set more ambitious targets. Success builds confidence in your team and credibility with stakeholders.');
-        } else if (lowerText.includes('launch') || lowerText.includes('product') || lowerText.includes('feature')) {
-          contextualInsights.push('Product launches reveal market readiness and customer behavior patterns you can\'t predict in advance. Study early user feedback, usage analytics, and support requests to guide future development priorities. Successful launches create data that informs your next strategic decisions.');
-        } else {
-          contextualInsights.push('Success patterns become your competitive moat when properly understood and systematized. Document what worked, why it worked, and how to replicate these conditions. Your ability to repeat successes consistently separates good businesses from great ones.');
-        }
-      } else if (category === 'planning') {
-        if (lowerText.includes('pivot') || lowerText.includes('business model') || lowerText.includes('freemium') || lowerText.includes('pricing')) {
-          contextualInsights.push('Business model pivots require careful customer research and gradual testing before full commitment. Interview existing customers about their willingness to adapt, then test new models with small segments first. Study how similar companies navigated these transitions and what they learned from the process.');
-        } else if (lowerText.includes('strategy') || lowerText.includes('roadmap')) {
-          contextualInsights.push('Strategic plans need specific execution checkpoints and regular review cycles to stay relevant. Build accountability mechanisms into every major initiative with clear owners and deadlines. The best strategies adapt based on real market feedback while maintaining core vision.');
-        } else if (lowerText.includes('budget') || lowerText.includes('financial')) {
-          contextualInsights.push('Financial planning requires scenario modeling that prepares you for multiple possible futures. Create detailed projections for best case, worst case, and most likely scenarios. Build buffers for unexpected opportunities and ensure cash flow can survive extended difficult periods.');
-        } else if (lowerText.includes('considering') || lowerText.includes('debating')) {
-          contextualInsights.push('Strategic decisions require customer validation and market testing before major resource commitments. Interview target users, run small experiments, and gather real data to inform your choices. The cost of being wrong increases significantly as your business grows.');
-        } else {
-          contextualInsights.push('Effective planning connects daily actions to long-term vision through clear prioritization and regular course correction. Bridge the gap between strategy and execution with specific, measurable goals that your team can track and adjust.');
-        }
-      } else if (category === 'learning') {
-        if (lowerText.includes('feedback') || lowerText.includes('customer')) {
-          contextualInsights.push('Customer feedback is valuable product direction data, but weight it by customer value, market size, and strategic fit. Focus most on feedback from your ideal customers who represent the largest market opportunity. Not all feedback deserves equal attention - prioritize input that aligns with your core value proposition.');
-        } else if (lowerText.includes('mistake') || lowerText.includes('lesson')) {
-          contextualInsights.push('Expensive lessons become competitive advantages when properly internalized, documented, and shared across your team. Create systems to capture these insights and prevent repeating costly mistakes. The businesses that learn fastest from failures often outperform those that avoid risk entirely.');
-        } else {
-          contextualInsights.push('Learning velocity determines how quickly your business can evolve and adapt to market changes. Apply insights immediately while they\'re fresh and relevant to maximize their impact. Build organizational learning processes that capture and distribute knowledge effectively.');
-        }
-      } else {
-        contextualInsights.push('Business intuition develops through careful pattern recognition and reflection on what drives success versus failure. Track what works, what doesn\'t, and why certain approaches succeed in specific contexts. Your accumulated experience becomes strategic advantage when properly analyzed and applied.');
+        return ['Every challenge contains valuable market intelligence that your competitors don\'t have. Document what you learn and how you solve problems - these insights become your competitive advantage.'];
       }
       
-      return contextualInsights;
+      if (category === 'achievement') {
+        return ['Success patterns become your competitive moat when properly understood and systematized. Document what worked, why it worked, and how to replicate these conditions. Your ability to repeat successes consistently separates good businesses from great ones.'];
+      }
+      
+      if (category === 'growth') {
+        return ['Sustainable growth balances ambitious goals with realistic execution capacity. Monitor both your growth metrics and your team\'s ability to deliver quality consistently.'];
+      }
+      
+      if (category === 'planning') {
+        return ['Effective planning connects daily actions to long-term vision through clear prioritization and regular course correction.'];
+      }
+      
+      if (category === 'learning') {
+        return ['Learning velocity determines how quickly your business can evolve and adapt to market changes. Apply insights immediately while they\'re fresh and relevant.'];
+      }
+      
+      return ['Business intuition develops through careful pattern recognition and reflection on what drives success versus failure.'];
     };
     
-    // Generate 1-2 contextual insights
-    const contextualInsights = generateContextualInsights(text, category, primaryMood);
-    insights.push(...contextualInsights.slice(0, 2));
-
-    // Generate AI-powered heading based on content understanding
-    const aiHeading = generateIntelligentHeading(text, category, primaryMood, energy, insights);
+    const insights = generateContextualInsights(text, category);
+    const aiHeading = generateIntelligentHeading(text, category);
 
     const result = {
       primary_mood: primaryMood,

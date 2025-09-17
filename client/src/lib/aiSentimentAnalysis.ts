@@ -658,15 +658,23 @@ export async function analyzeBusinessSentimentAI(content: string, title?: string
     
     // Try Hugging Face AI models first (actual AI understanding)
     const huggingFaceResult = await callEnhancedHuggingFaceAnalysis(text);
-    if (huggingFaceResult) {
-      console.log('Hugging Face AI analysis successful:', huggingFaceResult);
+    if (huggingFaceResult && huggingFaceResult.analysis_source === 'hugging-face-server') {
+      console.log('Using production AI analysis results:', {
+        category: huggingFaceResult.business_category,
+        mood: huggingFaceResult.primary_mood,
+        energy: huggingFaceResult.energy,
+        confidence: huggingFaceResult.confidence,
+        rulesMatched: 0, // Server-side AI doesn't use rule matching
+        aiHeading: huggingFaceResult.ai_heading
+      });
       
-      // Cache Hugging Face result
+      // Cache Hugging Face result WITHOUT additional processing
       sentimentCache.set(cacheKey, {
         data: huggingFaceResult,
         timestamp: Date.now()
       });
       
+      // Return server result directly - don't override with client-side logic
       return huggingFaceResult;
     }
     
