@@ -252,43 +252,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Missing required fields' })
       }
       
-      // Validate environment variables
-      if (!process.env.CLOUDFLARE_ACCOUNT_ID) {
-        console.error('Missing CLOUDFLARE_ACCOUNT_ID')
-        return res.status(500).json({ error: 'Server configuration error: Missing account ID' })
-      }
+      // Validate environment variables - try both VITE_ prefixed and non-prefixed versions
+      const accountId = process.env.VITE_CLOUDFLARE_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID;
+      const accessKeyId = process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID || process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
+      const secretAccessKey = process.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY || process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
+      const bucketName = process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || process.env.CLOUDFLARE_R2_BUCKET_NAME || 'bizzin-podcasts';
       
-      if (!process.env.CLOUDFLARE_R2_ACCESS_KEY_ID) {
-        console.error('Missing CLOUDFLARE_R2_ACCESS_KEY_ID')
-        return res.status(500).json({ error: 'Server configuration error: Missing access key' })
-      }
-      
-      if (!process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY) {
-        console.error('Missing CLOUDFLARE_R2_SECRET_ACCESS_KEY')
-        return res.status(500).json({ error: 'Server configuration error: Missing secret key' })
+      if (!accountId || !accessKeyId || !secretAccessKey) {
+        console.error('Missing Cloudflare credentials:', {
+          hasAccountId: !!accountId,
+          hasAccessKeyId: !!accessKeyId,
+          hasSecretAccessKey: !!secretAccessKey
+        });
+        return res.status(500).json({ error: 'Server configuration error: Missing R2 credentials' })
       }
       
       // Cloudflare R2 Configuration with explicit signing settings
       const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3')
       
-      const BUCKET_NAME = process.env.CLOUDFLARE_R2_BUCKET_NAME || 'bizzin-podcasts'
-      const ENDPOINT = `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`
+      const ENDPOINT = `https://${accountId}.r2.cloudflarestorage.com`
       
       const s3Client = new S3Client({
         region: 'auto',
         endpoint: ENDPOINT,
         credentials: {
-          accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID,
-          secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
+          accessKeyId,
+          secretAccessKey,
         }
       })
 
       console.log('R2 Config:', {
         region: 'auto',
         endpoint: ENDPOINT,
-        hasCredentials: !!process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID,
-        accessKeyLength: process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID?.length || 0,
-        secretKeyLength: process.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY?.length || 0,
+        hasCredentials: !!accessKeyId,
+        accessKeyLength: accessKeyId?.length || 0,
+        secretKeyLength: secretAccessKey?.length || 0,
         accessKeyPrefix: process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID?.substring(0, 8) + '...',
         bucketName: BUCKET_NAME
       })
@@ -308,7 +306,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       })
       
       const command = new PutObjectCommand({
-        Bucket: BUCKET_NAME,
+        Bucket: bucketName,
         Key: key,
         Body: buffer,
         ContentType: contentType,
@@ -478,23 +476,28 @@ ${new Date().toISOString().split('T')[0]}`;
     try {
       const videoKey = req.params.videoKey;
       
-      if (!process.env.CLOUDFLARE_ACCOUNT_ID || !process.env.CLOUDFLARE_R2_ACCESS_KEY_ID) {
+      // Validate environment variables - try both VITE_ prefixed and non-prefixed versions
+      const accountId = process.env.VITE_CLOUDFLARE_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID;
+      const accessKeyId = process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID || process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
+      const secretAccessKey = process.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY || process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
+      const bucketName = process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || process.env.CLOUDFLARE_R2_BUCKET_NAME || 'bizzin-podcasts';
+      
+      if (!accountId || !accessKeyId || !secretAccessKey) {
         return res.status(500).end();
       }
       
       const { S3Client, HeadObjectCommand } = await import('@aws-sdk/client-s3');
-      const BUCKET_NAME = process.env.CLOUDFLARE_R2_BUCKET_NAME || 'bizzin-podcasts';
       const s3Client = new S3Client({
         region: 'auto',
-        endpoint: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+        endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
         credentials: {
-          accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID,
-          secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
+          accessKeyId,
+          secretAccessKey,
         }
       });
       
       const command = new HeadObjectCommand({
-        Bucket: BUCKET_NAME,
+        Bucket: bucketName,
         Key: videoKey,
       });
       
@@ -520,28 +523,36 @@ ${new Date().toISOString().split('T')[0]}`;
       const videoKey = req.params.videoKey;
       console.log('Video proxy request for:', videoKey);
       
-      // Validate environment variables
-      if (!process.env.CLOUDFLARE_ACCOUNT_ID || !process.env.CLOUDFLARE_R2_ACCESS_KEY_ID) {
-        console.error('Missing Cloudflare credentials');
-        return res.status(500).json({ error: 'Server configuration error' });
+      // Validate environment variables - try both VITE_ prefixed and non-prefixed versions
+      const accountId = process.env.VITE_CLOUDFLARE_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID;
+      const accessKeyId = process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID || process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
+      const secretAccessKey = process.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY || process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
+      const bucketName = process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || process.env.CLOUDFLARE_R2_BUCKET_NAME || 'bizzin-podcasts';
+      
+      if (!accountId || !accessKeyId || !secretAccessKey) {
+        console.error('Missing Cloudflare credentials:', {
+          hasAccountId: !!accountId,
+          hasAccessKeyId: !!accessKeyId,
+          hasSecretAccessKey: !!secretAccessKey
+        });
+        return res.status(500).json({ error: 'Server configuration error: Missing R2 credentials' });
       }
       
       const { S3Client, GetObjectCommand } = await import('@aws-sdk/client-s3');
       
-      const BUCKET_NAME = process.env.CLOUDFLARE_R2_BUCKET_NAME || 'bizzin-podcasts';
       const s3Client = new S3Client({
         region: 'auto',
-        endpoint: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+        endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
         credentials: {
-          accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID,
-          secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
+          accessKeyId,
+          secretAccessKey,
         }
       });
       
-      console.log('Fetching video from R2 with key:', videoKey, 'from bucket:', BUCKET_NAME);
+      console.log('Fetching video from R2 with key:', videoKey, 'from bucket:', bucketName);
       
       const command = new GetObjectCommand({
-        Bucket: BUCKET_NAME,
+        Bucket: bucketName,
         Key: videoKey,
       });
       
@@ -589,7 +600,7 @@ ${new Date().toISOString().split('T')[0]}`;
         }
         
         const rangeCommand = new GetObjectCommand({
-          Bucket: BUCKET_NAME,
+          Bucket: bucketName,
           Key: videoKey,
           Range: `bytes=${start}-${end}`,
         });

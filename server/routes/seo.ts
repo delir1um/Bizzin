@@ -33,7 +33,7 @@ router.get('/llms.txt', async (req, res) => {
       supabase.from('goals').select('*', { count: 'exact', head: true }),
       supabase.from('goals').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
       supabase.from('documents').select('*', { count: 'exact', head: true }),
-      supabase.from('user_plans').select('*', { count: 'exact', head: true }).eq('plan_type', 'premium').eq('plan_status', 'active'),
+      supabase.from('user_plans').select('*', { count: 'exact', head: true }).eq('plan_type', 'premium').is('cancelled_at', null),
       supabase.from('user_profiles').select('business_type').not('business_type', 'is', null)
     ]);
 
@@ -178,7 +178,7 @@ router.get('/stats', async (req, res) => {
       supabase.from('goals').select('*', { count: 'exact', head: true }),
       supabase.from('goals').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
       supabase.from('documents').select('*', { count: 'exact', head: true }),
-      supabase.from('user_plans').select('*', { count: 'exact', head: true }).eq('plan_type', 'premium').eq('plan_status', 'active')
+      supabase.from('user_plans').select('*', { count: 'exact', head: true }).eq('plan_type', 'premium').is('cancelled_at', null)
     ]);
 
     const stats = {
