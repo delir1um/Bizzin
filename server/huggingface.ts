@@ -766,7 +766,7 @@ function generateAIContextualInsights(
   const hasLegal = /legal|compliance|regulation|lawsuit|osha|investigation|insurance|liability|audit|accident|incident|injury/i.test(text);
   const hasFinancing = /funding|investment|investor|fundraising|valuation|equity|loan|capital|burn rate|series|round/i.test(text);
   const hasMetrics = /data|analytics|metrics|numbers|performance|results|kpi|measure|track|report|dashboard/i.test(text);
-  const hasChallenges = /problem|issue|difficulty|obstacle|setback|challenge|struggle|crisis|risk|threat|failure/i.test(text);
+  const hasChallenges = /problem|issue|difficulty|obstacle|setback|challenge|struggle|crisis|risk|threat|failure|accident|incident/i.test(text);
   const hasOpportunity = /opportunity|opportunities|potential|promising|new|innovation|breakthrough|partnership|deal/i.test(text);
   
   let insight = "";
