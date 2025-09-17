@@ -1,0 +1,34 @@
+index-Bdkc4HwG.js:1675 📱 [LOCALSTORAGE] Stored media type preference: {episodeId: '6462c1f1-b4a3-4af1-8eb7-f9d9be2b7f8d', mediaType: 'video'}
+index-Bdkc4HwG.js:1675 📱 [LOCALSTORAGE] Retrieved media type preference: {episodeId: '6462c1f1-b4a3-4af1-8eb7-f9d9be2b7f8d', mediaType: 'video'}
+index-Bdkc4HwG.js:1675 📱 [LOCALSTORAGE] Retrieved media type preference: {episodeId: '6462c1f1-b4a3-4af1-8eb7-f9d9be2b7f8d', mediaType: 'video'}
+index-Bdkc4HwG.js:1675 📱 [LOCALSTORAGE] Retrieved media type preference: {episodeId: '6462c1f1-b4a3-4af1-8eb7-f9d9be2b7f8d', mediaType: 'video'}
+index-Bdkc4HwG.js:1675 📱 [LOCALSTORAGE] Retrieved media type preference: {episodeId: '6462c1f1-b4a3-4af1-8eb7-f9d9be2b7f8d', mediaType: 'video'}
+index-Bdkc4HwG.js:1675 🔗 Using direct R2 URL: https://5ca0ac21501e14fb94ae510939f0243a.eu.r2.cloudflarestorage.com/videos/Ep 1_final.mp4
+index-Bdkc4HwG.js:1675 🔗 Using direct R2 URL: https://5ca0ac21501e14fb94ae510939f0243a.eu.r2.cloudflarestorage.com/videos/Ep 1_final.mp4
+index-Bdkc4HwG.js:1675 🔗 Using direct R2 URL: https://5ca0ac21501e14fb94ae510939f0243a.eu.r2.cloudflarestorage.com/videos/Ep 1_final.mp4
+index-Bdkc4HwG.js:1675 🔗 Using direct R2 URL: https://5ca0ac21501e14fb94ae510939f0243a.eu.r2.cloudflarestorage.com/videos/Ep 1_final.mp4
+index-Bdkc4HwG.js:1675 📱 [LOCALSTORAGE] Retrieved media type preference: {episodeId: '6462c1f1-b4a3-4af1-8eb7-f9d9be2b7f8d', mediaType: 'video'}
+index-Bdkc4HwG.js:1675 📱 [LOCALSTORAGE] Retrieved media type preference: {episodeId: '6462c1f1-b4a3-4af1-8eb7-f9d9be2b7f8d', mediaType: 'video'}
+index-Bdkc4HwG.js:1675 📱 [LOCALSTORAGE] Retrieved media type preference: {episodeId: '6462c1f1-b4a3-4af1-8eb7-f9d9be2b7f8d', mediaType: 'video'}
+index-Bdkc4HwG.js:1675 📱 [LOCALSTORAGE] Retrieved media type preference: {episodeId: '6462c1f1-b4a3-4af1-8eb7-f9d9be2b7f8d', mediaType: 'video'}
+index-Bdkc4HwG.js:1675 🔗 Using direct R2 URL: https://5ca0ac21501e14fb94ae510939f0243a.eu.r2.cloudflarestorage.com/videos/Ep 1_final.mp4
+index-Bdkc4HwG.js:1675 🔗 Using direct R2 URL: https://5ca0ac21501e14fb94ae510939f0243a.eu.r2.cloudflarestorage.com/videos/Ep 1_final.mp4
+index-Bdkc4HwG.js:1675 📱 [LOCALSTORAGE] Retrieved media type preference: {episodeId: '6462c1f1-b4a3-4af1-8eb7-f9d9be2b7f8d', mediaType: 'video'}
+index-Bdkc4HwG.js:1675 📱 [LOCALSTORAGE] Retrieved media type preference: {episodeId: '6462c1f1-b4a3-4af1-8eb7-f9d9be2b7f8d', mediaType: 'video'}
+index-Bdkc4HwG.js:1675 📱 [LOCALSTORAGE] Retrieved media type preference: {episodeId: '6462c1f1-b4a3-4af1-8eb7-f9d9be2b7f8d', mediaType: 'video'}
+index-Bdkc4HwG.js:1675 📱 [LOCALSTORAGE] Retrieved media type preference: {episodeId: '6462c1f1-b4a3-4af1-8eb7-f9d9be2b7f8d', mediaType: 'video'}
+index-Bdkc4HwG.js:1675 🔗 Using direct R2 URL: https://5ca0ac21501e14fb94ae510939f0243a.eu.r2.cloudflarestorage.com/videos/Ep 1_final.mp4
+index-Bdkc4HwG.js:1675 🔗 Using direct R2 URL: https://5ca0ac21501e14fb94ae510939f0243a.eu.r2.cloudflarestorage.com/videos/Ep 1_final.mp4
+index-Bdkc4HwG.js:1675 🔗 Using direct R2 URL: https://5ca0ac21501e14fb94ae510939f0243a.eu.r2.cloudflarestorage.com/videos/Ep 1_final.mp4
+index-Bdkc4HwG.js:1675 🔗 Using direct R2 URL: https://5ca0ac21501e14fb94ae510939f0243a.eu.r2.cloudflarestorage.com/videos/Ep 1_final.mp4
+index-Bdkc4HwG.js:1675 🔗 Using direct R2 URL: https://5ca0ac21501e14fb94ae510939f0243a.eu.r2.cloudflarestorage.com/videos/Ep 1_final.mp4
+index-Bdkc4HwG.js:1675 🔗 Using direct R2 URL: https://5ca0ac21501e14fb94ae510939f0243a.eu.r2.cloudflarestorage.com/videos/Ep 1_final.mp4
+index-Bdkc4HwG.js:1675 🔗 Using direct R2 URL: https://5ca0ac21501e14fb94ae510939f0243a.eu.r2.cloudflarestorage.com/videos/Ep 1_final.mp4
+index-Bdkc4HwG.js:1675 🔗 Using direct R2 URL: https://5ca0ac21501e14fb94ae510939f0243a.eu.r2.cloudflarestorage.com/videos/Ep 1_final.mp4
+index-Bdkc4HwG.js:1675 🔗 Using direct R2 URL: https://5ca0ac21501e14fb94ae510939f0243a.eu.r2.cloudflarestorage.com/videos/Ep 1_final.mp4
+index-Bdkc4HwG.js:1675 🔗 Using direct R2 URL: https://5ca0ac21501e14fb94ae510939f0243a.eu.r2.cloudflarestorage.com/videos/Ep 1_final.mp4
+index-Bdkc4HwG.js:1675 🔗 Using direct R2 URL: https://5ca0ac21501e14fb94ae510939f0243a.eu.r2.cloudflarestorage.com/videos/Ep 1_final.mp4
+index-Bdkc4HwG.js:1675 🔗 Using direct R2 URL: https://5ca0ac21501e14fb94ae510939f0243a.eu.r2.cloudflarestorage.com/videos/Ep 1_final.mp4
+index-Bdkc4HwG.js:1675 🔗 Using direct R2 URL: https://5ca0ac21501e14fb94ae510939f0243a.eu.r2.cloudflarestorage.com/videos/Ep 1_final.mp4
+index-Bdkc4HwG.js:1675 🔗 Using direct R2 URL: https://5ca0ac21501e14fb94ae510939f0243a.eu.r2.cloudflarestorage.com/videos/Ep 1_final.mp4
+index-Bdkc4HwG.js:1675 📱 [LOCALSTORAGE] Retrieved media type preference: {episodeId: '6462c1f1-b4a3-4af1-8eb7-f9d9be2b7f8d', mediaType: 'video'}
