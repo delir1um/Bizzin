@@ -8,23 +8,21 @@
 export function convertToProxyUrl(videoUrl: string): string {
   if (!videoUrl) return videoUrl;
   
-  // If it's already a proxy URL, return as-is
-  if (videoUrl.startsWith('/api/video-proxy/')) return videoUrl;
-  
-  // Check if it's a direct R2 URL that needs conversion (all R2 endpoints)
+  // DIRECT R2 APPROACH: Return R2 URLs directly, no proxy conversion
   if (videoUrl.includes('.r2.cloudflarestorage.com/') || videoUrl.includes('.r2.dev/')) {
-    // Extract the key (path after the domain)
-    try {
-      const url = new URL(videoUrl);
-      const key = url.pathname.substring(1); // Remove leading slash
-      return `/api/video-proxy/${key}`;
-    } catch (error) {
-      console.warn('Failed to parse video URL for proxy conversion:', videoUrl);
-      return videoUrl;
-    }
+    console.log('🔗 Using direct R2 URL:', videoUrl);
+    return videoUrl; // Return the R2 URL directly
   }
   
-  // Return local URLs or other formats as-is
+  // Convert proxy URLs back to direct R2 URLs if needed
+  if (videoUrl.startsWith('/api/video-proxy/')) {
+    const key = videoUrl.replace('/api/video-proxy/', '');
+    const directUrl = `https://pub-b3498cd071e1420b9d379a5510ba4bb8.r2.dev/${key}`;
+    console.log('🔄 Converting proxy URL to direct R2:', directUrl);
+    return directUrl;
+  }
+  
+  // For local URLs or file names, construct direct R2 URL
   return videoUrl;
 }
 
@@ -35,32 +33,38 @@ export function convertToProxyUrl(videoUrl: string): string {
 export function convertToProxyUrlWithFallback(videoUrl: string, preferredMediaType?: 'audio' | 'video'): string {
   if (!videoUrl) return videoUrl;
   
-  // If it's already a proxy URL, return as-is
-  if (videoUrl.startsWith('/api/video-proxy/')) return videoUrl;
-  
-  // Check if it's a direct R2 URL that needs conversion
+  // DIRECT R2 APPROACH: Return R2 URLs directly
   if (videoUrl.includes('.r2.cloudflarestorage.com/') || videoUrl.includes('.r2.dev/')) {
-    const filename = videoUrl.split('/').pop();
-    
-    if (filename) {
-      // Determine if this is an audio file based on extension
-      const isAudioFile = filename.toLowerCase().includes('.mp3') || 
-                         filename.toLowerCase().includes('.wav') || 
-                         filename.toLowerCase().includes('.m4a') ||
-                         filename.toLowerCase().includes('.aac') ||
-                         filename.toLowerCase().includes('.ogg') ||
-                         filename.toLowerCase().includes('.flac');
-      
-      // Use preferred media type or auto-detect from filename
-      const mediaType = preferredMediaType || (isAudioFile ? 'audio' : 'video');
-      const organizedFolder = mediaType === 'audio' ? 'audio' : 'videos';
-      
-      // Return the organized path - fallback logic will be handled by createFallbackAudioSource
-      return `/api/video-proxy/${organizedFolder}/${filename}`;
-    }
+    console.log('🔗 Using direct R2 URL with fallback:', videoUrl);
+    return videoUrl; // Return the R2 URL directly
   }
   
-  // Return local URLs or other formats as-is
+  // Convert proxy URLs to direct R2 URLs
+  if (videoUrl.startsWith('/api/video-proxy/')) {
+    const key = videoUrl.replace('/api/video-proxy/', '');
+    const directUrl = `https://pub-b3498cd071e1420b9d379a5510ba4bb8.r2.dev/${key}`;
+    console.log('🔄 Converting proxy URL to direct R2 with fallback:', directUrl);
+    return directUrl;
+  }
+  
+  // For local file names, construct direct R2 URL with proper folder structure
+  const filename = videoUrl.split('/').pop();
+  if (filename) {
+    const isAudioFile = filename.toLowerCase().includes('.mp3') || 
+                       filename.toLowerCase().includes('.wav') || 
+                       filename.toLowerCase().includes('.m4a') ||
+                       filename.toLowerCase().includes('.aac') ||
+                       filename.toLowerCase().includes('.ogg') ||
+                       filename.toLowerCase().includes('.flac');
+    
+    const mediaType = preferredMediaType || (isAudioFile ? 'audio' : 'video');
+    const organizedFolder = mediaType === 'audio' ? 'audio' : 'videos';
+    
+    const directUrl = `https://pub-b3498cd071e1420b9d379a5510ba4bb8.r2.dev/${organizedFolder}/${filename}`;
+    console.log('🔗 Constructing direct R2 URL:', directUrl);
+    return directUrl;
+  }
+  
   return videoUrl;
 }
 
@@ -71,24 +75,28 @@ export function convertToProxyUrlWithFallback(videoUrl: string, preferredMediaTy
 export async function createFallbackAudioSource(originalUrl: string): Promise<string> {
   if (!originalUrl) return originalUrl;
   
-  // Convert to proxy URL first
-  const proxyUrl = convertToProxyUrlWithFallback(originalUrl, 'audio');
+  // Get direct R2 URL first
+  const directUrl = convertToProxyUrlWithFallback(originalUrl, 'audio');
   
-  // If it's not a proxy URL, return as-is
-  if (!proxyUrl.startsWith('/api/video-proxy/')) return proxyUrl;
+  // If it's already a complete R2 URL, return as-is
+  if (directUrl.includes('.r2.dev/')) return directUrl;
+  
+  // Extract filename and test direct R2 paths
+  const filename = originalUrl.split('/').pop();
+  if (!filename) return originalUrl;
   
   try {
-    // Test if the organized path exists
-    const testResponse = await fetch(proxyUrl, { method: 'HEAD' });
+    // Test organized audio/ path first
+    const organizedUrl = `https://pub-b3498cd071e1420b9d379a5510ba4bb8.r2.dev/audio/${filename}`;
+    const testResponse = await fetch(organizedUrl, { method: 'HEAD' });
     
     if (testResponse.ok) {
-      console.log('✅ Audio file found in organized path:', proxyUrl);
-      return proxyUrl;
+      console.log('✅ Audio file found in organized path:', organizedUrl);
+      return organizedUrl;
     }
     
     // If organized path fails, try legacy videos/ folder
-    const filename = proxyUrl.split('/').pop();
-    const fallbackUrl = `/api/video-proxy/videos/${filename}`;
+    const fallbackUrl = `https://pub-b3498cd071e1420b9d379a5510ba4bb8.r2.dev/videos/${filename}`;
     
     console.log('🔄 Audio file not in organized path, trying fallback:', fallbackUrl);
     
@@ -99,12 +107,13 @@ export async function createFallbackAudioSource(originalUrl: string): Promise<st
       return fallbackUrl;
     }
     
-    console.warn('⚠️ Audio file not found in either path, using organized path:', proxyUrl);
-    return proxyUrl; // Return organized path as final fallback
+    console.warn('⚠️ Audio file not found in either path, using organized path:', organizedUrl);
+    return organizedUrl; // Return organized path as final fallback
     
   } catch (error) {
     console.warn('Error testing audio paths, using organized path:', error);
-    return proxyUrl;
+    const organizedUrl = `https://pub-b3498cd071e1420b9d379a5510ba4bb8.r2.dev/audio/${filename}`;
+    return organizedUrl;
   }
 }
 
