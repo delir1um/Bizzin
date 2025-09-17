@@ -1,0 +1,30 @@
+index-BA02aLnV.js:203 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+multi-tabs.js:4816 Injected CSS loaded successfully
+contentScript.js:2 Content script has been loaded and is running.
+giahpkiwivxpocikndix.supabase.co/rest/v1/user_plans?select=*&plan_type=eq.premium&plan_status=eq.active:1  Failed to load resource: the server responded with a status of 400 ()
+giahpkiwivxpocikndix.supabase.co/rest/v1/user_plans?select=*&plan_type=eq.premium&plan_status=eq.active:1  Failed to load resource: the server responded with a status of 400 ()
+giahpkiwivxpocikndix.supabase.co/rest/v1/user_plans?select=*&plan_type=eq.premium&plan_status=eq.active:1  Failed to load resource: the server responded with a status of 400 ()
+giahpkiwivxpocikndix.supabase.co/rest/v1/user_plans?select=*&plan_type=eq.premium&plan_status=eq.active:1  Failed to load resource: the server responded with a status of 400 ()
+index-BA02aLnV.js:1816 Calculated stats: Object
+index-BA02aLnV.js:1609 [GOALS_FETCH] Retrieved 2 goals for user 9502ea97-1adb-4115-ba05-1b6b1b5fa721
+index-BA02aLnV.js:1692 🔍 [CLICK LOG] SeriesPage - Episode button clicked: Object
+index-BA02aLnV.js:1675 🔍 [CLICK LOG] EpisodeModal - Play button clicked: Object
+index-BA02aLnV.js:1675 🔚 [UNMOUNT SAVE] Saving progress on unmount: Object
+giahpkiwivxpocikndix.supabase.co/rest/v1/user_podcast_progress?on_conflict=user_id%2Cepisode_id:1  Failed to load resource: the server responded with a status of 400 ()
+index-BA02aLnV.js:1669 Schema cache issue detected, retrying without last_media_type: Object
+updateProgress @ index-BA02aLnV.js:1669
+index-BA02aLnV.js:1669 Progress saved successfully without media type
+index-BA02aLnV.js:1675 📱 [LOCALSTORAGE] Stored media type preference: Object
+index-BA02aLnV.js:1675 📱 [LOCALSTORAGE] Retrieved media type preference: Object
+index-BA02aLnV.js:1675 📱 [LOCALSTORAGE] Retrieved media type preference: Object
+index-BA02aLnV.js:1675 📱 [LOCALSTORAGE] Retrieved media type preference: Object
+index-BA02aLnV.js:1675 📱 [LOCALSTORAGE] Retrieved media type preference: Object
+index-BA02aLnV.js:1675 📱 [LOCALSTORAGE] Retrieved media type preference: Object
+index-BA02aLnV.js:1675 📱 [LOCALSTORAGE] Retrieved media type preference: Object
+index-BA02aLnV.js:1675 📱 [LOCALSTORAGE] Retrieved media type preference: Object
+index-BA02aLnV.js:1675 📱 [LOCALSTORAGE] Retrieved media type preference: Object
+index-BA02aLnV.js:1675 📱 [LOCALSTORAGE] Retrieved media type preference: Object
+index-BA02aLnV.js:1675 📱 [LOCALSTORAGE] Retrieved media type preference: Object
+index-BA02aLnV.js:1675 📱 [LOCALSTORAGE] Retrieved media type preference: Object
+index-BA02aLnV.js:1675 📱 [LOCALSTORAGE] Retrieved media type preference: Object
+Ep%201_final.mp4:1  Failed to load resource: the server responded with a status of 500 ()
