@@ -134,112 +134,119 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
   useEffect(() => {
     if (!isVideoEpisode) {
       // Prefer dedicated audio URL for instant playback, fallback to video URL
-      let audioSource = episode.audio_url || episode.video_url
+      const originalAudioSource = episode.audio_url || episode.video_url
       
-      // Route all R2 files through proxy to avoid CORS issues and enable caching
-      if (audioSource && (audioSource.includes('.r2.dev') || audioSource.includes('.r2.cloudflarestorage.com'))) {
-        const filename = audioSource.split('/').pop()
-        // Route through proxy with correct folder structure
-        const isAudioFile = filename?.toLowerCase().includes('.mp3') || filename?.toLowerCase().includes('.wav') || filename?.toLowerCase().includes('.m4a')
-        const folder = isAudioFile ? 'audio' : 'videos'
-        audioSource = `/api/video-proxy/${folder}/${filename}`
-      }
-      
-      if (audioSource && audioSource.trim() !== '') {
-        // Create audio element if it doesn't exist
-        if (!audioRef.current) {
-          audioRef.current = new Audio()
-          audioRef.current.preload = 'auto'
-          audioRef.current.crossOrigin = 'anonymous'
-          
-          // Enable faster loading and buffering
-          audioRef.current.setAttribute('webkit-playsinline', 'true')
-          audioRef.current.setAttribute('playsinline', 'true')
-          
-          // Set up audio event listeners
-          audioRef.current.addEventListener('loadstart', () => {
-            setIsAudioLoading(true)
-          })
-          
-          audioRef.current.addEventListener('canplay', () => {
-            setIsAudioLoading(false)
-          })
-          
-          audioRef.current.addEventListener('loadedmetadata', () => {
-            if (audioRef.current) {
-              setActualDuration(audioRef.current.duration)
-              console.log('Audio metadata loaded, duration:', audioRef.current.duration)
-            }
-          })
-          
-          audioRef.current.addEventListener('loadeddata', () => {
-            setIsAudioLoading(false)
-            console.log('Audio data loaded - ready for playback')
-          })
-          
-          audioRef.current.addEventListener('canplaythrough', () => {
-            console.log('Audio can play through without buffering')
-          })
-          
-          audioRef.current.addEventListener('progress', () => {
-            if (audioRef.current) {
-              const buffered = audioRef.current.buffered
-              if (buffered.length > 0) {
-                const bufferedEnd = buffered.end(buffered.length - 1)
-                console.log('Audio buffered:', Math.round(bufferedEnd), 'seconds')
+      // Setup audio with intelligent fallback routing
+      const setupAudioElement = async () => {
+        let audioSource = originalAudioSource
+        
+        // Route all R2 files through proxy with intelligent fallback
+        if (audioSource && (audioSource.includes('.r2.dev') || audioSource.includes('.r2.cloudflarestorage.com'))) {
+          const { createFallbackAudioSource } = await import('@/lib/videoUtils')
+          audioSource = await createFallbackAudioSource(audioSource)
+          console.log('🎵 Final audio source determined:', audioSource)
+        }
+        
+        // Only proceed if we have a valid audio source
+        if (audioSource && audioSource.trim() !== '') {
+          // Create audio element if it doesn't exist
+          if (!audioRef.current) {
+            audioRef.current = new Audio()
+            audioRef.current.preload = 'auto'
+            audioRef.current.crossOrigin = 'anonymous'
+            
+            // Enable faster loading and buffering
+            audioRef.current.setAttribute('webkit-playsinline', 'true')
+            audioRef.current.setAttribute('playsinline', 'true')
+            
+            // Set up audio event listeners
+            audioRef.current.addEventListener('loadstart', () => {
+              setIsAudioLoading(true)
+            })
+            
+            audioRef.current.addEventListener('canplay', () => {
+              setIsAudioLoading(false)
+            })
+            
+            audioRef.current.addEventListener('loadedmetadata', () => {
+              if (audioRef.current) {
+                setActualDuration(audioRef.current.duration)
+                console.log('Audio metadata loaded, duration:', audioRef.current.duration)
               }
-            }
-          })
+            })
+            
+            audioRef.current.addEventListener('loadeddata', () => {
+              setIsAudioLoading(false)
+              console.log('Audio data loaded - ready for playback')
+            })
+            
+            audioRef.current.addEventListener('canplaythrough', () => {
+              console.log('Audio can play through without buffering')
+            })
+            
+            audioRef.current.addEventListener('progress', () => {
+              if (audioRef.current) {
+                const buffered = audioRef.current.buffered
+                if (buffered.length > 0) {
+                  const bufferedEnd = buffered.end(buffered.length - 1)
+                  console.log('Audio buffered:', Math.round(bufferedEnd), 'seconds')
+                }
+              }
+            })
+            
+            audioRef.current.addEventListener('error', (e) => {
+              console.error('Audio loading error:', e, 'Source:', audioSource)
+              // Try to provide more specific error information
+              if (audioRef.current) {
+                console.error('Audio error details:', {
+                  networkState: audioRef.current.networkState,
+                  readyState: audioRef.current.readyState,
+                  error: audioRef.current.error
+                })
+              }
+            })
+            
+            // Remove any existing listeners before adding new ones
+            audioRef.current.removeEventListener('timeupdate', handleTimeUpdate)
+            audioRef.current.removeEventListener('ended', handleEnded)
+            
+            // Add fresh event listeners
+            audioRef.current.addEventListener('timeupdate', handleTimeUpdate)
+            audioRef.current.addEventListener('ended', handleEnded)
+          }
           
-          audioRef.current.addEventListener('error', (e) => {
-            console.error('Audio loading error:', e, 'Source:', audioSource)
-            // Try to provide more specific error information
-            if (audioRef.current) {
-              console.error('Audio error details:', {
-                networkState: audioRef.current.networkState,
-                readyState: audioRef.current.readyState,
-                error: audioRef.current.error
-              })
+          // Set the source - ensure it's a full URL for audio element
+          const fullAudioSource = audioSource.startsWith('/') ? `${window.location.origin}${audioSource}` : audioSource
+          if (audioRef.current.src !== fullAudioSource) {
+            console.log('Setting final audio source:', fullAudioSource)
+            audioRef.current.src = fullAudioSource
+            
+            // Force immediate loading for faster start
+            audioRef.current.load()
+            
+            // Pre-buffer some content
+            setTimeout(() => {
+              if (audioRef.current && audioRef.current.readyState >= 2) {
+                console.log('Audio ready for playback')
+              }
+            }, 100)
+          }
+          
+          // Set audio properties after source is set
+          if (audioRef.current) {
+            // Only set position if this is the initial load or switching media types
+            // Avoid resetting position during normal playback
+            if (Math.abs(audioRef.current.currentTime - currentTime) > 1) {
+              audioRef.current.currentTime = currentTime
             }
-          })
+            audioRef.current.volume = (isMuted ? 0 : volume) / 100
+            audioRef.current.playbackRate = playbackSpeed
+          }
         }
-        
-        // Set the source - ensure it's a full URL for audio element
-        const fullAudioSource = audioSource.startsWith('/') ? `${window.location.origin}${audioSource}` : audioSource
-        if (audioRef.current.src !== fullAudioSource) {
-          console.log('Setting audio source:', fullAudioSource)
-          audioRef.current.src = fullAudioSource
-          
-          // Force immediate loading for faster start
-          audioRef.current.load()
-          
-          // Pre-buffer some content
-          setTimeout(() => {
-            if (audioRef.current && audioRef.current.readyState >= 2) {
-              console.log('Audio ready for playback')
-            }
-          }, 100)
-        }
-        
-        // Remove any existing listeners before adding new ones
-        audioRef.current.removeEventListener('timeupdate', handleTimeUpdate)
-        audioRef.current.removeEventListener('ended', handleEnded)
-        
-        // Add fresh event listeners
-        audioRef.current.addEventListener('timeupdate', handleTimeUpdate)
-        audioRef.current.addEventListener('ended', handleEnded)
       }
       
-      // Set audio properties
-      if (audioRef.current) {
-        // Only set position if this is the initial load or switching media types
-        // Avoid resetting position during normal playback
-        if (Math.abs(audioRef.current.currentTime - currentTime) > 1) {
-          audioRef.current.currentTime = currentTime
-        }
-        audioRef.current.volume = (isMuted ? 0 : volume) / 100
-        audioRef.current.playbackRate = playbackSpeed
-      }
+      // Execute async setup
+      setupAudioElement().catch(console.error)
     }
     
     return () => {
