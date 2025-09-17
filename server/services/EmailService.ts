@@ -923,10 +923,33 @@ export class EmailService {
     // 1. Journal Writing Streak (Orange)
     const journalStreak = this.calculateJournalStreak(recentEntries || []);
 
-    // 2. Goal Progress Percentage (Blue)
+    // 2. Goal Progress Percentage (Blue) - Match dashboard calculation
     let goalProgressPercentage = 0;
     if (goals && goals.length > 0) {
-      const totalProgress = goals.reduce((sum: number, goal: any) => sum + (goal.progress || 0), 0);
+      const totalProgress = goals.reduce((sum: number, goal: any) => {
+        // Use the same logic as dashboard GoalCard.tsx
+        if (goal.progress_type === 'milestone' && goal.milestones && goal.milestones.length > 0) {
+          // Calculate weighted milestone progress
+          const totalWeight = goal.milestones.reduce((sum: number, milestone: any) => sum + (milestone.weight || 0), 0);
+          if (totalWeight === 0) return sum + 0;
+          
+          const completedWeight = goal.milestones
+            .filter((milestone: any) => milestone.status === 'done')
+            .reduce((sum: number, milestone: any) => sum + (milestone.weight || 0), 0);
+          
+          // Normalize progress based on current total weight (handles partial milestone setups)
+          const normalizedProgress = Math.round((completedWeight / totalWeight) * 100);
+          
+          // If milestones don't total 100%, show proportional progress
+          if (totalWeight < 100) {
+            return sum + Math.round((normalizedProgress * totalWeight) / 100);
+          }
+          
+          return sum + normalizedProgress;
+        }
+        // For manual progress tracking, use goal.progress directly
+        return sum + (goal.progress || 0);
+      }, 0);
       goalProgressPercentage = Math.round(totalProgress / goals.length);
     }
 
