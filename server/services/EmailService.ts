@@ -1210,10 +1210,7 @@ export class EmailService {
       greetingEmoji: greetingData.greetingEmoji,
       partOfDay,
       formattedDate: new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
-      quote: emailContent?.motivation_quote || personalData?.motivationQuote || {
-        text: "Great things never come from comfort zones.",
-        author: "Anonymous"
-      },
+      quote: this.generateMotivationQuote(),
       // Legacy stats for backwards compatibility
       stats: {
         totalGoals,
