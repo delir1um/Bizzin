@@ -198,6 +198,322 @@ function generateFallbackAnalysis(text: string) {
   };
 }
 
+// Semantic business context detection for mood refinements
+function detectBusinessContext(
+  lowerText: string,
+  sentiment: { type: string; confidence: number },
+  emotion: string,
+  emotionScore: number
+): { override: boolean; mood: string; energy: string; reason: string } {
+  
+  // Define extreme business contexts that should override AI analysis
+  const extremeContexts = [
+    {
+      patterns: ['fired.*employee', 'let.*go.*team', 'had to fire'],
+      mood: 'conflicted',
+      energy: 'low',
+      reason: 'employee termination context'
+    },
+    {
+      patterns: ['accident.*injured', 'workplace.*accident', 'employee.*injured'],
+      mood: 'reflective',
+      energy: 'low',
+      reason: 'workplace safety incident'
+    },
+    {
+      patterns: ['acquisition.*offer', '.*million.*offer', 'fortune.*offer'],
+      mood: sentiment.type === 'positive' && sentiment.confidence > 0.9 ? 'excited' : 'focused',
+      energy: sentiment.type === 'positive' && sentiment.confidence > 0.9 ? 'high' : 'medium',
+      reason: 'major acquisition opportunity'
+    },
+    {
+      patterns: ['crisis.*management', 'emergency.*response', 'critical.*situation'],
+      mood: 'determined',
+      energy: 'high',
+      reason: 'crisis management situation'
+    }
+  ];
+  
+  // Check for extreme contexts
+  for (const context of extremeContexts) {
+    if (context.patterns.some(pattern => new RegExp(pattern).test(lowerText))) {
+      return {
+        override: true,
+        mood: context.mood,
+        energy: context.energy as 'high' | 'medium' | 'low',
+        reason: context.reason
+      };
+    }
+  }
+  
+  // No override needed
+  return {
+    override: false,
+    mood: '',
+    energy: '',
+    reason: ''
+  };
+}
+
+// Semantic business category detection using AI analysis
+function detectSemanticBusinessCategory(
+  sentiment: { type: string; confidence: number },
+  emotion: string,
+  emotionScore: number,
+  lowerText: string,
+  mood: string
+): string {
+  
+  // Use AI sentiment/emotion combinations to determine business context
+  const categoryMappings = [
+    {
+      // Strong positive emotions with high confidence = achievement
+      condition: (s: any, e: string, es: number) => 
+        (s.type === 'positive' && s.confidence > 0.8) && 
+        (['joy', 'surprise'].includes(e) && es > 0.5),
+      category: 'achievement',
+      weight: 0.9
+    },
+    {
+      // Negative emotions with business stress indicators = challenge  
+      condition: (s: any, e: string, es: number) =>
+        (s.type === 'negative' && s.confidence > 0.6) &&
+        (['anger', 'sadness', 'fear'].includes(e) && es > 0.4),
+      category: 'challenge',
+      weight: 0.8
+    },
+    {
+      // Positive sentiment + surprise/curiosity + neutral emotions = growth
+      condition: (s: any, e: string, es: number) =>
+        (s.type === 'positive' && s.confidence > 0.6) &&
+        (['surprise', 'neutral'].includes(e)) &&
+        containsGrowthIndicators(lowerText),
+      category: 'growth',
+      weight: 0.7
+    },
+    {
+      // Neutral sentiment + focus emotions = planning
+      condition: (s: any, e: string, es: number) =>
+        (s.type === 'neutral' || (s.type === 'positive' && s.confidence < 0.7)) &&
+        mood === 'focused' &&
+        containsPlanningIndicators(lowerText),
+      category: 'planning',  
+      weight: 0.7
+    },
+    {
+      // Mixed emotions or reflective moods = learning/reflection
+      condition: (s: any, e: string, es: number) =>
+        ['reflective', 'contemplative', 'curious'].includes(mood) ||
+        (es < 0.6 && s.confidence < 0.8), // Lower confidence = more reflective
+      category: 'reflection',
+      weight: 0.6
+    }
+  ];
+  
+  // Find best matching category based on AI analysis
+  const matches = categoryMappings
+    .filter(mapping => mapping.condition(sentiment, emotion, emotionScore))
+    .sort((a, b) => b.weight - a.weight);
+    
+  if (matches.length > 0) {
+    return matches[0].category;
+  }
+  
+  // Fallback using business context clues
+  if (containsAchievementIndicators(lowerText)) return 'achievement';
+  if (containsChallengeIndicators(lowerText)) return 'challenge';
+  if (containsGrowthIndicators(lowerText)) return 'growth';
+  if (containsPlanningIndicators(lowerText)) return 'planning';
+  
+  return 'reflection';
+}
+
+// Helper functions for semantic business indicators
+function containsAchievementIndicators(text: string): boolean {
+  const indicators = ['million', 'breakthrough', 'exceeded', 'success', 'won', 'signed', 'closed'];
+  return indicators.some(indicator => text.includes(indicator));
+}
+
+function containsChallengeIndicators(text: string): boolean {
+  const indicators = ['problem', 'difficult', 'crisis', 'failed', 'fired', 'issue'];
+  return indicators.some(indicator => text.includes(indicator));
+}
+
+function containsGrowthIndicators(text: string): boolean {
+  const indicators = ['scaling', 'expansion', 'growing', 'increase', 'hiring', 'new team'];
+  return indicators.some(indicator => text.includes(indicator));
+}
+
+function containsPlanningIndicators(text: string): boolean {
+  const indicators = ['strategy', 'planning', 'considering', 'roadmap', 'next quarter'];
+  return indicators.some(indicator => text.includes(indicator));
+}
+
+// AI-driven contextual insights generation
+function generateAIContextualInsights(
+  text: string,
+  category: string,
+  sentiment: { type: string; confidence: number },
+  emotion: string,
+  emotionScore: number,
+  mood: string
+): string[] {
+  
+  // Generate insights based on specific AI analysis patterns
+  const insightGenerators = [
+    {
+      // High confidence positive achievement patterns
+      condition: () => 
+        category === 'achievement' && 
+        sentiment.type === 'positive' && 
+        sentiment.confidence > 0.9 &&
+        ['joy', 'surprise'].includes(emotion),
+      insights: [
+        'Success patterns become your competitive moat when properly understood and systematized. Document what worked, why it worked, and how to replicate these conditions. Your ability to repeat successes consistently separates good businesses from great ones.',
+        'High-confidence achievements like this often signal market validation. Consider how this success can inform your strategic roadmap and resource allocation decisions.'
+      ]
+    },
+    {
+      // Challenge with determination (anger + negative but manageable confidence)
+      condition: () =>
+        category === 'challenge' &&
+        emotion === 'anger' &&
+        sentiment.confidence < 0.8 &&
+        mood !== 'frustrated',
+      insights: [
+        'Challenges that evoke strong emotions often contain the most valuable learning opportunities. Channel this energy into systematic problem-solving and team alignment.',
+        'Every significant business challenge tests both strategy and execution. Use this experience to strengthen your decision-making frameworks and crisis response capabilities.'
+      ]
+    },
+    {
+      // Growth with mixed emotions (uncertainty but positive direction)
+      condition: () =>
+        category === 'growth' &&
+        sentiment.type === 'positive' &&
+        emotionScore < 0.7,
+      insights: [
+        'Growth phases naturally bring both excitement and uncertainty. Focus on building scalable systems while maintaining the agility to adapt quickly to market feedback.',
+        'Sustainable growth requires balancing aggressive expansion with operational excellence. Monitor both opportunity capture and quality consistency metrics.'
+      ]
+    },
+    {
+      // Reflective or learning states with low confidence
+      condition: () =>
+        (category === 'reflection' || category === 'learning') &&
+        (sentiment.confidence < 0.7 || emotionScore < 0.6),
+      insights: [
+        'Periods of reflection and lower certainty often precede breakthrough insights. Document your thinking process to capture emerging patterns and hypotheses.',
+        'Business intuition develops through careful analysis of both successes and challenges. Trust the learning process while staying grounded in data and market feedback.'
+      ]
+    },
+    {
+      // Planning with focused energy
+      condition: () =>
+        category === 'planning' &&
+        mood === 'focused' &&
+        emotion === 'neutral',
+      insights: [
+        'Strategic planning sessions benefit from clear-headed analysis and systematic thinking. Connect your tactical decisions to long-term vision through measurable milestones.',
+        'Effective planning balances ambitious goals with realistic execution capacity. Consider both market opportunities and internal capabilities when setting priorities.'
+      ]
+    }
+  ];
+  
+  // Find matching insight generators
+  const applicableGenerators = insightGenerators.filter(gen => gen.condition());
+  
+  if (applicableGenerators.length > 0) {
+    // Return insights from the most specific generator
+    const selectedGenerator = applicableGenerators[0];
+    return selectedGenerator.insights.slice(0, 1); // Return one primary insight
+  }
+  
+  // Fallback insights based on sentiment/emotion combination
+  if (sentiment.type === 'positive' && sentiment.confidence > 0.8) {
+    return ['Strong positive momentum creates opportunities for strategic advancement. Consider how to leverage this energy for maximum business impact.'];
+  } else if (sentiment.type === 'negative' && sentiment.confidence > 0.7) {
+    return ['Challenging periods test business resilience and leadership capability. Focus on systematic problem-solving and team communication during difficult times.'];
+  } else {
+    return ['Business progress often involves periods of reflection and recalibration. Use this time to strengthen your strategic thinking and market understanding.'];
+  }
+}
+
+// Generate semantic headings based on AI analysis
+function generateSemanticHeading(
+  text: string,
+  category: string,
+  mood: string,
+  sentiment: { type: string; confidence: number },
+  emotion: string
+): string {
+  
+  const lowerText = text.toLowerCase();
+  
+  // Generate headings based on AI analysis patterns rather than just keywords
+  const headingPatterns = [
+    {
+      condition: () => 
+        category === 'achievement' && 
+        sentiment.confidence > 0.9 && 
+        emotion === 'joy',
+      heading: 'Major business breakthrough',
+    },
+    {
+      condition: () =>
+        category === 'achievement' &&
+        lowerText.includes('million') &&
+        sentiment.type === 'positive',
+      heading: 'Revenue breakthrough success'
+    },
+    {
+      condition: () =>
+        category === 'challenge' &&
+        mood === 'conflicted' &&
+        lowerText.includes('employee'),
+      heading: 'Leadership decision challenge'
+    },
+    {
+      condition: () =>
+        category === 'growth' &&
+        sentiment.type === 'positive' &&
+        emotion === 'surprise',
+      heading: 'Unexpected growth opportunity'
+    },
+    {
+      condition: () =>
+        category === 'planning' &&
+        mood === 'focused' &&
+        emotion === 'neutral',
+      heading: 'Strategic planning session'
+    },
+    {
+      condition: () =>
+        category === 'reflection' &&
+        mood === 'contemplative',
+      heading: 'Business insight reflection'
+    }
+  ];
+  
+  // Find matching heading pattern
+  const matchingPattern = headingPatterns.find(pattern => pattern.condition());
+  
+  if (matchingPattern) {
+    return matchingPattern.heading;
+  }
+  
+  // Fallback to category-based headings
+  const categoryHeadings = {
+    achievement: 'Business success milestone',
+    challenge: 'Business challenge navigation', 
+    growth: 'Business scaling update',
+    planning: 'Strategic business planning',
+    reflection: 'Business journal reflection',
+    learning: 'Business learning insights'
+  };
+  
+  return categoryHeadings[category as keyof typeof categoryHeadings] || 'Business journal entry';
+}
+
 // Normalize sentiment labels for backward compatibility between different models
 function normalizeSentimentLabel(label: string, score: number): { type: 'positive' | 'negative' | 'neutral', confidence: number } {
   const lowerLabel = label.toLowerCase();
@@ -343,87 +659,91 @@ router.post('/analyze', async (req, res) => {
       console.log(`🔍 Set to focused (unknown sentiment label: ${sentimentLabel})`);
     }
 
-    // Override with emotion data when it's stronger and more specific
+    // Enhanced semantic mood mapping using emotion + sentiment combinations
     const emotionLabel = topEmotion?.label?.toLowerCase() || '';
     const emotionScore = topEmotion?.score || 0;
     
-    // Use emotion when confidence is high enough
+    // Create semantic mood mapping based on emotion type and sentiment strength
+    const moodMapping = {
+      // High-confidence positive sentiment combinations
+      joy_positive_high: { mood: 'excited', energy: 'high' },
+      surprise_positive_high: { mood: 'thrilled', energy: 'high' },
+      neutral_positive_high: { mood: 'confident', energy: 'high' },
+      
+      // Medium-confidence positive sentiment combinations
+      joy_positive_med: { mood: 'optimistic', energy: 'medium' },
+      surprise_positive_med: { mood: 'curious', energy: 'medium' },
+      neutral_positive_med: { mood: 'focused', energy: 'medium' },
+      
+      // High-confidence negative sentiment combinations
+      anger_negative_high: { mood: 'frustrated', energy: 'medium' }, // Anger can drive action
+      fear_negative_high: { mood: 'concerned', energy: 'low' },
+      sadness_negative_high: { mood: 'reflective', energy: 'low' },
+      disgust_negative_high: { mood: 'critical', energy: 'medium' },
+      
+      // Medium-confidence negative sentiment combinations  
+      anger_negative_med: { mood: 'stressed', energy: 'medium' },
+      fear_negative_med: { mood: 'uncertain', energy: 'low' },
+      sadness_negative_med: { mood: 'contemplative', energy: 'low' },
+      
+      // Neutral sentiment with strong emotions
+      anger_neutral: { mood: 'determined', energy: 'medium' },
+      joy_neutral: { mood: 'satisfied', energy: 'medium' },
+      surprise_neutral: { mood: 'intrigued', energy: 'medium' },
+      
+      // Fallback mappings
+      default_positive: { mood: 'optimistic', energy: 'medium' },
+      default_negative: { mood: 'concerned', energy: 'medium' },
+      default_neutral: { mood: 'focused', energy: 'medium' }
+    };
+    
+    // Determine confidence level for sentiment
+    const confidenceLevel = normalizedSentiment.confidence > 0.8 ? 'high' : 
+                          normalizedSentiment.confidence > 0.5 ? 'med' : 'low';
+    
+    // Create semantic mapping key
+    let mappingKey = '';
     if (emotionScore > 0.4) {
-      switch (emotionLabel) {
-        case 'joy':
-          primaryMood = 'excited';
-          energy = 'high';
-          break;
-        case 'anger':
-          primaryMood = 'frustrated';
-          energy = emotionScore > 0.7 ? 'high' : 'medium'; // Anger can drive action
-          break;
-        case 'sadness':
-          primaryMood = 'reflective';
-          energy = 'low';
-          break;
-        case 'fear':
-          primaryMood = 'concerned';
-          energy = 'medium';
-          break;
-        case 'surprise':
-          primaryMood = 'curious';
-          energy = 'medium';
-          break;
-        case 'disgust':
-          primaryMood = 'critical';
-          energy = 'medium';
-          break;
-        case 'neutral':
-          // Explicitly handle neutral emotions - don't override the sentiment-based mood
-          // Keep the sentiment-based mood (focused for LABEL_1)
-          break;
-        default:
-          // For unknown emotions, keep the sentiment-based mood
-          break;
-      }
+      // Use emotion + sentiment combination
+      mappingKey = `${emotionLabel}_${normalizedSentiment.type}_${confidenceLevel}`;
+    } else {
+      // Fallback to sentiment-only mapping
+      mappingKey = `default_${normalizedSentiment.type}`;
     }
+    
+    // Apply semantic mapping
+    const semanticMapping = moodMapping[mappingKey as keyof typeof moodMapping] || 
+                          moodMapping[`default_${normalizedSentiment.type}` as keyof typeof moodMapping] ||
+                          moodMapping.default_neutral;
+    
+    primaryMood = semanticMapping.mood;
+    energy = semanticMapping.energy;
+    
+    console.log(`🔍 SEMANTIC MAPPING: ${emotionLabel} (${emotionScore}) + ${normalizedSentiment.type} (${normalizedSentiment.confidence}) -> ${primaryMood} with ${energy} energy`);
 
-    // Streamlined context-specific mood adjustments
+    // Context-aware mood refinements using business semantics (as secondary factors)
     const lowerTextForMood = text.toLowerCase();
     
-    // Apply context overrides only for clear patterns
-    if (lowerTextForMood.includes('accident') || lowerTextForMood.includes('injured')) {
-      primaryMood = 'reflective';
-      energy = 'low';
-    } else if (lowerTextForMood.includes('crashed') || lowerTextForMood.includes('crisis')) {
-      primaryMood = 'frustrated';
-      energy = 'high';
-    } else if (lowerTextForMood.includes('success') || lowerTextForMood.includes('incredible')) {
-      primaryMood = 'excited';
-      energy = 'high';
-    } else if (lowerTextForMood.includes('funding') || lowerTextForMood.includes('investment')) {
-      primaryMood = 'focused';
-      energy = 'high';
+    // Only apply context refinements for extreme business situations that override AI analysis
+    const businessContext = detectBusinessContext(lowerTextForMood, normalizedSentiment, emotionLabel, emotionScore);
+    
+    if (businessContext.override) {
+      primaryMood = businessContext.mood;
+      energy = businessContext.energy;
+      console.log(`🔍 BUSINESS CONTEXT OVERRIDE: ${businessContext.reason} -> ${primaryMood}`);
     }
 
-    // Streamlined category detection
+    // Semantic category detection using AI analysis + business context
     const lowerText = text.toLowerCase();
-    let category = 'reflection';
+    const category = detectSemanticBusinessCategory(
+      normalizedSentiment,
+      emotionLabel,
+      emotionScore,
+      lowerText,
+      primaryMood
+    );
     
-    // Simplified category detection with core patterns
-    if (lowerText.includes('accident') || lowerText.includes('injured') || lowerText.includes('crisis') || 
-        lowerText.includes('problem') || lowerText.includes('difficult') || lowerText.includes('failed')) {
-      category = 'challenge';
-      console.log('🔍 Categorized as CHALLENGE');
-    } else if (lowerText.includes('success') || lowerText.includes('achieved') || lowerText.includes('milestone') ||
-               lowerText.includes('breakthrough') || lowerText.includes('exceeded') || lowerText.includes('won')) {
-      category = 'achievement';
-      console.log('🔍 Categorized as ACHIEVEMENT');
-    } else if (lowerText.includes('growing') || lowerText.includes('scaling') || lowerText.includes('expansion')) {
-      category = 'growth';
-      console.log('🔍 Categorized as GROWTH');
-    } else if (lowerText.includes('plan') || lowerText.includes('strategy') || lowerText.includes('considering') ||
-               lowerText.includes('funding') || lowerText.includes('investment')) {
-      category = 'planning';
-    } else if (lowerText.includes('learned') || lowerText.includes('feedback') || lowerText.includes('insight')) {
-      category = 'learning';
-    }
+    console.log(`🔍 SEMANTIC CATEGORIZATION: ${normalizedSentiment.type} + ${emotionLabel} + context -> ${category.toUpperCase()}`);
 
     // Calculate confidence using the highest AI model score
     const sentimentConfidence = topSentiment?.score || 0.5;
@@ -459,38 +779,37 @@ router.post('/analyze', async (req, res) => {
       return 'Business journal entry';
     };
 
-    // Simplified insights generation
-    const generateContextualInsights = (text: string, category: string): string[] => {
-      const lowerText = text.toLowerCase();
+    // AI-driven contextual insights generation
+    const generateSemanticInsights = (
+      text: string, 
+      category: string, 
+      sentiment: { type: string; confidence: number },
+      emotion: string,
+      emotionScore: number,
+      mood: string
+    ): string[] => {
+      // Generate insights based on AI analysis patterns rather than just category
+      const insights = generateAIContextualInsights(
+        text,
+        category,
+        sentiment,
+        emotion,
+        emotionScore,
+        mood
+      );
       
-      if (category === 'challenge') {
-        if (lowerText.includes('accident') || lowerText.includes('injured')) {
-          return ['Workplace safety incidents remind us that employee wellbeing must always be the top priority in business operations. Use this experience to strengthen safety protocols, invest in better equipment, and create a culture where team members feel safe reporting potential hazards. A company that truly protects its people builds lasting loyalty and trust.'];
-        }
-        return ['Every challenge contains valuable market intelligence that your competitors don\'t have. Document what you learn and how you solve problems - these insights become your competitive advantage.'];
-      }
-      
-      if (category === 'achievement') {
-        return ['Success patterns become your competitive moat when properly understood and systematized. Document what worked, why it worked, and how to replicate these conditions. Your ability to repeat successes consistently separates good businesses from great ones.'];
-      }
-      
-      if (category === 'growth') {
-        return ['Sustainable growth balances ambitious goals with realistic execution capacity. Monitor both your growth metrics and your team\'s ability to deliver quality consistently.'];
-      }
-      
-      if (category === 'planning') {
-        return ['Effective planning connects daily actions to long-term vision through clear prioritization and regular course correction.'];
-      }
-      
-      if (category === 'learning') {
-        return ['Learning velocity determines how quickly your business can evolve and adapt to market changes. Apply insights immediately while they\'re fresh and relevant.'];
-      }
-      
-      return ['Business intuition develops through careful pattern recognition and reflection on what drives success versus failure.'];
+      return insights;
     };
     
-    const insights = generateContextualInsights(text, category);
-    const aiHeading = generateIntelligentHeading(text, category);
+    const insights = generateSemanticInsights(
+      text, 
+      category, 
+      normalizedSentiment,
+      emotionLabel,
+      emotionScore,
+      primaryMood
+    );
+    const aiHeading = generateSemanticHeading(text, category, primaryMood, normalizedSentiment, emotionLabel);
 
     const result = {
       primary_mood: primaryMood,
