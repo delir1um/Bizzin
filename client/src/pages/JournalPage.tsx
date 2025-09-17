@@ -612,46 +612,6 @@ export function JournalPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.3, ease: "backOut" }}
           >
-            {entries.length > 0 && (
-              <motion.div
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Button 
-                  onClick={handleReAnalyzeEntries}
-                  disabled={isReAnalyzing}
-                  variant="outline"
-                  size="sm"
-                  className="border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-950/20
-                    transition-all duration-300 hover:shadow-md relative overflow-hidden disabled:opacity-50 min-h-[44px] text-sm sm:text-base"
-                >
-                  <motion.div
-                    animate={isReAnalyzing ? { 
-                      rotate: 360
-                    } : { 
-                      scale: [1, 1.1, 1],
-                      rotate: [0, 10, -10, 0]
-                    }}
-                    transition={isReAnalyzing ? {
-                      duration: 1, 
-                      repeat: Infinity, 
-                      ease: "linear" 
-                    } : { 
-                      duration: 2, 
-                      repeat: Infinity, 
-                      ease: "easeInOut" 
-                    }}
-                  >
-                    <Brain className="w-4 h-4 mr-2" />
-                  </motion.div>
-                  {isReAnalyzing ? 'Re-analyzing...' : 'Update AI Analysis'}
-                  
-                  {/* Subtle pulse effect */}
-                  <div className="absolute inset-0 bg-orange-500/10 rounded-md scale-0 group-hover:scale-100 transition-transform duration-300" />
-                </Button>
-              </motion.div>
-            )}
             
             {canCreateEntry() && (
               <motion.div
@@ -676,43 +636,6 @@ export function JournalPage() {
                 </Button>
               </motion.div>
             )}
-            
-            {/* Clear All Entries Button */}
-            <Button 
-              onClick={async () => {
-                try {
-                  await JournalService.clearAllEntries()
-                  queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
-                  toast({
-                    title: "Entries Cleared",
-                    description: "All journal entries have been removed.",
-                  })
-                } catch (error) {
-                  toast({
-                    title: "Error",
-                    description: "Failed to clear entries.",
-                    variant: "destructive"
-                  })
-                }
-              }}
-              variant="outline"
-              size="sm"
-              className="border-red-200 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-950/20 min-h-[44px] text-sm"
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Clear All
-            </Button>
-            
-            {/* Add Random Sample Entries Button */}
-            <Button 
-              onClick={handleAddSamples}
-              variant="outline"
-              size="sm"
-              className="border-purple-200 text-purple-700 hover:bg-purple-50 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-950/20 min-h-[44px] text-sm"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Random Samples
-            </Button>
           </motion.div>
         </div>
       </motion.div>
