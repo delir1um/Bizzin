@@ -33,6 +33,8 @@ Operates on a unified subscription model with a 14-day free trial followed by a 
 
 **Email Client Compatibility Resolution (Aug 19, 2025)**: Resolved critical email rendering inconsistencies across different email clients by implementing email-safe template architecture. Created table-based layout using XHTML Transitional DOCTYPE, inline CSS styling, and comprehensive email client overrides. Added Outlook-specific fixes, Gmail compatibility layers, and forced light theme enforcement. Emails now display consistently across Gmail, Outlook, Apple Mail, Yahoo, and mobile email clients, maintaining Bizzin's professional brand appearance universally.
 
+**Production Video Streaming Fix (Sep 17, 2025)**: Resolved critical 500 errors in production video streaming by implementing public bucket fast path. Root cause was proxy requiring R2 credentials even for public buckets (starting with 'pub-'). Solution bypasses S3 SDK entirely for public buckets, using direct HTTP proxy to https://{bucketName}.r2.dev/{videoKey} with proper Range header forwarding and status code propagation (200/206/404). This eliminates production failures while maintaining backward compatibility for private buckets with S3 SDK.
+
 **Enhanced Daily Digest Implementation (Aug 19, 2025)**: Transformed daily emails from simple notifications into comprehensive business engagement tools implementing all 6 strategic components for entrepreneur motivation and platform usage. Features include:
 
 **Daily Motivation & Focus**: Rotating business growth quotes with "Your Daily Business Fuel" branding. Top priority goal display with visual progress bars, completion percentage, and days remaining countdown for immediate goal focus.
