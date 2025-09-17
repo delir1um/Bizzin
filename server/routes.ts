@@ -476,35 +476,128 @@ ${new Date().toISOString().split('T')[0]}`;
   });
 
   // Handle HEAD requests for video proxy (for preloading)
-  app.head('/api/video-proxy/:videoKey(*)', (req, res) => {
-    const videoKey = req.params.videoKey;
-    const publicUrl = `https://pub-b3498cd071e1420b9d379a5510ba4bb8.r2.dev/${encodeURI(videoKey)}`;
-    
-    console.log('🔄 HEAD REDIRECT: Redirecting to public R2:', publicUrl);
-    
-    // Set CORS headers
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Range, Content-Type');
-    
-    // 302 redirect to public R2 URL
-    res.redirect(302, publicUrl);
+  app.head('/api/video-proxy/:videoKey(*)', async (req, res) => {
+    try {
+      const videoKey = req.params.videoKey;
+      const publicUrl = `https://pub-b3498cd071e1420b9d379a5510ba4bb8.r2.dev/${encodeURI(videoKey)}`;
+      
+      console.log('🔄 HEAD REQUEST: Proxying to R2:', publicUrl);
+      
+      // Make HEAD request to R2 to get metadata
+      const response = await fetch(publicUrl, { method: 'HEAD' });
+      
+      if (!response.ok) {
+        console.error('R2 HEAD request failed:', response.status, response.statusText);
+        return res.status(response.status).send('Video not found');
+      }
+      
+      // Set CORS and Range support headers
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Range, Content-Type');
+      res.header('Accept-Ranges', 'bytes');
+      
+      // Forward important headers from R2
+      const contentLength = response.headers.get('Content-Length');
+      const contentType = response.headers.get('Content-Type') || 'video/mp4';
+      const lastModified = response.headers.get('Last-Modified');
+      const etag = response.headers.get('ETag');
+      
+      if (contentLength) res.header('Content-Length', contentLength);
+      res.header('Content-Type', contentType);
+      if (lastModified) res.header('Last-Modified', lastModified);
+      if (etag) res.header('ETag', etag);
+      res.header('Cache-Control', 'public, max-age=31536000');
+      
+      res.status(200).end();
+    } catch (error) {
+      console.error('Video proxy HEAD error:', error);
+      res.status(500).send('Proxy error');
+    }
   });
 
-  // Video proxy endpoint to serve R2 videos with CORS headers
-  app.get('/api/video-proxy/:videoKey(*)', (req, res) => {
-    const videoKey = req.params.videoKey;
-    const publicUrl = `https://pub-b3498cd071e1420b9d379a5510ba4bb8.r2.dev/${encodeURI(videoKey)}`;
-    
-    console.log('🔄 GET REDIRECT: Redirecting to public R2:', publicUrl);
-    
-    // Set CORS headers
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Range, Content-Type');
-    
-    // 302 redirect to public R2 URL
-    res.redirect(302, publicUrl);
+  // Video proxy endpoint to serve R2 videos with proper Range support
+  app.get('/api/video-proxy/:videoKey(*)', async (req, res) => {
+    try {
+      const videoKey = req.params.videoKey;
+      const publicUrl = `https://pub-b3498cd071e1420b9d379a5510ba4bb8.r2.dev/${encodeURI(videoKey)}`;
+      
+      console.log('🔄 GET REQUEST: Proxying to R2:', publicUrl);
+      
+      // Set CORS headers first
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Range, Content-Type');
+      res.header('Accept-Ranges', 'bytes');
+      
+      // Forward Range header if present
+      const rangeHeader = req.headers.range;
+      const headers: Record<string, string> = {};
+      
+      if (rangeHeader) {
+        headers['Range'] = rangeHeader;
+        console.log('📊 Range request:', rangeHeader);
+      }
+      
+      // Make request to R2 with proper headers
+      const response = await fetch(publicUrl, { headers });
+      
+      if (!response.ok) {
+        console.error('R2 request failed:', response.status, response.statusText);
+        return res.status(response.status).send('Video not found');
+      }
+      
+      // Handle range response (206) or full response (200)
+      const status = response.status;
+      console.log('📥 R2 response status:', status);
+      
+      // Forward important headers from R2
+      const contentLength = response.headers.get('Content-Length');
+      const contentType = response.headers.get('Content-Type') || 'video/mp4';
+      const contentRange = response.headers.get('Content-Range');
+      const lastModified = response.headers.get('Last-Modified');
+      const etag = response.headers.get('ETag');
+      
+      res.status(status);
+      
+      if (contentLength) res.header('Content-Length', contentLength);
+      res.header('Content-Type', contentType);
+      if (contentRange) res.header('Content-Range', contentRange);
+      if (lastModified) res.header('Last-Modified', lastModified);
+      if (etag) res.header('ETag', etag);
+      res.header('Cache-Control', 'public, max-age=31536000');
+      
+      // Stream the response body
+      if (response.body) {
+        const reader = response.body.getReader();
+        
+        const pump = async () => {
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              
+              if (!res.write(value)) {
+                // Backpressure handling
+                await new Promise(resolve => res.once('drain', resolve));
+              }
+            }
+            res.end();
+          } catch (error) {
+            console.error('Stream error:', error);
+            res.destroy();
+          }
+        };
+        
+        pump();
+      } else {
+        res.end();
+      }
+      
+    } catch (error) {
+      console.error('Video proxy error:', error);
+      res.status(500).send('Proxy error');
+    }
   });
 
   // R2 file listing endpoint

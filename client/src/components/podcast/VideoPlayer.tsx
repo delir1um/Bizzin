@@ -60,9 +60,15 @@ export function VideoPlayer({
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const controlsTimeoutRef = useRef<NodeJS.Timeout>()
+  const allowedForwardRef = useRef(0)
   
   // Convert URL once and memoize it
   const proxyVideoUrl = convertToProxyUrl(videoUrl)
+  
+  // Initialize monotonic allowed forward position
+  useEffect(() => {
+    allowedForwardRef.current = Math.max(allowedForwardRef.current, maxProgressReached, startTime)
+  }, [maxProgressReached, startTime])
 
   // Sync with parent currentTime when provided
   useEffect(() => {
@@ -116,6 +122,9 @@ export function VideoPlayer({
         const videoTime = video.currentTime
         setCurrentTime(videoTime)
         onTimeUpdate(videoTime)
+        
+        // Update monotonic allowed forward position
+        allowedForwardRef.current = Math.max(allowedForwardRef.current, videoTime)
       }
     }
 
@@ -128,16 +137,56 @@ export function VideoPlayer({
       setHasError(true)
     }
 
-    const handlePlay = () => setIsPlaying(true)
+    const handlePlay = () => {
+      setIsPlaying(true)
+      setIsBuffering(false)
+    }
+    
     const handlePause = () => setIsPlaying(false)
+    
+    const handleWaiting = () => {
+      console.log('Video waiting for data...')
+      setIsBuffering(true)
+    }
+    
+    const handleStalled = () => {
+      console.log('Video stalled - network issue')
+      setIsBuffering(true)
+    }
+    
+    const handleCanPlay = () => {
+      console.log('Video can start playing')
+      setIsBuffering(false)
+    }
+    
+    const handleCanPlayThrough = () => {
+      console.log('Video can play through without buffering')
+      setIsBuffering(false)
+    }
+    
+    const handleSeeking = () => {
+      console.log('Video seeking')
+      setIsBuffering(true)
+    }
+    
+    const handleSeeked = () => {
+      console.log('Video seek completed')
+      setIsBuffering(false)
+    }
 
-    // Add only essential event listeners
+    // Add comprehensive event listeners for better buffering feedback
     video.addEventListener('loadedmetadata', handleLoadedMetadata)
     video.addEventListener('timeupdate', handleTimeUpdate)
     video.addEventListener('ended', handleEnded)
     video.addEventListener('error', handleError)
     video.addEventListener('play', handlePlay)
     video.addEventListener('pause', handlePause)
+    video.addEventListener('waiting', handleWaiting)
+    video.addEventListener('stalled', handleStalled)
+    video.addEventListener('canplay', handleCanPlay)
+    video.addEventListener('canplaythrough', handleCanPlayThrough)
+    video.addEventListener('seeking', handleSeeking)
+    video.addEventListener('seeked', handleSeeked)
 
     return () => {
       video.removeEventListener('loadedmetadata', handleLoadedMetadata)
@@ -146,6 +195,12 @@ export function VideoPlayer({
       video.removeEventListener('error', handleError)
       video.removeEventListener('play', handlePlay)
       video.removeEventListener('pause', handlePause)
+      video.removeEventListener('waiting', handleWaiting)
+      video.removeEventListener('stalled', handleStalled)
+      video.removeEventListener('canplay', handleCanPlay)
+      video.removeEventListener('canplaythrough', handleCanPlayThrough)
+      video.removeEventListener('seeking', handleSeeking)
+      video.removeEventListener('seeked', handleSeeked)
     }
   }, [proxyVideoUrl])
 
@@ -180,7 +235,8 @@ export function VideoPlayer({
     const newTime = value[0]
     // If episode is completed, allow seeking anywhere
     // Otherwise, allow seeking up to the maximum progress reached (for review)
-    if (isCompleted || newTime <= Math.max(maxProgressReached, currentTime)) {
+    // Use monotonic tracking to prevent rewind issues
+    if (isCompleted || newTime <= allowedForwardRef.current + 2) {
       setIsSeeking(true)
       
       // Pause video during seeking to prevent conflicts
@@ -318,7 +374,7 @@ export function VideoPlayer({
         className="w-full h-full"
         onClick={togglePlay}
         crossOrigin="anonymous"
-        preload="metadata"
+        preload="auto"
         playsInline
         muted={false}
         controls={false}
