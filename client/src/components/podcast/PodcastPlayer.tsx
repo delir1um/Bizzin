@@ -130,6 +130,17 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
     saveProgress(actualDuration)
   }
 
+  // Audio element event handlers for play/pause state synchronization
+  const handleAudioPlay = () => {
+    console.log('🎵 Audio play event - syncing isPlaying to true')
+    setIsPlaying(true)
+  }
+
+  const handleAudioPause = () => {
+    console.log('⏸️ Audio pause event - syncing isPlaying to false')
+    setIsPlaying(false)
+  }
+
   // Handle audio playback for audio episodes
   useEffect(() => {
     if (!isVideoEpisode) {
@@ -217,10 +228,14 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
             // Remove any existing listeners before adding new ones
             audioRef.current.removeEventListener('timeupdate', handleTimeUpdate)
             audioRef.current.removeEventListener('ended', handleEnded)
+            audioRef.current.removeEventListener('play', handleAudioPlay)
+            audioRef.current.removeEventListener('pause', handleAudioPause)
             
             // Add fresh event listeners
             audioRef.current.addEventListener('timeupdate', handleTimeUpdate)
             audioRef.current.addEventListener('ended', handleEnded)
+            audioRef.current.addEventListener('play', handleAudioPlay)
+            audioRef.current.addEventListener('pause', handleAudioPause)
           }
           
           // Set the source - ensure it's a full URL for audio element
@@ -263,6 +278,8 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
         // Remove all event listeners to prevent conflicts
         audioRef.current.removeEventListener('timeupdate', handleTimeUpdate)
         audioRef.current.removeEventListener('ended', handleEnded)
+        audioRef.current.removeEventListener('play', handleAudioPlay)
+        audioRef.current.removeEventListener('pause', handleAudioPause)
         audioRef.current.removeEventListener('loadstart', () => {})
         audioRef.current.removeEventListener('canplay', () => {})
         audioRef.current.removeEventListener('loadedmetadata', () => {})
