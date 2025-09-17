@@ -544,14 +544,23 @@ ${new Date().toISOString().split('T')[0]}`;
       
       const { S3Client, GetObjectCommand, HeadObjectCommand } = await import('@aws-sdk/client-s3');
       
+      // Production-optimized configuration for large video files
       const s3Client = new S3Client({
         region: 'auto',
         endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
         credentials: {
           accessKeyId,
           secretAccessKey,
-        }
+        },
+        maxAttempts: 3,
+        retryMode: 'adaptive'
       });
+      
+      // Handle large video files differently in production
+      const isLargeVideo = isVideo && (videoKey.includes('.mp4') || videoKey.includes('.webm'));
+      if (isLargeVideo) {
+        console.log(`🎬 Large video detected: ${videoKey}, applying production optimizations`);
+      }
       
       // Set CORS headers first
       res.header('Access-Control-Allow-Origin', '*');
@@ -590,8 +599,17 @@ ${new Date().toISOString().split('T')[0]}`;
         const start = parseInt(parts[0], 10);
         let end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
         
-        // Optimize chunk size for video vs audio
-        const chunkSize = isVideo ? 5 * 1024 * 1024 : 1024 * 1024; // 5MB for video, 1MB for audio
+        // Optimize chunk size for video vs audio - smaller chunks for large videos in production
+        let chunkSize;
+        if (isLargeVideo && fileSize > 100 * 1024 * 1024) { // Files larger than 100MB
+          chunkSize = 2 * 1024 * 1024; // 2MB chunks for very large videos
+          console.log(`📦 Using 2MB chunks for large video (${Math.round(fileSize / 1024 / 1024)}MB)`);
+        } else if (isVideo) {
+          chunkSize = 5 * 1024 * 1024; // 5MB for regular videos
+        } else {
+          chunkSize = 1024 * 1024; // 1MB for audio
+        }
+        
         if (!parts[1]) { // If no end specified, request a larger initial chunk
           end = Math.min(start + chunkSize - 1, fileSize - 1);
         }
@@ -613,15 +631,29 @@ ${new Date().toISOString().split('T')[0]}`;
         if (rangeResponse.Body) {
           const stream = rangeResponse.Body as any;
           
+          // Enhanced error handling for large videos
           stream.on('error', (streamError: any) => {
-            console.error(`Stream error for ${videoKey}:`, streamError);
+            console.error(`❌ Stream error for ${videoKey} (${isLargeVideo ? 'large video' : 'regular'}):`, {
+              error: streamError.message,
+              code: streamError.code,
+              fileSize: Math.round(fileSize / 1024 / 1024) + 'MB'
+            });
             if (!res.destroyed && !res.headersSent) {
               res.status(500).end();
             }
           });
           
-          // Handle connection close
+          // Handle connection close with logging
           req.on('close', () => {
+            if (isLargeVideo) {
+              console.log(`🔌 Client disconnected from large video: ${videoKey}`);
+            }
+            if (stream.destroy) stream.destroy();
+          });
+          
+          // Add timeout protection for large files
+          req.on('timeout', () => {
+            console.error(`⏰ Request timeout for ${videoKey}`);
             if (stream.destroy) stream.destroy();
           });
           
@@ -656,11 +688,32 @@ ${new Date().toISOString().split('T')[0]}`;
         if (response.Body) {
           const stream = response.Body as any;
           
+          // For large videos, we should avoid full file downloads - suggest range requests
+          if (isLargeVideo && response.ContentLength && response.ContentLength > 50 * 1024 * 1024) {
+            console.warn(`⚠️ Full download requested for large video ${videoKey} (${Math.round(response.ContentLength / 1024 / 1024)}MB) - this may cause memory issues`);
+            
+            // Suggest range request to client
+            res.header('Accept-Ranges', 'bytes');
+            res.header('X-Large-File-Warning', 'Consider using range requests for better performance');
+          }
+          
           stream.on('error', (streamError: any) => {
-            console.error(`Stream error for ${videoKey}:`, streamError);
+            console.error(`❌ Full stream error for ${videoKey} (${isLargeVideo ? 'large video' : 'regular'}):`, {
+              error: streamError.message,
+              code: streamError.code,
+              contentLength: response.ContentLength
+            });
             if (!res.headersSent) {
-              res.status(500).json({ error: 'Stream error' });
+              res.status(500).json({ error: 'Stream error', details: streamError.message });
             }
+          });
+          
+          // Handle connection close for full downloads
+          req.on('close', () => {
+            if (isLargeVideo) {
+              console.log(`🔌 Client disconnected from full large video: ${videoKey}`);
+            }
+            if (stream.destroy) stream.destroy();
           });
           
           stream.pipe(res);
@@ -671,26 +724,41 @@ ${new Date().toISOString().split('T')[0]}`;
       }
       
     } catch (error) {
-      console.error(`Video proxy error for ${videoKey || 'unknown'}:`, error);
-      console.error('Error details:', {
-        name: (error as Error).name,
-        message: (error as Error).message,
-        code: (error as any).Code,
-        statusCode: (error as any).$metadata?.httpStatusCode,
-        isVideo: isVideo
-      });
+      const errorDetails = {
+        videoKey: videoKey || 'unknown',
+        isVideo,
+        isLargeVideo: isLargeVideo || false,
+        errorName: (error as Error).name,
+        errorMessage: (error as Error).message,
+        errorCode: (error as any).Code,
+        httpStatusCode: (error as any).$metadata?.httpStatusCode,
+        timestamp: new Date().toISOString()
+      };
+      
+      console.error(`❌ Video proxy error:`, errorDetails);
       
       if (!res.headersSent) {
-        // More specific error messages
+        // Enhanced error messages for large video debugging
         if ((error as any).$metadata?.httpStatusCode === 404) {
           res.status(404).json({ 
             error: 'Video not found',
             details: 'The requested video file does not exist.' 
           });
+        } else if ((error as Error).name === 'TimeoutError' || (error as any).code === 'ETIMEDOUT') {
+          res.status(504).json({ 
+            error: 'Video loading timeout',
+            details: isLargeVideo ? 'Large video file timed out - try refreshing or use a faster connection' : 'Video loading timed out' 
+          });
+        } else if ((error as Error).message?.includes('memory') || (error as Error).message?.includes('ENOMEM')) {
+          res.status(503).json({ 
+            error: 'Server memory limit',
+            details: 'Video file too large for current server resources - please try again later' 
+          });
         } else {
           res.status(500).json({ 
             error: 'Failed to proxy video',
-            details: (error as Error).message 
+            details: (error as Error).message,
+            isLargeFile: isLargeVideo
           });
         }
       }
