@@ -479,14 +479,52 @@ ${new Date().toISOString().split('T')[0]}`;
   app.head('/api/video-proxy/:videoKey(*)', async (req, res) => {
     try {
       const videoKey = req.params.videoKey;
+      const bucketName = process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || process.env.CLOUDFLARE_R2_BUCKET_NAME || 'pub-b3498cd071e1420b9d379a5510ba4bb8';
       
-      // Validate environment variables - try both VITE_ prefixed and non-prefixed versions
+      console.log('🎬 HEAD: Video proxy request for:', videoKey, 'bucketName:', bucketName);
+      
+      // Fast path for public buckets - no credentials needed
+      if (bucketName.startsWith('pub-')) {
+        console.log('🚀 HEAD: Public bucket fast path for:', videoKey);
+        const upstreamUrl = `https://${bucketName}.r2.dev/${videoKey}`;
+        
+        const upstreamResponse = await fetch(upstreamUrl, {
+          method: 'HEAD',
+          headers: {
+            'Range': req.headers.range || ''
+          }
+        });
+        
+        console.log('HEAD upstream response:', upstreamResponse.status, upstreamResponse.statusText);
+        
+        // Set CORS headers
+        res.header('Access-Control-Allow-Origin', '*');
+        res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+        res.header('Access-Control-Allow-Headers', 'Range, Content-Type');
+        res.header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
+        
+        // Copy relevant headers from upstream
+        const contentType = upstreamResponse.headers.get('content-type') || 'video/mp4';
+        const contentLength = upstreamResponse.headers.get('content-length') || '0';
+        const acceptRanges = upstreamResponse.headers.get('accept-ranges') || 'bytes';
+        const cacheControl = upstreamResponse.headers.get('cache-control') || 'public, max-age=3600, immutable';
+        
+        res.header('Content-Type', contentType);
+        res.header('Content-Length', contentLength);
+        res.header('Accept-Ranges', acceptRanges);
+        res.header('Cache-Control', cacheControl);
+        
+        return res.status(upstreamResponse.status).end();
+      }
+      
+      // Fallback to S3 SDK for private buckets
+      console.log('📦 HEAD: Private bucket path for:', videoKey);
       const accountId = process.env.VITE_CLOUDFLARE_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID;
       const accessKeyId = process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID || process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
       const secretAccessKey = process.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY || process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
-      const bucketName = process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || process.env.CLOUDFLARE_R2_BUCKET_NAME || 'pub-b3498cd071e1420b9d379a5510ba4bb8';
       
       if (!accountId || !accessKeyId || !secretAccessKey) {
+        console.error('Private bucket HEAD request missing credentials');
         return res.status(500).end();
       }
       
@@ -530,21 +568,110 @@ ${new Date().toISOString().split('T')[0]}`;
     try {
       videoKey = req.params.videoKey;
       isVideo = videoKey.toLowerCase().includes('.mp4') || videoKey.toLowerCase().includes('.webm') || videoKey.toLowerCase().includes('.mov');
-      console.log('🎬 Video proxy request for:', videoKey, 'isVideo:', isVideo, 'environment:', process.env.NODE_ENV, 'timestamp:', new Date().toISOString());
+      const bucketName = process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || process.env.CLOUDFLARE_R2_BUCKET_NAME || 'pub-b3498cd071e1420b9d379a5510ba4bb8';
       
-      // Validate environment variables - try both VITE_ prefixed and non-prefixed versions
+      console.log('🎬 GET: Video proxy request for:', videoKey, 'isVideo:', isVideo, 'bucketName:', bucketName, 'environment:', process.env.NODE_ENV, 'timestamp:', new Date().toISOString());
+      
+      // Fast path for public buckets - no credentials needed, direct proxy
+      if (bucketName.startsWith('pub-')) {
+        console.log('🚀 GET: Public bucket fast path for:', videoKey);
+        const upstreamUrl = `https://${bucketName}.r2.dev/${videoKey}`;
+        
+        // Build fetch headers
+        const upstreamHeaders: Record<string, string> = {};
+        if (req.headers.range) {
+          upstreamHeaders['Range'] = req.headers.range;
+        }
+        
+        console.log('Proxying to:', upstreamUrl, 'with headers:', upstreamHeaders);
+        
+        const upstreamResponse = await fetch(upstreamUrl, {
+          method: 'GET',
+          headers: upstreamHeaders
+        });
+        
+        console.log('Upstream response:', upstreamResponse.status, upstreamResponse.statusText);
+        
+        // Set CORS headers first
+        res.header('Access-Control-Allow-Origin', '*');
+        res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+        res.header('Access-Control-Allow-Headers', 'Range, Content-Type');
+        res.header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
+        
+        // Copy relevant headers from upstream
+        const contentType = upstreamResponse.headers.get('content-type');
+        const contentLength = upstreamResponse.headers.get('content-length');
+        const contentRange = upstreamResponse.headers.get('content-range');
+        const acceptRanges = upstreamResponse.headers.get('accept-ranges');
+        const cacheControl = upstreamResponse.headers.get('cache-control');
+        const etag = upstreamResponse.headers.get('etag');
+        
+        if (contentType) res.header('Content-Type', contentType);
+        if (contentLength) res.header('Content-Length', contentLength);
+        if (contentRange) res.header('Content-Range', contentRange);
+        if (acceptRanges) res.header('Accept-Ranges', acceptRanges);
+        if (cacheControl) res.header('Cache-Control', cacheControl);
+        if (etag) res.header('ETag', etag);
+        
+        // Set status code from upstream (200, 206 for range, 404 for not found, etc.)
+        res.status(upstreamResponse.status);
+        
+        if (upstreamResponse.body) {
+          // Stream the response body
+          const reader = upstreamResponse.body.getReader();
+          
+          const pump = async () => {
+            try {
+              while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                
+                if (!res.destroyed) {
+                  res.write(Buffer.from(value));
+                }
+              }
+              if (!res.destroyed) {
+                res.end();
+              }
+            } catch (streamError) {
+              console.error('Stream error for', videoKey, ':', streamError);
+              if (!res.destroyed && !res.headersSent) {
+                res.status(500).end();
+              }
+            }
+          };
+          
+          // Handle client disconnect
+          req.on('close', () => {
+            console.log('🔌 Client disconnected from public bucket proxy:', videoKey);
+            reader.cancel();
+          });
+          
+          req.on('error', () => {
+            reader.cancel();
+          });
+          
+          await pump();
+          return;
+        } else {
+          res.end();
+          return;
+        }
+      }
+      
+      // Fallback to S3 SDK for private buckets
+      console.log('📦 GET: Private bucket path for:', videoKey);
       const accountId = process.env.VITE_CLOUDFLARE_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID;
       const accessKeyId = process.env.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID || process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
       const secretAccessKey = process.env.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY || process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
-      const bucketName = process.env.VITE_CLOUDFLARE_R2_BUCKET_NAME || process.env.CLOUDFLARE_R2_BUCKET_NAME || 'pub-b3498cd071e1420b9d379a5510ba4bb8';
       
       if (!accountId || !accessKeyId || !secretAccessKey) {
-        console.error('Missing Cloudflare credentials:', {
+        console.error('Missing Cloudflare credentials for private bucket:', {
           hasAccountId: !!accountId,
           hasAccessKeyId: !!accessKeyId,
           hasSecretAccessKey: !!secretAccessKey
         });
-        return res.status(500).json({ error: 'Server configuration error: Missing R2 credentials' });
+        return res.status(500).json({ error: 'Server configuration error: Missing R2 credentials for private bucket' });
       }
       
       const { S3Client, GetObjectCommand, HeadObjectCommand } = await import('@aws-sdk/client-s3');
