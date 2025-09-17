@@ -658,7 +658,19 @@ export class EmailService {
 
   // Generate daily motivation quote using shared quote service
   private generateMotivationQuote(): { text: string, author: string } {
+    const serverDate = new Date();
+    console.log('🎯 Server timezone calculation:', {
+      serverDate: serverDate.toISOString(),
+      serverTime: serverDate.toString(),
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+    });
+    
     const dailyQuote = BusinessQuoteService.getDailyQuote();
+    console.log('🎯 Server selected quote:', {
+      id: dailyQuote.id,
+      text: dailyQuote.text.substring(0, 50) + '...',
+      author: dailyQuote.author
+    });
     
     return {
       text: dailyQuote.text,
@@ -1310,6 +1322,11 @@ export class EmailService {
         goals: additionalData?.goals || [],
         recentEntries: additionalData?.recentEntries || [],
         profile: additionalData?.profile
+      });
+
+      console.log('🎯 Quote being passed to template:', {
+        text: templateData.quote?.text?.substring(0, 50) + '...',
+        author: templateData.quote?.author
       });
 
       const htmlContent = template(templateData);
