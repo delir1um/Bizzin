@@ -25,7 +25,6 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
   const [aiPreview, setAiPreview] = useState<any>(null)
   const [interimContent, setInterimContent] = useState("")
   const [isTypingAnimation, setIsTypingAnimation] = useState(false)
-  const [voiceGeneratedLength, setVoiceGeneratedLength] = useState(0)
   const { toast } = useToast()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout[]>([])
@@ -103,7 +102,6 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
     setAiPreview(null)
     setIsAnalyzing(false)
     setIsTypingAnimation(false)
-    setVoiceGeneratedLength(0)
     onClose()
   }
 
@@ -117,7 +115,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
     typingTimeoutRef.current = []
   }
   
-  // Enhanced voice input transcription with React-driven typewriter effect
+  // Simple and reliable voice input handling
   const handleVoiceTranscript = (transcript: string, isFinal: boolean) => {
     if (!transcript.trim()) return
     
@@ -125,30 +123,24 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
     console.log('Voice transcript received:', { transcript: cleanTranscript, isFinal, currentContent: content })
     
     if (isFinal) {
-      // Clear any existing typing animation
-      clearTypingTimeouts()
-      setInterimContent("") // Clear interim display
+      // Clear interim display
+      setInterimContent("")
       
-      // Simple approach: only append if this transcript is not already at the end of current content
-      const currentContent = content.trim()
-      const normalizedCurrent = currentContent.replace(/\s+/g, ' ').toLowerCase()
-      const normalizedTranscript = cleanTranscript.replace(/\s+/g, ' ').toLowerCase()
+      // Simple direct append - just add the final transcript to current content
+      const currentContent = content
+      const newContent = currentContent + (currentContent && !currentContent.endsWith(' ') ? ' ' : '') + cleanTranscript
       
-      // Check if the transcript is already at the end of current content
-      if (normalizedCurrent.endsWith(normalizedTranscript)) {
-        console.log('Transcript already present at end, skipping')
-        return
-      }
+      console.log('Setting new content directly:', { from: currentContent, to: newContent })
       
-      // Simple append approach
-      const fullExpectedContent = currentContent + (currentContent && !currentContent.endsWith(' ') ? ' ' : '') + cleanTranscript
-      const deltaText = fullExpectedContent.slice(content.length)
+      // Set content directly without animation to avoid any interference
+      setContent(newContent)
       
-      console.log('Appending new content:', { deltaText })
-      
-      // Only proceed if there's actually new content
-      if (deltaText.trim()) {
-        startTypewriterAnimation(fullExpectedContent, deltaText, content.length)
+      // Add visual feedback with a brief flash
+      if (textareaRef.current) {
+        textareaRef.current.classList.add('bg-green-50')
+        setTimeout(() => {
+          textareaRef.current?.classList.remove('bg-green-50')
+        }, 300)
       }
       
     } else {
@@ -275,17 +267,11 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
                   value={content}
                   onChange={(e) => {
                     if (!isTypingAnimation) {
-                      const newContent = e.target.value
-                      setContent(newContent)
+                      setContent(e.target.value)
                       setInterimContent("") // Clear interim when manually typing
-                      
-                      // Reset voice tracking when user manually edits
-                      if (newContent.length < content.length) {
-                        setVoiceGeneratedLength(0)
-                      }
                     }
                   }}
-                  readOnly={isTypingAnimation}
+                  readOnly={false}
                   className={`min-h-[140px] sm:min-h-[120px] resize-none text-base sm:text-sm leading-relaxed pr-12 transition-colors duration-200 ${
                     interimContent ? 'text-transparent caret-black dark:caret-white' : ''
                   }`}
