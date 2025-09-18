@@ -751,46 +751,52 @@ function extractContentThemes(text: string): {
   operationalChallenges: string[];
   operationalDetails: string[];
 } {
-  console.log('🔍 DEBUG: extractContentThemes called with text:', text.substring(0, 100) + '...');
+  const isDev = process.env.NODE_ENV === 'development';
+  if (isDev) {
+    console.log('🔍 DEBUG: extractContentThemes called with text:', text.substring(0, 100) + '...');
+  }
   const lowerText = text.toLowerCase();
-  console.log('🔍 DEBUG: lowerText:', lowerText);
   
   // Extract project-related content (expanded patterns)
   const projectWork = [];
   const projectRegex = /complet.*project|finish.*project|deliver.*project|seven projects|wrapped up.*projects?|finished.*tasks?|delivered.*items?|shipped.*deliverables?|concluded.*work|develop.*products?|working on|building|creating|delivering value|product development|developing|built|created|launched|shipped/i;
-  console.log('🔍 DEBUG: Testing projectWork regex against text...');
-  console.log('🔍 DEBUG: projectRegex.test(text):', projectRegex.test(text));
-  
-  // Test specific patterns mentioned in task
-  const developProductsTest = /develop.*products?/i.test(text);
-  console.log('🔍 DEBUG: develop.*products? pattern test:', developProductsTest);
+  if (isDev) {
+    console.log('🔍 DEBUG: Testing projectWork regex against text...');
+    console.log('🔍 DEBUG: projectRegex.test(text):', projectRegex.test(text));
+    
+    // Test specific patterns mentioned in task
+    const developProductsTest = /develop.*products?/i.test(text);
+    console.log('🔍 DEBUG: develop.*products? pattern test:', developProductsTest);
+  }
   
   if (projectRegex.test(text)) {
     const match = text.match(/complet.*?project[s]?|finish.*?project[s]?|deliver.*?project[s]?|wrapped up.*?project[s]?|finished.*?task[s]?|delivered.*?item[s]?|shipped.*?deliverable[s]?|concluded.*?work|develop.*?product[s]?|working on.*?(?=\s|$|\.)|building.*?(?=\s|$|\.)|creating.*?(?=\s|$|\.)|delivering value.*?(?=\s|$|\.)|product development.*?(?=\s|$|\.)|developing.*?(?=\s|$|\.)|built.*?(?=\s|$|\.)|created.*?(?=\s|$|\.)|launched.*?(?=\s|$|\.)/gi);
-    console.log('🔍 DEBUG: projectWork match result:', match);
+    if (isDev) console.log('🔍 DEBUG: projectWork match result:', match);
     if (match) projectWork.push(...match);
   }
-  console.log('🔍 DEBUG: Final projectWork array:', projectWork);
+  if (isDev) console.log('🔍 DEBUG: Final projectWork array:', projectWork);
   
   // Extract client relationship details (expanded patterns)
   const clientRelations = [];
   const clientRegex = /client.*happy|customer.*satisfied|client.*pleased|clients.*delighted|clients.*thrilled|customer satisfaction|positive feedback|client.*love|customer.*ecstatic|amazing.*response|customers.*use|customers can use|user.*experience|customer.*value|serving customers|customer base|user satisfaction|customer.*value|customers.*daily/i;
-  console.log('🔍 DEBUG: Testing clientRelations regex against text...');
-  console.log('🔍 DEBUG: clientRegex.test(text):', clientRegex.test(text));
-  
-  // Test specific patterns mentioned in task
-  const customersUseTest = /customers.*use/i.test(text);
-  const customersCanUseTest = /customers can use/i.test(text);
-  console.log('🔍 DEBUG: customers.*use pattern test:', customersUseTest);
-  console.log('🔍 DEBUG: customers can use pattern test:', customersCanUseTest);
+  if (isDev) {
+    console.log('🔍 DEBUG: Testing clientRelations regex against text...');
+    console.log('🔍 DEBUG: clientRegex.test(text):', clientRegex.test(text));
+    
+    // Test specific patterns mentioned in task
+    const customersUseTest = /customers.*use/i.test(text);
+    const customersCanUseTest = /customers can use/i.test(text);
+    console.log('🔍 DEBUG: customers.*use pattern test:', customersUseTest);
+    console.log('🔍 DEBUG: customers can use pattern test:', customersCanUseTest);
+  }
   
   if (clientRegex.test(text)) {
     const match = text.match(/client.*?happy|customer.*?satisfied|client.*?pleased|clients.*?delighted|clients.*?thrilled|customer satisfaction|positive feedback|client.*?love|customer.*?ecstatic|amazing.*?response|customers.*?use|customers can use|user.*?experience|customer.*?value|serving customers|customer base|user satisfaction|customers.*?daily/gi);
-    console.log('🔍 DEBUG: clientRelations match result:', match);
+    if (isDev) console.log('🔍 DEBUG: clientRelations match result:', match);
     if (match) clientRelations.push(...match);
     else clientRelations.push('positive client feedback');
   }
-  console.log('🔍 DEBUG: Final clientRelations array:', clientRelations);
+  if (isDev) console.log('🔍 DEBUG: Final clientRelations array:', clientRelations);
   if (/client.*retention|customer.*retention|churn rate|user retention|client.*loyalty|customer.*attrition/i.test(text)) {
     clientRelations.push('retention challenges');
   }
