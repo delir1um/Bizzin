@@ -189,6 +189,31 @@ export class GoalsService {
 
       console.log('Cleaned update data:', cleanUpdateData)
 
+      // Apply automatic status updates if progress is being updated
+      if ('progress' in cleanUpdateData) {
+        console.log('[AUTO_STATUS_DEBUG] Progress update detected, applying auto-status logic')
+        
+        // Get current goal to check existing status
+        const currentGoal = await this.getGoalWithMilestones(goalId)
+        const currentStatus = currentGoal?.status
+        
+        console.log('[AUTO_STATUS_DEBUG] Current goal status:', currentStatus, 'New progress:', cleanUpdateData.progress)
+        
+        // Apply auto-status logic
+        const autoStatusUpdates = await this.applyAutoStatus(
+          goalId, 
+          cleanUpdateData.progress as number, 
+          currentStatus
+        )
+        
+        console.log('[AUTO_STATUS_DEBUG] Auto-status updates:', autoStatusUpdates)
+        
+        // Merge auto-status updates with existing updates
+        Object.assign(cleanUpdateData, autoStatusUpdates)
+        
+        console.log('[AUTO_STATUS_DEBUG] Final update data with status:', cleanUpdateData)
+      }
+
       goalLogger.logUpdate(goalId, cleanUpdateData, userId, 'About to execute database update')
 
       // Update goal with user authentication - RLS will ensure user can only update their own goals
@@ -336,6 +361,56 @@ export class GoalsService {
       goalLogger.logError('DELETE_GOAL', err, goalId, userId, 'Exception in deleteGoal')
       throw err
     }
+  }
+
+  /**
+   * Determines the appropriate status based on goal progress and milestone completion
+   */
+  static async determineAutoStatus(goalId: string, currentProgress: number, currentStatus?: string): Promise<string | null> {
+    try {
+      // Don't auto-change manually set statuses (preserve user intent)
+      if (currentStatus === 'on_hold' || currentStatus === 'at_risk') {
+        // Only auto-complete if progress reaches 100%
+        if (currentProgress >= 100) {
+          return 'completed'
+        }
+        return null // Keep manual status
+      }
+
+      // For milestone-based goals, also check if all milestones are done
+      const goal = await this.getGoalWithMilestones(goalId)
+      let allMilestonesDone = false
+      
+      if (goal.progress_type === 'milestone' && goal.milestones && goal.milestones.length > 0) {
+        allMilestonesDone = goal.milestones.every(milestone => milestone.status === 'done')
+      }
+
+      // Determine status based on progress and milestones
+      if (currentProgress >= 100 || allMilestonesDone) {
+        return 'completed'
+      } else if (currentProgress > 0) {
+        return 'in_progress'
+      } else {
+        return 'not_started'
+      }
+    } catch (error) {
+      console.warn('Failed to determine auto status:', error)
+      return null // Fall back to no status change on error
+    }
+  }
+
+  /**
+   * Applies automatic status updates to a goal based on progress
+   */
+  static async applyAutoStatus(goalId: string, currentProgress: number, currentStatus?: string): Promise<Partial<Goal>> {
+    const newStatus = await this.determineAutoStatus(goalId, currentProgress, currentStatus)
+    
+    if (newStatus && newStatus !== currentStatus) {
+      console.log(`[AUTO_STATUS] Goal ${goalId}: ${currentStatus} → ${newStatus} (progress: ${currentProgress}%)`)
+      return { status: newStatus as Goal['status'] }
+    }
+    
+    return {} // No status change needed
   }
 
   static calculateStats(goals: Goal[]): GoalStats {
