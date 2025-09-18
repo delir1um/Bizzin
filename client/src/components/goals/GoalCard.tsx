@@ -230,7 +230,7 @@ export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid', className 
     <Card className={cn(
       `bg-white dark:bg-slate-800 border-0 shadow-sm hover:shadow-lg 
       transition-all duration-300 ease-out cursor-pointer group
-      relative overflow-hidden rounded-xl`,
+      relative overflow-hidden rounded-xl mb-6 break-inside-avoid-column`,
       goal.status === 'completed' && 'opacity-75',
       className
     )}>

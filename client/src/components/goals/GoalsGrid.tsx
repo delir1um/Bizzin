@@ -33,7 +33,7 @@ export const GoalsGrid = memo(function GoalsGrid({
       {/* Goals Grid/List */}
       <div className={
         viewMode === 'grid'
-          ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          ? "columns-1 md:columns-2 lg:columns-3 gap-x-6"
           : "space-y-4"
       }>
         {currentGoals.map((goal) => (
