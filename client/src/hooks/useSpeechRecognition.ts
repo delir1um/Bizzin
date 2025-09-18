@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 
-export type SpeechState = 'idle' | 'requesting-permission' | 'ready' | 'listening' | 'processing' | 'error'
+export type SpeechState = 'idle' | 'requesting-permission' | 'ready' | 'listening' | 'processing' | 'auto-paused' | 'session-ended' | 'error'
 
 export interface SpeechRecognitionResult {
   transcript: string
@@ -21,8 +21,12 @@ export interface UseSpeechRecognitionOptions {
   onResult?: (result: SpeechRecognitionResult) => void
   onError?: (error: SpeechRecognitionError) => void
   onStateChange?: (state: SpeechState) => void
+  onAutoStop?: (reason: 'silence' | 'session-limit', duration: number) => void
+  onSessionWarning?: (remainingSeconds: number) => void
   maxRetries?: number
   retryDelay?: number
+  silenceTimeoutMs?: number
+  maxSessionMs?: number
 }
 
 export interface UseSpeechRecognitionReturn {
@@ -35,8 +39,11 @@ export interface UseSpeechRecognitionReturn {
   error: SpeechRecognitionError | null
   startListening: () => Promise<void>
   stopListening: () => void
+  resumeListening: () => Promise<void>
   resetTranscript: () => void
   retryCount: number
+  sessionDuration: number
+  autoStopReason: 'silence' | 'session-limit' | null
 }
 
 export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}): UseSpeechRecognitionReturn {
@@ -47,8 +54,12 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
     onResult,
     onError,
     onStateChange,
+    onAutoStop,
+    onSessionWarning,
     maxRetries = 3,
-    retryDelay = 1000
+    retryDelay = 1000,
+    silenceTimeoutMs = 8000, // 8 seconds
+    maxSessionMs = 180000 // 3 minutes
   } = options
 
   // State
@@ -59,22 +70,104 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
   const [error, setError] = useState<SpeechRecognitionError | null>(null)
   const [isSupported, setIsSupported] = useState(true)
   const [retryCount, setRetryCount] = useState(0)
+  const [sessionStartTime, setSessionStartTime] = useState<number | null>(null)
+  const [autoStopReason, setAutoStopReason] = useState<'silence' | 'session-limit' | null>(null)
 
   // Refs
   const recognitionRef = useRef<any>(null)
   const retryTimeoutRef = useRef<number | null>(null)
   const isStartingRef = useRef(false)
   const shouldStopRef = useRef(false)
+  const lastSpeechAtRef = useRef<number | null>(null)
+  const silenceTimeoutRef = useRef<number | null>(null)
+  const sessionTimeoutRef = useRef<number | null>(null)
+  const sessionWarningTimeoutRef = useRef<number | null>(null)
+  const sessionWarningShownRef = useRef(false)
+  const stateRef = useRef<SpeechState>('idle')
 
   // Derived state
   const isListening = state === 'listening'
+  const sessionDuration = sessionStartTime ? Math.round((Date.now() - sessionStartTime) / 1000) : 0
 
   // Update state and notify listeners
   const updateState = useCallback((newState: SpeechState) => {
     console.log('updateState called: -> ', newState)
     setState(newState)
+    stateRef.current = newState
     onStateChange?.(newState)
   }, [onStateChange])
+
+  // Clear silence timeout only
+  const clearSilenceTimeout = useCallback(() => {
+    if (silenceTimeoutRef.current) {
+      clearTimeout(silenceTimeoutRef.current)
+      silenceTimeoutRef.current = null
+    }
+  }, [])
+
+  // Clear session timeout only  
+  const clearSessionTimeout = useCallback(() => {
+    if (sessionTimeoutRef.current) {
+      clearTimeout(sessionTimeoutRef.current)
+      sessionTimeoutRef.current = null
+    }
+    if (sessionWarningTimeoutRef.current) {
+      clearTimeout(sessionWarningTimeoutRef.current)
+      sessionWarningTimeoutRef.current = null
+    }
+  }, [])
+
+  // Clear all timeouts
+  const clearAllTimeouts = useCallback(() => {
+    clearSilenceTimeout()
+    clearSessionTimeout()
+  }, [clearSilenceTimeout, clearSessionTimeout])
+
+  // Auto-stop due to silence
+  const handleSilenceTimeout = useCallback(() => {
+    console.log('Auto-stopping due to silence timeout')
+    setAutoStopReason('silence')
+    shouldStopRef.current = true
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop()
+      } catch (e) {
+        console.log('Error stopping recognition on silence timeout:', e)
+      }
+    }
+    updateState('auto-paused')
+    const duration = sessionStartTime ? Math.round((Date.now() - sessionStartTime) / 1000) : 0
+    onAutoStop?.('silence', duration)
+  }, [onAutoStop, updateState, sessionStartTime])
+
+  // Auto-stop due to session limit
+  const handleSessionTimeout = useCallback(() => {
+    console.log('Auto-stopping due to session limit')
+    setAutoStopReason('session-limit')
+    shouldStopRef.current = true
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop()
+      } catch (e) {
+        console.log('Error stopping recognition on session timeout:', e)
+      }
+    }
+    updateState('session-ended')
+    const duration = sessionStartTime ? Math.round((Date.now() - sessionStartTime) / 1000) : 0
+    onAutoStop?.('session-limit', duration)
+  }, [onAutoStop, updateState, sessionStartTime])
+
+  // Start silence timeout
+  const startSilenceTimeout = useCallback(() => {
+    clearSilenceTimeout()
+    silenceTimeoutRef.current = window.setTimeout(handleSilenceTimeout, silenceTimeoutMs)
+  }, [clearSilenceTimeout, handleSilenceTimeout, silenceTimeoutMs])
+
+  // Reset silence timeout on speech
+  const resetSilenceTimeout = useCallback(() => {
+    lastSpeechAtRef.current = Date.now()
+    startSilenceTimeout()
+  }, [startSilenceTimeout])
 
   // Set error and update state
   const setErrorState = useCallback((errorCode: string, errorMessage: string, retryable: boolean = false) => {
@@ -134,6 +227,45 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
       setError(null)
       setConfidence(null) // Reset confidence on new session
       setRetryCount(0)
+      setAutoStopReason(null)
+      sessionWarningShownRef.current = false
+      
+      // Start session timing
+      if (!sessionStartTime) {
+        setSessionStartTime(Date.now())
+      }
+      
+      // Calculate remaining session time
+      const currentTime = Date.now()
+      const sessionElapsed = sessionStartTime ? currentTime - sessionStartTime : 0
+      const remainingSessionTime = Math.max(0, maxSessionMs - sessionElapsed)
+      
+      // Clear existing session timers
+      clearSessionTimeout()
+      
+      // If session already exceeded, stop immediately
+      if (remainingSessionTime <= 0) {
+        setTimeout(() => handleSessionTimeout(), 0)
+        return
+      }
+      
+      // Schedule session timeout for remaining time
+      sessionTimeoutRef.current = window.setTimeout(handleSessionTimeout, remainingSessionTime)
+      
+      // Schedule session warning at 15 seconds before limit (if not already shown)
+      const warningTime = Math.max(0, remainingSessionTime - 15000)
+      if (!sessionWarningShownRef.current && warningTime > 0 && onSessionWarning) {
+        sessionWarningTimeoutRef.current = window.setTimeout(() => {
+          if (stateRef.current === 'listening' && !sessionWarningShownRef.current) {
+            sessionWarningShownRef.current = true
+            onSessionWarning(15)
+          }
+        }, warningTime)
+      }
+      
+      // Start silence timeout
+      startSilenceTimeout()
+      
       updateState('listening')
     }
 
@@ -159,6 +291,11 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
         } else {
           interim += transcript
         }
+      }
+
+      // Reset silence timeout on any speech activity
+      if (finalTranscript || interim) {
+        resetSilenceTimeout()
       }
 
       if (finalTranscript) {
@@ -187,9 +324,9 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
           setErrorState('permission-denied', 'Microphone permission denied. Click the microphone icon in your browser address bar to allow access.')
           break
         case 'no-speech':
-          // Don't treat no-speech as an error - just continue listening
-          console.log('No speech detected, continuing to listen...')
-          return // Don't update state for no-speech
+          // Don't treat no-speech as an error - it's normal and expected
+          console.log('No speech detected (normal browser behavior)')
+          return // Don't update state or show error for no-speech
         case 'audio-capture':
           setErrorState('no-microphone', 'No microphone detected. Please connect a microphone and try again.')
           break
@@ -199,6 +336,11 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
         case 'aborted':
           // Don't treat aborted as an error - user likely stopped manually
           console.log('Speech recognition aborted')
+          // Preserve auto-stop states (auto-paused/session-ended)
+          if (stateRef.current === 'auto-paused' || stateRef.current === 'session-ended') {
+            console.log('Preserving auto-stop state:', stateRef.current)
+            return
+          }
           updateState('ready')
           return
         case 'language-not-supported':
@@ -215,13 +357,21 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
       console.log('Speech recognition ended, current state:', state, 'shouldStop:', shouldStopRef.current)
       isStartingRef.current = false
       setInterimTranscript('')
+      clearSilenceTimeout()
       
-      // If continuous mode and not manually stopped, restart recognition
-      if (continuous && state === 'listening' && !shouldStopRef.current) {
+      // Don't auto-restart if manually stopped or auto-stopped
+      if (shouldStopRef.current || state === 'auto-paused' || state === 'session-ended') {
+        console.log('Recognition ended - manual stop or auto-stop')
+        // State already set by auto-stop handlers
+        return
+      }
+      
+      // If continuous mode and still listening, restart recognition
+      if (continuous && stateRef.current === 'listening') {
         console.log('Auto-restarting speech recognition for continuous mode')
         setTimeout(() => {
           try {
-            if (recognitionRef.current && !shouldStopRef.current) {
+            if (recognitionRef.current && !shouldStopRef.current && stateRef.current === 'listening') {
               isStartingRef.current = true
               recognitionRef.current.start()
             }
@@ -293,7 +443,10 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
   const stopListening = useCallback(() => {
     // Set flag to indicate this is a manual stop
     shouldStopRef.current = true
+    setAutoStopReason(null)
     
+    // Clear all timeouts
+    clearAllTimeouts()
     if (retryTimeoutRef.current) {
       clearTimeout(retryTimeoutRef.current)
       retryTimeoutRef.current = null
@@ -309,8 +462,29 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
 
     isStartingRef.current = false
     setInterimTranscript('')
+    setSessionStartTime(null)
     updateState('ready')
-  }, [updateState])
+  }, [updateState, clearAllTimeouts])
+
+  // Resume listening (for auto-paused state)
+  const resumeListening = useCallback(async (): Promise<void> => {
+    if (state === 'auto-paused') {
+      // Reset auto-stop reason and restart (keep existing session)
+      setAutoStopReason(null)
+      shouldStopRef.current = false
+      await startListening()
+    } else if (state === 'session-ended') {
+      // Start completely new session
+      setAutoStopReason(null)
+      shouldStopRef.current = false
+      setSessionStartTime(null) // Reset for new session
+      sessionWarningShownRef.current = false // Reset warning
+      await startListening()
+    } else {
+      // Just call startListening normally
+      await startListening()
+    }
+  }, [state, startListening])
 
   // Reset transcript
   const resetTranscript = useCallback(() => {
@@ -319,9 +493,25 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
     setConfidence(null)
   }, [])
 
+  // Auto-stop on tab hide for privacy
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && isListening) {
+        console.log('Tab hidden, stopping voice input for privacy')
+        stopListening()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [isListening, stopListening])
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      clearAllTimeouts()
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop()
@@ -333,7 +523,7 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
         clearTimeout(retryTimeoutRef.current)
       }
     }
-  }, [])
+  }, [clearAllTimeouts])
 
   return {
     state,
@@ -345,7 +535,10 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
     error,
     startListening,
     stopListening,
+    resumeListening,
     resetTranscript,
-    retryCount
+    retryCount,
+    sessionDuration,
+    autoStopReason
   }
 }

@@ -30,8 +30,11 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
     error,
     startListening,
     stopListening,
+    resumeListening,
     resetTranscript,
-    retryCount
+    retryCount,
+    sessionDuration,
+    autoStopReason
   } = useSpeechRecognition({
     continuous: true,
     interimResults: true,
@@ -48,12 +51,6 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
           duration: 6000
         })
         setShowPermissionHelper(true)
-      } else if (error.code === 'no-speech') {
-        toast({
-          title: "No speech detected",
-          description: "Try speaking closer to your microphone and click the mic again.",
-          className: "border-yellow-200 bg-yellow-50 text-yellow-800"
-        })
       } else if (error.code === 'no-microphone') {
         toast({
           title: "No microphone found",
@@ -61,17 +58,46 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
           variant: "destructive"
         })
       }
+      // Note: Removed 'no-speech' toast as it's now handled better by auto-pause
+    },
+    onAutoStop: (reason, duration) => {
+      if (reason === 'silence') {
+        toast({
+          title: "⏸️ Paused after silence",
+          description: `Auto-paused after ${Math.round(duration)}s of silence. Tap to resume.`,
+          className: "border-blue-200 bg-blue-50 text-blue-800",
+          duration: 4000
+        })
+      } else if (reason === 'session-limit') {
+        toast({
+          title: "⏱️ Session limit reached",
+          description: `Stopped after ${Math.round(duration / 60)} minutes. Tap to start new session.`,
+          className: "border-orange-200 bg-orange-50 text-orange-800",
+          duration: 6000
+        })
+      }
+    },
+    onSessionWarning: (remainingSeconds) => {
+      toast({
+        title: "⏰ Session ending soon",
+        description: `${remainingSeconds} seconds remaining. Session will auto-stop to save resources.`,
+        className: "border-yellow-200 bg-yellow-50 text-yellow-800",
+        duration: 5000
+      })
     },
     onStateChange: (newState) => {
       if (newState === 'listening') {
         setLocalIsRecording(true)
-        setSessionStartTime(Date.now())
+        if (!sessionStartTime) {
+          setSessionStartTime(Date.now())
+        }
         toast({
           title: "🎤 Recording started",
           description: "Speak now - your words will appear in the text area",
           className: "border-green-200 bg-green-50 text-green-800"
         })
-      } else if (newState === 'ready' && sessionStartTime) {
+      } else if (newState === 'ready' && !autoStopReason && sessionStartTime) {
+        // Only show manual stop message, auto-stop is handled by onAutoStop
         setLocalIsRecording(false)
         const duration = Math.round((Date.now() - sessionStartTime) / 1000)
         setSessionStartTime(null)
@@ -82,8 +108,14 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
             className: "border-gray-200 bg-gray-50 text-gray-800"
           })
         }
+      } else if (newState === 'auto-paused' || newState === 'session-ended') {
+        setLocalIsRecording(false)
+        // Don't reset sessionStartTime for auto-pause states
       } else {
         setLocalIsRecording(false)
+        if (newState === 'ready') {
+          setSessionStartTime(null)
+        }
       }
     }
   })
@@ -91,16 +123,30 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
   // Debug state after hook initialization
   console.log('VoiceInput render - state:', state, 'isListening:', isListening, 'compact:', compact)
 
-  // Calculate session duration
-  const sessionDuration = sessionStartTime ? Math.round((Date.now() - sessionStartTime) / 1000) : 0
-
   // Handle mic toggle
   const handleMicToggle = async () => {
     console.log('Mic toggle clicked, current state:', state, 'isListening:', isListening)
+    
     if (isListening || state === 'listening' || localIsRecording) {
       console.log('Stopping listening...')
       setLocalIsRecording(false)
       stopListening()
+    } else if (state === 'auto-paused' || state === 'session-ended') {
+      console.log('Resuming from auto-pause/session-end...')
+      setLocalIsRecording(true)
+      
+      try {
+        await resumeListening()
+        console.log('Resume listening completed')
+      } catch (err) {
+        console.error('Resume listening failed:', err)
+        setLocalIsRecording(false)
+        toast({
+          title: "Voice input error",
+          description: "Could not resume voice recording. Please try again.",
+          variant: "destructive"
+        })
+      }
     } else {
       console.log('Starting listening...')
       setLocalIsRecording(true) // Immediate visual feedback
@@ -173,6 +219,20 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
           label: 'Processing...',
           pulse: true
         }
+      case 'auto-paused':
+        return {
+          color: 'bg-blue-100 hover:bg-blue-200 text-blue-700 border-blue-300',
+          icon: Mic,
+          label: autoStopReason === 'silence' ? 'Resume (paused after silence)' : 'Resume recording',
+          pulse: false
+        }
+      case 'session-ended':
+        return {
+          color: 'bg-orange-100 hover:bg-orange-200 text-orange-700 border-orange-300',
+          icon: Mic,
+          label: 'Start new session',
+          pulse: false
+        }
       case 'error':
         return {
           color: 'bg-red-100 hover:bg-red-200 text-red-700 border-red-300',
@@ -237,6 +297,10 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
                 ? 'bg-white rounded-lg'
                 : state === 'requesting-permission'
                 ? 'bg-yellow-500 hover:bg-yellow-600 rounded-full shadow-sm animate-pulse'
+                : state === 'auto-paused'
+                ? 'bg-blue-200 hover:bg-blue-300 rounded-full shadow-sm'
+                : state === 'session-ended'
+                ? 'bg-orange-200 hover:bg-orange-300 rounded-full shadow-sm'
                 : state === 'error'
                 ? 'bg-red-200 hover:bg-red-300 rounded-full shadow-sm'
                 : 'bg-white hover:bg-gray-50 rounded-full shadow-sm hover:shadow-md'
@@ -246,6 +310,8 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
           title={
             state === 'listening' ? 'Tap to stop recording' :
             state === 'requesting-permission' ? 'Requesting microphone permission...' :
+            state === 'auto-paused' ? (autoStopReason === 'silence' ? 'Tap to resume (paused after silence)' : 'Tap to resume recording') :
+            state === 'session-ended' ? 'Tap to start new session' :
             state === 'error' ? 'Tap to retry' :
             'Tap to start recording'
           }
@@ -255,6 +321,10 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
             <Mic className="w-4 h-4 text-red-500 animate-pulse" />
           ) : state === 'requesting-permission' ? (
             <Volume2 className="w-4 h-4 text-white" />
+          ) : state === 'auto-paused' ? (
+            <Mic className="w-4 h-4 text-blue-700" />
+          ) : state === 'session-ended' ? (
+            <Mic className="w-4 h-4 text-orange-700" />
           ) : state === 'error' ? (
             <AlertCircle className="w-4 h-4 text-red-700" />
           ) : (
