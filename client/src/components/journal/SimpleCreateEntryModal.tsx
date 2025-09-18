@@ -195,15 +195,36 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
       
       let formattedContent: string
       
+      // Check for CURRENT selection (not just initial selection)
+      let currentSelectionStart = voiceSelectionStart
+      let currentSelectionEnd = voiceSelectionEnd
+      let hasCurrentSelection = hadSelectionOnVoiceStart
+      
+      if (textareaRef.current) {
+        const start = textareaRef.current.selectionStart
+        const end = textareaRef.current.selectionEnd
+        const hasSelection = start !== end
+        
+        console.log('🎯 Checking current selection at transcript time:', { start, end, hasSelection })
+        
+        if (hasSelection) {
+          // Use current selection, not initial selection
+          currentSelectionStart = start
+          currentSelectionEnd = end
+          hasCurrentSelection = true
+          console.log('🎯 Using CURRENT selection for replacement')
+        }
+      }
+      
       // Check if we should replace selected text or append
-      if (hadSelectionOnVoiceStart && voiceSelectionStart !== null && voiceSelectionEnd !== null) {
+      if (hasCurrentSelection && currentSelectionStart !== null && currentSelectionEnd !== null) {
         // Replace selected text with voice input
-        const selectedText = currentContent.substring(voiceSelectionStart, voiceSelectionEnd)
+        const selectedText = currentContent.substring(currentSelectionStart, currentSelectionEnd)
         
         console.log('Using text replacement mode:', {
           selectedText: selectedText,
-          selectionStart: voiceSelectionStart,
-          selectionEnd: voiceSelectionEnd,
+          selectionStart: currentSelectionStart,
+          selectionEnd: currentSelectionEnd,
           newTranscript: cleanTranscript
         })
         
@@ -211,8 +232,8 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
           currentContent,
           selectedText,
           cleanTranscript,
-          voiceSelectionStart,
-          voiceSelectionEnd,
+          currentSelectionStart,
+          currentSelectionEnd,
           {
             enablePunctuation: true,
             enableCapitalization: true,
@@ -235,7 +256,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
       }
       
       console.log('Speech formatted content:', { 
-        mode: hadSelectionOnVoiceStart ? 'replace' : 'append',
+        mode: hasCurrentSelection ? 'replace' : 'append',
         original: cleanTranscript, 
         currentContent: currentContent.substring(0, 30) + '...', 
         formatted: formattedContent.substring(0, 100) + '...'
@@ -249,10 +270,10 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
         if (textareaRef.current) {
           let newCursorPosition: number
           
-          if (hadSelectionOnVoiceStart && voiceSelectionStart !== null && voiceSelectionEnd !== null) {
+          if (hasCurrentSelection && currentSelectionStart !== null && currentSelectionEnd !== null) {
             // For replacement mode, calculate exact position after replacement
-            const beforeSelection = currentContent.substring(0, voiceSelectionStart)
-            const afterSelection = currentContent.substring(voiceSelectionEnd)
+            const beforeSelection = currentContent.substring(0, currentSelectionStart)
+            const afterSelection = currentContent.substring(currentSelectionEnd)
             
             // The new cursor position should be: beforeSelection length + formatted replacement text length
             const formattedNewTextLength = formattedContent.length - (beforeSelection.length + afterSelection.length)
@@ -262,7 +283,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
             newCursorPosition = Math.max(0, Math.min(newCursorPosition, formattedContent.length))
             
             console.log('Cursor positioned after replacement:', { 
-              originalSelection: [voiceSelectionStart, voiceSelectionEnd],
+              originalSelection: [currentSelectionStart, currentSelectionEnd],
               beforeLength: beforeSelection.length,
               afterLength: afterSelection.length,
               replacementLength: formattedNewTextLength,
