@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { queryClient } from "@/lib/queryClient"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -23,7 +23,11 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
   const [content, setContent] = useState("")
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [aiPreview, setAiPreview] = useState<any>(null)
+  const [interimContent, setInterimContent] = useState("")
+  const [isTypingAnimation, setIsTypingAnimation] = useState(false)
   const { toast } = useToast()
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const typingTimeoutRef = useRef<NodeJS.Timeout[]>([])
 
   const createEntryMutation = useMutation({
     mutationFn: async () => {
@@ -83,11 +87,21 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
     createEntryMutation.mutate()
   }
 
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      clearTypingTimeouts()
+    }
+  }, [])
+  
   const handleClose = () => {
+    clearTypingTimeouts()
     setTitle("")
     setContent("")
+    setInterimContent("")
     setAiPreview(null)
     setIsAnalyzing(false)
+    setIsTypingAnimation(false)
     onClose()
   }
 
@@ -95,23 +109,77 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
     setTitle(suggestedTitle)
   }
 
-  // Handle voice input transcription
+  // Clear all typing timeouts
+  const clearTypingTimeouts = () => {
+    typingTimeoutRef.current.forEach(timeout => clearTimeout(timeout))
+    typingTimeoutRef.current = []
+  }
+  
+  // Enhanced voice input transcription with React-driven typewriter effect
   const handleVoiceTranscript = (transcript: string, isFinal: boolean) => {
-    if (isFinal && transcript.trim()) {
-      // Only append the new transcript, don't accumulate
-      setContent(prev => {
-        const currentContent = prev.trim()
-        const cleanTranscript = transcript.trim()
+    if (!transcript.trim()) return
+    
+    const cleanTranscript = transcript.trim()
+    
+    if (isFinal) {
+      // Clear any existing typing animation
+      clearTypingTimeouts()
+      setInterimContent("") // Clear interim display
+      
+      // Calculate delta using proper diffing to avoid duplication
+      // Strategy: compute expected full content, then extract only the new portion
+      const currentContent = content
+      const fullExpectedContent = currentContent + (currentContent && !currentContent.endsWith(' ') ? ' ' : '') + cleanTranscript
+      
+      // Extract only the new delta portion that needs to be animated
+      const deltaText = fullExpectedContent.slice(currentContent.length)
+      
+      // Only proceed if there's actually new content
+      if (deltaText.trim()) {
+        startTypewriterAnimation(fullExpectedContent, deltaText, currentContent.length)
+      }
+      
+    } else {
+      // Show interim text
+      setInterimContent(cleanTranscript)
+    }
+  }
+  
+  // React-driven typewriter animation
+  const startTypewriterAnimation = (finalContent: string, newPortion: string, startIndex: number) => {
+    clearTypingTimeouts()
+    setIsTypingAnimation(true)
+    
+    const words = newPortion.trim().split(' ')
+    let currentLength = startIndex
+    
+    words.forEach((word, wordIndex) => {
+      const timeout = setTimeout(() => {
+        // Build the word with proper spacing
+        const needsLeadingSpace = wordIndex === 0 && startIndex > 0 && !newPortion.startsWith(' ')
+        const needsTrailingSpace = wordIndex < words.length - 1
+        const wordToAdd = (needsLeadingSpace ? ' ' : '') + word + (needsTrailingSpace ? ' ' : '')
         
-        // Check if this transcript is already at the end of content to prevent duplication
-        if (currentContent.endsWith(cleanTranscript)) {
-          return prev // Don't add if already present
+        currentLength += wordToAdd.length
+        setContent(finalContent.slice(0, currentLength))
+        
+        // Add flash effect to textarea
+        if (textareaRef.current) {
+          textareaRef.current.classList.add('bg-green-50')
+          const flashTimeout = setTimeout(() => {
+            textareaRef.current?.classList.remove('bg-green-50')
+          }, 200)
+          typingTimeoutRef.current.push(flashTimeout)
         }
         
-        const newContent = currentContent + (currentContent ? ' ' : '') + cleanTranscript
-        return newContent
-      })
-    }
+        // Animation complete
+        if (wordIndex === words.length - 1) {
+          setIsTypingAnimation(false)
+        }
+      }, wordIndex * 150)
+      
+      typingTimeoutRef.current.push(timeout)
+    })
   }
 
   // Generate a smart title from content
@@ -190,14 +258,44 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
             <div className="space-y-2 sm:space-y-3">
               <div className="relative">
                 <Textarea
+                  ref={textareaRef}
                   placeholder="What's on your mind? Start typing or use voice input, and AI will analyze your business thoughts..."
                   value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  className="min-h-[140px] sm:min-h-[120px] resize-none text-base sm:text-sm leading-relaxed pr-12"
+                  onChange={(e) => {
+                    if (!isTypingAnimation) {
+                      setContent(e.target.value)
+                      setInterimContent("") // Clear interim when manually typing
+                    }
+                  }}
+                  readOnly={isTypingAnimation}
+                  className="min-h-[140px] sm:min-h-[120px] resize-none text-base sm:text-sm leading-relaxed pr-12 transition-colors duration-200"
                   rows={6}
                   autoFocus
                   data-testid="textarea-content"
                 />
+                
+                {/* Interim text overlay */}
+                {interimContent && (
+                  <div 
+                    className="absolute inset-0 pointer-events-none overflow-hidden min-h-[140px] sm:min-h-[120px] text-base sm:text-sm leading-relaxed"
+                    style={{
+                      padding: '12px', // Match textarea padding
+                      paddingRight: '48px', // Account for pr-12 (voice input space)
+                      font: 'inherit',
+                      lineHeight: 'inherit',
+                      letterSpacing: 'inherit',
+                      wordSpacing: 'inherit',
+                      fontFamily: 'inherit'
+                    }}
+                  >
+                    {/* Final text (invisible spacer) */}
+                    <span className="opacity-0 whitespace-pre-wrap">{content}</span>
+                    {/* Interim text (visible in gray) */}
+                    <span className="text-gray-400 whitespace-pre-wrap">
+                      {content && !content.endsWith(' ') ? ' ' : ''}{interimContent}
+                    </span>
+                  </div>
+                )}
                 
                 {/* Integrated Voice Input Component */}
                 <VoiceInput
@@ -206,6 +304,8 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
                   language="en-US"
                   className="absolute bottom-3 right-3"
                   compact={true}
+                  textareaRef={textareaRef}
+                  showInterimOverlay={false}
                 />
               </div>
             </div>

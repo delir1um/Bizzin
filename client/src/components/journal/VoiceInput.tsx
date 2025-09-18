@@ -12,9 +12,11 @@ interface VoiceInputProps {
   language?: string
   className?: string
   compact?: boolean
+  textareaRef?: React.RefObject<HTMLTextAreaElement>
+  showInterimOverlay?: boolean
 }
 
-export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US', className = '', compact = false }: VoiceInputProps) {
+export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US', className = '', compact = false, textareaRef, showInterimOverlay = true }: VoiceInputProps) {
   const { toast } = useToast()
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null)
   const [showPermissionHelper, setShowPermissionHelper] = useState(false)
@@ -90,6 +92,10 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
         setLocalIsRecording(true)
         if (!sessionStartTime) {
           setSessionStartTime(Date.now())
+        }
+        // Auto-focus textarea when voice recording starts
+        if (textareaRef?.current) {
+          textareaRef.current.focus()
         }
         toast({
           title: "🎤 Recording started",
@@ -327,26 +333,28 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
         </Button>
         
         {/* Live transcript overlay */}
-        <AnimatePresence>
-          {interimTranscript && isListening && (
-            <motion.div
-              initial={{ opacity: 0, y: 5, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 5, scale: 0.95 }}
-              transition={{ duration: 0.15 }}
-              className="absolute bottom-12 right-0 max-w-xs bg-white border border-gray-200 rounded-lg p-2 shadow-lg"
-              style={{ zIndex: 1001 }}
-              data-testid="overlay-interim"
-            >
-              <div className="flex items-start gap-2">
-                <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse flex-shrink-0 mt-1.5"></div>
-                <p className="text-xs text-gray-700 leading-relaxed">
-                  "{interimTranscript}"
-                </p>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {showInterimOverlay && (
+          <AnimatePresence>
+            {interimTranscript && isListening && (
+              <motion.div
+                initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+                className="absolute bottom-12 right-0 max-w-xs bg-white border border-gray-200 rounded-lg p-2 shadow-lg"
+                style={{ zIndex: 1001 }}
+                data-testid="overlay-interim"
+              >
+                <div className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse flex-shrink-0 mt-1.5"></div>
+                  <p className="text-xs text-gray-700 leading-relaxed">
+                    "{interimTranscript}"
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
       </div>
     )
   }
@@ -476,30 +484,32 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
       </div>
 
       {/* Live Interim Transcript */}
-      <AnimatePresence>
-        {interimTranscript && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-            className="bg-blue-50 border border-blue-200 rounded-lg p-3"
-            aria-live="polite"
-            role="status"
-            data-testid="text-interim"
-          >
-            <div className="flex items-start gap-2">
-              <div className="flex items-center gap-1 flex-shrink-0">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                <span className="text-xs text-blue-600 font-medium">Listening</span>
+      {showInterimOverlay && (
+        <AnimatePresence>
+          {interimTranscript && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="bg-blue-50 border border-blue-200 rounded-lg p-3"
+              aria-live="polite"
+              role="status"
+              data-testid="text-interim"
+            >
+              <div className="flex items-start gap-2">
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs text-blue-600 font-medium">Listening</span>
+                </div>
+                <p className="text-sm text-blue-800 italic leading-relaxed">
+                  "{interimTranscript}"
+                </p>
               </div>
-              <p className="text-sm text-blue-800 italic leading-relaxed">
-                "{interimTranscript}"
-              </p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
 
       {/* Permission Helper Modal */}
       <AnimatePresence>
