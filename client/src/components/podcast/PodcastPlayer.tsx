@@ -42,7 +42,9 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
   // Update max progress when existing progress loads
   useEffect(() => {
     if (existingProgress?.progress_seconds) {
-      setMaxProgressReached(Math.max(startTime, existingProgress.progress_seconds))
+      const savedProgress = existingProgress.progress_seconds
+      setMaxProgressReached(Math.max(startTime, savedProgress))
+      lastSavedProgress.current = Math.floor(savedProgress) // Initialize with existing progress
     }
   }, [existingProgress, startTime])
   const [volume, setVolume] = useState(75)
@@ -70,41 +72,57 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const updateProgress = useUpdateProgress()
   const lastSaveTime = useRef(startTime)
+  const lastSavedProgress = useRef(startTime) // Track the last saved progress value
 
-  // Save progress every 15 seconds and on pause/close to reduce API calls
-  const saveProgress = (time: number) => {
-    if (Math.abs(time - lastSaveTime.current) >= 15 || time >= actualDuration) {
+  // Save progress monotonically - only save progress that's greater than previously saved
+  const saveProgress = (currentTime: number) => {
+    // Use maxProgressReached for persistence to ensure monotonic progress
+    const candidateProgress = Math.floor(maxProgressReached)
+    const timeSinceLastSave = Math.abs(candidateProgress - lastSavedProgress.current)
+    const isComplete = candidateProgress >= Math.floor(actualDuration * 0.95)
+    
+    // Save if: significant progress made (≥15s), episode completed, or initial meaningful progress
+    if (timeSinceLastSave >= 15 || isComplete || (candidateProgress >= 3 && lastSavedProgress.current < 3)) {
       // Don't save if mutation is already pending to prevent spam
       if (updateProgress.isPending) return
       
-      // Only save if we have meaningful progress (more than 3 seconds)
-      if (time >= 3) {
+      // Only save if candidate is greater than or equal to last saved (monotonic)
+      if (candidateProgress >= lastSavedProgress.current) {
         const mediaType = isVideoEpisode ? 'video' : 'audio';
-        console.log('💾 [DATABASE SAVE] Attempting to save progress:', {
+        console.log('💾 [MONOTONIC SAVE] Attempting to save progress:', {
           episodeId: episode.id,
-          progressSeconds: Math.floor(time),
+          candidateProgress,
+          maxProgressReached,
+          currentTime,
+          lastSavedProgress: lastSavedProgress.current,
+          progressDifference: candidateProgress - lastSavedProgress.current,
           episodeDuration: Math.floor(actualDuration),
           mediaType,
-          currentMediaType,
-          isVideoEpisode,
-          lastSaveTime: lastSaveTime.current,
-          timeDifference: time - lastSaveTime.current
+          isComplete
         });
         
         updateProgress.mutate({
           episodeId: episode.id,
-          progressSeconds: Math.floor(time),
-          episodeDuration: Math.floor(actualDuration), // Use actual media duration
+          progressSeconds: candidateProgress,
+          episodeDuration: Math.floor(actualDuration),
           mediaType
         }, {
           onSuccess: (data) => {
-            console.log('✅ [DATABASE SAVE] Progress saved successfully:', data);
+            console.log('✅ [MONOTONIC SAVE] Progress saved successfully:', data);
+            lastSavedProgress.current = candidateProgress
           },
           onError: (error) => {
-            console.error('❌ [DATABASE SAVE] Failed to save progress:', error);
+            console.error('❌ [MONOTONIC SAVE] Failed to save progress:', error);
           }
         })
-        lastSaveTime.current = time
+        lastSaveTime.current = currentTime
+      } else {
+        console.log('🚫 [MONOTONIC SAVE] Skipping save - candidate progress lower than saved:', {
+          candidateProgress,
+          lastSavedProgress: lastSavedProgress.current,
+          currentTime,
+          maxProgressReached
+        });
       }
     }
   }
@@ -325,20 +343,28 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
   // Save progress when component unmounts (player closed) - only if not already saved
   useEffect(() => {
     return () => {
-      if (currentTime > 0 && !progressSavedRef.current) {
-        console.log('🔚 [UNMOUNT SAVE] Saving progress on unmount:', {
+      if (maxProgressReached > 0 && !progressSavedRef.current) {
+        const candidateProgress = Math.floor(maxProgressReached)
+        console.log('🔚 [MONOTONIC UNMOUNT] Saving progress on unmount:', {
           episodeId: episode.id,
+          candidateProgress,
+          maxProgressReached,
           currentTime,
+          lastSavedProgress: lastSavedProgress.current,
           actualDuration,
           isVideoEpisode,
           mediaType: isVideoEpisode ? 'video' : 'audio'
         });
-        updateProgress.mutate({
-          episodeId: episode.id,
-          progressSeconds: Math.floor(currentTime),
-          episodeDuration: Math.floor(actualDuration),
-          mediaType: isVideoEpisode ? 'video' : 'audio'
-        })
+        
+        // Only save if candidate progress is greater than last saved
+        if (candidateProgress >= lastSavedProgress.current) {
+          updateProgress.mutate({
+            episodeId: episode.id,
+            progressSeconds: candidateProgress,
+            episodeDuration: Math.floor(actualDuration),
+            mediaType: isVideoEpisode ? 'video' : 'audio'
+          })
+        }
       }
     }
   }, [episode.id]) // Only depend on episode.id to avoid infinite loops
@@ -361,11 +387,15 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
     // Stop video playback if playing
     setIsPlaying(false)
     
-    // Save final progress before closing
-    if (currentTime > 0) {
-      console.log('🚪 [CLOSE SAVE] Saving progress on close:', {
+    // Save final progress before closing using monotonic logic
+    if (maxProgressReached > 0) {
+      const candidateProgress = Math.floor(maxProgressReached)
+      console.log('🚪 [MONOTONIC CLOSE] Saving progress on close:', {
         episodeId: episode.id,
+        candidateProgress,
+        maxProgressReached,
         currentTime,
+        lastSavedProgress: lastSavedProgress.current,
         actualDuration,
         isVideoEpisode,
         mediaType: isVideoEpisode ? 'video' : 'audio'
@@ -374,12 +404,19 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
       // Mark that progress has been saved to prevent double save on unmount
       progressSavedRef.current = true
       
-      updateProgress.mutate({
-        episodeId: episode.id,
-        progressSeconds: Math.floor(currentTime),
-        episodeDuration: Math.floor(actualDuration),
-        mediaType: isVideoEpisode ? 'video' : 'audio'
-      })
+      // Only save if candidate progress is greater than last saved
+      if (candidateProgress >= lastSavedProgress.current) {
+        updateProgress.mutate({
+          episodeId: episode.id,
+          progressSeconds: candidateProgress,
+          episodeDuration: Math.floor(actualDuration),
+          mediaType: isVideoEpisode ? 'video' : 'audio'
+        }, {
+          onSuccess: () => {
+            lastSavedProgress.current = candidateProgress
+          }
+        })
+      }
     }
     
     onClose()
@@ -472,6 +509,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
         setMaxProgressReached(time)
       }
       
+      // Use monotonic saving for video as well
       saveProgress(time)
     }
   }
@@ -484,6 +522,7 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
 
   const handleVideoEnded = () => {
     setIsPlaying(false)
+    setMaxProgressReached(actualDuration)
     saveProgress(actualDuration)
   }
 

@@ -35,8 +35,15 @@ const EnhancedProgressSlider = React.forwardRef<
   
   const handleValueChange = (newValue: number[]) => {
     const newTime = newValue[0]
-    // Allow seeking within completion zone or if episode is completed
-    if (isCompleted || newTime <= maxProgressReached + 2) {
+    // Clamp forward seeks to maxProgressReached + 2s tolerance (instead of ignoring them)
+    const clampedTime = isCompleted ? newTime : Math.min(newTime, maxProgressReached + 2)
+    
+    // Always call onValueChange with the clamped value for smooth UX
+    if (clampedTime !== newTime) {
+      // User tried to seek too far forward - clamp to boundary
+      onValueChange?.([clampedTime])
+    } else {
+      // Normal seek within allowed range
       onValueChange?.(newValue)
     }
   }
