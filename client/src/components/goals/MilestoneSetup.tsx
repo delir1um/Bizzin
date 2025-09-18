@@ -87,6 +87,18 @@ const MILESTONE_TEMPLATES: Record<string, {
       { name: "Milestone Achievements", description: "Reach intermediate fitness targets", weight: 30, order: 4 },
       { name: "Lifestyle Integration", description: "Make healthy habits permanent", weight: 10, order: 5 }
     ]
+  },
+  "Product-Market Fit & Traction": {
+    description: "Validate PMF and build repeatable acquisition engine to reach first revenue target",
+    color: "bg-rose-50 border-rose-200 dark:bg-rose-950 dark:border-rose-800",
+    milestones: [
+      { name: "ICP & Success Metrics Defined", description: "Define ideal customer profile, PMF signals, and key metrics; instrument analytics", weight: 10, order: 1 },
+      { name: "Customer Discovery & Problem Validation", description: "Conduct 15-20 customer interviews; synthesize insights; refine value proposition", weight: 15, order: 2 },
+      { name: "Activation & Onboarding Optimization", description: "Remove friction points; achieve target activation rate; optimize user onboarding flow", weight: 20, order: 3 },
+      { name: "Channel Experiments & Lead Generation", description: "Test 3-4 acquisition channels; measure CAC and conversion rates; identify scalable channels", weight: 20, order: 4 },
+      { name: "Pricing Strategy & Sales Pipeline", description: "Validate pricing model; establish sales process; close first paying customers", weight: 20, order: 5 },
+      { name: "Retention & Traction Milestone", description: "Improve user retention; achieve NPS target; reach initial traction goal (e.g., $10K MRR)", weight: 15, order: 6 }
+    ]
   }
 }
 
