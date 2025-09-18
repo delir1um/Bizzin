@@ -316,7 +316,7 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
     }
 
     recognition.onerror = (event: any) => {
-      console.log('Speech recognition error:', event.error)
+      console.log('Speech recognition error:', event.error, 'Current state:', stateRef.current, 'shouldStop:', shouldStopRef.current)
       isStartingRef.current = false
 
       switch (event.error) {
@@ -360,7 +360,7 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
       clearSilenceTimeout()
       
       // Don't auto-restart if manually stopped or auto-stopped
-      if (shouldStopRef.current || state === 'auto-paused' || state === 'session-ended') {
+      if (shouldStopRef.current || stateRef.current === 'auto-paused' || stateRef.current === 'session-ended') {
         console.log('Recognition ended - manual stop or auto-stop')
         // State already set by auto-stop handlers
         return
