@@ -28,6 +28,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
   const { toast } = useToast()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout[]>([])
+  const contentRef = useRef<string>("")
 
   const createEntryMutation = useMutation({
     mutationFn: async () => {
@@ -115,19 +116,24 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
     typingTimeoutRef.current = []
   }
   
+  // Update content ref whenever content changes
+  useEffect(() => {
+    contentRef.current = content
+  }, [content])
+
   // Simple and reliable voice input handling
   const handleVoiceTranscript = (transcript: string, isFinal: boolean) => {
     if (!transcript.trim()) return
     
     const cleanTranscript = transcript.trim()
-    console.log('Voice transcript received:', { transcript: cleanTranscript, isFinal, currentContent: content })
+    const currentContent = contentRef.current // Use ref to get fresh content
+    console.log('Voice transcript received:', { transcript: cleanTranscript, isFinal, currentContent })
     
     if (isFinal) {
       // Clear interim display
       setInterimContent("")
       
       // Simple direct append - just add the final transcript to current content
-      const currentContent = content
       const newContent = currentContent + (currentContent && !currentContent.endsWith(' ') ? ' ' : '') + cleanTranscript
       
       console.log('Setting new content directly:', { from: currentContent, to: newContent })
