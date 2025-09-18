@@ -241,7 +241,7 @@ export function GoalCard({ goal, onEdit, onDelete, onViewDetails, viewMode = 'gr
     <Card className={cn(
       `bg-white dark:bg-slate-800 border-0 shadow-sm hover:shadow-lg 
       transition-all duration-300 ease-out cursor-pointer group
-      relative overflow-hidden rounded-xl mb-6 break-inside-avoid-column`,
+      relative overflow-hidden rounded-xl h-full flex flex-col`,
       goal.status === 'completed' && 'opacity-75',
       className
     )}>
@@ -251,7 +251,7 @@ export function GoalCard({ goal, onEdit, onDelete, onViewDetails, viewMode = 'gr
         goal.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
       }`} />
       
-      <div className="p-6">
+      <div className="p-6 flex flex-col h-full">
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
@@ -296,104 +296,78 @@ export function GoalCard({ goal, onEdit, onDelete, onViewDetails, viewMode = 'gr
           </div>
         </div>
         
-        {/* Description */}
-        {goal.description && (
-          <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-6 line-clamp-3">
-            {goal.description}
-          </p>
-        )}
-        
-        {/* On Track Status - Prominent placement */}
-        {goal.status === 'in_progress' && !isOverdue && daysRemaining > 7 && (
-          <div className="mb-4">
-            <div className="inline-flex items-center px-3 py-2 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
-              <TrendingUp className="w-4 h-4 mr-2 text-green-600 dark:text-green-400" />
-              <span className="text-sm font-semibold text-green-700 dark:text-green-300">On track</span>
-            </div>
-          </div>
-        )}
-        
-        {/* Progress Section */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Progress</span>
-            <span className="text-2xl font-bold text-slate-900 dark:text-white">{getProgressText()}</span>
-          </div>
-          <div className="relative">
-            <Progress value={getActualProgress()} className="h-2 bg-slate-100 dark:bg-slate-700" />
-            {/* Milestone Indicators - Option 2 Implementation */}
-            {goal.progress_type === 'milestone' && goal.milestones && goal.milestones.length > 0 && (
-              <div className="mt-2">
-                <div className="flex items-center justify-between relative h-1">
-                  {(() => {
-                    let cumulativeWeight = 0
-                    return goal.milestones.map((milestone, index) => {
-                      const position = cumulativeWeight
-                      cumulativeWeight += milestone.weight || 0
-                      const isCompleted = milestone.status === 'done'
-                      return (
-                        <div
-                          key={milestone.id}
-                          className={`absolute w-2 h-2 rounded-full border-2 transform -translate-x-1 -translate-y-0.5 transition-colors duration-200 ${
-                            isCompleted 
-                              ? 'bg-green-500 border-green-600 dark:bg-green-400 dark:border-green-500' 
-                              : 'bg-slate-300 border-slate-400 dark:bg-slate-600 dark:border-slate-500'
-                          }`}
-                          style={{ 
-                            left: `${Math.min(position, 98)}%`,
-                            zIndex: 10 
-                          }}
-                          title={`${milestone.title} (${milestone.weight}%) - ${isCompleted ? 'Completed' : 'Pending'}`}
-                        />
-                      )
-                    })
-                  })()}
-                </div>
-                <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  <span>{goal.milestones.filter(m => m.status === 'done').length} of {goal.milestones.length} milestones completed</span>
-                  <span>Total: {goal.milestones.reduce((sum, m) => sum + (m.weight || 0), 0)}%</span>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-        
-        {/* Bottom section with reorganized layout */}
-        <div className="space-y-3">
-          {/* Top row: Target date and days remaining */}
-          <div className="flex items-center gap-6 text-sm">
-            <div className="text-slate-500 dark:text-slate-400">
-              Target: {format(deadline, 'MMM d, yyyy')}
-            </div>
-            {timeStatus && (
-              <div className={`flex items-center font-medium ${timeStatus.className}`}>
-                <timeStatus.icon className="w-4 h-4 mr-2" />
-                {timeStatus.text}
-              </div>
-            )}
-          </div>
+        {/* Content Section - Flexible area */}
+        <div className="flex-1 flex flex-col space-y-4">
+          {/* Description */}
+          {goal.description && (
+            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed line-clamp-2">
+              {goal.description}
+            </p>
+          )}
           
-          {/* Bottom row: Status and category badges with better spacing */}
-          <div className="flex items-center justify-between">
-            <Badge variant={statusInfo.variant} className={`${statusInfo.className} text-xs font-medium px-3 py-1.5`}>
-              <StatusIcon className="w-3 h-3 mr-1.5" />
-              {statusInfo.label}
-            </Badge>
-            {goal.category && (
-              <Badge variant="outline" className="text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 px-3 py-1.5">
-                {goal.category}
-              </Badge>
-            )}
+          {/* On Track Status - Prominent placement */}
+          {goal.status === 'in_progress' && !isOverdue && daysRemaining > 7 && (
+            <div>
+              <div className="inline-flex items-center px-3 py-2 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
+                <TrendingUp className="w-4 h-4 mr-2 text-green-600 dark:text-green-400" />
+                <span className="text-sm font-semibold text-green-700 dark:text-green-300">On track</span>
+              </div>
+            </div>
+          )}
+          
+          {/* Progress Section */}
+          <div className="flex-1">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Progress</span>
+              <span className="text-2xl font-bold text-slate-900 dark:text-white">{getProgressText()}</span>
+            </div>
+            <div className="relative">
+              <Progress value={getActualProgress()} className="h-2 bg-slate-100 dark:bg-slate-700" />
+              {/* Milestone Indicators - Option 2 Implementation */}
+              {goal.progress_type === 'milestone' && goal.milestones && goal.milestones.length > 0 && (
+                <div className="mt-2">
+                  <div className="flex items-center justify-between relative h-1">
+                    {(() => {
+                      let cumulativeWeight = 0
+                      return goal.milestones.map((milestone, index) => {
+                        const position = cumulativeWeight
+                        cumulativeWeight += milestone.weight || 0
+                        const isCompleted = milestone.status === 'done'
+                        return (
+                          <div
+                            key={milestone.id}
+                            className={`absolute w-2 h-2 rounded-full border-2 transform -translate-x-1 -translate-y-0.5 transition-colors duration-200 ${
+                              isCompleted 
+                                ? 'bg-green-500 border-green-600 dark:bg-green-400 dark:border-green-500' 
+                                : 'bg-slate-300 border-slate-400 dark:bg-slate-600 dark:border-slate-500'
+                            }`}
+                            style={{ 
+                              left: `${Math.min(position, 98)}%`,
+                              zIndex: 10 
+                            }}
+                            title={`${milestone.title} (${milestone.weight}%) - ${isCompleted ? 'Completed' : 'Pending'}`}
+                          />
+                        )
+                      })
+                    })()}
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    <span>{goal.milestones.filter(m => m.status === 'done').length} of {goal.milestones.length} milestones completed</span>
+                    <span>Total: {goal.milestones.reduce((sum, m) => sum + (m.weight || 0), 0)}%</span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
         
-        {/* Milestone Preview Section */}
+        {/* Milestone Preview Section - Compact */}
         {goal.progress_type === 'milestone' && goal.milestones && goal.milestones.length > 0 && (
-          <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <div className="flex items-center justify-between">
+          <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center">
-                <Target className="w-4 h-4 mr-2 text-orange-600" />
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                <Target className="w-3 h-3 mr-1.5 text-orange-600" />
+                <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
                   Milestones ({goal.milestones.filter(m => m.status === 'done').length}/{goal.milestones.length})
                 </span>
               </div>
@@ -402,46 +376,66 @@ export function GoalCard({ goal, onEdit, onDelete, onViewDetails, viewMode = 'gr
                   variant="ghost"
                   size="sm"
                   onClick={() => onViewDetails(goal)}
-                  className="text-xs text-orange-600 hover:text-orange-700 p-1 h-auto"
+                  className="text-xs text-orange-600 hover:text-orange-700 p-0.5 h-auto"
                   data-testid="button-view-milestones"
                 >
                   View All
                 </Button>
               )}
             </div>
-            <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+            <div className="text-xs text-slate-500 dark:text-slate-400 space-y-1">
               {goal.milestones.slice(0, 2).map((milestone, index) => (
-                <div key={milestone.id} className="flex items-center gap-2 py-1">
-                  <div className={`w-2 h-2 rounded-full ${
+                <div key={milestone.id} className="flex items-center gap-2">
+                  <div className={`w-1.5 h-1.5 rounded-full ${
                     milestone.status === 'done' 
                       ? 'bg-green-500' 
                       : 'bg-slate-300 dark:bg-slate-600'
                   }`} />
-                  <span className={milestone.status === 'done' ? 'line-through' : ''}>
+                  <span className={cn(
+                    "truncate flex-1",
+                    milestone.status === 'done' && 'line-through'
+                  )}>
                     {milestone.title}
                   </span>
                 </div>
               ))}
               {goal.milestones.length > 2 && (
-                <div className="text-slate-400 dark:text-slate-500 pl-4 py-1">
-                  +{goal.milestones.length - 2} more milestones
+                <div className="text-slate-400 dark:text-slate-500 pl-3.5 text-xs">
+                  +{goal.milestones.length - 2} more
                 </div>
               )}
             </div>
           </div>
         )}
-
-        {/* Reflection section */}
-        {goal.reflection && (
-          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Reflection
-            </h4>
-            <blockquote className="border-l-2 border-slate-200 dark:border-slate-700 pl-3 text-sm text-slate-600 dark:text-slate-400 italic line-clamp-3">
-              {goal.reflection}
-            </blockquote>
+        
+        {/* Bottom section - Always at bottom */}
+        <div className="mt-auto pt-4 space-y-3">
+          {/* Target date and time status */}
+          <div className="flex items-center justify-between text-xs">
+            <div className="text-slate-500 dark:text-slate-400">
+              Target: {format(deadline, 'MMM d, yyyy')}
+            </div>
+            {timeStatus && (
+              <div className={`flex items-center font-medium ${timeStatus.className}`}>
+                <timeStatus.icon className="w-3 h-3 mr-1" />
+                {timeStatus.text}
+              </div>
+            )}
           </div>
-        )}
+          
+          {/* Status and category badges */}
+          <div className="flex items-center justify-between">
+            <Badge variant={statusInfo.variant} className={`${statusInfo.className} text-xs font-medium px-2.5 py-1`}>
+              <StatusIcon className="w-3 h-3 mr-1" />
+              {statusInfo.label}
+            </Badge>
+            {goal.category && (
+              <Badge variant="outline" className="text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 px-2.5 py-1">
+                {goal.category}
+              </Badge>
+            )}
+          </div>
+        </div>
       </div>
     </Card>
   )
