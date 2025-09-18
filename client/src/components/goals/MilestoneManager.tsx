@@ -76,12 +76,12 @@ export function MilestoneManager({ goal, onProgressUpdate }: MilestoneManagerPro
     
     // Also update the goal in the database to keep them in sync
     if (milestones.length > 0) {
-      GoalsService.updateGoal(goal.id, { progress: newProgress })
+      GoalsService.updateGoalFromMilestones(goal.id, newProgress, milestones)
         .then(() => {
-          console.log(`Goal progress synced: ${newProgress}%`)
+          console.log(`Goal progress and status synced: ${newProgress}%`)
         })
         .catch(error => {
-          console.error('Failed to sync goal progress:', error)
+          console.error('Failed to sync goal progress and status:', error)
         })
     }
   }, [milestones, goal.id])
@@ -93,21 +93,22 @@ export function MilestoneManager({ goal, onProgressUpdate }: MilestoneManagerPro
         status: completed ? 'done' : 'todo'
       })
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['milestones', goal.id] })
       
-      // Calculate and update goal progress immediately
-      setTimeout(() => {
-        // Use a small delay to ensure milestone data is updated first
-        const updatedMilestones = queryClient.getQueryData(['milestones', goal.id]) as Milestone[] || milestones
+      // Get fresh milestone data and update goal progress with status check
+      try {
+        const updatedMilestones = await MilestonesService.getMilestonesByGoalId(goal.id)
         const newProgress = calculateProgressFromMilestones(updatedMilestones)
         
-        GoalsService.updateGoal(goal.id, { progress: newProgress })
-          .then(() => {
-            queryClient.invalidateQueries({ queryKey: ['goals'] })
-            console.log(`Goal progress updated to ${newProgress}% after milestone toggle`)
-          })
-      }, 100)
+        // Use the new method that includes status determination with fresh milestone data
+        await GoalsService.updateGoalFromMilestones(goal.id, newProgress, updatedMilestones)
+        
+        queryClient.invalidateQueries({ queryKey: ['goals'] })
+        console.log(`Goal progress and status updated to ${newProgress}% after milestone toggle`)
+      } catch (error) {
+        console.error('Failed to update goal from milestones:', error)
+      }
     },
     onError: (error) => {
       toast({

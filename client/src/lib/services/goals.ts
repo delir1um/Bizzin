@@ -366,7 +366,7 @@ export class GoalsService {
   /**
    * Determines the appropriate status based on goal progress and milestone completion
    */
-  static async determineAutoStatus(goalId: string, currentProgress: number, currentStatus?: string): Promise<string | null> {
+  static async determineAutoStatus(goalId: string, currentProgress: number, currentStatus?: string, milestones?: Milestone[]): Promise<string | null> {
     try {
       // Don't auto-change manually set statuses (preserve user intent)
       if (currentStatus === 'on_hold' || currentStatus === 'at_risk') {
@@ -377,12 +377,18 @@ export class GoalsService {
         return null // Keep manual status
       }
 
-      // For milestone-based goals, also check if all milestones are done
-      const goal = await this.getGoalWithMilestones(goalId)
+      // For milestone-based goals, check if all milestones are done
       let allMilestonesDone = false
       
-      if (goal.progress_type === 'milestone' && goal.milestones && goal.milestones.length > 0) {
-        allMilestonesDone = goal.milestones.every(milestone => milestone.status === 'done')
+      if (milestones) {
+        // Use provided milestone data (most up-to-date)
+        allMilestonesDone = milestones.length > 0 && milestones.every(milestone => milestone.status === 'done')
+      } else {
+        // Fall back to fetching milestone data
+        const goal = await this.getGoalWithMilestones(goalId)
+        if (goal.progress_type === 'milestone' && goal.milestones && goal.milestones.length > 0) {
+          allMilestonesDone = goal.milestones.every(milestone => milestone.status === 'done')
+        }
       }
 
       // Determine status based on progress and milestones
@@ -402,8 +408,8 @@ export class GoalsService {
   /**
    * Applies automatic status updates to a goal based on progress
    */
-  static async applyAutoStatus(goalId: string, currentProgress: number, currentStatus?: string): Promise<Partial<Goal>> {
-    const newStatus = await this.determineAutoStatus(goalId, currentProgress, currentStatus)
+  static async applyAutoStatus(goalId: string, currentProgress: number, currentStatus?: string, milestones?: Milestone[]): Promise<Partial<Goal>> {
+    const newStatus = await this.determineAutoStatus(goalId, currentProgress, currentStatus, milestones)
     
     if (newStatus && newStatus !== currentStatus) {
       console.log(`[AUTO_STATUS] Goal ${goalId}: ${currentStatus} → ${newStatus} (progress: ${currentProgress}%)`)
@@ -411,6 +417,68 @@ export class GoalsService {
     }
     
     return {} // No status change needed
+  }
+
+  /**
+   * Updates goal progress and status based on milestone completion
+   * This method accepts fresh milestone data to ensure accurate status determination
+   */
+  static async updateGoalFromMilestones(goalId: string, newProgress: number, milestones: Milestone[]): Promise<Goal> {
+    let userId: string | undefined
+    try {
+      // Check authentication first
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        throw new Error('User not authenticated')
+      }
+      userId = user.id
+
+      // Get current goal to check existing status
+      const currentGoal = await this.getGoalWithMilestones(goalId)
+      const currentStatus = currentGoal?.status
+
+      console.log(`[MILESTONE_UPDATE] Goal ${goalId}: Updating progress to ${newProgress}% with fresh milestone data`)
+      
+      // Apply auto-status logic with fresh milestone data
+      const autoStatusUpdates = await this.applyAutoStatus(
+        goalId, 
+        newProgress, 
+        currentStatus,
+        milestones // Pass fresh milestone data
+      )
+      
+      // Prepare update data
+      const updateData = {
+        progress: newProgress,
+        ...autoStatusUpdates
+      }
+
+      console.log(`[MILESTONE_UPDATE] Final update data:`, updateData)
+
+      // Update goal in database
+      const { data, error } = await supabase
+        .from('goals')
+        .update(updateData)
+        .eq('id', goalId)
+        .eq('user_id', user.id)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error updating goal from milestones:', error)
+        throw new Error(`Failed to update goal: ${error.message}`)
+      }
+
+      if (!data) {
+        throw new Error('Goal not found or you do not have permission to update it.')
+      }
+
+      console.log(`[MILESTONE_UPDATE] Goal updated successfully:`, data)
+      return data
+    } catch (err) {
+      console.error('Exception in updateGoalFromMilestones:', err)
+      throw err
+    }
   }
 
   static calculateStats(goals: Goal[]): GoalStats {
