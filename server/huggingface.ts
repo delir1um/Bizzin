@@ -747,21 +747,25 @@ function extractContentThemes(text: string): {
   marketInsights: string[];
   technicalChallenges: string[];
   businessStrategies: string[];
+  businessPartnerships: string[];
+  operationalChallenges: string[];
   operationalDetails: string[];
 } {
   const lowerText = text.toLowerCase();
   
   // Extract project-related content (expanded patterns)
   const projectWork = [];
-  if (/complet.*project|finish.*project|deliver.*project|seven projects|wrapped up.*projects?|finished.*tasks?|delivered.*items?|shipped.*deliverables?|concluded.*work/i.test(text)) {
-    const match = text.match(/complet.*?project[s]?|finish.*?project[s]?|deliver.*?project[s]?|wrapped up.*?project[s]?|finished.*?task[s]?|delivered.*?item[s]?|shipped.*?deliverable[s]?|concluded.*?work/gi);
+  if (/complet.*project|finish.*project|deliver.*project|seven projects|wrapped up.*projects?|finished.*tasks?|delivered.*items?|shipped.*deliverables?|concluded.*work|develop.*products?|working on|building|creating|delivering value|product development|developing|built|created|launched|shipped/i.test(text)) {
+    const match = text.match(/complet.*?project[s]?|finish.*?project[s]?|deliver.*?project[s]?|wrapped up.*?project[s]?|finished.*?task[s]?|delivered.*?item[s]?|shipped.*?deliverable[s]?|concluded.*?work|develop.*?product[s]?|working on.*?(?=\s|$|\.)|building.*?(?=\s|$|\.)|creating.*?(?=\s|$|\.)|delivering value.*?(?=\s|$|\.)|product development.*?(?=\s|$|\.)|developing.*?(?=\s|$|\.)|built.*?(?=\s|$|\.)|created.*?(?=\s|$|\.)|launched.*?(?=\s|$|\.)/gi);
     if (match) projectWork.push(...match);
   }
   
   // Extract client relationship details (expanded patterns)
   const clientRelations = [];
-  if (/client.*happy|customer.*satisfied|client.*pleased|clients.*delighted|clients.*thrilled|customer satisfaction|positive feedback|client.*love|customer.*ecstatic|amazing.*response/i.test(text)) {
-    clientRelations.push('positive client feedback');
+  if (/client.*happy|customer.*satisfied|client.*pleased|clients.*delighted|clients.*thrilled|customer satisfaction|positive feedback|client.*love|customer.*ecstatic|amazing.*response|customers.*use|customers can use|user.*experience|customer.*value|serving customers|customer base|user satisfaction|customer.*value|customers.*daily/i.test(text)) {
+    const match = text.match(/client.*?happy|customer.*?satisfied|client.*?pleased|clients.*?delighted|clients.*?thrilled|customer satisfaction|positive feedback|client.*?love|customer.*?ecstatic|amazing.*?response|customers.*?use|customers can use|user.*?experience|customer.*?value|serving customers|customer base|user satisfaction|customers.*?daily/gi);
+    if (match) clientRelations.push(...match);
+    else clientRelations.push('positive client feedback');
   }
   if (/client.*retention|customer.*retention|churn rate|user retention|client.*loyalty|customer.*attrition/i.test(text)) {
     clientRelations.push('retention challenges');
@@ -781,13 +785,27 @@ function extractContentThemes(text: string): {
     if (challenges) technicalChallenges.push(...challenges);
   }
   
-  // Extract business strategies mentioned
+  // Extract business partnerships content (new category)
+  const businessPartnerships = [];
+  if (/partnership.*negotiations?|revenue.*sharing|marketplace.*access|distribution.*channels?|partner.*discussions?|strategic.*partnerships?|alliance.*talks|joint.*venture|collaboration.*agreements?|revenue.*splits?/i.test(text)) {
+    const partnerships = text.match(/partnership.*?negotiations?|revenue.*?sharing|marketplace.*?access|distribution.*?channels?|partner.*?discussions?|strategic.*?partnerships?|alliance.*?talks|joint.*?venture|collaboration.*?agreements?|revenue.*?splits?/gi);
+    if (partnerships) businessPartnerships.push(...partnerships);
+  }
+
+  // Extract business strategies mentioned (expanded patterns)
   const businessStrategies = [];
-  if (/need to.*immediately|require.*adaptation|pivot.*mobile/i.test(text)) {
-    const strategies = text.match(/need to.*?(?=\.|$)|require.*?adaptation|pivot.*?mobile/gi);
+  if (/need to.*immediately|require.*adaptation|pivot.*mobile|growth.*acceleration|competitive.*advantage|market.*positioning|strategic.*decisions?|strategic.*planning|business.*strategy|market.*strategy|expansion.*strategy|growth.*strategy/i.test(text)) {
+    const strategies = text.match(/need to.*?(?=\.|$)|require.*?adaptation|pivot.*?mobile|growth.*?acceleration|competitive.*?advantage|market.*?positioning|strategic.*?decisions?|strategic.*?planning|business.*?strategy|market.*?strategy|expansion.*?strategy|growth.*?strategy/gi);
     if (strategies) businessStrategies.push(...strategies);
   }
   
+  // Extract operational challenges content (new category)
+  const operationalChallenges = [];
+  if (/balancing.*acts?|complex.*decisions?|strategic.*trade-offs?|difficult.*decisions?|challenging.*choices|operational.*complexity|business.*complexity|managing.*complexity/i.test(text)) {
+    const challenges = text.match(/balancing.*?acts?|complex.*?decisions?|strategic.*?trade-offs?|difficult.*?decisions?|challenging.*?choices|operational.*?complexity|business.*?complexity|managing.*?complexity/gi);
+    if (challenges) operationalChallenges.push(...challenges);
+  }
+
   // Extract operational details
   const operationalDetails = [];
   if (/difficult.*day|rewarding.*work|drives.*success/i.test(text)) {
@@ -801,6 +819,8 @@ function extractContentThemes(text: string): {
     marketInsights,
     technicalChallenges,
     businessStrategies,
+    businessPartnerships,
+    operationalChallenges,
     operationalDetails
   };
 }
