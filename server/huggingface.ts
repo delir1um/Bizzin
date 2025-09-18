@@ -824,15 +824,15 @@ function extractContentThemes(text: string): {
 
   // Extract business strategies mentioned (expanded patterns)
   const businessStrategies = [];
-  if (/need to.*immediately|require.*adaptation|pivot.*mobile|growth.*acceleration|competitive.*advantage|market.*positioning|strategic.*decisions?|strategic.*planning|business.*strategy|market.*strategy|expansion.*strategy|growth.*strategy/i.test(text)) {
-    const strategies = text.match(/need to.*?(?=\.|$)|require.*?adaptation|pivot.*?mobile|growth.*?acceleration|competitive.*?advantage|market.*?positioning|strategic.*?decisions?|strategic.*?planning|business.*?strategy|market.*?strategy|expansion.*?strategy|growth.*?strategy/gi);
+  if (/need to.*immediately|require.*adaptation|pivot.*mobile|growth.*acceleration|competitive.*advantage|market.*positioning|strategic.*decisions?|strategic.*planning|business.*strategy|market.*strategy|expansion.*strategy|growth.*strategy|need to.*review|invest in.*equipment|safety.*protocols|employee.*welfare|protect.*team|review.*protocols|improve.*safety/i.test(text)) {
+    const strategies = text.match(/need to.*?(?=\.|$)|require.*?adaptation|pivot.*?mobile|growth.*?acceleration|competitive.*?advantage|market.*?positioning|strategic.*?decisions?|strategic.*?planning|business.*?strategy|market.*?strategy|expansion.*?strategy|growth.*?strategy|need to.*?review.*?(?=\.|$)|invest in.*?equipment|safety.*?protocols|employee.*?welfare|protect.*?team|review.*?protocols|improve.*?safety/gi);
     if (strategies) businessStrategies.push(...strategies);
   }
   
   // Extract operational challenges content (new category)
   const operationalChallenges = [];
-  if (/balancing.*acts?|complex.*decisions?|strategic.*trade-offs?|difficult.*decisions?|challenging.*choices|operational.*complexity|business.*complexity|managing.*complexity/i.test(text)) {
-    const challenges = text.match(/balancing.*?acts?|complex.*?decisions?|strategic.*?trade-offs?|difficult.*?decisions?|challenging.*?choices|operational.*?complexity|business.*?complexity|managing.*?complexity/gi);
+  if (/balancing.*acts?|complex.*decisions?|strategic.*trade-offs?|difficult.*decisions?|challenging.*choices|operational.*complexity|business.*complexity|managing.*complexity|workplace.*accident|forklift.*operator|injured.*back|hospitalized|surgery|OSHA.*investigating|insurance.*premiums|feel.*terrible|could.*have.*prevented|accident.*occurred/i.test(text)) {
+    const challenges = text.match(/balancing.*?acts?|complex.*?decisions?|strategic.*?trade-offs?|difficult.*?decisions?|challenging.*?choices|operational.*?complexity|business.*?complexity|managing.*?complexity|workplace.*?accident|forklift.*?operator|injured.*?back|hospitalized|surgery|OSHA.*?investigating|insurance.*?premiums|feel.*?terrible|could.*?have.*?prevented|accident.*?occurred/gi);
     if (challenges) operationalChallenges.push(...challenges);
   }
 
@@ -907,7 +907,8 @@ function generateContentSpecificInsight(
     hasClients: themes.clientRelations.length > 0,
     hasMarketData: themes.marketInsights.length > 0,
     hasTechChallenges: themes.technicalChallenges.length > 0,
-    hasStrategy: themes.businessStrategies.length > 0
+    hasStrategy: themes.businessStrategies.length > 0,
+    hasOperationalChallenges: themes.operationalChallenges.length > 0
   };
   
   console.log('🔍 DEBUG: contentContext:', contentContext);
@@ -927,6 +928,12 @@ function generateContentSpecificInsight(
     return `The technical challenges you've identified represent both immediate business risks and strategic opportunities. Address these systematically by prioritizing changes that align with customer behavior shifts while building capabilities for future technology adaptations.`;
   }
   
+  // NEW: Add specific condition for workplace safety/operational challenges
+  if (contentContext.hasOperationalChallenges && category === 'challenge') {
+    console.log('🔍 DEBUG: MATCHED hasOperationalChallenges && challenge condition - WORKPLACE SAFETY');
+    return `This workplace incident demands immediate multi-layered leadership combining human empathy with strategic business thinking. Beyond addressing safety and legal concerns, you're facing interconnected operational, financial, and cultural challenges requiring systematic crisis management. Document everything meticulously for compliance, engage legal counsel proactively, and transform this setback into competitive advantage by implementing comprehensive safety protocols that demonstrate industry leadership. Use this moment to strengthen team loyalty through transparent communication and reinforce your commitment to employee welfare as a core business value that attracts talent and customers. The investments in safety equipment and protocol improvements will pay dividends in reduced liability, lower insurance costs, and stronger company culture.`;
+  }
+
   // NEW: Add specific condition for projectWork + clientRelations combo (without specific feedback requirement)
   if (contentContext.hasProjects && contentContext.hasClients) {
     console.log('🔍 DEBUG: MATCHED hasProjects && hasClients condition - NEW CONDITION FOR TASK');
