@@ -63,34 +63,31 @@ export function PodcastPage() {
   const handleContinueListening = () => {
     console.log('🔍 [CLICK LOG] TrainingPage - Continue button clicked');
     
-    // Ensure we have episodes to work with
-    if (episodes.length > 0) {
-      if (allProgress) {
-        // Find episode with most recent progress
-        const episodeWithProgress = episodes.find(ep => {
-          const progress = allProgress.find(p => p.episode_id === ep.id)
-          return progress && progress.progress_seconds > 0
-        })
-        
-        if (episodeWithProgress) {
-          const progress = allProgress.find(p => p.episode_id === episodeWithProgress.id);
-          console.log('🔍 [CLICK LOG] Found episode with progress:', {
-            episodeId: episodeWithProgress.id,
-            title: episodeWithProgress.title,
-            progressSeconds: progress?.progress_seconds,
-            lastMediaType: progress?.last_media_type,
-            hasProgress: !!progress
-          });
-          setSelectedEpisode(episodeWithProgress)
-          setShowEpisodeModal(true)
-          return
-        }
-      }
+    // Find first episode with progress from real database data
+    if (episodes.length > 0 && allProgress) {
+      // Find episode with most recent progress
+      const episodeWithProgress = episodes.find(ep => {
+        const progress = allProgress.find(p => p.episode_id === ep.id)
+        return progress && progress.progress_seconds > 0
+      })
       
-      // Fallback: No progress found or allProgress still loading - start first episode
-      console.log('🔍 [CLICK LOG] No progress found or still loading, starting first episode:', episodes[0]?.title);
-      setSelectedEpisode(episodes[0])
-      setShowEpisodeModal(true)
+      if (episodeWithProgress) {
+        const progress = allProgress.find(p => p.episode_id === episodeWithProgress.id);
+        console.log('🔍 [CLICK LOG] Found episode with progress:', {
+          episodeId: episodeWithProgress.id,
+          title: episodeWithProgress.title,
+          progressSeconds: progress?.progress_seconds,
+          lastMediaType: progress?.last_media_type,
+          hasProgress: !!progress
+        });
+        setSelectedEpisode(episodeWithProgress)
+        setShowPlayer(true)
+      } else {
+        console.log('🔍 [CLICK LOG] No progress found, starting first episode:', episodes[0]?.title);
+        // No progress found, start first episode
+        setSelectedEpisode(episodes[0])
+        setShowPlayer(true)
+      }
     }
   }
   // Use real data from database or fallback to demo data
@@ -435,7 +432,7 @@ export function PodcastPage() {
                       
                       if (currentlyListening.episode) {
                         setSelectedEpisode(currentlyListening.episode)
-                        setShowEpisodeModal(true)
+                        setShowPlayer(true)
                       }
                     }}
                     className="bg-orange-600 hover:bg-orange-700 text-white"
