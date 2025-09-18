@@ -181,7 +181,7 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
     onError?.(errorObj)
   }, [onError, updateState])
 
-  // Check if speech recognition is available
+  // Check if speech recognition is available - run only once on mount
   useEffect(() => {
     if (typeof window === 'undefined') {
       setIsSupported(false)
@@ -197,16 +197,27 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
     if (!SpeechRecognition || (!isHTTPS && !isLocalhost)) {
       console.log('Speech recognition not supported: Missing API or HTTPS requirement')
       setIsSupported(false)
-      setErrorState('not-supported', 'Speech recognition requires HTTPS or a modern browser')
+      const errorObj: SpeechRecognitionError = {
+        code: 'not-supported',
+        message: 'Speech recognition requires HTTPS or a modern browser',
+        retryable: false
+      }
+      setError(errorObj)
+      updateState('error')
+      onError?.(errorObj)
       return
     }
 
     // Only check API presence and secure context - no permission tests on mount
     console.log('Speech recognition API available')
     setIsSupported(true)
-    updateState('ready')
+    // Only set to ready on initial mount, don't override other states
+    if (state === 'idle') {
+      updateState('ready')
+    }
     initializeRecognition()
-  }, [setErrorState, updateState])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Empty dependencies - only run once on mount
 
   // Initialize the main recognition instance
   const initializeRecognition = useCallback(() => {
