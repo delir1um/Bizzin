@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast'
 
 interface VoiceInputProps {
   onTranscript: (transcript: string, isFinal: boolean) => void
+  onStateChange?: (newState: string) => void
   isDisabled?: boolean
   language?: string
   className?: string
@@ -16,7 +17,7 @@ interface VoiceInputProps {
   showInterimOverlay?: boolean
 }
 
-export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US', className = '', compact = false, textareaRef, showInterimOverlay = true }: VoiceInputProps) {
+export function VoiceInput({ onTranscript, onStateChange, isDisabled = false, language = 'en-US', className = '', compact = false, textareaRef, showInterimOverlay = true }: VoiceInputProps) {
   const { toast } = useToast()
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null)
   const [showPermissionHelper, setShowPermissionHelper] = useState(false)
@@ -122,6 +123,11 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
         if (newState === 'ready') {
           setSessionStartTime(null)
         }
+      }
+      
+      // Call external onStateChange callback if provided
+      if (onStateChange) {
+        onStateChange(newState)
       }
     }
   })

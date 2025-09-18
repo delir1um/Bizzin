@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast"
 import { motion } from "framer-motion"
 import { SuggestedTitleButton } from "./SuggestedTitleButton"
 import { VoiceInput } from "./VoiceInput"
-import { formatAndAppendSpeechText } from "@/utils/speechFormatter"
+import { formatAndAppendSpeechText, formatAndReplaceSpeechText } from "@/utils/speechFormatter"
 
 interface SimpleCreateEntryModalProps {
   isOpen: boolean
@@ -26,6 +26,12 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
   const [aiPreview, setAiPreview] = useState<any>(null)
   const [interimContent, setInterimContent] = useState("")
   const [isTypingAnimation, setIsTypingAnimation] = useState(false)
+  
+  // Selection tracking for voice input replacement
+  const [voiceSelectionStart, setVoiceSelectionStart] = useState<number | null>(null)
+  const [voiceSelectionEnd, setVoiceSelectionEnd] = useState<number | null>(null)
+  const [hadSelectionOnVoiceStart, setHadSelectionOnVoiceStart] = useState(false)
+  
   const { toast } = useToast()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout[]>([])
@@ -104,6 +110,12 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
     setAiPreview(null)
     setIsAnalyzing(false)
     setIsTypingAnimation(false)
+    
+    // Reset selection tracking
+    setVoiceSelectionStart(null)
+    setVoiceSelectionEnd(null)
+    setHadSelectionOnVoiceStart(false)
+    
     onClose()
   }
 
@@ -122,33 +134,143 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
     contentRef.current = content
   }, [content])
 
-  // Voice input handling with speech formatting
+  // Capture current text selection when voice input starts
+  const captureSelectionForVoice = () => {
+    if (textareaRef.current) {
+      const start = textareaRef.current.selectionStart
+      const end = textareaRef.current.selectionEnd
+      
+      // Only consider it a selection if start !== end (actual text selected)
+      const hasSelection = start !== end
+      
+      console.log('Capturing selection for voice:', { start, end, hasSelection })
+      
+      if (hasSelection) {
+        setVoiceSelectionStart(start)
+        setVoiceSelectionEnd(end)
+        setHadSelectionOnVoiceStart(true)
+      } else {
+        // No selection, just cursor position
+        setVoiceSelectionStart(null)
+        setVoiceSelectionEnd(null)
+        setHadSelectionOnVoiceStart(false)
+      }
+    }
+  }
+
+  // Clear selection tracking when voice input ends
+  const clearVoiceSelection = () => {
+    setVoiceSelectionStart(null)
+    setVoiceSelectionEnd(null)
+    setHadSelectionOnVoiceStart(false)
+  }
+
+  // Voice input handling with speech formatting and selection replacement
   const handleVoiceTranscript = (transcript: string, isFinal: boolean) => {
     if (!transcript.trim()) return
     
     const cleanTranscript = transcript.trim()
     const currentContent = contentRef.current // Use ref to get fresh content
-    console.log('Voice transcript received:', { transcript: cleanTranscript, isFinal, currentContent })
+    console.log('Voice transcript received:', { 
+      transcript: cleanTranscript, 
+      isFinal, 
+      currentContent: currentContent.substring(0, 50) + '...',
+      hadSelection: hadSelectionOnVoiceStart,
+      selectionStart: voiceSelectionStart,
+      selectionEnd: voiceSelectionEnd
+    })
     
     if (isFinal) {
       // Clear interim display
       setInterimContent("")
       
-      // Format and append the speech text with proper punctuation and capitalization
-      const formattedContent = formatAndAppendSpeechText(currentContent, cleanTranscript, {
-        enablePunctuation: true,
-        enableCapitalization: true,
-        addEndPeriod: false // Don't auto-add period until entry is complete
-      })
+      let formattedContent: string
+      
+      // Check if we should replace selected text or append
+      if (hadSelectionOnVoiceStart && voiceSelectionStart !== null && voiceSelectionEnd !== null) {
+        // Replace selected text with voice input
+        const selectedText = currentContent.substring(voiceSelectionStart, voiceSelectionEnd)
+        
+        console.log('Using text replacement mode:', {
+          selectedText: selectedText,
+          selectionStart: voiceSelectionStart,
+          selectionEnd: voiceSelectionEnd,
+          newTranscript: cleanTranscript
+        })
+        
+        formattedContent = formatAndReplaceSpeechText(
+          currentContent,
+          selectedText,
+          cleanTranscript,
+          voiceSelectionStart,
+          voiceSelectionEnd,
+          {
+            enablePunctuation: true,
+            enableCapitalization: true,
+            addEndPeriod: false
+          }
+        )
+        
+        // Clear selection tracking after use
+        clearVoiceSelection()
+        
+      } else {
+        // No selection, use append mode (existing behavior)
+        console.log('Using text append mode (no selection)')
+        
+        formattedContent = formatAndAppendSpeechText(currentContent, cleanTranscript, {
+          enablePunctuation: true,
+          enableCapitalization: true,
+          addEndPeriod: false
+        })
+      }
       
       console.log('Speech formatted content:', { 
+        mode: hadSelectionOnVoiceStart ? 'replace' : 'append',
         original: cleanTranscript, 
-        currentContent, 
-        formatted: formattedContent 
+        currentContent: currentContent.substring(0, 30) + '...', 
+        formatted: formattedContent.substring(0, 100) + '...'
       })
       
       // Set the formatted content
       setContent(formattedContent)
+      
+      // Set cursor position after content update
+      setTimeout(() => {
+        if (textareaRef.current) {
+          let newCursorPosition: number
+          
+          if (hadSelectionOnVoiceStart && voiceSelectionStart !== null && voiceSelectionEnd !== null) {
+            // For replacement mode, calculate exact position after replacement
+            const beforeSelection = currentContent.substring(0, voiceSelectionStart)
+            const afterSelection = currentContent.substring(voiceSelectionEnd)
+            
+            // The new cursor position should be: beforeSelection length + formatted replacement text length
+            const formattedNewTextLength = formattedContent.length - (beforeSelection.length + afterSelection.length)
+            newCursorPosition = beforeSelection.length + formattedNewTextLength
+            
+            // Clamp to content bounds
+            newCursorPosition = Math.max(0, Math.min(newCursorPosition, formattedContent.length))
+            
+            console.log('Cursor positioned after replacement:', { 
+              originalSelection: [voiceSelectionStart, voiceSelectionEnd],
+              beforeLength: beforeSelection.length,
+              afterLength: afterSelection.length,
+              replacementLength: formattedNewTextLength,
+              newPosition: newCursorPosition,
+              contentLength: formattedContent.length
+            })
+          } else {
+            // For append mode, position cursor at end
+            newCursorPosition = formattedContent.length
+            console.log('Cursor positioned after append:', { newPosition: newCursorPosition })
+          }
+          
+          textareaRef.current.selectionStart = newCursorPosition
+          textareaRef.current.selectionEnd = newCursorPosition
+          textareaRef.current.focus()
+        }
+      }, 10) // Small delay to ensure content is updated
       
       // Add visual feedback with a brief flash
       if (textareaRef.current) {
@@ -306,6 +428,16 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
                 {/* Integrated Voice Input Component */}
                 <VoiceInput
                   onTranscript={handleVoiceTranscript}
+                  onStateChange={(newState) => {
+                    // Capture selection when voice recording starts
+                    if (newState === 'listening') {
+                      captureSelectionForVoice()
+                    }
+                    // Clear selection tracking when voice input ends
+                    else if (newState === 'ready' || newState === 'error') {
+                      clearVoiceSelection()
+                    }
+                  }}
                   isDisabled={createEntryMutation.isPending}
                   language="en-US"
                   className="absolute bottom-3 right-3"

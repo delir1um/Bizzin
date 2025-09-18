@@ -307,6 +307,103 @@ export function formatAndAppendSpeechText(
 }
 
 /**
+ * Format speech text for replacing selected content
+ * Handles proper formatting and punctuation when replacing selected text with voice input
+ * 
+ * @param fullContent - The complete current content
+ * @param selectedText - The currently selected text to be replaced
+ * @param newTranscript - New speech text to replace the selection
+ * @param selectionStart - Start position of the selection
+ * @param selectionEnd - End position of the selection
+ * @param options - Formatting options
+ * @returns New content with selection replaced by formatted voice input
+ */
+export function formatAndReplaceSpeechText(
+  fullContent: string,
+  selectedText: string,
+  newTranscript: string,
+  selectionStart: number,
+  selectionEnd: number,
+  options: FormatOptions = {}
+): string {
+  if (!newTranscript || typeof newTranscript !== 'string') {
+    return fullContent
+  }
+
+  // Validate selection bounds
+  if (selectionStart < 0 || selectionEnd < 0 || selectionStart > selectionEnd || 
+      selectionStart >= fullContent.length || selectionEnd > fullContent.length) {
+    console.warn('Invalid selection bounds, falling back to append', { 
+      selectionStart, selectionEnd, contentLength: fullContent.length 
+    })
+    return formatAndAppendSpeechText(fullContent, newTranscript, options)
+  }
+
+  // Extract the parts of the content
+  const beforeSelection = fullContent.substring(0, selectionStart)
+  const afterSelection = fullContent.substring(selectionEnd)
+  
+  console.log('Text replacement details:', {
+    fullContentLength: fullContent.length,
+    beforeSelection: beforeSelection.slice(-20), // Last 20 chars for context
+    selectedText,
+    afterSelection: afterSelection.slice(0, 20), // First 20 chars for context
+    newTranscript,
+    selectionStart,
+    selectionEnd
+  })
+
+  // Format the new speech text
+  const formattedNewText = formatSpeechText(newTranscript, { ...options, addEndPeriod: false })
+  
+  if (!formattedNewText.trim()) {
+    // If the transcript is empty/only whitespace, just remove the selection
+    const combined = beforeSelection + afterSelection
+    return formatSpeechText(combined, options)
+  }
+
+  // Handle punctuation and spacing at replacement boundaries
+  let finalBeforeSelection = beforeSelection
+  let finalNewText = formattedNewText
+  let finalAfterSelection = afterSelection
+
+  // Check if we need spacing before the replacement
+  const needsSpaceBefore = finalBeforeSelection && 
+    !finalBeforeSelection.match(/\s$/) && 
+    !finalNewText.match(/^\s/) &&
+    !finalNewText.match(/^[.!?,;:]/) // Don't add space before punctuation
+
+  // Check if we need spacing after the replacement  
+  const needsSpaceAfter = finalAfterSelection &&
+    !finalNewText.match(/\s$/) && 
+    !finalAfterSelection.match(/^\s/) &&
+    !finalAfterSelection.match(/^[.!?,;:]/) // Don't add space before punctuation
+
+  // Add necessary spacing
+  if (needsSpaceBefore) {
+    finalNewText = ' ' + finalNewText
+  }
+  
+  if (needsSpaceAfter) {
+    finalNewText = finalNewText + ' '
+  }
+
+  // Combine all parts
+  const combinedText = finalBeforeSelection + finalNewText + finalAfterSelection
+
+  // Apply final formatting to ensure consistency
+  const finalFormatted = formatSpeechText(combinedText, options)
+  
+  console.log('Replacement result:', {
+    original: fullContent,
+    replaced: finalFormatted,
+    insertedLength: finalNewText.length
+  })
+
+  return finalFormatted
+}
+
+/**
  * Quick test function for development/debugging
  */
 export function testSpeechFormatter() {
