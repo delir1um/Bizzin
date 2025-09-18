@@ -25,6 +25,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
   const [aiPreview, setAiPreview] = useState<any>(null)
   const [interimContent, setInterimContent] = useState("")
   const [isTypingAnimation, setIsTypingAnimation] = useState(false)
+  const [voiceGeneratedLength, setVoiceGeneratedLength] = useState(0)
   const { toast } = useToast()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout[]>([])
@@ -102,6 +103,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
     setAiPreview(null)
     setIsAnalyzing(false)
     setIsTypingAnimation(false)
+    setVoiceGeneratedLength(0)
     onClose()
   }
 
@@ -126,17 +128,37 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
       clearTypingTimeouts()
       setInterimContent("") // Clear interim display
       
-      // Calculate delta using proper diffing to avoid duplication
-      // Strategy: compute expected full content, then extract only the new portion
-      const currentContent = content
-      const fullExpectedContent = currentContent + (currentContent && !currentContent.endsWith(' ') ? ' ' : '') + cleanTranscript
+      // Split content into manual part (typed by user) and voice part
+      const manualContent = content.slice(0, content.length - voiceGeneratedLength)
+      const currentVoiceContent = content.slice(content.length - voiceGeneratedLength)
       
-      // Extract only the new delta portion that needs to be animated
-      const deltaText = fullExpectedContent.slice(currentContent.length)
+      // Check if this transcript is already included in our voice content
+      // This handles cases where speech recognition sends the full session transcript
+      const normalizedVoiceContent = currentVoiceContent.replace(/\s+/g, ' ').trim()
+      const normalizedTranscript = cleanTranscript.replace(/\s+/g, ' ').trim()
+      
+      let newVoiceContent = cleanTranscript
+      if (normalizedVoiceContent && normalizedTranscript.startsWith(normalizedVoiceContent)) {
+        // Extract only the new portion
+        const newPortion = cleanTranscript.slice(currentVoiceContent.length).trim()
+        if (!newPortion) {
+          // No new content, just return
+          return
+        }
+        newVoiceContent = currentVoiceContent + (currentVoiceContent.endsWith(' ') ? '' : ' ') + newPortion
+      }
+      
+      // Construct the full expected content
+      const fullExpectedContent = manualContent + (manualContent && !manualContent.endsWith(' ') ? ' ' : '') + newVoiceContent
+      
+      // Calculate what's actually new
+      const deltaText = fullExpectedContent.slice(content.length)
       
       // Only proceed if there's actually new content
       if (deltaText.trim()) {
-        startTypewriterAnimation(fullExpectedContent, deltaText, currentContent.length)
+        // Update voice generated length to track how much content came from voice
+        setVoiceGeneratedLength(newVoiceContent.length + (manualContent && !manualContent.endsWith(' ') ? 1 : 0))
+        startTypewriterAnimation(fullExpectedContent, deltaText, content.length)
       }
       
     } else {
@@ -263,8 +285,14 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
                   value={content}
                   onChange={(e) => {
                     if (!isTypingAnimation) {
-                      setContent(e.target.value)
+                      const newContent = e.target.value
+                      setContent(newContent)
                       setInterimContent("") // Clear interim when manually typing
+                      
+                      // Reset voice tracking when user manually edits
+                      if (newContent.length < content.length) {
+                        setVoiceGeneratedLength(0)
+                      }
                     }
                   }}
                   readOnly={isTypingAnimation}
