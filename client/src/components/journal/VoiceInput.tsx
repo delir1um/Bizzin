@@ -231,15 +231,15 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
           onClick={handleMicToggle}
           disabled={isDisabled || state === 'requesting-permission'}
           className={`
-            w-12 h-12 p-0 transition-all duration-200 relative overflow-hidden border-0 shadow-lg
+            w-10 h-10 p-0 transition-all duration-200 relative overflow-hidden border-0 shadow-md
             ${
               (state === 'listening' || isListening || localIsRecording)
                 ? 'bg-white rounded-lg'
                 : state === 'requesting-permission'
-                ? 'bg-yellow-500 hover:bg-yellow-600 rounded-full shadow-md animate-pulse'
+                ? 'bg-yellow-500 hover:bg-yellow-600 rounded-full shadow-sm animate-pulse'
                 : state === 'error'
                 ? 'bg-red-200 hover:bg-red-300 rounded-full shadow-sm'
-                : 'bg-white hover:bg-gray-50 rounded-full shadow-md hover:shadow-lg'
+                : 'bg-white hover:bg-gray-50 rounded-full shadow-sm hover:shadow-md'
             }
           `}
           style={{ zIndex: 1000 }}
@@ -253,14 +253,14 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
         >
           {(state === 'listening' || isListening || localIsRecording) ? (
             // iPhone-style red square when recording
-            <div className="w-5 h-5 bg-red-500 rounded-sm animate-pulse"></div>
+            <div className="w-4 h-4 bg-red-500 rounded-sm animate-pulse"></div>
           ) : state === 'requesting-permission' ? (
-            <Volume2 className="w-5 h-5 text-white" />
+            <Volume2 className="w-4 h-4 text-white" />
           ) : state === 'error' ? (
-            <AlertCircle className="w-5 h-5 text-red-700" />
+            <AlertCircle className="w-4 h-4 text-red-700" />
           ) : (
             // iPhone-style red circle when ready to record
-            <div className="w-7 h-7 bg-red-500 rounded-full"></div>
+            <div className="w-6 h-6 bg-red-500 rounded-full"></div>
           )}
           
           {/* Animated recording ring - iPhone style */}
