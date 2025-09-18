@@ -1,7 +1,8 @@
-import { memo } from 'react'
+import { memo, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { GoalCard } from "@/components/goals/GoalCard"
+import { GoalDetailsModal } from "@/components/goals/GoalDetailsModal"
 import { Goal } from "@/types/goals"
 
 interface GoalsGridProps {
@@ -23,10 +24,18 @@ export const GoalsGrid = memo(function GoalsGrid({
   onEdit,
   onDelete
 }: GoalsGridProps) {
+  const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null)
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false)
+  
   const totalPages = Math.ceil(goals.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
   const currentGoals = goals.slice(startIndex, endIndex)
+
+  const handleViewDetails = (goal: Goal) => {
+    setSelectedGoal(goal)
+    setDetailsModalOpen(true)
+  }
 
   return (
     <div className="space-y-6">
@@ -42,6 +51,8 @@ export const GoalsGrid = memo(function GoalsGrid({
             goal={goal}
             onEdit={() => onEdit(goal)}
             onDelete={() => onDelete(goal)}
+            onViewDetails={handleViewDetails}
+            viewMode={viewMode}
             className={viewMode === 'list' ? 'w-full' : ''}
           />
         ))}
@@ -90,6 +101,14 @@ export const GoalsGrid = memo(function GoalsGrid({
       <div className="text-center text-sm text-gray-500 dark:text-gray-400">
         Showing {startIndex + 1}-{Math.min(endIndex, goals.length)} of {goals.length} goals
       </div>
+
+      {/* Goal Details Modal */}
+      <GoalDetailsModal
+        goal={selectedGoal}
+        open={detailsModalOpen}
+        onOpenChange={setDetailsModalOpen}
+        onEdit={onEdit}
+      />
     </div>
   )
 })

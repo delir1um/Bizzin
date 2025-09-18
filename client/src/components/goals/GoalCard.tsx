@@ -3,17 +3,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { Calendar, TrendingUp, Clock, CheckCircle, AlertTriangle, Play, Edit3, Trash2, ChevronDown, ChevronRight, Target } from "lucide-react"
+import { Calendar, TrendingUp, Clock, CheckCircle, AlertTriangle, Play, Edit3, Trash2, Target, Eye } from "lucide-react"
 import { Goal } from "@/types/goals"
 import { format, differenceInDays, isAfter } from "date-fns"
-import { MilestoneList } from "./MilestoneList"
 import { cn } from "@/lib/utils"
 
 type GoalCardProps = {
   goal: Goal
   onEdit?: (goal: Goal) => void
   onDelete?: (goal: Goal) => void
+  onViewDetails?: (goal: Goal) => void
   viewMode?: 'grid' | 'list'
   className?: string
 }
@@ -57,8 +56,7 @@ const priorityColors = {
   high: "border-l-red-500"
 }
 
-export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid', className }: GoalCardProps) {
-  const [isExpanded, setIsExpanded] = useState(false)
+export function GoalCard({ goal, onEdit, onDelete, onViewDetails, viewMode = 'grid', className }: GoalCardProps) {
   const statusInfo = statusConfig[goal.status]
   const StatusIcon = statusInfo.icon
   const deadline = new Date(goal.deadline)
@@ -198,12 +196,24 @@ export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid', className 
 
             {/* Right side - Actions */}
             <div className="flex items-center space-x-2 flex-shrink-0">
+              {onViewDetails && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onViewDetails(goal)}
+                  className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                  data-testid="button-view-details"
+                >
+                  <Eye className="w-4 h-4" />
+                </Button>
+              )}
               {onEdit && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => onEdit(goal)}
                   className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                  data-testid="button-edit"
                 >
                   <Edit3 className="w-4 h-4" />
                 </Button>
@@ -214,6 +224,7 @@ export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid', className 
                   size="sm"
                   onClick={() => onDelete(goal)}
                   className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                  data-testid="button-delete"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -249,12 +260,24 @@ export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid', className 
             </h3>
           </div>
           <div className="flex items-center gap-2 ml-4">
+            {onViewDetails && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onViewDetails(goal)}
+                className="h-9 w-9 p-0 text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                data-testid="button-view-details"
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+            )}
             {onEdit && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => onEdit(goal)}
                 className="h-9 w-9 p-0 text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                data-testid="button-edit"
               >
                 <Edit3 className="h-4 w-4" />
               </Button>
@@ -265,6 +288,7 @@ export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid', className 
                 size="sm"
                 onClick={() => onDelete(goal)}
                 className="h-9 w-9 p-0 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                data-testid="button-delete"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -363,39 +387,47 @@ export function GoalCard({ goal, onEdit, onDelete, viewMode = 'grid', className 
           </div>
         </div>
         
-        {/* Milestone section - Phase 1 Implementation */}
-        {goal.progress_type === 'milestone' && (
+        {/* Milestone Preview Section */}
+        {goal.progress_type === 'milestone' && goal.milestones && goal.milestones.length > 0 && (
           <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-              <CollapsibleTrigger asChild>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Target className="w-4 h-4 mr-2 text-orange-600" />
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Milestones ({goal.milestones.filter(m => m.status === 'done').length}/{goal.milestones.length})
+                </span>
+              </div>
+              {onViewDetails && (
                 <Button
                   variant="ghost"
-                  className="w-full justify-between p-0 h-auto text-left"
+                  size="sm"
+                  onClick={() => onViewDetails(goal)}
+                  className="text-xs text-orange-600 hover:text-orange-700 p-1 h-auto"
+                  data-testid="button-view-milestones"
                 >
-                  <div className="flex items-center">
-                    <Target className="w-4 h-4 mr-2 text-orange-600" />
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                      Milestones ({goal.milestones?.filter(m => m.status === 'done').length || 0}/{goal.milestones?.length || 0})
-                    </span>
-                  </div>
-                  {isExpanded ? (
-                    <ChevronDown className="h-4 w-4 text-slate-500" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 text-slate-500" />
-                  )}
+                  View All
                 </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="mt-3">
-                <MilestoneList
-                  goalId={goal.id}
-                  milestones={goal.milestones || []}
-                  onMilestoneUpdate={() => {
-                    // Refresh goal data after milestone updates
-                    // This will be handled by React Query invalidation
-                  }}
-                />
-              </CollapsibleContent>
-            </Collapsible>
+              )}
+            </div>
+            <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+              {goal.milestones.slice(0, 2).map((milestone, index) => (
+                <div key={milestone.id} className="flex items-center gap-2 py-1">
+                  <div className={`w-2 h-2 rounded-full ${
+                    milestone.status === 'done' 
+                      ? 'bg-green-500' 
+                      : 'bg-slate-300 dark:bg-slate-600'
+                  }`} />
+                  <span className={milestone.status === 'done' ? 'line-through' : ''}>
+                    {milestone.title}
+                  </span>
+                </div>
+              ))}
+              {goal.milestones.length > 2 && (
+                <div className="text-slate-400 dark:text-slate-500 pl-4 py-1">
+                  +{goal.milestones.length - 2} more milestones
+                </div>
+              )}
+            </div>
           </div>
         )}
 
