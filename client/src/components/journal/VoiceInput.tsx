@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast'
 interface VoiceInputProps {
   onTranscript: (transcript: string, isFinal: boolean) => void
   onStateChange?: (newState: string) => void
+  onBeforeStart?: () => void
   isDisabled?: boolean
   language?: string
   className?: string
@@ -17,7 +18,7 @@ interface VoiceInputProps {
   showInterimOverlay?: boolean
 }
 
-export function VoiceInput({ onTranscript, onStateChange, isDisabled = false, language = 'en-US', className = '', compact = false, textareaRef, showInterimOverlay = true }: VoiceInputProps) {
+export function VoiceInput({ onTranscript, onStateChange, onBeforeStart, isDisabled = false, language = 'en-US', className = '', compact = false, textareaRef, showInterimOverlay = true }: VoiceInputProps) {
   const { toast } = useToast()
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null)
   const [showPermissionHelper, setShowPermissionHelper] = useState(false)
@@ -145,6 +146,12 @@ export function VoiceInput({ onTranscript, onStateChange, isDisabled = false, la
       stopListening()
     } else if (state === 'auto-paused' || state === 'session-ended') {
       console.log('Resuming from auto-pause/session-end...')
+      
+      // Call onBeforeStart to capture selection before resuming
+      if (onBeforeStart) {
+        onBeforeStart()
+      }
+      
       setLocalIsRecording(true)
       
       try {
@@ -161,6 +168,12 @@ export function VoiceInput({ onTranscript, onStateChange, isDisabled = false, la
       }
     } else {
       console.log('Starting listening...')
+      
+      // Call onBeforeStart to capture selection before starting
+      if (onBeforeStart) {
+        onBeforeStart()
+      }
+      
       setLocalIsRecording(true) // Immediate visual feedback
       
       // Show immediate feedback toast

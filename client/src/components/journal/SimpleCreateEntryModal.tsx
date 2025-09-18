@@ -437,14 +437,14 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
                 {/* Integrated Voice Input Component */}
                 <VoiceInput
                   onTranscript={handleVoiceTranscript}
+                  onBeforeStart={() => {
+                    console.log('🎯 VoiceInput onBeforeStart - capturing selection')
+                    captureSelectionForVoice()
+                  }}
                   onStateChange={(newState) => {
                     console.log('🎯 VoiceInput state changed to:', newState)
-                    // Capture selection when voice recording starts
-                    if (newState === 'listening') {
-                      captureSelectionForVoice()
-                    }
                     // Clear selection tracking when voice input ends
-                    else if (newState === 'ready' || newState === 'error') {
+                    if (newState === 'ready' || newState === 'error') {
                       clearVoiceSelection()
                     }
                   }}
