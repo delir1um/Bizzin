@@ -252,15 +252,13 @@ export function VoiceInput({ onTranscript, isDisabled = false, language = 'en-US
           data-testid="button-mic-compact"
         >
           {(state === 'listening' || isListening || localIsRecording) ? (
-            // iPhone-style red square when recording
-            <div className="w-4 h-4 bg-red-500 rounded-sm animate-pulse"></div>
+            <Mic className="w-4 h-4 text-red-500 animate-pulse" />
           ) : state === 'requesting-permission' ? (
             <Volume2 className="w-4 h-4 text-white" />
           ) : state === 'error' ? (
             <AlertCircle className="w-4 h-4 text-red-700" />
           ) : (
-            // iPhone-style red circle when ready to record
-            <div className="w-6 h-6 bg-red-500 rounded-full"></div>
+            <Mic className="w-4 h-4 text-gray-600" />
           )}
           
           {/* Animated recording ring - iPhone style */}
