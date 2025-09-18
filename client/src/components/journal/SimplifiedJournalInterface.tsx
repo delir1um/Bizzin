@@ -312,7 +312,7 @@ export function SimplifiedJournalInterface({
                   boxShadow: 'none',
                   minHeight: '400px'
                 }}
-                maxLength={10000}
+                maxLength={2000}
               />
             </div>
           </div>

@@ -31,7 +31,7 @@ import { getEntryDisplayData, getMoodEmoji } from "@/lib/journalDisplayUtils"
 
 const editEntrySchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
-  content: z.string().min(10, "Content must be at least 10 characters").max(10000, "Content must be less than 10000 characters"),
+  content: z.string().min(10, "Content must be at least 10 characters").max(2000, "Content must be less than 2000 characters"),
   entry_date: z.string().optional(),
   mood: z.string().optional(),
   category: z.string().optional(),

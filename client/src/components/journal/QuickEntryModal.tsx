@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
 
 const quickEntrySchema = z.object({
-  content: z.string().min(5, "Write at least 5 characters").max(10000, "Content must be less than 10000 characters"),
+  content: z.string().min(5, "Write at least 5 characters").max(2000, "Content must be less than 2000 characters"),
 })
 
 type FormData = z.infer<typeof quickEntrySchema>
@@ -168,7 +168,7 @@ export function QuickEntryModal({ isOpen, onClose, selectedDate }: QuickEntryMod
                     <span className="text-red-500">{errors.content.message}</span>
                   )}
                 </div>
-                <span className="text-sm text-slate-500">{content?.length || 0}/10000</span>
+                <span className="text-sm text-slate-500">{content?.length || 0}/2000</span>
               </div>
             </div>
 

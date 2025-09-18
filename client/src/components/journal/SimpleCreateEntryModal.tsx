@@ -309,11 +309,11 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
               {/* Character Counter */}
               <div className="flex justify-end mt-2">
                 <span className={`text-sm ${
-                  content.length > 9000 ? 'text-red-600' : 
-                  content.length > 8000 ? 'text-orange-600' : 
+                  content.length > 1800 ? 'text-red-600' : 
+                  content.length > 1600 ? 'text-orange-600' : 
                   'text-gray-500'
                 }`}>
-                  {content.length}/10,000 characters
+                  {content.length}/2,000 characters
                 </span>
               </div>
             </div>

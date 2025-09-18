@@ -25,7 +25,7 @@ import { useAuth } from "@/hooks/AuthProvider"
 
 const createEntrySchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
-  content: z.string().min(10, "Content must be at least 10 characters").max(10000, "Content must be less than 10000 characters"),
+  content: z.string().min(10, "Content must be at least 10 characters").max(2000, "Content must be less than 2000 characters"),
   entry_date: z.string().optional(),
   related_goal_id: z.string().optional(),
 })
@@ -391,7 +391,7 @@ export function CreateEntryModal({ isOpen, onClose, selectedDate, recentEntries 
                 {...register("content")}
                 placeholder={showPrompt || !currentPrompt ? "Share your thoughts, insights, learnings, or reflections..." : `Reflect on: ${currentPrompt.question}`}
                 className="min-h-[200px] focus:ring-orange-500 focus:border-orange-500"
-                maxLength={10000}
+                maxLength={2000}
               />
               <div className="flex justify-between text-xs text-slate-500">
                 <span>
@@ -399,7 +399,7 @@ export function CreateEntryModal({ isOpen, onClose, selectedDate, recentEntries 
                     <span className="text-red-500">{errors.content.message}</span>
                   )}
                 </span>
-                <span>{watch("content")?.length || 0}/10000</span>
+                <span>{watch("content")?.length || 0}/2000</span>
               </div>
             </div>
 
