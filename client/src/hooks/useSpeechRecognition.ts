@@ -64,6 +64,7 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
   const recognitionRef = useRef<any>(null)
   const retryTimeoutRef = useRef<number | null>(null)
   const isStartingRef = useRef(false)
+  const shouldStopRef = useRef(false)
 
   // Derived state
   const isListening = state === 'listening'
@@ -211,12 +212,25 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
     }
 
     recognition.onend = () => {
-      console.log('Speech recognition ended, current state:', state)
+      console.log('Speech recognition ended, current state:', state, 'shouldStop:', shouldStopRef.current)
       isStartingRef.current = false
       setInterimTranscript('')
       
-      // Don't auto-restart - let user manually control recording
-      if (state === 'listening') {
+      // If continuous mode and not manually stopped, restart recognition
+      if (continuous && state === 'listening' && !shouldStopRef.current) {
+        console.log('Auto-restarting speech recognition for continuous mode')
+        setTimeout(() => {
+          try {
+            if (recognitionRef.current && !shouldStopRef.current) {
+              isStartingRef.current = true
+              recognitionRef.current.start()
+            }
+          } catch (e) {
+            console.log('Error restarting recognition:', e)
+            updateState('ready')
+          }
+        }, 100) // Small delay to prevent rapid restart issues
+      } else {
         console.log('Ending listening state, returning to ready')
         updateState('ready')
       }
@@ -250,6 +264,9 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
     try {
       updateState('requesting-permission')
       
+      // Set flag to indicate this is a user-initiated start
+      shouldStopRef.current = false
+      
       // Check if recognition is already running and stop it first
       try {
         recognitionRef.current.stop()
@@ -274,6 +291,9 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
 
   // Stop listening
   const stopListening = useCallback(() => {
+    // Set flag to indicate this is a manual stop
+    shouldStopRef.current = true
+    
     if (retryTimeoutRef.current) {
       clearTimeout(retryTimeoutRef.current)
       retryTimeoutRef.current = null
