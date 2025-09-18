@@ -305,10 +305,19 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
                   showInterimOverlay={false}
                 />
               </div>
+              
+              {/* Character Counter */}
+              <div className="flex justify-end mt-2">
+                <span className={`text-sm ${
+                  content.length > 9000 ? 'text-red-600' : 
+                  content.length > 8000 ? 'text-orange-600' : 
+                  'text-gray-500'
+                }`}>
+                  {content.length}/10,000 characters
+                </span>
+              </div>
             </div>
           </div>
-
-
 
           {/* Saving Status Indicator */}
           {createEntryMutation.isPending && (
