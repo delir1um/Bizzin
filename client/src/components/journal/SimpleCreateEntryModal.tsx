@@ -268,31 +268,37 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
                     }
                   }}
                   readOnly={isTypingAnimation}
-                  className="min-h-[140px] sm:min-h-[120px] resize-none text-base sm:text-sm leading-relaxed pr-12 transition-colors duration-200"
+                  className={`min-h-[140px] sm:min-h-[120px] resize-none text-base sm:text-sm leading-relaxed pr-12 transition-colors duration-200 ${
+                    interimContent ? 'text-transparent caret-black dark:caret-white' : ''
+                  }`}
                   rows={6}
                   autoFocus
                   data-testid="textarea-content"
                 />
                 
-                {/* Interim text overlay */}
+                {/* Interim text overlay - shows both final and interim text */}
                 {interimContent && (
                   <div 
                     className="absolute inset-0 pointer-events-none overflow-hidden min-h-[140px] sm:min-h-[120px] text-base sm:text-sm leading-relaxed"
                     style={{
-                      padding: '12px', // Match textarea padding
+                      padding: '12px', // Match textarea padding exactly
                       paddingRight: '48px', // Account for pr-12 (voice input space)
                       font: 'inherit',
                       lineHeight: 'inherit',
                       letterSpacing: 'inherit',
                       wordSpacing: 'inherit',
-                      fontFamily: 'inherit'
+                      fontFamily: 'inherit',
+                      fontSize: 'inherit',
+                      fontWeight: 'inherit'
                     }}
                   >
-                    {/* Final text (invisible spacer) */}
-                    <span className="opacity-0 whitespace-pre-wrap">{content}</span>
-                    {/* Interim text (visible in gray) */}
-                    <span className="text-gray-400 whitespace-pre-wrap">
-                      {content && !content.endsWith(' ') ? ' ' : ''}{interimContent}
+                    <span className="whitespace-pre-wrap">
+                      {/* Show final text in normal color */}
+                      <span className="text-gray-900 dark:text-gray-100">{content}</span>
+                      {/* Show interim text in gray with proper spacing */}
+                      <span className="text-gray-400">
+                        {content && !content.endsWith(' ') && !content.endsWith('\n') ? ' ' : ''}{interimContent}
+                      </span>
                     </span>
                   </div>
                 )}
