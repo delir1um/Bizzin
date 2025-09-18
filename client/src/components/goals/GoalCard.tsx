@@ -141,11 +141,15 @@ export function GoalCard({ goal, onEdit, onDelete, onViewDetails, viewMode = 'gr
   // List view - more compact horizontal layout
   if (viewMode === 'list') {
     return (
-      <Card className={cn(
-        `bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 border-l-4 ${priorityColors[goal.priority]}`,
-        goal.status === 'completed' && 'opacity-75',
-        className
-      )}>
+      <Card 
+        className={cn(
+          `bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 border-l-4 ${priorityColors[goal.priority]} cursor-pointer hover:shadow-md transition-shadow`,
+          goal.status === 'completed' && 'opacity-75',
+          className
+        )}
+        onClick={() => onEdit?.(goal)}
+        data-testid="card-goal"
+      >
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             {/* Left side - Goal info */}
@@ -200,29 +204,24 @@ export function GoalCard({ goal, onEdit, onDelete, onViewDetails, viewMode = 'gr
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => onViewDetails(goal)}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onViewDetails(goal)
+                  }}
                   className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                   data-testid="button-view-details"
                 >
                   <Eye className="w-4 h-4" />
                 </Button>
               )}
-              {onEdit && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onEdit(goal)}
-                  className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                  data-testid="button-edit"
-                >
-                  <Edit3 className="w-4 h-4" />
-                </Button>
-              )}
               {onDelete && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => onDelete(goal)}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onDelete(goal)
+                  }}
                   className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                   data-testid="button-delete"
                 >
@@ -238,13 +237,17 @@ export function GoalCard({ goal, onEdit, onDelete, onViewDetails, viewMode = 'gr
 
   // Grid view - modern card layout
   return (
-    <Card className={cn(
-      `bg-white dark:bg-slate-800 border-0 shadow-sm hover:shadow-lg 
-      transition-all duration-300 ease-out cursor-pointer group
-      relative overflow-hidden rounded-xl h-full flex flex-col`,
-      goal.status === 'completed' && 'opacity-75',
-      className
-    )}>
+    <Card 
+      className={cn(
+        `bg-white dark:bg-slate-800 border-0 shadow-sm hover:shadow-lg 
+        transition-all duration-300 ease-out cursor-pointer group
+        relative overflow-hidden rounded-xl h-full flex flex-col`,
+        goal.status === 'completed' && 'opacity-75',
+        className
+      )}
+      onClick={() => onEdit?.(goal)}
+      data-testid="card-goal"
+    >
       {/* Priority indicator stripe */}
       <div className={`absolute top-0 left-0 right-0 h-1 ${
         goal.priority === 'high' ? 'bg-red-500' : 
@@ -264,29 +267,24 @@ export function GoalCard({ goal, onEdit, onDelete, onViewDetails, viewMode = 'gr
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onViewDetails(goal)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onViewDetails(goal)
+                }}
                 className="h-9 w-9 p-0 text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
                 data-testid="button-view-details"
               >
                 <Eye className="h-4 w-4" />
               </Button>
             )}
-            {onEdit && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onEdit(goal)}
-                className="h-9 w-9 p-0 text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
-                data-testid="button-edit"
-              >
-                <Edit3 className="h-4 w-4" />
-              </Button>
-            )}
             {onDelete && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onDelete(goal)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onDelete(goal)
+                }}
                 className="h-9 w-9 p-0 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
                 data-testid="button-delete"
               >
@@ -375,7 +373,10 @@ export function GoalCard({ goal, onEdit, onDelete, onViewDetails, viewMode = 'gr
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => onViewDetails(goal)}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onViewDetails(goal)
+                  }}
                   className="text-xs text-orange-600 hover:text-orange-700 p-0.5 h-auto"
                   data-testid="button-view-milestones"
                 >
