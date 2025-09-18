@@ -122,42 +122,32 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
     if (!transcript.trim()) return
     
     const cleanTranscript = transcript.trim()
+    console.log('Voice transcript received:', { transcript: cleanTranscript, isFinal, currentContent: content })
     
     if (isFinal) {
       // Clear any existing typing animation
       clearTypingTimeouts()
       setInterimContent("") // Clear interim display
       
-      // Split content into manual part (typed by user) and voice part
-      const manualContent = content.slice(0, content.length - voiceGeneratedLength)
-      const currentVoiceContent = content.slice(content.length - voiceGeneratedLength)
+      // Simple approach: only append if this transcript is not already at the end of current content
+      const currentContent = content.trim()
+      const normalizedCurrent = currentContent.replace(/\s+/g, ' ').toLowerCase()
+      const normalizedTranscript = cleanTranscript.replace(/\s+/g, ' ').toLowerCase()
       
-      // Check if this transcript is already included in our voice content
-      // This handles cases where speech recognition sends the full session transcript
-      const normalizedVoiceContent = currentVoiceContent.replace(/\s+/g, ' ').trim()
-      const normalizedTranscript = cleanTranscript.replace(/\s+/g, ' ').trim()
-      
-      let newVoiceContent = cleanTranscript
-      if (normalizedVoiceContent && normalizedTranscript.startsWith(normalizedVoiceContent)) {
-        // Extract only the new portion
-        const newPortion = cleanTranscript.slice(currentVoiceContent.length).trim()
-        if (!newPortion) {
-          // No new content, just return
-          return
-        }
-        newVoiceContent = currentVoiceContent + (currentVoiceContent.endsWith(' ') ? '' : ' ') + newPortion
+      // Check if the transcript is already at the end of current content
+      if (normalizedCurrent.endsWith(normalizedTranscript)) {
+        console.log('Transcript already present at end, skipping')
+        return
       }
       
-      // Construct the full expected content
-      const fullExpectedContent = manualContent + (manualContent && !manualContent.endsWith(' ') ? ' ' : '') + newVoiceContent
-      
-      // Calculate what's actually new
+      // Simple append approach
+      const fullExpectedContent = currentContent + (currentContent && !currentContent.endsWith(' ') ? ' ' : '') + cleanTranscript
       const deltaText = fullExpectedContent.slice(content.length)
+      
+      console.log('Appending new content:', { deltaText })
       
       // Only proceed if there's actually new content
       if (deltaText.trim()) {
-        // Update voice generated length to track how much content came from voice
-        setVoiceGeneratedLength(newVoiceContent.length + (manualContent && !manualContent.endsWith(' ') ? 1 : 0))
         startTypewriterAnimation(fullExpectedContent, deltaText, content.length)
       }
       
@@ -281,7 +271,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
               <div className="relative">
                 <Textarea
                   ref={textareaRef}
-                  placeholder="What's on your mind? Start typing or use voice input, and AI will analyze your business thoughts..."
+                  placeholder={interimContent ? "" : "What's on your mind? Start typing or use voice input, and AI will analyze your business thoughts..."}
                   value={content}
                   onChange={(e) => {
                     if (!isTypingAnimation) {
