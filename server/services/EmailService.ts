@@ -928,7 +928,10 @@ export class EmailService {
     if (goals && goals.length > 0) {
       const totalProgress = goals.reduce((sum: number, goal: any) => {
         // Use the same logic as dashboard GoalCard.tsx
-        if (goal.progress_type === 'milestone' && goal.milestones && goal.milestones.length > 0) {
+        // Normalize progress type with fallback for legacy data
+        const progressType = goal.progress_type ?? (goal.milestones?.length ? 'milestone' : 'manual');
+        
+        if (progressType === 'milestone' && goal.milestones && goal.milestones.length > 0) {
           // Calculate weighted milestone progress
           const totalWeight = goal.milestones.reduce((sum: number, milestone: any) => sum + (milestone.weight || 0), 0);
           if (totalWeight === 0) return sum + 0;
@@ -1183,20 +1186,29 @@ export class EmailService {
 
     // Goal previews with proper progress calculation
     const goalPreviews = displayedGoals.map((goal: any) => {
-      // Calculate progress based on goal type
+      // Calculate progress based on goal type with normalization
+      const progressType = goal.progress_type ?? (goal.milestones?.length ? 'milestone' : 'manual');
       let progress = 0;
-      if (goal.goal_type === 'milestone' && goal.milestones?.length) {
-        const completedMilestones = goal.milestones.filter((m: any) => m.completed).length;
-        progress = Math.round((completedMilestones / goal.milestones.length) * 100);
-      } else if (goal.goal_type === 'manual' && goal.current_value && goal.target_value) {
-        progress = Math.min(100, Math.round((goal.current_value / goal.target_value) * 100));
+      
+      if (progressType === 'milestone' && goal.milestones?.length) {
+        // Calculate weighted milestone progress
+        const totalWeight = goal.milestones.reduce((sum: number, milestone: any) => sum + (milestone.weight || 1), 0);
+        const completedWeight = goal.milestones
+          .filter((milestone: any) => milestone.status === 'done')
+          .reduce((sum: number, milestone: any) => sum + (milestone.weight || 1), 0);
+        
+        if (totalWeight > 0) {
+          progress = Math.round((completedWeight / totalWeight) * 100);
+        }
+      } else if (progressType === 'manual' && typeof goal.current_value === 'number' && typeof goal.target_value === 'number' && goal.target_value > 0) {
+        progress = Math.min(100, Math.max(0, Math.round((goal.current_value / goal.target_value) * 100)));
       } else {
         // Fallback: use existing progress or estimate based on status
         progress = goal.progress || (goal.status === 'completed' ? 100 : goal.status === 'in_progress' ? 50 : 0);
       }
       
       console.log(`Goal "${goal.title}" progress calculation:`, {
-        goalType: goal.goal_type,
+        progressType: progressType,
         milestones: goal.milestones?.length || 0,
         currentValue: goal.current_value,
         targetValue: goal.target_value,
