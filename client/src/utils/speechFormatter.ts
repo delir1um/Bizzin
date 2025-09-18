@@ -183,6 +183,47 @@ function normalizeWhitespace(text: string): string {
 }
 
 /**
+ * Detect if a position in text is at the start of a sentence
+ * by examining the context before it
+ */
+function detectSentenceStart(beforeText: string): boolean {
+  if (!beforeText || !beforeText.trim()) {
+    // Empty or whitespace-only text before = sentence start
+    return true
+  }
+  
+  // Look for the last non-whitespace character
+  const trimmed = beforeText.trimEnd()
+  if (!trimmed) {
+    return true // Only whitespace before = sentence start
+  }
+  
+  const lastChar = trimmed.slice(-1)
+  
+  // Sentence-ending punctuation
+  if (['.', '!', '?'].includes(lastChar)) {
+    return true
+  }
+  
+  // Check for paragraph breaks (newlines)
+  if (beforeText.includes('\n')) {
+    const afterLastNewline = beforeText.split('\n').pop() || ''
+    if (!afterLastNewline.trim()) {
+      return true // Newline with only whitespace after = new paragraph
+    }
+  }
+  
+  // Check for opening quotes or parentheses after sentence-ending punctuation
+  const sentencePunctuationPattern = /[.!?]\s*["\(\[\s]*$/
+  if (sentencePunctuationPattern.test(beforeText)) {
+    return true
+  }
+  
+  // Not at sentence start
+  return false
+}
+
+/**
  * Remove duplicate punctuation marks that might occur when merging chunks
  * Also handle consecutive punctuation commands like "exclamation mark question mark"
  */
@@ -353,8 +394,25 @@ export function formatAndReplaceSpeechText(
     selectionEnd
   })
 
-  // Format the new speech text
-  const formattedNewText = formatSpeechText(newTranscript, { ...options, addEndPeriod: false })
+  // Context-aware capitalization: check if replacement should be capitalized
+  const isSentenceStart = detectSentenceStart(beforeSelection)
+  const shouldPreserveCase = selectedText.trim() ? /^[A-Z]/.test(selectedText.trim()) : false
+  const shouldCapitalize = Boolean(isSentenceStart || shouldPreserveCase)
+  
+  console.log('🎯 Context analysis:', {
+    beforeSelection: beforeSelection.slice(-20),
+    selectedText: selectedText.slice(0, 20),
+    isSentenceStart,
+    shouldPreserveCase,
+    shouldCapitalize
+  })
+  
+  // Format the new speech text with context-aware capitalization
+  const formattedNewText = formatSpeechText(newTranscript, { 
+    ...options, 
+    addEndPeriod: false,
+    enableCapitalization: shouldCapitalize
+  })
   
   if (!formattedNewText.trim()) {
     // If the transcript is empty/only whitespace, just remove the selection
