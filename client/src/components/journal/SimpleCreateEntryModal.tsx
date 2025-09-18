@@ -136,6 +136,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
 
   // Capture current text selection when voice input starts
   const captureSelectionForVoice = () => {
+    console.log('🎯 captureSelectionForVoice called')
     if (textareaRef.current) {
       const start = textareaRef.current.selectionStart
       const end = textareaRef.current.selectionEnd
@@ -143,7 +144,13 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
       // Only consider it a selection if start !== end (actual text selected)
       const hasSelection = start !== end
       
-      console.log('Capturing selection for voice:', { start, end, hasSelection })
+      console.log('🎯 Capturing selection for voice:', { 
+        start, 
+        end, 
+        hasSelection, 
+        textareaFocused: textareaRef.current === document.activeElement,
+        selectedText: hasSelection ? textareaRef.current.value.substring(start, end) : 'none'
+      })
       
       if (hasSelection) {
         setVoiceSelectionStart(start)
@@ -155,6 +162,8 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
         setVoiceSelectionEnd(null)
         setHadSelectionOnVoiceStart(false)
       }
+    } else {
+      console.log('🎯 captureSelectionForVoice: textareaRef.current is null')
     }
   }
 
@@ -429,6 +438,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
                 <VoiceInput
                   onTranscript={handleVoiceTranscript}
                   onStateChange={(newState) => {
+                    console.log('🎯 VoiceInput state changed to:', newState)
                     // Capture selection when voice recording starts
                     if (newState === 'listening') {
                       captureSelectionForVoice()
