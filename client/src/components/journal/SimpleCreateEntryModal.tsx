@@ -272,38 +272,19 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
                     }
                   }}
                   readOnly={false}
-                  className={`min-h-[140px] sm:min-h-[120px] resize-none text-base sm:text-sm leading-relaxed pr-12 transition-colors duration-200 ${
-                    interimContent ? 'text-transparent caret-black dark:caret-white' : ''
-                  }`}
+                  className="min-h-[140px] sm:min-h-[120px] resize-none text-base sm:text-sm leading-relaxed pr-12 transition-colors duration-200"
                   rows={6}
                   autoFocus
                   data-testid="textarea-content"
                 />
                 
-                {/* Interim text overlay - shows both final and interim text */}
+                {/* Interim text display - simple approach */}
                 {interimContent && (
-                  <div 
-                    className="absolute inset-0 pointer-events-none overflow-hidden min-h-[140px] sm:min-h-[120px] text-base sm:text-sm leading-relaxed"
-                    style={{
-                      padding: '12px', // Match textarea padding exactly
-                      paddingRight: '48px', // Account for pr-12 (voice input space)
-                      font: 'inherit',
-                      lineHeight: 'inherit',
-                      letterSpacing: 'inherit',
-                      wordSpacing: 'inherit',
-                      fontFamily: 'inherit',
-                      fontSize: 'inherit',
-                      fontWeight: 'inherit'
-                    }}
-                  >
-                    <span className="whitespace-pre-wrap">
-                      {/* Show final text in normal color */}
-                      <span className="text-gray-900 dark:text-gray-100">{content}</span>
-                      {/* Show interim text in gray with proper spacing */}
-                      <span className="text-gray-400">
-                        {content && !content.endsWith(' ') && !content.endsWith('\n') ? ' ' : ''}{interimContent}
-                      </span>
-                    </span>
+                  <div className="absolute bottom-12 left-3 right-12 bg-blue-50 border border-blue-200 rounded-lg p-2 text-sm text-blue-700 shadow-lg z-10">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                      <span className="italic">"{interimContent}"</span>
+                    </div>
                   </div>
                 )}
                 
