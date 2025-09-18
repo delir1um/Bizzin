@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast"
 import { motion } from "framer-motion"
 import { SuggestedTitleButton } from "./SuggestedTitleButton"
 import { VoiceInput } from "./VoiceInput"
+import { formatAndAppendSpeechText } from "@/utils/speechFormatter"
 
 interface SimpleCreateEntryModalProps {
   isOpen: boolean
@@ -121,7 +122,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
     contentRef.current = content
   }, [content])
 
-  // Simple and reliable voice input handling
+  // Voice input handling with speech formatting
   const handleVoiceTranscript = (transcript: string, isFinal: boolean) => {
     if (!transcript.trim()) return
     
@@ -133,13 +134,21 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
       // Clear interim display
       setInterimContent("")
       
-      // Simple direct append - just add the final transcript to current content
-      const newContent = currentContent + (currentContent && !currentContent.endsWith(' ') ? ' ' : '') + cleanTranscript
+      // Format and append the speech text with proper punctuation and capitalization
+      const formattedContent = formatAndAppendSpeechText(currentContent, cleanTranscript, {
+        enablePunctuation: true,
+        enableCapitalization: true,
+        addEndPeriod: false // Don't auto-add period until entry is complete
+      })
       
-      console.log('Setting new content directly:', { from: currentContent, to: newContent })
+      console.log('Speech formatted content:', { 
+        original: cleanTranscript, 
+        currentContent, 
+        formatted: formattedContent 
+      })
       
-      // Set content directly without animation to avoid any interference
-      setContent(newContent)
+      // Set the formatted content
+      setContent(formattedContent)
       
       // Add visual feedback with a brief flash
       if (textareaRef.current) {
@@ -150,7 +159,7 @@ export function SimpleCreateEntryModal({ isOpen, onClose, onEntryCreated }: Simp
       }
       
     } else {
-      // Show interim text
+      // Show interim text without formatting (formatting happens only on final)
       setInterimContent(cleanTranscript)
     }
   }
