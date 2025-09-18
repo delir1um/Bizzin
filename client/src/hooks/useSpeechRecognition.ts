@@ -136,9 +136,10 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions = {}):
       }
     }
     updateState('auto-paused')
-    const duration = sessionStartTime ? Math.round((Date.now() - sessionStartTime) / 1000) : 0
-    onAutoStop?.('silence', duration)
-  }, [onAutoStop, updateState, sessionStartTime])
+    // For silence timeout, duration is the configured silence timeout duration
+    const silenceDuration = Math.round(silenceTimeoutMs / 1000)
+    onAutoStop?.('silence', silenceDuration)
+  }, [onAutoStop, updateState, silenceTimeoutMs])
 
   // Auto-stop due to session limit
   const handleSessionTimeout = useCallback(() => {
