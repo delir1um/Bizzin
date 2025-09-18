@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { Badge } from '@/components/ui/badge'
 import { VideoPlayer } from './VideoPlayer'
+import { EnhancedProgressSlider } from '@/components/ui/enhanced-progress-slider'
 import { 
   Play, 
   Pause, 
@@ -395,12 +396,13 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
     setIsPlaying(!isPlaying)
   }
 
-  // Seeking capability - allow navigation up to maximum progress reached (learning system)
+  // Enhanced seeking capability - unified with VideoPlayer logic
   const handleSeek = (value: number[]) => {
     const newTime = value[0]
-    // If episode is completed (95%+), allow seeking anywhere
-    // Otherwise, allow seeking up to the maximum progress reached (for review)
-    if (isCompleted || newTime <= maxProgressReached) {
+    // Enhanced seeking logic: allow if completed or within allowed zone (with 2s tolerance)
+    const seekingAllowed = isCompleted || newTime <= maxProgressReached + 2
+    
+    if (seekingAllowed) {
       setCurrentTime(newTime)
       
       // Update audio element position for audio episodes
@@ -408,7 +410,10 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
         audioRef.current.currentTime = newTime
       }
       
-      saveProgress(newTime)
+      // Save progress for meaningful changes (to reduce API calls)
+      if (Math.abs(newTime - currentTime) >= 3) {
+        saveProgress(newTime)
+      }
     }
   }
 
@@ -648,36 +653,20 @@ export function PodcastPlayer({ episode, onClose, autoPlay = false, startTime = 
             </div>
           )}
 
-          {/* Progress Bar - Only show for audio episodes */}
+          {/* Enhanced Progress Bar - Only show for audio episodes */}
           {!isVideoEpisode && (
-            <div className="space-y-2 mb-6">
-              <div className="relative">
-                <Slider
-                  value={[currentTime]}
-                  max={actualDuration}
-                  step={1}
-                  onValueChange={handleSeek}
-                  className="w-full"
-                />
-                {/* Visual indicator for completed progress */}
-                <div 
-                  className="absolute top-0 left-0 h-2 bg-orange-200/30 rounded-full -z-10"
-                  style={{ width: `${displayProgress}%` }}
-                />
-              </div>
-              <div className="flex justify-between text-xs text-white/80">
-                <span>{formatTime(currentTime)}</span>
-                <span className="text-orange-400 font-medium">
-                  {Math.round((currentTime / actualDuration) * 100)}%
-                </span>
-                <span>{formatTime(actualDuration)}</span>
-              </div>
-              <p className="text-xs text-white/60 text-center">
-                {isCompleted 
-                  ? "Episode completed! You can navigate freely through the content" 
-                  : "You can only replay content you've already completed"
-                }
-              </p>
+            <div className="mb-6">
+              <EnhancedProgressSlider
+                value={[currentTime]}
+                max={actualDuration}
+                maxProgressReached={maxProgressReached}
+                isCompleted={isCompleted}
+                onValueChange={handleSeek}
+                formatTime={formatTime}
+                currentTime={currentTime}
+                duration={actualDuration}
+                className="w-full"
+              />
             </div>
           )}
 

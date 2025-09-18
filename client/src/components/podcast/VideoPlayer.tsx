@@ -16,6 +16,7 @@ import {
   Minimize2,
   Settings
 } from 'lucide-react'
+import { EnhancedProgressSlider } from '@/components/ui/enhanced-progress-slider'
 
 interface VideoPlayerProps {
   videoUrl: string
@@ -223,10 +224,10 @@ export function VideoPlayer({
     if (!video || duration <= 0 || isSeeking) return
 
     const newTime = value[0]
-    // If episode is completed, allow seeking anywhere
-    // Otherwise, allow seeking up to the maximum progress reached (for review)
-    // Use monotonic tracking to prevent rewind issues
-    if (isCompleted || newTime <= allowedForwardRef.current + 2) {
+    // Enhanced seeking logic: allow if completed or within allowed zone (with 2s tolerance)
+    const seekingAllowed = isCompleted || newTime <= allowedForwardRef.current + 2
+    
+    if (seekingAllowed) {
       setIsSeeking(true)
       
       // Pause video during seeking to prevent conflicts
@@ -422,36 +423,19 @@ export function VideoPlayer({
 
         {/* Bottom Controls */}
         <div className="absolute bottom-0 left-0 right-0 p-4 space-y-3">
-          {/* Progress Bar */}
-          <div className="space-y-1">
-            <div className="relative">
-              <Slider
-                value={[duration > 0 ? currentTime : 0]}
-                max={duration > 0 ? duration : 100}
-                step={1}
-                onValueChange={handleSeek}
-                className={`w-full ${duration === 0 ? 'opacity-30 pointer-events-none' : ''}`}
-                disabled={duration === 0}
-              />
-              {/* Visual indicator for completed progress */}
-              <div 
-                className={`absolute top-0 left-0 h-2 rounded-full -z-10 ${
-                  duration === 0 ? 'bg-gray-400/20' : 'bg-orange-200/30'
-                }`}
-                style={{ width: duration === 0 ? '0%' : `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
-              />
-            </div>
-            <div className={`flex justify-between text-xs ${duration === 0 ? 'text-white/40' : 'text-white/80'}`}>
-              <span>{duration === 0 ? '--:--' : formatTime(currentTime)}</span>
-              <span>{duration === 0 ? '--:--' : formatTime(duration)}</span>
-            </div>
-            <p className="text-xs text-white/60 text-center">
-              {isCompleted 
-                ? "Episode completed! You can navigate freely through the content" 
-                : "You can review any content you've already watched, but can't skip ahead"
-              }
-            </p>
-          </div>
+          {/* Enhanced Progress Bar */}
+          <EnhancedProgressSlider
+            value={[duration > 0 ? currentTime : 0]}
+            max={duration > 0 ? duration : 100}
+            maxProgressReached={allowedForwardRef.current}
+            isCompleted={isCompleted}
+            onValueChange={handleSeek}
+            formatTime={formatTime}
+            currentTime={currentTime}
+            duration={duration}
+            className={`${duration === 0 ? 'opacity-30 pointer-events-none' : ''}`}
+            disabled={duration === 0}
+          />
 
           {/* Control Buttons */}
           <div className="flex items-center justify-between">
