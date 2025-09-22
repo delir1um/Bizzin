@@ -25,19 +25,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(data.session.user)
         
         // Update last_login for existing session (non-blocking)
-        const updatePromise = supabase
-          .from('user_profiles')
-          .update({ 
-            last_login: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', data.session.user.id)
-          
-        updatePromise.then(() => {
-          // Login time updated
-        }).catch((error: any) => {
-          // Could not update login time
-        })
+        (async () => {
+          try {
+            await supabase
+              .from('user_profiles')
+              .update({ 
+                last_login: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              })
+              .eq('user_id', data.session.user.id)
+          } catch (error) {
+            // Could not update login time - this is non-critical
+          }
+        })()
       }
       setLoading(false)
     }
@@ -48,32 +48,102 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Handle user sign-in events  
       if (event === 'SIGNED_IN' && session?.user) {
-        // Update last_login (non-blocking)
-        const loginUpdatePromise = supabase
-          .from('user_profiles')
-          .update({ 
-            last_login: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', session.user.id)
-          
-        loginUpdatePromise.then(() => {
-          // Login time updated on sign in
-        }).catch((error: any) => {
-          // Could not update login time
-        })
+        // First, ensure user profile exists (for new users)
+        const checkAndCreateProfile = async () => {
+          try {
+            // Check if user profile exists
+            const { data: existingProfile, error: profileCheckError } = await supabase
+              .from('user_profiles')
+              .select('user_id')
+              .eq('user_id', session.user.id)
+              .single()
+            
+            if (profileCheckError && profileCheckError.code === 'PGRST116') {
+              // Profile doesn't exist, create it
+              console.log('Creating user profile for new user:', session.user.id)
+              const { error: createProfileError } = await supabase
+                .from('user_profiles')
+                .insert({
+                  user_id: session.user.id,
+                  email: session.user.email!,
+                  first_name: session.user.user_metadata?.first_name || '',
+                  last_name: session.user.user_metadata?.last_name || '',
+                  full_name: session.user.user_metadata?.full_name || session.user.email!.split('@')[0],
+                  email_notifications: true,
+                  daily_email: false,
+                  daily_email_time: '08:00',
+                  timezone: 'Africa/Johannesburg',
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString()
+                })
+              
+              if (createProfileError) {
+                console.error('Failed to create user profile:', createProfileError)
+              } else {
+                console.log('User profile created successfully')
+              }
+            }
+            
+            // Check if user plan exists
+            const { data: existingPlan, error: planCheckError } = await supabase
+              .from('user_plans')
+              .select('user_id')
+              .eq('user_id', session.user.id)
+              .single()
+            
+            if (planCheckError && planCheckError.code === 'PGRST116') {
+              // Plan doesn't exist, create it with 14-day trial
+              console.log('Creating user plan with 14-day trial for new user:', session.user.id)
+              const trialExpiry = new Date()
+              trialExpiry.setDate(trialExpiry.getDate() + 14)
+              
+              const { error: createPlanError } = await supabase
+                .from('user_plans')
+                .insert({
+                  user_id: session.user.id,
+                  plan_type: 'free',
+                  started_at: new Date().toISOString(),
+                  expires_at: trialExpiry.toISOString(),
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString()
+                })
+              
+              if (createPlanError) {
+                console.error('Failed to create user plan:', createPlanError)
+              } else {
+                console.log('User plan with 14-day trial created successfully')
+              }
+            }
+            
+            // Now update last_login for existing or newly created profile
+            await supabase
+              .from('user_profiles')
+              .update({ 
+                last_login: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              })
+              .eq('user_id', session.user.id)
+            
+          } catch (error) {
+            console.error('Error during profile/plan creation:', error)
+          }
+        }
+        
+        // Execute profile/plan creation (non-blocking)
+        checkAndCreateProfile()
           
         // Check if this user needs referral stats initialization
         // This happens on first login after signup
-        const initializePromise = ReferralService.getReferralStats(session.user.id)
-        initializePromise.then((stats) => {
-          if (!stats && session.user?.email) {
-            // User doesn't have referral stats yet, initialize them
-            return ReferralService.initializeUserReferralStats(session.user.id, session.user.email)
-          }
-        }).catch((error: any) => {
-          console.error('Failed to initialize referral stats:', error)
-        })
+        ReferralService.getReferralStats(session.user.id)
+          .then((stats) => {
+            if (!stats && session.user?.email) {
+              // User doesn't have referral stats yet, initialize them
+              return ReferralService.initializeUserReferralStats(session.user.id, session.user.email)
+            }
+          })
+          .catch((error: any) => {
+            console.error('Failed to initialize referral stats:', error)
+          })
       }
     })
 
