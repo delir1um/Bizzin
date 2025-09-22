@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 // AI Configuration Schema with defaults from setup
 const aiConfigSchema = z.object({
-  MODEL: z.string().default('claude-3-5-haiku-latest'),
+  MODEL: z.string().default('claude-sonnet-4-20250514'),
   MAX_TOKENS: z.number().min(1).max(4096).default(800),
   TEMPERATURE: z.number().min(0).max(1).default(0.2),
   ANTHROPIC_API_KEY: z.string().min(1, 'ANTHROPIC_API_KEY is required')
@@ -10,7 +10,7 @@ const aiConfigSchema = z.object({
 
 // Load and validate configuration
 export const AI_CONFIG = aiConfigSchema.parse({
-  MODEL: process.env.AI_MODEL || 'claude-3-5-haiku-latest',
+  MODEL: process.env.AI_MODEL || 'claude-sonnet-4-20250514',
   MAX_TOKENS: process.env.AI_MAX_TOKENS ? parseInt(process.env.AI_MAX_TOKENS) : 800,
   TEMPERATURE: process.env.AI_TEMPERATURE ? parseFloat(process.env.AI_TEMPERATURE) : 0.2,
   ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY
@@ -28,7 +28,7 @@ export function getAnthropicKey(): string {
 export function validateAiConfig(): void {
   try {
     aiConfigSchema.parse({
-      MODEL: process.env.AI_MODEL || 'claude-3-5-haiku-latest',
+      MODEL: process.env.AI_MODEL || 'claude-sonnet-4-20250514',
       MAX_TOKENS: process.env.AI_MAX_TOKENS ? parseInt(process.env.AI_MAX_TOKENS) : 800,
       TEMPERATURE: process.env.AI_TEMPERATURE ? parseFloat(process.env.AI_TEMPERATURE) : 0.2,
       ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY

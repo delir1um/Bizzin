@@ -78,10 +78,12 @@ export function useClaudeChat(): UseClaudeChatReturn {
         throw new Error('No response body received');
       }
 
-      // Read streaming response
+      // Read streaming response with proper buffering
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let assistantText = '';
+      let assistantMessageAdded = false;
+      let buffer = ''; // Buffer for partial lines
 
       // Add placeholder for assistant message
       const assistantMessage: ChatMessage = {
@@ -91,6 +93,7 @@ export function useClaudeChat(): UseClaudeChatReturn {
       };
 
       setMessages(prev => [...prev, assistantMessage]);
+      assistantMessageAdded = true;
 
       try {
         while (true) {
@@ -99,12 +102,18 @@ export function useClaudeChat(): UseClaudeChatReturn {
           if (done) break;
 
           const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split('\n');
+          buffer += chunk;
+          
+          // Process complete lines
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || ''; // Keep incomplete line in buffer
 
           for (const line of lines) {
             if (line.startsWith('data: ')) {
               try {
                 const jsonStr = line.slice(6); // Remove 'data: ' prefix
+                if (!jsonStr.trim()) continue; // Skip empty data lines
+                
                 const data = JSON.parse(jsonStr);
 
                 if (data.error) {
@@ -134,7 +143,7 @@ export function useClaudeChat(): UseClaudeChatReturn {
                     };
                     return newMessages;
                   });
-                  break;
+                  return; // Exit the function
                 }
               } catch (parseError) {
                 console.warn('Failed to parse SSE data:', line);
@@ -150,7 +159,13 @@ export function useClaudeChat(): UseClaudeChatReturn {
       setError(errorMessage);
       
       // Remove the placeholder assistant message on error
-      setMessages(prev => prev.slice(0, -1));
+      // Check if we have messages and the last one is an empty assistant message
+      setMessages(prev => {
+        if (prev.length > 0 && prev[prev.length - 1].role === 'assistant' && !prev[prev.length - 1].content) {
+          return prev.slice(0, -1);
+        }
+        return prev;
+      });
       
       console.error('Chat error:', errorMessage);
     } finally {

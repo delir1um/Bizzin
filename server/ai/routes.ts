@@ -73,9 +73,7 @@ router.post('/chat', async (req: Request, res: Response) => {
       res.writeHead(200, {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Cache-Control'
+        'Connection': 'keep-alive'
       });
 
       const chatStream = await chat(chatOptions);
