@@ -125,7 +125,7 @@ export function ReferralDashboard() {
           Referral Program
         </h1>
         <p className="text-gray-600 dark:text-gray-300">
-          Refer friends and both of you get free days! You get 10 days, they get 30 days when they upgrade.
+          Refer friends and both of you get benefits! They get a 14-day trial + 30 bonus days, you get 10 days when they convert to premium.
         </p>
       </div>
 
@@ -234,8 +234,9 @@ export function ReferralDashboard() {
               <strong>How it works:</strong> Share this code with friends. When they sign up and enter your code:
             </p>
             <ul className="text-sm text-blue-700 dark:text-blue-300 mt-2 space-y-1">
-              <li>• They get <strong>30 days free</strong> when they upgrade</li>
-              <li>• You get <strong>10 days free</strong> when they upgrade to premium</li>
+              <li>• They get a <strong>14-day premium trial</strong> immediately</li>
+              <li>• When they convert to premium, they get <strong>30 bonus days</strong> added</li>
+              <li>• You get <strong>10 days free</strong> when they convert to premium</li>
               <li>• It's a win-win for everyone!</li>
             </ul>
           </div>
@@ -320,18 +321,18 @@ export function ReferralDashboard() {
               <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-3">
                 2
               </div>
-              <h4 className="font-semibold mb-2">Friend Subscribes</h4>
+              <h4 className="font-semibold mb-2">Friend Gets Trial</h4>
               <p className="text-sm text-gray-600">
-                They sign up and subscribe to any paid plan
+                They get a 14-day premium trial when they sign up with your code
               </p>
             </div>
             <div className="text-center">
               <div className="w-12 h-12 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-3">
                 3
               </div>
-              <h4 className="font-semibold mb-2">You Get Rewarded</h4>
+              <h4 className="font-semibold mb-2">Both Get Rewarded</h4>
               <p className="text-sm text-gray-600">
-                Earn 10 days free subscription for each active referral
+                When they convert to premium: they get 30 bonus days, you get 10 days free
               </p>
             </div>
           </div>
