@@ -356,28 +356,27 @@ export function PlanManagement() {
                 </div>
               )}
               
-              {/* Show post-trial limits if requested */}
+              {/* Show post-trial access requirements */}
               {showFreeLimits && (
                 <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
                   <div className="mb-4 text-sm text-slate-600 dark:text-slate-400">
-                    <strong>After your trial ends (Free plan):</strong>
+                    <strong>After your trial ends:</strong>
                   </div>
-                  {features.map((feature) => {
-                    const Icon = feature.icon
-                    return (
-                      <div key={`${feature.name}-free`} className="flex items-center justify-between py-2">
-                        <div className="flex items-center gap-3">
-                          <Icon className="w-4 h-4 text-slate-400" />
-                          <span className="text-sm text-slate-700 dark:text-slate-300">
-                            {feature.name}
-                          </span>
-                        </div>
-                        <span className="text-sm text-slate-500 dark:text-slate-400">
-                          {feature.free}
-                        </span>
-                      </div>
-                    )
-                  })}
+                  <div className="p-4 bg-orange-50 dark:bg-orange-950 rounded-lg border border-orange-200 dark:border-orange-800">
+                    <div className="text-sm text-orange-800 dark:text-orange-200">
+                      <strong>Premium subscription required</strong> to continue accessing all features. 
+                      Without a subscription, you won't be able to use any Bizzin features.
+                    </div>
+                    <div className="mt-3">
+                      <Button 
+                        onClick={() => setShowUpgradeModal(true)}
+                        className="bg-orange-600 hover:bg-orange-700 text-white"
+                        size="sm"
+                      >
+                        Upgrade to Premium - {formattedMonthlyPrice}/month
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
