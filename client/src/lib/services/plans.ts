@@ -5,11 +5,14 @@ export class PlansService {
   // Get user's current plan
   static async getUserPlan(userId: string): Promise<UserPlan | null> {
     try {
+      console.log('🔍 Fetching plan for user:', userId)
       const { data, error } = await supabase
         .from('user_plans')
         .select('*')
         .eq('user_id', userId)
         .maybeSingle()
+
+      console.log('📊 Plan query result:', { data, error })
 
       if (error) {
         console.error('🚨 Plan query error details:', error)
