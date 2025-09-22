@@ -104,25 +104,54 @@ export function AdminUserManagement() {
       }
       
       // 2. Add the info user to Supabase
-      const { error: insertError } = await supabase
+      // First try to see if user already exists
+      const { data: existingUser } = await supabase
         .from('user_profiles')
-        .insert({
-          user_id: '9fd5beae-b30f-4656-a3e1-3ffa1874c0eb',
-          email: 'info@cloudfusion.co.za',
-          first_name: 'Info',
-          last_name: 'CloudFusion',
-          full_name: 'Info CloudFusion', 
-          business_name: 'CloudFusion Info',
-          is_admin: false,
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
+        .select('user_id')
+        .eq('email', 'info@cloudfusion.co.za')
+        .single()
       
-      if (insertError) {
-        console.error('Error inserting info user:', insertError)
+      if (!existingUser) {
+        // Create user through auth.users first (requires service role key)
+        const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+          email: 'info@cloudfusion.co.za',
+          password: 'TempPass123!',
+          email_confirm: true,
+          user_metadata: {
+            full_name: 'Info CloudFusion',
+            first_name: 'Info',
+            last_name: 'CloudFusion'
+          }
+        })
+        
+        if (authError) {
+          console.error('Error creating auth user:', authError)
+          alert('⚠️ Could not create second user automatically due to RLS policies.\n\nTo add the missing user manually:\n1. Go to Supabase dashboard\n2. Authentication > Users\n3. Create user: info@cloudfusion.co.za\n\nAlternatively, this can be done with a service role key.')
+        } else {
+          console.log('✅ Created auth user for info@cloudfusion.co.za')
+          
+          // Now create the profile
+          const { error: profileError } = await supabase
+            .from('user_profiles')
+            .insert({
+              user_id: authUser.user.id,
+              email: 'info@cloudfusion.co.za',
+              first_name: 'Info',
+              last_name: 'CloudFusion',
+              full_name: 'Info CloudFusion',
+              business_name: 'CloudFusion Info',
+              is_admin: false,
+              is_active: true
+            })
+          
+          if (profileError) {
+            console.error('Error creating profile:', profileError)
+          } else {
+            console.log('✅ Created profile for info user')
+          }
+        }
       } else {
-        console.log('✅ Added info user to Supabase')
+        console.log('ℹ️ Info user already exists')
       }
       
       // 3. Refresh the admin panel
@@ -903,7 +932,7 @@ function UserDetailView({ user }: { user: UserProfile }) {
                         if (error) throw error
                         
                         alert('Profile updated successfully!')
-                        refetch()
+                        queryClient.invalidateQueries({ queryKey: ['admin-users'] })
                       }
                     } catch (error) {
                       console.error('Error updating profile:', error)
@@ -1015,7 +1044,7 @@ function UserDetailView({ user }: { user: UserProfile }) {
                         if (error) throw error
                         
                         alert(`✅ ${user.first_name || user.email} has been ${actionPast}!`)
-                        refetch()
+                        queryClient.invalidateQueries({ queryKey: ['admin-users'] })
                       } catch (error) {
                         console.error(`Error ${action}ing user:`, error)
                         alert(`Failed to ${action} user. Please try again.`)
