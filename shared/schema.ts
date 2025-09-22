@@ -111,7 +111,7 @@ export type AdminUser = {
 export type UserPlan = {
   id: string;
   user_id: string;
-  plan_type: string; // 'free' or 'premium'
+  plan_type: string; // 'free', 'premium', or 'trial'
   billing_cycle?: string; // 'monthly', 'yearly'
   amount_paid?: number;
   currency?: string;
@@ -120,7 +120,10 @@ export type UserPlan = {
   started_at?: string;
   expires_at?: string;
   cancelled_at?: string;
+  is_trial?: boolean; // true for trial periods
+  trial_ends_at?: string; // when trial expires
   referral_days_remaining?: number;
+  referral_bonus_applied?: boolean; // track if referral bonus has been applied
   created_at: string;
   updated_at: string;
 };
