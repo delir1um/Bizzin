@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -71,7 +71,11 @@ export function PlanManagement() {
 
   const planLimits = usageStatus?.plan_limits
   const currentUsage = usageStatus?.current_usage
-  const remainingTrialDays = isTrial ? calculateRemainingTrialDays(usageStatus?.user_plan) : 0
+  
+  // Memoize the trial days calculation to prevent infinite re-renders
+  const remainingTrialDays = useMemo(() => {
+    return isTrial ? calculateRemainingTrialDays(usageStatus?.user_plan) : 0
+  }, [isTrial, usageStatus?.user_plan])
 
   const features = [
     {
