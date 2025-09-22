@@ -454,9 +454,15 @@ export function AdminUserManagement() {
               Export CSV
             </Button>
             
-            {/* Temporary migration button */}
-            <Button onClick={migrateUserData} variant="secondary">
-              🔧 Fix Database
+            {/* Migration button - can only update existing users */}
+            <Button 
+              onClick={() => {
+                migrateUserData()
+                alert('✅ Anton\'s profile updated!\n\n⚠️ To add the second user manually:\n1. Go to your Supabase dashboard\n2. Authentication > Users\n3. Create user: info@cloudfusion.co.za\n4. Set name: Info CloudFusion\n\nThe admin panel will then show both users.')
+              }} 
+              variant="secondary"
+            >
+              🔧 Update User Data
             </Button>
           </div>
 
@@ -932,7 +938,7 @@ function UserDetailView({ user }: { user: UserProfile }) {
                         if (error) throw error
                         
                         alert('Profile updated successfully!')
-                        queryClient.invalidateQueries({ queryKey: ['admin-users'] })
+                        window.location.reload() // Force refresh to see changes
                       }
                     } catch (error) {
                       console.error('Error updating profile:', error)
@@ -1044,7 +1050,7 @@ function UserDetailView({ user }: { user: UserProfile }) {
                         if (error) throw error
                         
                         alert(`✅ ${user.first_name || user.email} has been ${actionPast}!`)
-                        queryClient.invalidateQueries({ queryKey: ['admin-users'] })
+                        window.location.reload() // Force refresh to see changes
                       } catch (error) {
                         console.error(`Error ${action}ing user:`, error)
                         alert(`Failed to ${action} user. Please try again.`)

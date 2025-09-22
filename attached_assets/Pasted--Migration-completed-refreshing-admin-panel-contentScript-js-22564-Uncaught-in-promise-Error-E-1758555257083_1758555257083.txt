@@ -1,0 +1,328 @@
+✅ Migration completed - refreshing admin panel
+contentScript.js:22564 Uncaught (in promise) Error: Extension context invalidated.
+    at _Of.render (contentScript.js:22564:62)
+render @ contentScript.js:22564
+childList
+e @ framework-8c94758ef08e4c2f.js:1
+e @ framework-8c94758ef08e4c2f.js:1
+e @ framework-8c94758ef08e4c2f.js:1
+oK @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1
+oQ @ framework-8c94758ef08e4c2f.js:1
+oq @ framework-8c94758ef08e4c2f.js:1Understand this error
+contentScript.js:22564 Uncaught (in promise) Error: Extension context invalidated.
+    at _Of.render (contentScript.js:22564:62)
+render @ contentScript.js:22564
+childList
+(anonymous) @ 5014-b562e9891ecf71c8.js:1
+(anonymous) @ 5014-b562e9891ecf71c8.js:1
+n @ _app-307ab1e28a225656.js:28
+setTimeout
+(anonymous) @ _app-307ab1e28a225656.js:28
+n @ 5014-b562e9891ecf71c8.js:1
+(anonymous) @ 5014-b562e9891ecf71c8.js:1
+n @ _app-307ab1e28a225656.js:28
+setTimeout
+(anonymous) @ _app-307ab1e28a225656.js:28
+n @ 5014-b562e9891ecf71c8.js:1
+(anonymous) @ 5014-b562e9891ecf71c8.js:1
+n @ _app-307ab1e28a225656.js:28
+setTimeout
+(anonymous) @ _app-307ab1e28a225656.js:28
+n @ 5014-b562e9891ecf71c8.js:1
+(anonymous) @ 5014-b562e9891ecf71c8.js:1
+n @ _app-307ab1e28a225656.js:28Understand this error
+Console.js:61 Fetched user profiles: {count: 1, error: null}
+Console.js:61 User profiles result: {count: 1, error: null, profiles: Array(1)}
+contentScript.js:22564 Uncaught (in promise) Error: Extension context invalidated.
+    at _Of.render (contentScript.js:22564:62)
+render @ contentScript.js:22564
+childList
+(anonymous) @ 5014-b562e9891ecf71c8.js:1
+(anonymous) @ 5014-b562e9891ecf71c8.js:1
+n @ _app-307ab1e28a225656.js:28
+setTimeout
+(anonymous) @ _app-307ab1e28a225656.js:28
+n @ 5014-b562e9891ecf71c8.js:1
+(anonymous) @ 5014-b562e9891ecf71c8.js:1
+n @ _app-307ab1e28a225656.js:28
+setTimeout
+(anonymous) @ _app-307ab1e28a225656.js:28
+n @ 5014-b562e9891ecf71c8.js:1
+(anonymous) @ 5014-b562e9891ecf71c8.js:1
+n @ _app-307ab1e28a225656.js:28
+setTimeout
+(anonymous) @ _app-307ab1e28a225656.js:28
+n @ 5014-b562e9891ecf71c8.js:1
+(anonymous) @ 5014-b562e9891ecf71c8.js:1
+n @ _app-307ab1e28a225656.js:28Understand this error
+injected.js:278  GET https://giahpkiwivxpocikndix.supabase.co/rest/v1/user_plans?select=user_id%2Cplan_type%2Cexpires_at%2Ccreated_at%2Ccancelled_at&user_id=in.%289502ea97-1adb-4115-ba05-1b6b1b5fa721%29 400 (Bad Request)
+window.fetch @ Network.js:219
+apply @ injected.js:278
+(anonymous) @ @supabase_supabase-js.js?v=10c4bdc5:4213
+(anonymous) @ @supabase_supabase-js.js?v=10c4bdc5:4234
+fulfilled @ @supabase_supabase-js.js?v=10c4bdc5:4186
+Promise.then
+step @ @supabase_supabase-js.js?v=10c4bdc5:4199
+(anonymous) @ @supabase_supabase-js.js?v=10c4bdc5:4201
+__awaiter6 @ @supabase_supabase-js.js?v=10c4bdc5:4183
+(anonymous) @ @supabase_supabase-js.js?v=10c4bdc5:4224
+then @ @supabase_supabase-js.js?v=10c4bdc5:89Understand this error
+Console.js:61 Detailed query results: {plansData: 0, plansError: 'error', journalData: 42, journalError: 'none', goalsData: 4, …}
+Console.js:61 Raw data fetched: {plans: 0, journal: 42, goals: 4, documents: 9}
+Console.js:61 User anton@cloudfusion.co.za stats: {journal: 42, goals: {…}, docs: {…}, plan: {…}}
+Console.js:61 Returning 1 users from 1 total
+contentScript.js:22564 Uncaught (in promise) Error: Extension context invalidated.
+    at _Of.render (contentScript.js:22564:62)
+render @ contentScript.js:22564
+childList
+(anonymous) @ 5014-b562e9891ecf71c8.js:1
+(anonymous) @ 5014-b562e9891ecf71c8.js:1
+n @ _app-307ab1e28a225656.js:28
+setTimeout
+(anonymous) @ _app-307ab1e28a225656.js:28
+n @ 5014-b562e9891ecf71c8.js:1
+(anonymous) @ 5014-b562e9891ecf71c8.js:1
+n @ _app-307ab1e28a225656.js:28
+setTimeout
+(anonymous) @ _app-307ab1e28a225656.js:28
+n @ 5014-b562e9891ecf71c8.js:1
+(anonymous) @ 5014-b562e9891ecf71c8.js:1
+n @ _app-307ab1e28a225656.js:28
+setTimeout
+(anonymous) @ _app-307ab1e28a225656.js:28
+n @ 5014-b562e9891ecf71c8.js:1
+(anonymous) @ 5014-b562e9891ecf71c8.js:1
+n @ _app-307ab1e28a225656.js:28Understand this error
+3contentScript.js:22564 Uncaught (in promise) Error: Extension context invalidated.
+    at _Of.render (contentScript.js:22564:62)
+render @ contentScript.js:22564
+childList
+(anonymous) @ 5014-b562e9891ecf71c8.js:1
+(anonymous) @ 5014-b562e9891ecf71c8.js:1
+n @ _app-307ab1e28a225656.js:28
+setTimeout
+(anonymous) @ _app-307ab1e28a225656.js:28
+n @ 5014-b562e9891ecf71c8.js:1
+(anonymous) @ 5014-b562e9891ecf71c8.js:1
+n @ _app-307ab1e28a225656.js:28
+setTimeout
+(anonymous) @ _app-307ab1e28a225656.js:28
+n @ 5014-b562e9891ecf71c8.js:1
+(anonymous) @ 5014-b562e9891ecf71c8.js:1
+n @ _app-307ab1e28a225656.js:28Understand this error
+4contentScript.js:22564 Uncaught (in promise) Error: Extension context invalidated.
+    at _Of.render (contentScript.js:22564:62)
+render @ contentScript.js:22564
+childList
+(anonymous) @ 5014-b562e9891ecf71c8.js:1
+(anonymous) @ 5014-b562e9891ecf71c8.js:1
+n @ _app-307ab1e28a225656.js:28
+setTimeout
+(anonymous) @ _app-307ab1e28a225656.js:28
+n @ 5014-b562e9891ecf71c8.js:1
+(anonymous) @ 5014-b562e9891ecf71c8.js:1
+n @ _app-307ab1e28a225656.js:28
+setTimeout
+(anonymous) @ _app-307ab1e28a225656.js:28
+n @ 5014-b562e9891ecf71c8.js:1
+(anonymous) @ 5014-b562e9891ecf71c8.js:1
+n @ _app-307ab1e28a225656.js:28
+setTimeout
+(anonymous) @ _app-307ab1e28a225656.js:28
+n @ 5014-b562e9891ecf71c8.js:1
+(anonymous) @ 5014-b562e9891ecf71c8.js:1
+n @ _app-307ab1e28a225656.js:28Understand this error
