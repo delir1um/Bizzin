@@ -154,7 +154,9 @@ export function RecoveryResilienceCard({ journalEntries }: RecoveryResilienceCar
       const earlierAvg = earlierRecoveries.reduce((sum, p) => sum + (p.recoveryTimeHours || 0), 0) / earlierRecoveries.length
       
       if (earlierAvg > 0) {
-        trendValue = Math.round(((earlierAvg - recentAvg) / earlierAvg) * 100)
+        const rawTrendValue = ((earlierAvg - recentAvg) / earlierAvg) * 100
+        // Cap extreme trend values to prevent unrealistic percentages
+        trendValue = Math.round(Math.max(-200, Math.min(200, rawTrendValue)))
         trend = trendValue > 20 ? 'up' : trendValue < -20 ? 'down' : 'neutral'
       }
     }
