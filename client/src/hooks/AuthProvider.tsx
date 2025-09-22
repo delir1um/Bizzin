@@ -92,26 +92,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               .maybeSingle()
             
             if (!existingPlan && !planCheckError) {
-              // Plan doesn't exist, create it with 14-day trial
-              console.log('Creating user plan with 14-day trial for new user:', session.user.id)
-              const trialExpiry = new Date()
-              trialExpiry.setDate(trialExpiry.getDate() + 14)
+              // Plan doesn't exist, create it - server will automatically set 14-day trial dates
+              console.log('Creating user plan for new user (server will set trial dates):', session.user.id)
               
               const { error: createPlanError } = await supabase
                 .from('user_plans')
                 .insert({
                   user_id: session.user.id,
-                  plan_type: 'free',
-                  started_at: new Date().toISOString(),
-                  expires_at: trialExpiry.toISOString(),
-                  created_at: new Date().toISOString(),
-                  updated_at: new Date().toISOString()
+                  plan_type: 'free'
+                  // started_at and expires_at will be set automatically by database trigger
                 })
               
               if (createPlanError) {
                 console.error('Failed to create user plan:', createPlanError)
               } else {
-                console.log('User plan with 14-day trial created successfully')
+                console.log('User plan created successfully with server-controlled trial dates')
               }
             }
             
