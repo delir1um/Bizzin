@@ -1,0 +1,42 @@
+Starting signup process for: admin@cloudfusion.co.za
+injected.js:278  POST https://giahpkiwivxpocikndix.supabase.co/auth/v1/signup 500 (Internal Server Error)
+window.fetch @ Network.js:219
+apply @ injected.js:278
+(anonymous) @ @supabase_supabase-js.js?v=c9799909:4653
+_handleRequest2 @ @supabase_supabase-js.js?v=c9799909:4934
+_request @ @supabase_supabase-js.js?v=c9799909:4924
+signUp @ @supabase_supabase-js.js?v=c9799909:5665
+onSubmit @ AuthPage.tsx:123
+(anonymous) @ chunk-YGCRICWC.js?v=c9799909:1465
+await in (anonymous)
+callCallback2 @ chunk-276SZO74.js?v=c9799909:3674
+invokeGuardedCallbackDev @ chunk-276SZO74.js?v=c9799909:3699
+invokeGuardedCallback @ chunk-276SZO74.js?v=c9799909:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-276SZO74.js?v=c9799909:3736
+executeDispatch @ chunk-276SZO74.js?v=c9799909:7014
+processDispatchQueueItemsInOrder @ chunk-276SZO74.js?v=c9799909:7034
+processDispatchQueue @ chunk-276SZO74.js?v=c9799909:7043
+dispatchEventsForPlugins @ chunk-276SZO74.js?v=c9799909:7051
+(anonymous) @ chunk-276SZO74.js?v=c9799909:7174
+batchedUpdates$1 @ chunk-276SZO74.js?v=c9799909:18913
+batchedUpdates @ chunk-276SZO74.js?v=c9799909:3579
+dispatchEventForPluginEventSystem @ chunk-276SZO74.js?v=c9799909:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-276SZO74.js?v=c9799909:5478
+dispatchEvent @ chunk-276SZO74.js?v=c9799909:5472
+dispatchDiscreteEvent @ chunk-276SZO74.js?v=c9799909:5449Understand this error
+Console.js:61 Signup response: {data: {…}, error: AuthApiError: Database error saving new user
+    at handleError2 (https://b4a595c1-5278-4619-92c1-c…}data: session: nulluser: null[[Prototype]]: Objectconstructor: ƒ Object()hasOwnProperty: ƒ hasOwnProperty()isPrototypeOf: ƒ isPrototypeOf()propertyIsEnumerable: ƒ propertyIsEnumerable()toLocaleString: ƒ toLocaleString()toString: ƒ toString()valueOf: ƒ valueOf()__defineGetter__: ƒ __defineGetter__()__defineSetter__: ƒ __defineSetter__()__lookupGetter__: ƒ __lookupGetter__()__lookupSetter__: ƒ __lookupSetter__()__proto__: (...)get __proto__: ƒ __proto__()set __proto__: ƒ __proto__()error: AuthApiError: Database error saving new user
+    at handleError2 (https://b4a595c1-5278-4619-92c1-c13562ecc1a6-00-28rr7dv01069q.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@supabase_supabase-js.js?v=c9799909:4899:9)
+    at async _handleRequest2 (https://b4a595c1-5278-4619-92c1-c13562ecc1a6-00-28rr7dv01069q.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@supabase_supabase-js.js?v=c9799909:4940:5)
+    at async _request (https://b4a595c1-5278-4619-92c1-c13562ecc1a6-00-28rr7dv01069q.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@supabase_supabase-js.js?v=c9799909:4924:16)
+    at async SupabaseAuthClient.signUp (https://b4a595c1-5278-4619-92c1-c13562ecc1a6-00-28rr7dv01069q.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@supabase_supabase-js.js?v=c9799909:5665:15)
+    at async onSubmit (https://b4a595c1-5278-4619-92c1-c13562ecc1a6-00-28rr7dv01069q.worf.replit.dev/src/pages/AuthPage.tsx:116:45)
+    at async https://b4a595c1-5278-4619-92c1-c13562ecc1a6-00-28rr7dv01069q.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-YGCRICWC.js?v=c9799909:1465:9code: "unexpected_failure"name: "AuthApiError"status: 500__isAuthError: truemessage: "Database error saving new user"stack: "AuthApiError: Database error saving new user\n    at handleError2 (https://b4a595c1-5278-4619-92c1-c13562ecc1a6-00-28rr7dv01069q.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@supabase_supabase-js.js?v=c9799909:4899:9)\n    at async _handleRequest2 (https://b4a595c1-5278-4619-92c1-c13562ecc1a6-00-28rr7dv01069q.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@supabase_supabase-js.js?v=c9799909:4940:5)\n    at async _request (https://b4a595c1-5278-4619-92c1-c13562ecc1a6-00-28rr7dv01069q.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@supabase_supabase-js.js?v=c9799909:4924:16)\n    at async SupabaseAuthClient.signUp (https://b4a595c1-5278-4619-92c1-c13562ecc1a6-00-28rr7dv01069q.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@supabase_supabase-js.js?v=c9799909:5665:15)\n    at async onSubmit (https://b4a595c1-5278-4619-92c1-c13562ecc1a6-00-28rr7dv01069q.worf.replit.dev/src/pages/AuthPage.tsx:116:45)\n    at async https://b4a595c1-5278-4619-92c1-c13562ecc1a6-00-28rr7dv01069q.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-YGCRICWC.js?v=c9799909:1465:9"[[Prototype]]: AuthError[[Prototype]]: Objectconstructor: ƒ Object()hasOwnProperty: ƒ hasOwnProperty()isPrototypeOf: ƒ isPrototypeOf()propertyIsEnumerable: ƒ propertyIsEnumerable()toLocaleString: ƒ toLocaleString()toString: ƒ toString()valueOf: ƒ valueOf()__defineGetter__: ƒ __defineGetter__()__defineSetter__: ƒ __defineSetter__()__lookupGetter__: ƒ __lookupGetter__()__lookupSetter__: ƒ __lookupSetter__()__proto__: (...)get __proto__: ƒ __proto__()set __proto__: ƒ __proto__()
+Console.js:61 Supabase signup error details: {message: 'Database error saving new user', status: 500, statusText: undefined, details: AuthApiError: Database error saving new user
+    at handleError2 (https://b4a595c1-5278-4619-92c1-c…}details: AuthApiError: Database error saving new user
+    at handleError2 (https://b4a595c1-5278-4619-92c1-c13562ecc1a6-00-28rr7dv01069q.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@supabase_supabase-js.js?v=c9799909:4899:9)
+    at async _handleRequest2 (https://b4a595c1-5278-4619-92c1-c13562ecc1a6-00-28rr7dv01069q.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@supabase_supabase-js.js?v=c9799909:4940:5)
+    at async _request (https://b4a595c1-5278-4619-92c1-c13562ecc1a6-00-28rr7dv01069q.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@supabase_supabase-js.js?v=c9799909:4924:16)
+    at async SupabaseAuthClient.signUp (https://b4a595c1-5278-4619-92c1-c13562ecc1a6-00-28rr7dv01069q.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@supabase_supabase-js.js?v=c9799909:5665:15)
+    at async onSubmit (https://b4a595c1-5278-4619-92c1-c13562ecc1a6-00-28rr7dv01069q.worf.replit.dev/src/pages/AuthPage.tsx:116:45)
+    at async https://b4a595c1-5278-4619-92c1-c13562ecc1a6-00-28rr7dv01069q.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-YGCRICWC.js?v=c9799909:1465:9message: "Database error saving new user"status: 500statusText: undefined[[Prototype]]: Objectconstructor: ƒ Object()hasOwnProperty: ƒ hasOwnProperty()isPrototypeOf: ƒ isPrototypeOf()propertyIsEnumerable: ƒ propertyIsEnumerable()toLocaleString: ƒ toLocaleString()toString: ƒ toString()valueOf: ƒ valueOf()__defineGetter__: ƒ __defineGetter__()__defineSetter__: ƒ __defineSetter__()__lookupGetter__: ƒ __lookupGetter__()__lookupSetter__: ƒ __lookupSetter__()__proto__: (...)get __proto__: ƒ __proto__()set __proto__: ƒ __proto__()
