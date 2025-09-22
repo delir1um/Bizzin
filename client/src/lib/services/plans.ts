@@ -12,6 +12,7 @@ export class PlansService {
         .maybeSingle()
 
       if (error) {
+        console.error('🚨 Plan query error details:', error)
         // If no plan exists, create a free plan for the user
         if (error.code === 'PGRST116') {
           console.log('No plan found for user, creating free plan')

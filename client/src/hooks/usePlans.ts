@@ -13,7 +13,7 @@ export function usePlans() {
     error,
     refetch
   } = useQuery({
-    queryKey: ['usage-status', user?.id],
+    queryKey: ['usage-status-v2', user?.id], // Force cache refresh
     queryFn: () => user ? PlansService.getUserUsageStatus(user.id) : null,
     enabled: !!user, // Re-enable now that table exists
     staleTime: 30000, // 30 seconds
