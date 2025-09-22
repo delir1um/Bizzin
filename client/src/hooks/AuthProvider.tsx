@@ -99,7 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 .from('user_plans')
                 .insert({
                   user_id: session.user.id,
-                  plan_type: 'free'
+                  plan_type: 'free',
                   // started_at and expires_at will be set automatically by database trigger
                 })
               
