@@ -8,6 +8,7 @@ import { Loader2, Crown, Check, CreditCard } from 'lucide-react'
 import { PaystackService, type PaystackResponse } from '@/lib/services/paystack'
 import { useAuth } from '@/hooks/AuthProvider'
 import { useToast } from '@/hooks/use-toast'
+import { usePlans } from '@/hooks/usePlans'
 
 export function PaystackUpgrade() {
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'annual'>('monthly')
@@ -15,6 +16,7 @@ export function PaystackUpgrade() {
   const { user } = useAuth()
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  const { isTrial, isPremium } = usePlans()
 
   const upgradeMutation = useMutation({
     mutationFn: async (response: PaystackResponse) => {
@@ -26,7 +28,9 @@ export function PaystackUpgrade() {
       // queryClient.invalidateQueries({ queryKey: ['usage-status'] }) // Disabled to prevent HEAD requests
       toast({
         title: "Welcome to Premium!",
-        description: "Your account has been successfully upgraded. Enjoy unlimited access to all features.",
+        description: isTrial 
+          ? "Your trial has been converted to premium! Any remaining trial time has been added as bonus days. Enjoy unlimited access to all features."
+          : "Your account has been successfully upgraded. Enjoy unlimited access to all features.",
       })
     },
     onError: (error: any) => {
@@ -212,7 +216,7 @@ export function PaystackUpgrade() {
             ) : (
               <>
                 <CreditCard className="w-5 h-5 mr-2" />
-                Pay with Paystack
+                {isTrial ? 'Convert to Premium' : 'Pay with Paystack'}
               </>
             )}
           </Button>
