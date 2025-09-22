@@ -8,10 +8,16 @@ interface HuggingFaceResponse {
   score: number;
 }
 
+interface TextGenerationResponse {
+  generated_text: string;
+}
+
 // Hugging Face model endpoints - updated for better business context accuracy
 const HF_MODELS = {
   sentiment: 'siebert/sentiment-roberta-large-english', // Trained on diverse professional text, 75%+ accuracy on business contexts
-  emotion: 'j-hartmann/emotion-english-distilroberta-base' // Good for workplace emotions
+  emotion: 'j-hartmann/emotion-english-distilroberta-base', // Good for workplace emotions
+  textGeneration: 'microsoft/DialoGPT-medium', // For generating unique business insights
+  businessGPT: 'HuggingFaceH4/zephyr-7b-beta' // Advanced business coaching model
 };
 
 // API usage tracking and error handling
@@ -104,6 +110,191 @@ async function callHuggingFaceAPI(text: string, model: string): Promise<HuggingF
     
     throw error;
   }
+}
+
+// NEW: AI Text Generation for unique business insights
+async function generateAIBusinessInsight(
+  text: string,
+  sentiment: { type: string; confidence: number },
+  emotion: string,
+  category: string,
+  themes: any
+): Promise<string> {
+  try {
+    // Create a sophisticated prompt that incorporates all the AI analysis
+    const prompt = createBusinessInsightPrompt(text, sentiment, emotion, category, themes);
+    
+    console.log('🤖 Generating AI business insight with prompt:', prompt.substring(0, 200) + '...');
+    
+    // Call text generation model
+    const response = await callTextGenerationAPI(prompt, HF_MODELS.textGeneration);
+    
+    if (response && response.length > 0) {
+      // Extract and clean the generated insight
+      const generated = response[0].generated_text;
+      const insight = extractInsightFromGeneration(generated, prompt);
+      
+      console.log('✅ AI Generated unique insight:', insight.substring(0, 100) + '...');
+      return insight;
+    }
+    
+    throw new Error('No insight generated');
+  } catch (error) {
+    console.warn('⚠️ AI insight generation failed, using enhanced template:', error);
+    // Fallback to enhanced template-based insight that incorporates the analysis
+    return generateEnhancedTemplateInsight(text, sentiment, emotion, category, themes);
+  }
+}
+
+// Text generation API call (different from classification models)
+async function callTextGenerationAPI(prompt: string, model: string): Promise<TextGenerationResponse[]> {
+  const apiKey = process.env.HUGGING_FACE_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error('Hugging Face API key not configured');
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 second timeout for generation
+    
+    const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        inputs: prompt,
+        parameters: {
+          max_length: 200,
+          temperature: 0.7,
+          do_sample: true,
+          top_p: 0.9,
+          repetition_penalty: 1.1
+        }
+      }),
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`Text generation API error: ${response.status}`);
+    }
+
+    return response.json();
+  } catch (error: any) {
+    console.error('❌ Text generation failed:', error.message);
+    throw error;
+  }
+}
+
+// Create sophisticated prompts for business insight generation
+function createBusinessInsightPrompt(
+  text: string,
+  sentiment: { type: string; confidence: number },
+  emotion: string,
+  category: string,
+  themes: any
+): string {
+  // Extract key business elements from the analysis
+  const hasProjects = themes.projectWork?.length > 0;
+  const hasClients = themes.clientRelations?.length > 0;
+  const hasMarketData = themes.marketInsights?.length > 0;
+  const hasSafety = /safety|OSHA|protocol|equipment|training/i.test(text);
+  const hasFinancial = /revenue|profit|funding|investment|budget/i.test(text);
+  
+  // Create context-aware prompts
+  let contextPrompt = "";
+  
+  if (hasSafety) {
+    contextPrompt = "workplace safety and operational excellence";
+  } else if (hasFinancial) {
+    contextPrompt = "financial strategy and business growth";
+  } else if (hasProjects && hasClients) {
+    contextPrompt = "product development and customer relationships";
+  } else if (hasMarketData) {
+    contextPrompt = "market analysis and strategic positioning";
+  } else {
+    contextPrompt = "business operations and strategic thinking";
+  }
+  
+  return `As a senior business advisor, provide specific actionable insight for this entrepreneurial journal entry about ${contextPrompt}.
+
+Journal Entry: "${text}"
+
+Sentiment: ${sentiment.type} (${Math.round(sentiment.confidence * 100)}% confidence)
+Emotion: ${emotion}
+Business Category: ${category}
+
+Provide a unique, specific business insight that:
+1. References the actual content and situation described
+2. Offers concrete next steps or strategic recommendations
+3. Connects to broader business principles and competitive advantages
+4. Is encouraging but realistic
+5. Focuses on actionable business growth strategies
+
+Business Insight:`;
+}
+
+// Extract clean insight from AI generation response
+function extractInsightFromGeneration(generated: string, prompt: string): string {
+  // Remove the prompt if it's included in the response
+  let insight = generated.replace(prompt, '').trim();
+  
+  // Clean up common generation artifacts
+  insight = insight.replace(/^["']|["']$/g, ''); // Remove quotes
+  insight = insight.replace(/\n\n+/g, ' '); // Replace multiple newlines
+  insight = insight.replace(/Business Insight:/gi, '').trim(); // Remove label if repeated
+  
+  // Ensure it starts with capital letter and ends with period
+  if (insight.length > 0) {
+    insight = insight.charAt(0).toUpperCase() + insight.slice(1);
+    if (!insight.endsWith('.') && !insight.endsWith('!') && !insight.endsWith('?')) {
+      insight += '.';
+    }
+  }
+  
+  // Validate minimum quality (should be substantial business advice)
+  if (insight.length < 50 || !insight.includes(' ')) {
+    throw new Error('Generated insight too short or low quality');
+  }
+  
+  return insight;
+}
+
+// Enhanced template-based fallback that incorporates AI analysis
+function generateEnhancedTemplateInsight(
+  text: string,
+  sentiment: { type: string; confidence: number },
+  emotion: string,
+  category: string,
+  themes: any
+): string {
+  // Use the themes and analysis to create more specific template insights
+  const hasProjects = themes.projectWork?.length > 0;
+  const hasClients = themes.clientRelations?.length > 0;
+  const hasMarketData = themes.marketInsights?.length > 0;
+  const hasSafety = /safety|OSHA|protocol|equipment|training/i.test(text);
+  
+  // Extract specific details from the text for personalization
+  const numbers = text.match(/\d+(%|\$|,|million|k|hours|days|weeks)/gi) || [];
+  const keyActions = text.match(/(completed|achieved|implemented|analyzed|developed|launched|reviewed|invested)/gi) || [];
+  
+  let insight = "";
+  
+  if (hasSafety && keyActions.length > 0) {
+    insight = `Your proactive approach to ${keyActions[0]?.toLowerCase() || 'implementing'} safety measures demonstrates strategic leadership that transforms operational challenges into competitive advantages. This systematic approach to workplace safety creates multiple business returns: reduced liability, lower insurance costs, and enhanced company culture that attracts top talent.`;
+  } else if (hasProjects && hasClients && sentiment.type === 'positive') {
+    insight = `Your successful project delivery combined with positive client engagement shows strong execution capabilities. This track record of delivering value creates sustainable competitive advantages and referral opportunities. Focus on documenting what made this successful for replication across future engagements.`;
+  } else if (hasMarketData && numbers.length > 0) {
+    insight = `The data insights you've uncovered (${numbers[0] || 'significant metrics'}) represent strategic intelligence that many businesses miss. Your analytical approach to understanding market dynamics positions you to make informed decisions that can capture opportunities competitors overlook.`;
+  } else {
+    insight = `Your ${emotion} approach to ${category.toLowerCase()} demonstrates business maturity that separates successful entrepreneurs from reactive operators. This level of strategic thinking creates sustainable competitive advantages when consistently applied to business operations.`;
+  }
+  
+  return insight;
 }
 
 // Fallback sentiment analysis when API limits are hit
@@ -956,14 +1147,14 @@ function generateContentSpecificInsight(
 }
 
 // AI-driven contextual insights generation - enhanced for content-specific business intelligence  
-function generateAIContextualInsights(
+async function generateAIContextualInsights(
   text: string,
   category: string,
   sentiment: { type: string; confidence: number },
   emotion: string,
   emotionScore: number,
   mood: string
-): string[] {
+): Promise<string[]> {
   console.log('🔍 DEBUG: generateAIContextualInsights called!');
   console.log('🔍 DEBUG: Input text:', text);
   console.log('🔍 DEBUG: category:', category);
@@ -988,18 +1179,28 @@ function generateAIContextualInsights(
   const hasChallenges = /problem|issue|difficulty|obstacle|setback|challenge|struggle|crisis|risk|threat|failure|accident|incident/i.test(text);
   const hasOpportunity = /opportunity|opportunities|potential|promising|new|innovation|breakthrough|partnership|deal/i.test(text);
   
-  // First try content-specific insight generation
+  // 🚀 NEW: Try AI-generated unique insights first
+  console.log('🔍 DEBUG: About to call AI insight generation...');
+  try {
+    const aiInsight = await generateAIBusinessInsight(text, sentiment, emotion, category, themes);
+    if (aiInsight && aiInsight.length > 50) {
+      console.log('🔍 DEBUG: ✅ Generated unique AI insight!');
+      return [aiInsight];
+    }
+  } catch (error) {
+    console.log('🔍 DEBUG: AI insight generation failed, falling back to enhanced templates:', error);
+  }
+  
+  // Fallback: Try content-specific insight generation
   console.log('🔍 DEBUG: About to call generateContentSpecificInsight...');
   const contentSpecificInsight = generateContentSpecificInsight(text, themes, category, sentiment, emotion, mood);
   console.log('🔍 DEBUG: generateContentSpecificInsight returned:', contentSpecificInsight);
-  console.log('🔍 DEBUG: Checking if insight is generic fallback...');
-  console.log('🔍 DEBUG: Does NOT include generic text:', !contentSpecificInsight.includes('Your business reflections show thoughtful analysis'));
   
   if (contentSpecificInsight && !contentSpecificInsight.includes('Your business reflections show thoughtful analysis')) {
     console.log('🔍 DEBUG: ✅ Returning content-specific insight (not generic fallback)');
     return [contentSpecificInsight];
   } else {
-    console.log('🔍 DEBUG: ❌ Content-specific insight was generic fallback, continuing to hardcoded logic...');
+    console.log('🔍 DEBUG: ❌ Content-specific insight was generic fallback, trying enhanced templates...');
   }
   
   let insight = "";
@@ -1019,8 +1220,8 @@ function generateAIContextualInsights(
         console.log('🔍 GROWTH CATEGORY: Using content-specific insight!');
         insight = contentSpecificInsight;
       } else {
-        console.log('🔍 GROWTH CATEGORY: Using default growth insight');
-        insight = `Strategic moments like this separate good businesses from great ones. Your planning approach should balance ambitious vision with pragmatic execution by breaking long-term goals into quarterly experiments with measurable outcomes. Focus on identifying 2-3 key leverage points that could transform your business trajectory, then allocate disproportionate resources to testing these hypotheses quickly. Remember that strategy is as much about what you choose not to do as what you pursue - selective focus often beats comprehensive coverage in competitive markets.`;
+        console.log('🔍 GROWTH CATEGORY: Using enhanced template insight');
+        insight = generateEnhancedTemplateInsight(text, sentiment, emotion, category, themes);
       }
     }
   }
@@ -1407,16 +1608,16 @@ router.post('/analyze', async (req, res) => {
     };
 
     // AI-driven contextual insights generation
-    const generateSemanticInsights = (
+    const generateSemanticInsights = async (
       text: string, 
       category: string, 
       sentiment: { type: string; confidence: number },
       emotion: string,
       emotionScore: number,
       mood: string
-    ): string[] => {
+    ): Promise<string[]> => {
       // Generate insights based on AI analysis patterns rather than just category
-      const insights = generateAIContextualInsights(
+      const insights = await generateAIContextualInsights(
         text,
         category,
         sentiment,
@@ -1428,7 +1629,7 @@ router.post('/analyze', async (req, res) => {
       return insights;
     };
     
-    const insights = generateSemanticInsights(
+    const insights = await generateSemanticInsights(
       text, 
       category, 
       normalizedSentiment,
