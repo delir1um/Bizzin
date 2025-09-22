@@ -136,7 +136,7 @@ export function AdminUserManagement() {
 
   // Fetch users from whatever tables exist
   const { data: users, isLoading, refetch } = useQuery<UserProfile[]>({
-    queryKey: ['admin-users-v3', searchTerm, planFilter, statusFilter, Date.now()],
+    queryKey: ['admin-users', searchTerm, planFilter, statusFilter],
     queryFn: async (): Promise<UserProfile[]> => {
       console.log('Fetching users for admin dashboard...', { searchTerm, planFilter, statusFilter })
       
@@ -337,7 +337,7 @@ export function AdminUserManagement() {
       return { userId, newExpiryDate, baseDate }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-users-v2'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] })
     }
   })
 
@@ -903,7 +903,7 @@ function UserDetailView({ user }: { user: UserProfile }) {
                         if (error) throw error
                         
                         alert('Profile updated successfully!')
-                        queryClient.invalidateQueries({ queryKey: ['admin-users'] })
+                        refetch()
                       }
                     } catch (error) {
                       console.error('Error updating profile:', error)
@@ -1015,7 +1015,7 @@ function UserDetailView({ user }: { user: UserProfile }) {
                         if (error) throw error
                         
                         alert(`✅ ${user.first_name || user.email} has been ${actionPast}!`)
-                        queryClient.invalidateQueries({ queryKey: ['admin-users'] })
+                        refetch()
                       } catch (error) {
                         console.error(`Error ${action}ing user:`, error)
                         alert(`Failed to ${action} user. Please try again.`)
