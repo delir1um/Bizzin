@@ -81,18 +81,75 @@ export function AdminUserManagement() {
   const [isTrialEditOpen, setIsTrialEditOpen] = useState(false)
   const queryClient = useQueryClient()
 
+  // Temporary data migration function to fix the database issue
+  const migrateUserData = async () => {
+    console.log('Starting user data migration...')
+    
+    try {
+      // 1. Update the existing anton user with proper data
+      const { error: updateError } = await supabase
+        .from('user_profiles')
+        .update({
+          first_name: 'Anton',
+          last_name: 'Bosch', 
+          full_name: 'Anton Bosch',
+          business_name: 'CloudFusion'
+        })
+        .eq('user_id', '9502ea97-1adb-4115-ba05-1b6b1b5fa721')
+      
+      if (updateError) {
+        console.error('Error updating anton user:', updateError)
+      } else {
+        console.log('✅ Updated anton user with proper name data')
+      }
+      
+      // 2. Add the info user to Supabase
+      const { error: insertError } = await supabase
+        .from('user_profiles')
+        .insert({
+          user_id: '9fd5beae-b30f-4656-a3e1-3ffa1874c0eb',
+          email: 'info@cloudfusion.co.za',
+          first_name: 'Info',
+          last_name: 'CloudFusion',
+          full_name: 'Info CloudFusion', 
+          business_name: 'CloudFusion Info',
+          is_admin: false,
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+      
+      if (insertError) {
+        console.error('Error inserting info user:', insertError)
+      } else {
+        console.log('✅ Added info user to Supabase')
+      }
+      
+      // 3. Refresh the admin panel
+      refetch()
+      console.log('✅ Migration completed - refreshing admin panel')
+      
+    } catch (error) {
+      console.error('Migration failed:', error)
+    }
+  }
+
   // Fetch users from whatever tables exist
   const { data: users, isLoading, refetch } = useQuery<UserProfile[]>({
-    queryKey: ['admin-users', searchTerm, planFilter, statusFilter],
+    queryKey: ['admin-users-v3', searchTerm, planFilter, statusFilter, Date.now()],
     queryFn: async (): Promise<UserProfile[]> => {
-      console.log('Fetching users for admin dashboard...')
+      console.log('Fetching users for admin dashboard...', { searchTerm, planFilter, statusFilter })
       
       try {
+        // Get user profiles with real usage data - force fresh connection
         // Get user profiles with real usage data
+        console.log('Fetching user profiles...')
         const { data: profileData, error: profileError } = await supabase
           .from('user_profiles')
           .select('*')
           .order('created_at', { ascending: false })
+        
+        console.log('Fetched user profiles:', { count: profileData?.length, error: profileError })
 
         if (profileError) {
           console.error('Error fetching user profiles:', profileError)
@@ -104,7 +161,7 @@ export function AdminUserManagement() {
           return []
         }
 
-        console.log('User profiles result:', { count: profileData.length, error: null })
+        console.log('User profiles result:', { count: profileData.length, error: null, profiles: profileData.map(p => ({ email: p.email, user_id: p.user_id })) })
 
         // Get real usage statistics for each user
         const userIds = profileData.map(p => p.user_id)
@@ -280,7 +337,7 @@ export function AdminUserManagement() {
       return { userId, newExpiryDate, baseDate }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-users-v2'] })
     }
   })
 
@@ -366,6 +423,11 @@ export function AdminUserManagement() {
             <Button onClick={handleExportUsers} variant="outline">
               <Download className="w-4 h-4 mr-2" />
               Export CSV
+            </Button>
+            
+            {/* Temporary migration button */}
+            <Button onClick={migrateUserData} variant="secondary">
+              🔧 Fix Database
             </Button>
           </div>
 
