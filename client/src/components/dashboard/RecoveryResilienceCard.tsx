@@ -162,13 +162,14 @@ export function RecoveryResilienceCard({ journalEntries }: RecoveryResilienceCar
     }
 
     // Enhanced resilience scoring algorithm
-    let resilienceScore = 40 // Lower baseline for more realistic scoring
+    let resilienceScore = 50 // Balanced baseline for more realistic scoring
 
     // Factor 1: Recovery Success Rate (30% weight) - Enhanced
     const recoveryRate = recoveryPeriods.length > 0 
       ? (successfulRecoveries.length / recoveryPeriods.length) * 100 
-      : 40
-    resilienceScore += (recoveryRate - 50) * 0.3
+      : 50
+    const recoveryRateContribution = Math.max(-15, Math.min(15, (recoveryRate - 50) * 0.3))
+    resilienceScore += recoveryRateContribution
 
     // Factor 2: Challenge Severity Handling (25% weight) - New factor
     const challengeSeverityScore = recoveryPeriods.length > 0 ? 
@@ -190,7 +191,8 @@ export function RecoveryResilienceCard({ journalEntries }: RecoveryResilienceCar
         return acc + (100 - difficultyScore)
       }, 0) / recoveryPeriods.length : 50
     
-    resilienceScore += (challengeSeverityScore - 50) * 0.25
+    const severityContribution = Math.max(-12, Math.min(12, (challengeSeverityScore - 50) * 0.25))
+    resilienceScore += severityContribution
 
     // Factor 3: Recovery Quality & Speed (25% weight) - Enhanced
     if (successfulRecoveries.length > 0) {
@@ -210,7 +212,8 @@ export function RecoveryResilienceCard({ journalEntries }: RecoveryResilienceCar
         return acc + Math.min(100, speedScore + qualityBonus)
       }, 0) / successfulRecoveries.length
       
-      resilienceScore += (qualitySpeedScore - 50) * 0.25
+      const qualitySpeedContribution = Math.max(-12, Math.min(12, (qualitySpeedScore - 50) * 0.25))
+      resilienceScore += qualitySpeedContribution
     }
 
     // Factor 4: Trend & Consistency (20% weight) - Enhanced
@@ -228,7 +231,8 @@ export function RecoveryResilienceCard({ journalEntries }: RecoveryResilienceCar
       trendScore += consistency * 0.2
     }
     
-    resilienceScore += (trendScore - 50) * 0.2
+    const trendContribution = Math.max(-10, Math.min(10, (trendScore - 50) * 0.2))
+    resilienceScore += trendContribution
 
     // Ensure score stays within realistic bounds
     resilienceScore = Math.max(0, Math.min(100, Math.round(resilienceScore)))
