@@ -3,24 +3,16 @@ import type { UserPlan, UsageLimits, PlanLimits, UsageStatus, PlanType } from '@
 
 export class PlansService {
   // Environment verification - log Supabase connection details
-  static logEnvironmentInfo() {
-    const url = import.meta.env.VITE_SUPABASE_URL
-    const key = import.meta.env.VITE_SUPABASE_ANON_KEY
-    console.log('🌍 Environment Info:', {
-      url: url,
-      keyPrefix: key ? key.substring(0, 20) + '...' : 'undefined',
-      projectRef: url ? url.split('.')[0].split('://')[1] : 'unknown'
-    })
-  }
+  // Remove debug logging to prevent infinite loops
 
   // Get user's current plan using server-side function to bypass replica lag
   static async getUserPlan(userId: string): Promise<UserPlan | null> {
     try {
       // Log environment info for debugging
-      this.logEnvironmentInfo()
+      // Removed debug log
       
       // Clear any cached data to force fresh query
-      console.log('🧹 Clearing cached plan data...')
+      // Removed debug log
       
       // Test direct Supabase query to verify database connection
       console.log('🔍 Testing direct Supabase connection...')
@@ -43,7 +35,7 @@ export class PlansService {
 
       if (error) {
         console.error('🚨 RPC plan query error:', error)
-        console.log('🔄 Falling back to direct query with improved selection logic...')
+        // Fallback to direct query
         
         // Fallback to direct query - simplified to avoid schema cache issues
         const { data: allPlans, error: fallbackError } = await supabase
@@ -99,9 +91,7 @@ export class PlansService {
 
         console.log('📊 Fallback query result:', { data: fallbackData, error: fallbackError })
         
-        if (fallbackError) {
-          throw new Error(`Fallback query failed: ${fallbackError.message}`)
-        }
+        // No need to check fallbackError again since we already handled it above
         
         return fallbackData
       }

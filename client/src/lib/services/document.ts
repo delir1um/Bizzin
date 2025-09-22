@@ -13,6 +13,14 @@ export class DocumentService {
         throw new Error('User not authenticated')
       }
 
+      // CRITICAL: Check trial expiry before allowing document upload
+      const { PlansService } = await import('./plans')
+      const usageStatus = await PlansService.getUserUsageStatus(user.id)
+      
+      if (!usageStatus?.can_upload_document) {
+        throw new Error('Document upload requires an active premium subscription. Your trial may have expired.')
+      }
+
       onProgress?.(10) // Starting upload
 
       // Generate unique file path

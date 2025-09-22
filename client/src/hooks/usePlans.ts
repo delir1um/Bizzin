@@ -13,15 +13,12 @@ export function usePlans() {
     error,
     refetch
   } = useQuery({
-    queryKey: ['usage-status-v4-debug-expiry', user?.id, Date.now()], // Force fresh query every time
-    queryFn: () => {
-      console.log('🔄 usePlans: Fetching fresh usage status for user:', user?.id)
-      return user ? PlansService.getUserUsageStatus(user.id) : null
-    },
-    enabled: !!user, // Re-enable now that table exists
-    staleTime: 0, // Never use stale data
-    gcTime: 0, // Don't cache at all (cacheTime is now gcTime in v5)
-    refetchOnWindowFocus: true, // Enable refetch to catch updates
+    queryKey: ['usage-status', user?.id],
+    queryFn: () => user ? PlansService.getUserUsageStatus(user.id) : null,
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
   })
 
   const isPremium = usageStatus?.user_plan?.plan_type === 'premium'

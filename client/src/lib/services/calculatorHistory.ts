@@ -7,6 +7,14 @@ export class CalculatorHistoryService {
    */
   static async saveCalculation(calculation: CreateCalculatorHistory): Promise<CalculatorHistory | null> {
     try {
+      // CRITICAL: Check trial expiry before allowing calculator usage
+      const { PlansService } = await import('@/lib/services/plans')
+      const usageStatus = await PlansService.getUserUsageStatus(calculation.user_id)
+      
+      if (!usageStatus?.can_use_calculator?.(calculation.calculator_type)) {
+        throw new Error('Calculator usage requires an active premium subscription. Your trial may have expired.')
+      }
+
       const { data, error } = await supabase
         .from('calculator_history')
         .insert([calculation])

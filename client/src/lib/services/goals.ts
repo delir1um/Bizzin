@@ -99,6 +99,14 @@ export class GoalsService {
       }
       userId = user.id
 
+      // CRITICAL: Check trial expiry before allowing goal creation
+      const { PlansService } = await import('./plans')
+      const usageStatus = await PlansService.getUserUsageStatus(userId)
+      
+      if (!usageStatus?.can_create_goal) {
+        throw new Error('Goal creation requires an active premium subscription. Your trial may have expired.')
+      }
+
       // Log the creation attempt
       goalLogger.logCreate(goal, userId, 'Starting goal creation')
 
