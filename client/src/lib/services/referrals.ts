@@ -278,8 +278,8 @@ export class ReferralService {
   }
 
   /**
-   * Activate referral bonuses when referee subscribes to paid plan
-   * Gives 30 days to referee and 10 days to referrer
+   * Activate referral bonuses when referee converts from trial to paid plan
+   * Gives 30 days bonus to referee and 10 days to referrer
    */
   static async activateReferralBonuses(refereeUserId: string): Promise<boolean> {
     try {
@@ -296,24 +296,45 @@ export class ReferralService {
         return true
       }
 
-      // Calculate bonus expiration dates
-      const now = new Date()
-      const refereeExpiration = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000)) // 30 days
-      const referrerBonusDays = 10
-
-      // 1. Update the referee's plan with 30 days bonus
-      const { error: planUpdateError } = await supabase
+      // Get referee's current plan to check if referral bonus was already applied
+      const { data: refereePlan, error: planError } = await supabase
         .from('user_plans')
-        .update({
-          referral_days_remaining: 30,
-          expires_at: refereeExpiration.toISOString(),
-          updated_at: new Date().toISOString()
-        })
+        .select('*')
         .eq('user_id', refereeUserId)
+        .single()
 
-      if (planUpdateError) {
-        console.error('Error updating referee plan with bonus:', planUpdateError)
+      if (planError || !refereePlan) {
+        console.error('Error fetching referee plan:', planError)
         return false
+      }
+
+      // Only apply referral bonus if not already applied
+      if (!refereePlan.referral_bonus_applied) {
+        // Calculate new expiration date: current plan expiry + 30 days bonus
+        let bonusExpiration: Date
+        if (refereePlan.expires_at) {
+          bonusExpiration = new Date(refereePlan.expires_at)
+          bonusExpiration.setDate(bonusExpiration.getDate() + 30)
+        } else {
+          // Fallback - shouldn't happen with proper trial setup
+          bonusExpiration = new Date()
+          bonusExpiration.setDate(bonusExpiration.getDate() + 30)
+        }
+
+        // 1. Update the referee's plan with 30 days bonus
+        const { error: planUpdateError } = await supabase
+          .from('user_plans')
+          .update({
+            expires_at: bonusExpiration.toISOString(),
+            referral_bonus_applied: true,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', refereeUserId)
+
+        if (planUpdateError) {
+          console.error('Error updating referee plan with bonus:', planUpdateError)
+          return false
+        }
       }
 
       // 2. Activate the referral record
@@ -332,6 +353,8 @@ export class ReferralService {
       }
 
       // 3. Award 10 days bonus to the referrer
+      const referrerBonusDays = 10
+      const now = new Date()
       const { data: referrerStats, error: statsError } = await supabase
         .from('user_referral_stats')
         .select('*')
