@@ -77,6 +77,39 @@ export class PaystackService {
       // In production, you would verify the payment with Paystack API using secret key
       // For now, we'll trust the frontend response (not recommended for production)
       
+      // Get current user plan to handle trial-to-premium conversion
+      const { data: currentPlan } = await supabase
+        .from('user_plans')
+        .select('*')
+        .eq('user_id', user.id)
+        .single()
+
+      let expiresAt: string | null = null
+
+      // If user was on trial and has remaining trial time, preserve it
+      if (currentPlan?.plan_type === 'trial' && currentPlan?.trial_ends_at) {
+        const trialEndDate = new Date(currentPlan.trial_ends_at)
+        const now = new Date()
+        
+        if (trialEndDate > now) {
+          // Calculate remaining trial days and add them as bonus
+          const remainingTrialDays = Math.ceil((trialEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+          const nextBillingDate = new Date()
+          nextBillingDate.setDate(nextBillingDate.getDate() + 30 + remainingTrialDays) // 30 days subscription + remaining trial days
+          expiresAt = nextBillingDate.toISOString()
+        } else {
+          // Trial expired, just add 30 days
+          const nextBillingDate = new Date()
+          nextBillingDate.setDate(nextBillingDate.getDate() + 30)
+          expiresAt = nextBillingDate.toISOString()
+        }
+      } else {
+        // Regular upgrade - 30 days from now
+        const nextBillingDate = new Date()
+        nextBillingDate.setDate(nextBillingDate.getDate() + 30)
+        expiresAt = nextBillingDate.toISOString()
+      }
+      
       // Update user plan to premium
       const { error: planError } = await supabase
         .from('user_plans')
@@ -84,6 +117,9 @@ export class PaystackService {
           user_id: user.id,
           plan_type: 'premium',
           stripe_customer_id: response.reference, // Store reference for future use
+          expires_at: expiresAt,
+          is_trial: false,
+          trial_ends_at: null, // Clear trial fields
           updated_at: new Date().toISOString()
         })
 
