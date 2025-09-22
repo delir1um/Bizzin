@@ -18,21 +18,6 @@ export class PlansService {
 
       console.log('📊 Plan query result (FRESH):', { data, error })
 
-      // EMERGENCY OVERRIDE: Force trial for this specific user due to database connection issues
-      if (userId === '9fd5beae-b30f-4656-a3e1-3ffa1874c0eb') {
-        console.log('🚨 EMERGENCY OVERRIDE: Forcing trial plan for user')
-        const forceTrialPlan: UserPlan = {
-          id: 'emergency-trial-override',
-          user_id: userId,
-          plan_type: 'trial',
-          trial_ends_at: '2025-10-06T11:50:15.260542+00:00',
-          expires_at: '2025-10-06T11:50:15.260542+00:00',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-        return forceTrialPlan
-      }
-
       if (error) {
         console.error('🚨 Plan query error details:', error)
         // If no plan exists, create a free plan for the user
