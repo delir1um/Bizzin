@@ -1,0 +1,171 @@
+You are my senior engineer. Integrate a Claude-powered mini-agent into THIS EXISTING REPO with a small web API + React chat widget. You MUST FIRST run an INTERACTIVE SETUP to collect secrets and options from me, then proceed. Follow the steps in order.
+
+## 0) INTERACTIVE SETUP (IMPORTANT)
+Before creating files, ASK ME the following and WAIT for my answers. Then summarise back what you'll do and ask for final confirmation "Proceed? (yes/no)". Do not start until I answer "yes".
+
+Ask me:
+1) Keys & provider
+   - Do you want to use **Anthropic Direct API** (recommended)? (yes/no)
+   - If yes: Prompt me to paste **ANTHROPIC_API_KEY**. IMPORTANT: Do NOT print this key back to me later, mask it in logs.
+   - Optional future: Should we add AWS Bedrock/Vertex placeholders? (yes/no; default no)
+
+2) Defaults (hit Enter to accept defaults)
+   - MODEL (default: claude-3-5-haiku-latest)
+   - MAX_TOKENS (default: 800)
+   - TEMPERATURE (default: 0.2)
+   - Enable tool-use for file read/write? (yes/no; default: no)
+   - Mount a tiny Express server if this project doesn’t have one? (yes/no; default: yes)
+
+3) Frontend
+   - Is this a React/Next/Vite project? (react/next/vite/none/unknown)
+   - If React present: Should I create a drop-in `<AiChatWidget />` and a hook? (yes/no; default: yes)
+   - Preferred UI style: tailwind / minimal-css (default: minimal-css)
+
+4) Scripts
+   - Create `npm run ai:dev` (dev server), `ai:cli`, and `ai:test` scripts? (yes/no; default: yes)
+
+5) Storage of secrets
+   - I will store secrets in **Replit → Tools → Secrets**. Ask me to confirm once I have added ANTHROPIC_API_KEY there.
+   - Additionally, create `.env.example` but NEVER write my real key to the repo.
+
+When I answer, echo a one-line summary and ask: "Proceed? (yes/no)". Only continue on "yes".
+
+## 1) SAFETY & NON-DESTRUCTIVE RULES
+- Do NOT delete or rename existing files.
+- Make the smallest possible changes to wire routes into an existing server (Express/Next API). If none exists, create a tiny Express server `src/server.ts` or `server/index.ts`.
+- TypeScript if the repo uses it; otherwise modern JavaScript. Detect from package.json and tsconfig.json.
+- All new code MUST compile and run in Replit.
+- NEVER print secret values in chat or logs. If you need to verify presence, print only `***`.
+
+## 2) INSTALL DEPENDENCIES (ADD ONLY IF MISSING)
+- Runtime deps: `express`, `cors`, `zod`, `@anthropic-ai/sdk`
+- Dev deps (if TS): `typescript`, `ts-node`, `nodemon`, `@types/node`, `@types/express`
+- If no package.json, create one safely.
+
+## 3) CREATE SERVER-SIDE FILES
+Create these files (TypeScript if project is TS, else JS equivalents). Use POSIX paths.
+
+(1) `src/ai/config.ts` (or `.js`)
+- Export `AI_CONFIG` with: MODEL, MAX_TOKENS, TEMPERATURE from env with defaults from setup.
+- Validate with zod; throw friendly error if `process.env.ANTHROPIC_API_KEY` missing at runtime.
+- Export a helper `getAnthropicKey()` that reads from `process.env.ANTHROPIC_API_KEY`.
+
+(2) `src/ai/anthropic.ts`
+- Import `@anthropic-ai/sdk`.
+- Export `getClient()` using `getAnthropicKey()`.
+- Export `chat({ system, messages, model, temperature, max_tokens, stream, cacheSystem, tools })`:
+  - If `cacheSystem` true, wrap system content with `{ cache_control: { type: "ephemeral" } }`.
+  - If `stream` true: return a Node EventEmitter emitting `data` chunks (plain text tokens) and `done`.
+  - Else: return `{ text, usage }` based on `messages.create()` result.
+  - Always catch and surface friendly errors (no secrets).
+
+(3) `src/ai/tools.ts`
+- If user enabled tools in setup, create:
+  - `TOOL_SCHEMAS`: `read_file(path)`, `write_file(path, content)` with size guard 200KB, UTF-8 only.
+  - `executeTool(name, input)` router with try/catch; disallow paths outside workspace via a simple whitelist (e.g. only under `src`).
+- If tools disabled, export empty arrays and no-ops.
+
+(4) `src/ai/routes.ts`
+- Export an Express Router with:
+  - `GET /api/ai/health` → `{ ok: true }`
+  - `POST /api/ai/chat` body:
+    {
+      prompt: string;
+      stream?: boolean;          // default true
+      model?: string;
+      temperature?: number;
+      max_tokens?: number;
+      cacheSystem?: boolean;     // default true
+      enableTools?: boolean;     // default false (override)
+      system?: string;
+      history?: Array<{ role: "user" | "assistant", content: string }>;
+    }
+  - If `stream`, use **Server-Sent Events**: set headers, write tokens as they arrive (`data: token\n\n`), end on done.
+  - If tool-use enabled (route flag OR config default), implement a simple agent loop:
+    - Send tool schemas to Claude; on tool calls, call `executeTool()`, append results, continue; cap at 5 tool actions.
+  - Log `{ model, input_tokens, output_tokens }` after each completion (mask secrets).
+  - Validate input with zod; reply 400 on invalid input.
+
+(5) Wire the router:
+  - If Express server exists (e.g., `src/server.ts`), import and `app.use(require("./ai/routes").default || router) // AI mini-agent`.
+  - If no server, create minimal `src/server.(ts|js)` with Express, CORS, JSON body, and mount router on `/`.
+
+## 4) FRONTEND (IF REACT PRESENT)
+(Detect from package.json: react or next)
+Create:
+- `src/ai/ui/useClaudeChat.(ts|js)`:
+  - Hook: manages `{ messages, send, isLoading, error }`.
+  - Uses `EventSource` to stream from `/api/ai/chat` when `stream=true`.
+  - `send(prompt, opts)` pushes optimistic user message, opens SSE, appends assistant tokens as they arrive.
+- `src/ai/ui/AiChatWidget.(tsx|jsx)`:
+  - Props: `{ title?: string }`.
+  - Minimal, clean UI (Tailwind if present else CSS module):
+    - Scrollable history, user/assistant bubbles.
+    - Textarea with Enter-to-send, Shift+Enter for newline.
+    - Clear button.
+    - Small line showing last usage estimate if server returned it (non-blocking).
+- Add a commented example in `src/App.(tsx|jsx)` (or a new demo page if Next) showing how to import and render:
+  `// <AiChatWidget title="Cloudfusion Assistant" />`
+- Do NOT auto-mount in production paths; keep it opt-in.
+
+## 5) SCRIPTS & ENV
+- Update `package.json` NON-DESTRUCTIVELY:
+  - Add scripts if missing:
+    - `"ai:dev": "nodemon --exec ts-node src/server.ts"` (if TS) or `"nodemon src/server.js"`
+    - `"ai:cli": "node scripts/ai-cli.js"` (create this file below)
+    - `"ai:test": "node scripts/ai-smoketest.js"`
+- Create `scripts/ai-cli.js`: simple CLI that posts to `/api/ai/chat` (non-stream) and prints `text`.
+- Create `scripts/ai-smoketest.js`: health check + one sample prompt to verify response.
+- Create `.env.example` with:
+Claude Mini-Agent (do NOT commit real keys)
+AI_MODEL=claude-3-5-haiku-latest
+AI_MAX_TOKENS=800
+AI_TEMPERATURE=0.2
+
+Add this in Replit Secrets, not here:
+ANTHROPIC_API_KEY=sk-***
+markdown
+Copy code
+
+## 6) SECRET HANDLING ON REPLIT
+- After I paste the ANTHROPIC_API_KEY in chat, DO NOT write it to disk.
+- INSTEAD: Pause and tell me:
+"Add ANTHROPIC_API_KEY under Replit → Tools → Secrets." Provide exact name only.
+- WAIT for me to confirm: "Added."
+- When I confirm, continue.
+- At runtime, read from `process.env.ANTHROPIC_API_KEY`.
+
+## 7) ACCEPTANCE TESTS (RUN THESE)
+After wiring everything, run these automatically and show me the outputs:
+
+1) Health:
+ - GET /api/ai/health → `{ ok: true }`
+
+2) Basic non-stream:
+ - POST /api/ai/chat with `{ "prompt": "Give 3 cost-saving tips for API usage", "stream": false }`
+ - Must return non-empty `text`.
+
+3) Streaming (SSE):
+ - Make a local `curl` example for me to run:
+   `curl -N -X POST "$REPLIT_URL/api/ai/chat" -H "Content-Type: application/json" -d '{"prompt":"Summarise Clean Architecture in 4 bullets"}'`
+ - Confirm that SSE is enabled (server prints streaming mode).
+
+4) Optional tools (if enabled):
+ - POST with `{ "prompt": "Create a file src/utils/date.ts with an isoDate() helper and show code", "enableTools": true }`
+ - Verify that file was created and response includes code preview.
+
+## 8) OUTPUT SUMMARY
+At the end, print a crisp summary:
+- Which files were created/modified.
+- How to run:
+- Ensure secret is set: Replit → Tools → Secrets → ANTHROPIC_API_KEY
+- Start dev: `npm run ai:dev` (or existing server command if integrated)
+- Open the repl URL and test endpoints.
+- (Optional) How to mount `<AiChatWidget />`.
+
+## 9) HOUSE STYLE
+- Use South African English in comments and README snippets (concise, professional).
+- Default to Claude Haiku for cost; allow model override via request body.
+- Keep error messages practical and human.
+
+Begin by running the INTERACTIVE SETUP in section (0).
