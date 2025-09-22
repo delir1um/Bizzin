@@ -50,6 +50,10 @@ app.use((req, res, next) => {
   const podcastRoutes = await import('./routes/podcast.js');
   app.use('/api/podcast', podcastRoutes.default);
   
+  // Add Admin API routes - server-side admin operations
+  const adminRoutes = await import('./routes/admin.js');
+  app.use('/api/admin', adminRoutes.default);
+  
   const server = await registerRoutes(app);
   
   // Initialize single email system - SimpleEmailScheduler (production ready)

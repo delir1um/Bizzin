@@ -81,85 +81,49 @@ export function AdminUserManagement() {
   const [isTrialEditOpen, setIsTrialEditOpen] = useState(false)
   const queryClient = useQueryClient()
 
-  // Temporary data migration function to fix the database issue
+  // Fix database using secure server-side admin API
   const migrateUserData = async () => {
-    console.log('Starting user data migration...')
+    console.log('🔧 Starting database fix via server-side admin API...')
     
     try {
-      // 1. Update the existing anton user with proper data
-      const { error: updateError } = await supabase
-        .from('user_profiles')
-        .update({
-          first_name: 'Anton',
-          last_name: 'Bosch', 
-          full_name: 'Anton Bosch',
-          business_name: 'CloudFusion'
-        })
-        .eq('user_id', '9502ea97-1adb-4115-ba05-1b6b1b5fa721')
-      
-      if (updateError) {
-        console.error('Error updating anton user:', updateError)
-      } else {
-        console.log('✅ Updated anton user with proper name data')
-      }
-      
-      // 2. Add the info user to Supabase
-      // First try to see if user already exists
-      const { data: existingUser } = await supabase
-        .from('user_profiles')
-        .select('user_id')
-        .eq('email', 'info@cloudfusion.co.za')
-        .single()
-      
-      if (!existingUser) {
-        // Create user through auth.users first (requires service role key)
-        const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
-          email: 'info@cloudfusion.co.za',
-          password: 'TempPass123!',
-          email_confirm: true,
-          user_metadata: {
-            full_name: 'Info CloudFusion',
-            first_name: 'Info',
-            last_name: 'CloudFusion'
-          }
-        })
-        
-        if (authError) {
-          console.error('Error creating auth user:', authError)
-          alert('⚠️ Could not create second user automatically due to RLS policies.\n\nTo add the missing user manually:\n1. Go to Supabase dashboard\n2. Authentication > Users\n3. Create user: info@cloudfusion.co.za\n\nAlternatively, this can be done with a service role key.')
-        } else {
-          console.log('✅ Created auth user for info@cloudfusion.co.za')
-          
-          // Now create the profile
-          const { error: profileError } = await supabase
-            .from('user_profiles')
-            .insert({
-              user_id: authUser.user.id,
-              email: 'info@cloudfusion.co.za',
-              first_name: 'Info',
-              last_name: 'CloudFusion',
-              full_name: 'Info CloudFusion',
-              business_name: 'CloudFusion Info',
-              is_admin: false,
-              is_active: true
-            })
-          
-          if (profileError) {
-            console.error('Error creating profile:', profileError)
-          } else {
-            console.log('✅ Created profile for info user')
-          }
+      const response = await fetch('/api/admin/fix-database', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
         }
-      } else {
-        console.log('ℹ️ Info user already exists')
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status} ${response.statusText}`)
       }
       
-      // 3. Refresh the admin panel
-      refetch()
-      console.log('✅ Migration completed - refreshing admin panel')
+      const result = await response.json()
+      
+      if (result.success) {
+        console.log('✅ Database fix completed successfully!')
+        console.log('📊 Results:', result)
+        
+        alert(`✅ Database synchronization completed!
+
+🔧 Fixed: ${result.totalFixed} user record(s)
+👥 Auth users: ${result.authUsersCount}
+📋 Profile users: ${result.profileUsersCount}
+✨ Created: ${result.createdProfiles.length} profile(s)
+🔄 Updated: ${result.updatedProfiles.length} profile(s)
+
+The admin panel will now refresh to show all users.`)
+        
+        // Refresh the user list to show changes
+        refetch()
+      } else {
+        throw new Error(result.error || 'Database fix failed')
+      }
       
     } catch (error) {
-      console.error('Migration failed:', error)
+      console.error('💥 Database fix failed:', error)
+      alert(`⚠️ Database fix failed: ${error instanceof Error ? error.message : 'Unknown error'}
+
+Please try again or check the server logs for more details.`)
     }
   }
 
