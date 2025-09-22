@@ -54,6 +54,10 @@ app.use((req, res, next) => {
   const adminRoutes = await import('./routes/admin.js');
   app.use('/api/admin', adminRoutes.default);
   
+  // Add AI API routes - Claude-powered mini-agent
+  const aiRoutes = await import('./ai/routes.js');
+  app.use('/api/ai', aiRoutes.default);
+  
   const server = await registerRoutes(app);
   
   // Initialize single email system - SimpleEmailScheduler (production ready)
