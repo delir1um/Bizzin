@@ -53,6 +53,7 @@ const calculateRemainingTrialDays = (userPlan: any): number => {
 
 export function PlanManagement() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const [showFreeLimits, setShowFreeLimits] = useState(false)
   const { user } = useAuth()
   const { usageStatus, isPremium, isFree, isTrial, hasPremiumFeatures, isLoading, refetch } = usePlans()
   
@@ -205,19 +206,36 @@ export function PlanManagement() {
             </p>
           </CardHeader>
           <CardContent className="space-y-6">
+            {/* Trial unlimited banner */}
+            {isTrial && (
+              <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+                <div className="text-sm text-blue-900 dark:text-blue-100 font-medium">
+                  🎉 Unlimited during trial - no restrictions apply!
+                </div>
+              </div>
+            )}
+            
             {/* Storage Usage */}
             <div>
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-slate-700 dark:text-slate-300">Storage Used</span>
                 <span className="text-slate-500 dark:text-slate-400">
-                  {formatBytes(currentUsage.storage_used)} / {formatBytes(planLimits.storage_limit)} 
-                  ({formatPercentage(currentUsage.storage_used, planLimits.storage_limit)}%)
+                  {isTrial ? (
+                    formatBytes(currentUsage.storage_used)
+                  ) : (
+                    <>
+                      {formatBytes(currentUsage.storage_used)} / {formatBytes(planLimits.storage_limit)} 
+                      ({formatPercentage(currentUsage.storage_used, planLimits.storage_limit)}%)
+                    </>
+                  )}
                 </span>
               </div>
-              <Progress 
-                value={formatPercentage(currentUsage.storage_used, planLimits.storage_limit)}
-                className="h-3 bg-slate-200 dark:bg-slate-700"
-              />
+              {!isTrial && (
+                <Progress 
+                  value={formatPercentage(currentUsage.storage_used, planLimits.storage_limit)}
+                  className="h-3 bg-slate-200 dark:bg-slate-700"
+                />
+              )}
             </div>
 
             {/* Documents */}
@@ -225,14 +243,22 @@ export function PlanManagement() {
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-slate-700 dark:text-slate-300">Documents Uploaded</span>
                 <span className="text-slate-500 dark:text-slate-400">
-                  {currentUsage.documents_uploaded} / {planLimits.monthly_documents === 10000 ? '∞' : planLimits.monthly_documents}
-                  {planLimits.monthly_documents !== 10000 && ` (${formatPercentage(currentUsage.documents_uploaded, planLimits.monthly_documents)}%)`}
+                  {isTrial ? (
+                    currentUsage.documents_uploaded
+                  ) : (
+                    <>
+                      {currentUsage.documents_uploaded} / {planLimits.monthly_documents === 10000 ? '∞' : planLimits.monthly_documents}
+                      {planLimits.monthly_documents !== 10000 && ` (${formatPercentage(currentUsage.documents_uploaded, planLimits.monthly_documents)}%)`}
+                    </>
+                  )}
                 </span>
               </div>
-              <Progress 
-                value={planLimits.monthly_documents === 10000 ? 0 : formatPercentage(currentUsage.documents_uploaded, planLimits.monthly_documents)}
-                className="h-3 bg-slate-200 dark:bg-slate-700"
-              />
+              {!isTrial && (
+                <Progress 
+                  value={planLimits.monthly_documents === 10000 ? 0 : formatPercentage(currentUsage.documents_uploaded, planLimits.monthly_documents)}
+                  className="h-3 bg-slate-200 dark:bg-slate-700"
+                />
+              )}
             </div>
 
             {/* Journal Entries */}
@@ -240,29 +266,45 @@ export function PlanManagement() {
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-slate-700 dark:text-slate-300">Journal Entries</span>
                 <span className="text-slate-500 dark:text-slate-400">
-                  {currentUsage.journal_entries_created} / {planLimits.monthly_journal_entries === 10000 ? '∞' : planLimits.monthly_journal_entries}
-                  {planLimits.monthly_journal_entries !== 10000 && ` (${formatPercentage(currentUsage.journal_entries_created, planLimits.monthly_journal_entries)}%)`}
+                  {isTrial ? (
+                    currentUsage.journal_entries_created
+                  ) : (
+                    <>
+                      {currentUsage.journal_entries_created} / {planLimits.monthly_journal_entries === 10000 ? '∞' : planLimits.monthly_journal_entries}
+                      {planLimits.monthly_journal_entries !== 10000 && ` (${formatPercentage(currentUsage.journal_entries_created, planLimits.monthly_journal_entries)}%)`}
+                    </>
+                  )}
                 </span>
               </div>
-              <Progress 
-                value={planLimits.monthly_journal_entries === 10000 ? 0 : formatPercentage(currentUsage.journal_entries_created, planLimits.monthly_journal_entries)}
-                className="h-3 bg-slate-200 dark:bg-slate-700"
-              />
+              {!isTrial && (
+                <Progress 
+                  value={planLimits.monthly_journal_entries === 10000 ? 0 : formatPercentage(currentUsage.journal_entries_created, planLimits.monthly_journal_entries)}
+                  className="h-3 bg-slate-200 dark:bg-slate-700"
+                />
+              )}
             </div>
 
             {/* Active Goals */}
             <div>
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-slate-700 dark:text-slate-300">Active Goals</span>
-                <span className={`text-sm ${currentUsage.goals_created > planLimits.max_active_goals ? 'text-red-600 font-medium' : 'text-slate-500 dark:text-slate-400'}`}>
-                  {currentUsage.goals_created} / {planLimits.max_active_goals === 1000 ? '∞' : planLimits.max_active_goals}
-                  {planLimits.max_active_goals !== 1000 && ` (${formatPercentage(currentUsage.goals_created, planLimits.max_active_goals)}%)`}
+                <span className="text-slate-500 dark:text-slate-400">
+                  {isTrial ? (
+                    currentUsage.goals_created
+                  ) : (
+                    <>
+                      {currentUsage.goals_created} / {planLimits.max_active_goals === 1000 ? '∞' : planLimits.max_active_goals}
+                      {planLimits.max_active_goals !== 1000 && ` (${formatPercentage(currentUsage.goals_created, planLimits.max_active_goals)}%)`}
+                    </>
+                  )}
                 </span>
               </div>
-              <Progress 
-                value={planLimits.max_active_goals === 1000 ? 0 : formatPercentage(currentUsage.goals_created, planLimits.max_active_goals)}
-                className="h-3 bg-slate-200 dark:bg-slate-700"
-              />
+              {!isTrial && (
+                <Progress 
+                  value={planLimits.max_active_goals === 1000 ? 0 : formatPercentage(currentUsage.goals_created, planLimits.max_active_goals)}
+                  className="h-3 bg-slate-200 dark:bg-slate-700"
+                />
+              )}
             </div>
           </CardContent>
         </Card>
@@ -278,6 +320,20 @@ export function PlanManagement() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
+            {/* Trial user toggle for free limits */}
+            {isTrial && !showFreeLimits && (
+              <div className="flex justify-center mb-4">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setShowFreeLimits(true)}
+                  className="text-slate-600 hover:text-slate-800"
+                >
+                  View limits after trial ends
+                </Button>
+              </div>
+            )}
+            
             {features.map((feature) => {
               const Icon = feature.icon
               return (
@@ -289,15 +345,28 @@ export function PlanManagement() {
                     </span>
                   </div>
                   <div className={`flex items-center ${isTrial ? 'gap-6' : 'gap-8'}`}>
-                    <div className="text-center">
-                      <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Free</div>
-                      <div className="text-sm text-slate-700 dark:text-slate-300">
-                        {feature.free}
+                    {/* For trial users, hide Free column by default */}
+                    {!isTrial && (
+                      <div className="text-center">
+                        <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Free</div>
+                        <div className="text-sm text-slate-700 dark:text-slate-300">
+                          {feature.free}
+                        </div>
                       </div>
-                    </div>
+                    )}
+                    {(isTrial || showFreeLimits) && (
+                      <div className="text-center">
+                        <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                          {isTrial ? 'Free (after trial)' : 'Free'}
+                        </div>
+                        <div className="text-sm text-slate-700 dark:text-slate-300">
+                          {feature.free}
+                        </div>
+                      </div>
+                    )}
                     {isTrial && (
                       <div className="text-center">
-                        <div className="text-xs text-blue-500 dark:text-blue-400 mb-1">Trial</div>
+                        <div className="text-xs text-blue-500 dark:text-blue-400 mb-1">Your Trial</div>
                         <div className="text-sm font-medium text-blue-600 dark:text-blue-400">
                           {feature.trial}
                         </div>
