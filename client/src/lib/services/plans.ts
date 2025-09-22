@@ -19,6 +19,9 @@ export class PlansService {
       // Log environment info for debugging
       this.logEnvironmentInfo()
       
+      // Clear any cached data to force fresh query
+      console.log('🧹 Clearing cached plan data...')
+      
       console.log('🔍 Fetching plan for user via RPC:', userId)
       
       // Use server-side function to get active plan from primary database
@@ -32,16 +35,38 @@ export class PlansService {
         console.error('🚨 RPC plan query error:', error)
         console.log('🔄 Falling back to direct query with improved selection logic...')
         
-        // Fallback to direct query but with better logic
-        const { data: fallbackData, error: fallbackError } = await supabase
+        // Fallback to direct query - simplified to avoid schema cache issues
+        const { data: allPlans, error: fallbackError } = await supabase
           .from('user_plans')
           .select('*')
           .eq('user_id', userId)
-          .is('cancelled_at', null) // Only active plans
-          .order('plan_type', { ascending: false }) // trial > premium > free
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle()
+          .order('created_at', { ascending: false }) // newest first
+
+        console.log('📊 All plans for user:', { data: allPlans, error: fallbackError, count: allPlans?.length })
+        
+        if (fallbackError) {
+          throw new Error(`Fallback query failed: ${fallbackError.message}`)
+        }
+        
+        // Manually filter and prioritize in JavaScript to avoid schema issues
+        const fallbackData = allPlans?.find(plan => {
+          // Prioritize trial plans, then premium, then free
+          const isActive = !plan.cancelled_at // No cancellation date means active
+          const isCurrentTrial = plan.is_trial && (!plan.trial_ends_at || new Date(plan.trial_ends_at) > new Date())
+          const isCurrentPremium = plan.plan_type === 'premium' && (!plan.expires_at || new Date(plan.expires_at) > new Date())
+          
+          console.log('🔍 Evaluating plan:', {
+            id: plan.id,
+            type: plan.plan_type,
+            isActive,
+            isCurrentTrial,
+            isCurrentPremium,
+            trial_ends_at: plan.trial_ends_at,
+            expires_at: plan.expires_at
+          })
+          
+          return isActive && (isCurrentTrial || isCurrentPremium || plan.plan_type === 'free')
+        }) || null
 
         console.log('📊 Fallback query result:', { data: fallbackData, error: fallbackError })
         
