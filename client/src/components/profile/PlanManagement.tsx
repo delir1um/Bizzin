@@ -319,77 +319,107 @@ export function PlanManagement() {
           </p>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {/* Trial user toggle for free limits */}
-            {isTrial && !showFreeLimits && (
-              <div className="flex justify-center mb-4">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setShowFreeLimits(true)}
-                  className="text-slate-600 hover:text-slate-800"
-                >
-                  View limits after trial ends
-                </Button>
-              </div>
-            )}
-            
-            {features.map((feature) => {
-              const Icon = feature.icon
-              return (
-                <div key={feature.name} className="flex items-center justify-between py-3 border-b border-slate-200 dark:border-slate-700 last:border-0">
-                  <div className="flex items-center gap-3">
-                    <Icon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-                    <span className="font-medium text-slate-900 dark:text-white">
-                      {feature.name}
-                    </span>
+          {isTrial ? (
+            // Simple feature list for trial users - just show what they have
+            <div className="space-y-4">
+              {features.map((feature) => {
+                const Icon = feature.icon
+                return (
+                  <div key={feature.name} className="flex items-center justify-between py-3 border-b border-slate-200 dark:border-slate-700 last:border-0">
+                    <div className="flex items-center gap-3">
+                      <Icon className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+                      <span className="font-medium text-slate-900 dark:text-white">
+                        {feature.name}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                        {feature.premium}
+                      </span>
+                      <Check className="w-5 h-5 text-blue-500" />
+                    </div>
                   </div>
-                  <div className={`flex items-center ${isTrial ? 'gap-6' : 'gap-8'}`}>
-                    {/* For trial users, hide Free column by default */}
-                    {!isTrial && (
+                )
+              })}
+              
+              {/* Optional toggle to show what happens after trial */}
+              {!showFreeLimits && (
+                <div className="flex justify-center pt-4">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setShowFreeLimits(true)}
+                    className="text-slate-600 hover:text-slate-800"
+                  >
+                    View limits after trial ends
+                  </Button>
+                </div>
+              )}
+              
+              {/* Show post-trial limits if requested */}
+              {showFreeLimits && (
+                <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+                  <div className="mb-4 text-sm text-slate-600 dark:text-slate-400">
+                    <strong>After your trial ends (Free plan):</strong>
+                  </div>
+                  {features.map((feature) => {
+                    const Icon = feature.icon
+                    return (
+                      <div key={`${feature.name}-free`} className="flex items-center justify-between py-2">
+                        <div className="flex items-center gap-3">
+                          <Icon className="w-4 h-4 text-slate-400" />
+                          <span className="text-sm text-slate-700 dark:text-slate-300">
+                            {feature.name}
+                          </span>
+                        </div>
+                        <span className="text-sm text-slate-500 dark:text-slate-400">
+                          {feature.free}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          ) : (
+            // Original comparison table for non-trial users
+            <div className="space-y-4">
+              {features.map((feature) => {
+                const Icon = feature.icon
+                return (
+                  <div key={feature.name} className="flex items-center justify-between py-3 border-b border-slate-200 dark:border-slate-700 last:border-0">
+                    <div className="flex items-center gap-3">
+                      <Icon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                      <span className="font-medium text-slate-900 dark:text-white">
+                        {feature.name}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-8">
                       <div className="text-center">
                         <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Free</div>
                         <div className="text-sm text-slate-700 dark:text-slate-300">
                           {feature.free}
                         </div>
                       </div>
-                    )}
-                    {(isTrial || showFreeLimits) && (
                       <div className="text-center">
-                        <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-                          {isTrial ? 'Free (after trial)' : 'Free'}
-                        </div>
-                        <div className="text-sm text-slate-700 dark:text-slate-300">
-                          {feature.free}
+                        <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Premium</div>
+                        <div className="text-sm font-medium text-orange-600 dark:text-orange-400">
+                          {feature.premium}
                         </div>
                       </div>
-                    )}
-                    {isTrial && (
-                      <div className="text-center">
-                        <div className="text-xs text-blue-500 dark:text-blue-400 mb-1">Your Trial</div>
-                        <div className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                          {feature.trial}
-                        </div>
+                      <div className="w-8 flex justify-center">
+                        {hasPremiumFeatures ? (
+                          <Check className="w-5 h-5 text-green-500" />
+                        ) : (
+                          <X className="w-5 h-5 text-slate-400" />
+                        )}
                       </div>
-                    )}
-                    <div className="text-center">
-                      <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Premium</div>
-                      <div className="text-sm font-medium text-orange-600 dark:text-orange-400">
-                        {feature.premium}
-                      </div>
-                    </div>
-                    <div className="w-8 flex justify-center">
-                      {hasPremiumFeatures ? (
-                        <Check className={`w-5 h-5 ${isTrial ? 'text-blue-500' : 'text-green-500'}`} />
-                      ) : (
-                        <X className="w-5 h-5 text-slate-400" />
-                      )}
                     </div>
                   </div>
-                </div>
-              )
-            })}
-          </div>
+                )
+              })}
+            </div>
+          )}
 
           {!isPremium && (
             <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
