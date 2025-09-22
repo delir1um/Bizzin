@@ -58,7 +58,11 @@ export function PlanManagement() {
   const monthlyPrice = PaystackService.getSubscriptionPrice('monthly')
   const formattedMonthlyPrice = PaystackService.formatAmount(monthlyPrice)
 
-
+  // Memoize the trial days calculation to prevent infinite re-renders
+  // IMPORTANT: This must be before any early returns to follow Rules of Hooks
+  const remainingTrialDays = useMemo(() => {
+    return isTrial ? calculateRemainingTrialDays(usageStatus?.user_plan) : 0
+  }, [isTrial, usageStatus?.user_plan])
 
   if (isLoading) {
     return (
@@ -71,11 +75,6 @@ export function PlanManagement() {
 
   const planLimits = usageStatus?.plan_limits
   const currentUsage = usageStatus?.current_usage
-  
-  // Memoize the trial days calculation to prevent infinite re-renders
-  const remainingTrialDays = useMemo(() => {
-    return isTrial ? calculateRemainingTrialDays(usageStatus?.user_plan) : 0
-  }, [isTrial, usageStatus?.user_plan])
 
   const features = [
     {
