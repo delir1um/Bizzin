@@ -824,8 +824,8 @@ function extractContentThemes(text: string): {
 
   // Extract business strategies mentioned (expanded patterns)
   const businessStrategies = [];
-  if (/need to.*immediately|require.*adaptation|pivot.*mobile|growth.*acceleration|competitive.*advantage|market.*positioning|strategic.*decisions?|strategic.*planning|business.*strategy|market.*strategy|expansion.*strategy|growth.*strategy|need to.*review|invest in.*equipment|safety.*protocols|employee.*welfare|protect.*team|review.*protocols|improve.*safety/i.test(text)) {
-    const strategies = text.match(/need to.*?(?=\.|$)|require.*?adaptation|pivot.*?mobile|growth.*?acceleration|competitive.*?advantage|market.*?positioning|strategic.*?decisions?|strategic.*?planning|business.*?strategy|market.*?strategy|expansion.*?strategy|growth.*?strategy|need to.*?review.*?(?=\.|$)|invest in.*?equipment|safety.*?protocols|employee.*?welfare|protect.*?team|review.*?protocols|improve.*?safety/gi);
+  if (/need to.*immediately|require.*adaptation|pivot.*mobile|growth.*acceleration|competitive.*advantage|market.*positioning|strategic.*decisions?|strategic.*planning|business.*strategy|market.*strategy|expansion.*strategy|growth.*strategy|need to.*review|invest in.*equipment|safety.*protocols|employee.*welfare|protect.*team|review.*protocols|improve.*safety|safety.*training|workplace.*safety|safety.*program|comprehensive.*safety|safety.*analysis|developing.*safety|safety.*initiatives/i.test(text)) {
+    const strategies = text.match(/need to.*?(?=\.|$)|require.*?adaptation|pivot.*?mobile|growth.*?acceleration|competitive.*?advantage|market.*?positioning|strategic.*?decisions?|strategic.*?planning|business.*?strategy|market.*?strategy|expansion.*?strategy|growth.*?strategy|need to.*?review.*?(?=\.|$)|invest in.*?equipment|safety.*?protocols|employee.*?welfare|protect.*?team|review.*?protocols|improve.*?safety|safety.*?training|workplace.*?safety|safety.*?program|comprehensive.*?safety|safety.*?analysis|developing.*?safety|safety.*?initiatives/gi);
     if (strategies) businessStrategies.push(...strategies);
   }
   
@@ -940,7 +940,7 @@ function generateContentSpecificInsight(
   }
 
   // NEW: Add condition for workplace safety business strategies (regardless of category)
-  if (contentContext.hasStrategy && /safety.*protocol|invest.*safety.*equipment|staff.*training.*program|employee.*welfare|safety.*equipment|review.*protocol|improve.*safety/i.test(text)) {
+  if (contentContext.hasStrategy && /safety.*protocol|invest.*safety.*equipment|staff.*training.*program|employee.*welfare|safety.*equipment|review.*protocol|improve.*safety|safety.*training|workplace.*safety|safety.*program|comprehensive.*safety|safety.*analysis|developing.*safety|safety.*initiatives/i.test(text)) {
     console.log('🔍 DEBUG: MATCHED hasStrategy && safety patterns - SAFETY STRATEGY PLANNING');
     return `Your proactive approach to safety protocol review and equipment investment demonstrates strategic leadership that transforms operational challenges into competitive advantages. The combination of systematic protocol evaluation and targeted equipment upgrades shows you understand that safety investments generate multiple business returns: reduced liability exposure, lower insurance premiums, improved employee retention, and enhanced company reputation. Document your safety improvement process as this becomes valuable intellectual property for scaling operations. Consider this safety initiative a model for other operational excellence programs, and use the enhanced safety culture as a recruitment and retention advantage in competitive talent markets.`;
   }
