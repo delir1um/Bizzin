@@ -22,6 +22,10 @@ export function usePlans() {
 
   const isPremium = usageStatus?.user_plan?.plan_type === 'premium'
   const isFree = usageStatus?.user_plan?.plan_type === 'free'
+  const isTrial = usageStatus?.user_plan?.plan_type === 'trial'
+  
+  // Trial users get premium features with time limit
+  const hasPremiumFeatures = isPremium || isTrial
 
   // Helper functions for checking limits - temporarily allow all for journal entries
   const canUploadDocument = usageStatus?.can_upload_document ?? false
@@ -62,6 +66,8 @@ export function usePlans() {
     refetch,
     isPremium,
     isFree,
+    isTrial,
+    hasPremiumFeatures,
     canUploadDocument,
     canCreateJournalEntry,
     canCreateGoal,

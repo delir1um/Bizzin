@@ -111,7 +111,7 @@ export type AdminUser = {
 export type UserPlan = {
   id: string;
   user_id: string;
-  plan_type: string; // 'free', 'premium', or 'trial'
+  plan_type: 'free' | 'premium' | 'trial'; // Clear type definition for plan types
   billing_cycle?: string; // 'monthly', 'yearly'
   amount_paid?: number;
   currency?: string;

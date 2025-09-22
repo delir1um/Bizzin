@@ -1,4 +1,4 @@
-export type PlanType = 'free' | 'premium'
+export type PlanType = 'free' | 'premium' | 'trial'
 
 export interface UserPlan {
   id: string
