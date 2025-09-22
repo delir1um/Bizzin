@@ -13,18 +13,25 @@ export function usePlans() {
     error,
     refetch
   } = useQuery({
-    queryKey: ['usage-status-v3-force-refresh', user?.id], // Stable query key
-    queryFn: () => user ? PlansService.getUserUsageStatus(user.id) : null,
+    queryKey: ['usage-status-v4-debug-expiry', user?.id, Date.now()], // Force fresh query every time
+    queryFn: () => {
+      console.log('🔄 usePlans: Fetching fresh usage status for user:', user?.id)
+      return user ? PlansService.getUserUsageStatus(user.id) : null
+    },
     enabled: !!user, // Re-enable now that table exists
     staleTime: 0, // Never use stale data
     gcTime: 0, // Don't cache at all (cacheTime is now gcTime in v5)
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true, // Enable refetch to catch updates
   })
 
   const isPremium = usageStatus?.user_plan?.plan_type === 'premium'
   const isFree = usageStatus?.user_plan?.plan_type === 'free'
+  
+  // CRITICAL: Only active trials count - expired trials should not get trial benefits
   const isTrial = usageStatus?.user_plan?.plan_type === 'trial' || 
-                  (usageStatus?.user_plan?.plan_type === 'free' && usageStatus?.user_plan?.expires_at)
+                  (usageStatus?.user_plan?.plan_type === 'free' && 
+                   usageStatus?.user_plan?.expires_at && 
+                   new Date(usageStatus?.user_plan?.expires_at) > new Date())
   
   // Trial users get premium features with time limit
   const hasPremiumFeatures = isPremium || isTrial

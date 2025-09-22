@@ -66,23 +66,25 @@ export class PlansService {
           // Determine if plan is active based on expiry
           const isActive = !plan.expires_at || new Date(plan.expires_at) > now
           
-          // Free plans with expiry dates are actually trial plans
-          const isTrialPlan = plan.plan_type === 'free' && plan.expires_at
+          // Trial plans are free plans with expiry dates that are STILL ACTIVE
+          const isActiveTrial = plan.plan_type === 'free' && plan.expires_at && isActive
           const isPremiumPlan = plan.plan_type === 'premium'
           const isFreePlan = plan.plan_type === 'free' && !plan.expires_at
+          const isExpiredTrial = plan.plan_type === 'free' && plan.expires_at && !isActive
           
           console.log('🔍 Evaluating plan:', {
             id: plan.id,
             type: plan.plan_type,
             isActive,
-            isTrialPlan,
+            isActiveTrial,
             isPremiumPlan,
+            isExpiredTrial,
             expires_at: plan.expires_at
           })
           
           if (isActive) {
-            // Priority: Trial > Premium > Free
-            if (isTrialPlan && !selectedPlan) {
+            // Priority: Active Trial > Premium > Free
+            if (isActiveTrial && !selectedPlan) {
               selectedPlan = { ...plan, is_trial: true } // Mark as trial for UI
             } else if (isPremiumPlan && !selectedPlan) {
               selectedPlan = plan
@@ -92,8 +94,8 @@ export class PlansService {
           }
         }
         
-        // If no active plan, use most recent
-        const fallbackData = selectedPlan || allPlans?.[0] || null
+        // CRITICAL: If no active plan found, return null (expired trials should not get access)
+        const fallbackData = selectedPlan || null
 
         console.log('📊 Fallback query result:', { data: fallbackData, error: fallbackError })
         
