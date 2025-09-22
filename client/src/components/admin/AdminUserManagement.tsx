@@ -111,8 +111,8 @@ export function AdminUserManagement() {
         
         // Handle potentially missing tables gracefully
         const [plansResult, journalResult, goalsResult, documentsResult] = await Promise.allSettled([
-          // Re-enable user_plans query for trial management with status fields
-          supabase.from('user_plans').select('user_id, plan_type, expires_at, created_at, status, cancelled_at').in('user_id', userIds),
+          // Query user_plans with correct columns (removed non-existent status column)
+          supabase.from('user_plans').select('user_id, plan_type, expires_at, created_at, cancelled_at').in('user_id', userIds),
           supabase.from('journal_entries').select('user_id').in('user_id', userIds),
           supabase.from('goals').select('user_id, status, title').in('user_id', userIds),
           supabase.from('documents').select('user_id, file_size, name').in('user_id', userIds)
@@ -176,7 +176,7 @@ export function AdminUserManagement() {
           }
           
           // Determine plan status - check for cancellation
-          if (userPlan?.status === 'cancelled' || userPlan?.cancelled_at) {
+          if (userPlan?.cancelled_at) {
             planStatus = 'cancelled'
           } else if (expiresAt && expiresAt < now && isTrial) {
             planStatus = 'expired'
@@ -841,7 +841,7 @@ function UserDetailView({ user }: { user: UserProfile }) {
                         if (error) throw error
                         
                         alert('Profile updated successfully!')
-                        refetch()
+                        queryClient.invalidateQueries({ queryKey: ['admin-users'] })
                       }
                     } catch (error) {
                       console.error('Error updating profile:', error)
@@ -953,7 +953,7 @@ function UserDetailView({ user }: { user: UserProfile }) {
                         if (error) throw error
                         
                         alert(`✅ ${user.first_name || user.email} has been ${actionPast}!`)
-                        refetch()
+                        queryClient.invalidateQueries({ queryKey: ['admin-users'] })
                       } catch (error) {
                         console.error(`Error ${action}ing user:`, error)
                         alert(`Failed to ${action} user. Please try again.`)
