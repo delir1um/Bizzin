@@ -23,7 +23,8 @@ export function usePlans() {
 
   const isPremium = usageStatus?.user_plan?.plan_type === 'premium'
   const isFree = usageStatus?.user_plan?.plan_type === 'free'
-  const isTrial = usageStatus?.user_plan?.plan_type === 'trial'
+  const isTrial = usageStatus?.user_plan?.plan_type === 'trial' || 
+                  (usageStatus?.user_plan?.plan_type === 'free' && usageStatus?.user_plan?.expires_at)
   
   // Trial users get premium features with time limit
   const hasPremiumFeatures = isPremium || isTrial

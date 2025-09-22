@@ -32,50 +32,6 @@ export class PlansService {
       
       console.log('📊 Direct Supabase test result:', { data: testData, error: testError, count: testData?.length })
       
-      // CRITICAL FIX: Disable pre-launch mode using correct structure
-      console.log('🔧 SYSTEM FIX: Disabling pre-launch mode...')
-      
-      // platform_settings has: id, pre_launch_mode: boolean, launch_message, maintenance_mode, maintenance_message
-      const { data: settingsData, error: settingsError } = await supabase
-        .from('platform_settings')
-        .upsert({
-          id: 'main', // Assuming single record with ID 'main'
-          pre_launch_mode: false,
-          launch_message: 'Welcome to Bizzin!',
-          maintenance_mode: false,
-          maintenance_message: ''
-        })
-        .select()
-
-      console.log('🔧 Pre-launch disable result:', { data: settingsData, error: settingsError })
-
-      // CRITICAL FIX: Update the incorrect free plan to trial plan
-      console.log('🔧 Checking trial plan fix conditions...', { 
-        hasData: !!testData?.[0], 
-        planType: testData?.[0]?.plan_type, 
-        hasExpiry: !!testData?.[0]?.expires_at 
-      })
-      
-      if (testData?.[0] && testData[0].plan_type === 'free') {
-        console.log('🔧 FIXING: Converting incorrect free plan to trial plan...')
-        const { data: updateData, error: updateError } = await supabase
-          .from('user_plans')
-          .update({
-            plan_type: 'trial'
-            // Only update plan_type since other columns may not exist
-          })
-          .eq('id', testData[0].id)
-          .select()
-
-        console.log('🔧 Plan fix result:', { data: updateData, error: updateError })
-        
-        if (updateError) {
-          console.error('❌ Failed to fix plan:', updateError)
-        } else {
-          console.log('✅ Successfully converted free plan to trial plan!')
-        }
-      }
-      
       console.log('🔍 Fetching plan for user via RPC:', userId)
       
       // Use server-side function to get active plan from primary database
@@ -102,25 +58,42 @@ export class PlansService {
           throw new Error(`Fallback query failed: ${fallbackError.message}`)
         }
         
-        // Manually filter and prioritize in JavaScript to avoid schema issues
-        const fallbackData = allPlans?.find(plan => {
-          // Prioritize trial plans, then premium, then free
-          const isActive = !plan.cancelled_at // No cancellation date means active
-          const isCurrentTrial = plan.is_trial && (!plan.trial_ends_at || new Date(plan.trial_ends_at) > new Date())
-          const isCurrentPremium = plan.plan_type === 'premium' && (!plan.expires_at || new Date(plan.expires_at) > new Date())
+        // Select best plan using only columns that exist in the database
+        let selectedPlan = null
+        const now = new Date()
+        
+        for (const plan of allPlans || []) {
+          // Determine if plan is active based on expiry
+          const isActive = !plan.expires_at || new Date(plan.expires_at) > now
+          
+          // Free plans with expiry dates are actually trial plans
+          const isTrialPlan = plan.plan_type === 'free' && plan.expires_at
+          const isPremiumPlan = plan.plan_type === 'premium'
+          const isFreePlan = plan.plan_type === 'free' && !plan.expires_at
           
           console.log('🔍 Evaluating plan:', {
             id: plan.id,
             type: plan.plan_type,
             isActive,
-            isCurrentTrial,
-            isCurrentPremium,
-            trial_ends_at: plan.trial_ends_at,
+            isTrialPlan,
+            isPremiumPlan,
             expires_at: plan.expires_at
           })
           
-          return isActive && (isCurrentTrial || isCurrentPremium || plan.plan_type === 'free')
-        }) || null
+          if (isActive) {
+            // Priority: Trial > Premium > Free
+            if (isTrialPlan && !selectedPlan) {
+              selectedPlan = { ...plan, is_trial: true } // Mark as trial for UI
+            } else if (isPremiumPlan && !selectedPlan) {
+              selectedPlan = plan
+            } else if (isFreePlan && !selectedPlan) {
+              selectedPlan = plan
+            }
+          }
+        }
+        
+        // If no active plan, use most recent
+        const fallbackData = selectedPlan || allPlans?.[0] || null
 
         console.log('📊 Fallback query result:', { data: fallbackData, error: fallbackError })
         

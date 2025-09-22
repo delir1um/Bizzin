@@ -39,9 +39,11 @@ const getProgressColor = (percentage: number): string => {
 }
 
 const calculateRemainingTrialDays = (userPlan: any): number => {
-  if (!userPlan?.trial_ends_at) return 0
+  // Use trial_ends_at if available, otherwise expires_at for free plans with expiry
+  const trialEnd = userPlan?.trial_ends_at || (userPlan?.plan_type === 'free' && userPlan?.expires_at ? userPlan.expires_at : null)
+  if (!trialEnd) return 0
   
-  const trialEndDate = new Date(userPlan.trial_ends_at)
+  const trialEndDate = new Date(trialEnd)
   const now = new Date()
   const diffTime = trialEndDate.getTime() - now.getTime()
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
