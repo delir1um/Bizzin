@@ -77,30 +77,35 @@ export function PlanManagement() {
     {
       name: "Storage Space",
       free: "50 MB",
+      trial: "10 GB",
       premium: "10 GB",
       icon: Database
     },
     {
       name: "Document Uploads",
       free: "20 per month",
+      trial: "Unlimited",
       premium: "Unlimited",
       icon: FileText
     },
     {
       name: "Journal Entries",
       free: "10 per month", 
+      trial: "Unlimited",
       premium: "Unlimited",
       icon: BookOpen
     },
     {
       name: "Active Goals",
       free: "5 goals",
+      trial: "Unlimited",
       premium: "Unlimited",
       icon: Target
     },
     {
       name: "BizBuilder Calculations",
       free: "3 per day per tool",
+      trial: "Unlimited",
       premium: "Unlimited",
       icon: Calculator
     }
@@ -278,13 +283,21 @@ export function PlanManagement() {
                       {feature.name}
                     </span>
                   </div>
-                  <div className="flex items-center gap-8">
+                  <div className={`flex items-center ${isTrial ? 'gap-6' : 'gap-8'}`}>
                     <div className="text-center">
                       <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Free</div>
                       <div className="text-sm text-slate-700 dark:text-slate-300">
                         {feature.free}
                       </div>
                     </div>
+                    {isTrial && (
+                      <div className="text-center">
+                        <div className="text-xs text-blue-500 dark:text-blue-400 mb-1">Trial</div>
+                        <div className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                          {feature.trial}
+                        </div>
+                      </div>
+                    )}
                     <div className="text-center">
                       <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Premium</div>
                       <div className="text-sm font-medium text-orange-600 dark:text-orange-400">
