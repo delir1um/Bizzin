@@ -1,0 +1,43 @@
+not available
+
+Expression
+not available
+﻿
+workspace_iframe.htm…file&id=%3Ar7d%3A:1 Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.htm…file&id=%3Ar7d%3A:1 Unrecognized feature: 'battery'.
+workspace_iframe.htm…file&id=%3Ar7d%3A:1 Unrecognized feature: 'execution-while-not-rendered'.
+workspace_iframe.htm…file&id=%3Ar7d%3A:1 Unrecognized feature: 'execution-while-out-of-viewport'.
+workspace_iframe.htm…file&id=%3Ar7d%3A:1 Unrecognized feature: 'layout-animations'.
+workspace_iframe.htm…file&id=%3Ar7d%3A:1 Unrecognized feature: 'legacy-image-formats'.
+workspace_iframe.htm…file&id=%3Ar7d%3A:1 Unrecognized feature: 'navigation-override'.
+workspace_iframe.htm…file&id=%3Ar7d%3A:1 Unrecognized feature: 'oversized-images'.
+workspace_iframe.htm…file&id=%3Ar7d%3A:1 Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.htm…file&id=%3Ar7d%3A:1 Unrecognized feature: 'speaker-selection'.
+workspace_iframe.htm…file&id=%3Ar7d%3A:1 Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.htm…file&id=%3Ar7d%3A:1 Unrecognized feature: 'unsized-media'.
+workspace_iframe.htm…file&id=%3Ar7d%3A:1 Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.htm…file&id=%3Ar7d%3A:1 Allow attribute will take precedence over 'allowpaymentrequest'.
+BizzinFrontend:1 Unrecognized feature: 'ambient-light-sensor'.
+BizzinFrontend:1 Unrecognized feature: 'battery'.
+BizzinFrontend:1 Unrecognized feature: 'execution-while-not-rendered'.
+BizzinFrontend:1 Unrecognized feature: 'execution-while-out-of-viewport'.
+BizzinFrontend:1 Unrecognized feature: 'layout-animations'.
+BizzinFrontend:1 Unrecognized feature: 'legacy-image-formats'.
+BizzinFrontend:1 Unrecognized feature: 'navigation-override'.
+BizzinFrontend:1 Unrecognized feature: 'oversized-images'.
+BizzinFrontend:1 Unrecognized feature: 'publickey-credentials'.
+BizzinFrontend:1 Unrecognized feature: 'speaker-selection'.
+BizzinFrontend:1 Unrecognized feature: 'unoptimized-images'.
+BizzinFrontend:1 Unrecognized feature: 'unsized-media'.
+BizzinFrontend:1 Unrecognized feature: 'pointer-lock'.
+BizzinFrontend:1 Allow attribute will take precedence over 'allowfullscreen'.
+BizzinFrontend:1 Allow attribute will take precedence over 'allowpaymentrequest'.
+injected.js:278 
+ HEAD https://giahpkiwivxpocikndix.supabase.co/rest/v1/user_plans?select=*&plan_type=eq.premium&plan_status=eq.active 400 (Bad Request)
+injected.js:278 
+ HEAD https://giahpkiwivxpocikndix.supabase.co/rest/v1/user_plans?select=*&plan_type=eq.premium&plan_status=eq.active 400 (Bad Request)
+injected.js:278 
+ HEAD https://giahpkiwivxpocikndix.supabase.co/rest/v1/user_plans?select=*&plan_type=eq.premium&plan_status=eq.active 400 (Bad Request)
+injected.js:278 
+ HEAD https://giahpkiwivxpocikndix.supabase.co/rest/v1/user_plans?select=*&plan_type=eq.premium&plan_status=eq.active 400 (Bad Request)
+﻿

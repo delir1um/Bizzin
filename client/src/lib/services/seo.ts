@@ -55,12 +55,12 @@ export const getPlatformStats = async (): Promise<PlatformStats> => {
       .from('documents')
       .select('*', { count: 'exact', head: true });
 
-    // Get premium users
+    // Get premium users (active premium subscriptions)
     const { count: premiumUsers } = await supabase
       .from('user_plans')
       .select('*', { count: 'exact', head: true })
       .eq('plan_type', 'premium')
-      .eq('plan_status', 'active');
+      .or('expires_at.is.null,expires_at.gt.' + new Date().toISOString());
 
     // Get active users (logged in within last 30 days)
     const thirtyDaysAgo = new Date();
