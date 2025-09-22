@@ -927,11 +927,22 @@ function generateContentSpecificInsight(
     console.log('🔍 DEBUG: MATCHED hasTechChallenges && challenge condition');
     return `The technical challenges you've identified represent both immediate business risks and strategic opportunities. Address these systematically by prioritizing changes that align with customer behavior shifts while building capabilities for future technology adaptations.`;
   }
+
+  if (contentContext.hasStrategy && category === 'learning') {
+    console.log('🔍 DEBUG: MATCHED hasStrategy && learning condition');
+    return `Your strategic learning approach demonstrates business maturity that separates successful leaders from reactive operators. Converting insights into actionable business strategies shows you understand how to transform knowledge into competitive advantage. Focus on systematizing this learning-to-strategy pipeline as it becomes a core capability for business scaling.`;
+  }
   
   // NEW: Add specific condition for workplace safety/operational challenges
   if (contentContext.hasOperationalChallenges && category === 'challenge') {
     console.log('🔍 DEBUG: MATCHED hasOperationalChallenges && challenge condition - WORKPLACE SAFETY');
     return `This workplace incident demands immediate multi-layered leadership combining human empathy with strategic business thinking. Beyond addressing safety and legal concerns, you're facing interconnected operational, financial, and cultural challenges requiring systematic crisis management. Document everything meticulously for compliance, engage legal counsel proactively, and transform this setback into competitive advantage by implementing comprehensive safety protocols that demonstrate industry leadership. Use this moment to strengthen team loyalty through transparent communication and reinforce your commitment to employee welfare as a core business value that attracts talent and customers. The investments in safety equipment and protocol improvements will pay dividends in reduced liability, lower insurance costs, and stronger company culture.`;
+  }
+
+  // NEW: Add condition for workplace safety business strategies (regardless of category)
+  if (contentContext.hasStrategy && /safety.*protocol|invest.*safety.*equipment|staff.*training.*program|employee.*welfare|safety.*equipment|review.*protocol|improve.*safety/i.test(text)) {
+    console.log('🔍 DEBUG: MATCHED hasStrategy && safety patterns - SAFETY STRATEGY PLANNING');
+    return `Your proactive approach to safety protocol review and equipment investment demonstrates strategic leadership that transforms operational challenges into competitive advantages. The combination of systematic protocol evaluation and targeted equipment upgrades shows you understand that safety investments generate multiple business returns: reduced liability exposure, lower insurance premiums, improved employee retention, and enhanced company reputation. Document your safety improvement process as this becomes valuable intellectual property for scaling operations. Consider this safety initiative a model for other operational excellence programs, and use the enhanced safety culture as a recruitment and retention advantage in competitive talent markets.`;
   }
 
   // NEW: Add specific condition for projectWork + clientRelations combo (without specific feedback requirement)
