@@ -197,7 +197,7 @@ export function RecoveryResilienceCard({ journalEntries }: RecoveryResilienceCar
         const recoveryMood = (recovery.recoveryEntry?.sentiment_data?.primary_mood || recovery.recoveryEntry?.mood || '').toLowerCase()
         
         // Speed component (0-72 hours range)
-        const speedScore = Math.max(20, 100 - (hours / 0.72)) // 72 hours = 20 points, 0 hours = 100 points
+        const speedScore = Math.max(20, 100 - (hours / 72 * 80)) // 72 hours = 20 points, 0 hours = 100 points
         
         // Quality component based on recovery strength
         let qualityBonus = 0
