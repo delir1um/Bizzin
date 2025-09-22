@@ -38,10 +38,21 @@ const getProgressColor = (percentage: number): string => {
   return "bg-green-500"
 }
 
+const calculateRemainingTrialDays = (userPlan: any): number => {
+  if (!userPlan?.trial_ends_at) return 0
+  
+  const trialEndDate = new Date(userPlan.trial_ends_at)
+  const now = new Date()
+  const diffTime = trialEndDate.getTime() - now.getTime()
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  
+  return Math.max(0, diffDays)
+}
+
 export function PlanManagement() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const { user } = useAuth()
-  const { usageStatus, isPremium, isFree, isLoading, refetch } = usePlans()
+  const { usageStatus, isPremium, isFree, isTrial, hasPremiumFeatures, isLoading, refetch } = usePlans()
   
   // Get ZAR pricing for display
   const monthlyPrice = PaystackService.getSubscriptionPrice('monthly')
@@ -60,6 +71,7 @@ export function PlanManagement() {
 
   const planLimits = usageStatus?.plan_limits
   const currentUsage = usageStatus?.current_usage
+  const remainingTrialDays = isTrial ? calculateRemainingTrialDays(usageStatus?.user_plan) : 0
 
   const features = [
     {
@@ -106,29 +118,33 @@ export function PlanManagement() {
               </div>
               <div>
                 <CardTitle className="text-slate-900 dark:text-white">
-                  Current Plan: {isPremium ? 'Premium' : 'Free'}
+                  Current Plan: {isPremium ? 'Premium' : isTrial ? 'Premium Trial' : 'Free'}
                 </CardTitle>
                 <p className="text-sm text-slate-600 dark:text-slate-300">
                   {isPremium 
                     ? 'You have access to all premium features'
-                    : 'Upgrade to unlock unlimited access'
+                    : isTrial 
+                      ? `Trial expires in ${remainingTrialDays} day${remainingTrialDays !== 1 ? 's' : ''} - enjoy premium features!`
+                      : 'Upgrade to unlock unlimited access'
                   }
                 </p>
               </div>
             </div>
             <Badge 
-              variant={isPremium ? "default" : "secondary"}
-              className={isPremium 
-                ? "bg-orange-500 hover:bg-orange-600 text-white" 
+              variant={hasPremiumFeatures ? "default" : "secondary"}
+              className={hasPremiumFeatures 
+                ? isTrial 
+                  ? "bg-blue-500 hover:bg-blue-600 text-white"
+                  : "bg-orange-500 hover:bg-orange-600 text-white" 
                 : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
               }
             >
-              {isPremium ? 'Premium' : 'Free'}
+              {isPremium ? 'Premium' : isTrial ? 'Trial' : 'Free'}
             </Badge>
           </div>
         </CardHeader>
         <CardContent>
-          {!isPremium && (
+          {!hasPremiumFeatures && (
             <Button 
               onClick={() => setShowUpgradeModal(true)}
               className="bg-orange-600 hover:bg-orange-700 text-white"
@@ -139,6 +155,31 @@ export function PlanManagement() {
           {isPremium && (
             <div className="text-sm text-slate-600 dark:text-slate-300">
               Your premium subscription is active. Enjoy unlimited access to all features!
+            </div>
+          )}
+          {isTrial && (
+            <div className="space-y-3">
+              <div className="text-sm text-slate-600 dark:text-slate-300">
+                You're enjoying premium features during your trial period!
+              </div>
+              {remainingTrialDays > 0 && (
+                <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="text-sm">
+                    <span className="font-medium text-blue-900 dark:text-blue-100">
+                      {remainingTrialDays} day{remainingTrialDays !== 1 ? 's' : ''} remaining
+                    </span>
+                    <span className="text-blue-700 dark:text-blue-300 ml-2">
+                      in your trial
+                    </span>
+                  </div>
+                </div>
+              )}
+              <Button 
+                onClick={() => setShowUpgradeModal(true)}
+                className="bg-orange-600 hover:bg-orange-700 text-white"
+              >
+                Convert to Premium - {formattedMonthlyPrice}/month
+              </Button>
             </div>
           )}
         </CardContent>
@@ -251,8 +292,8 @@ export function PlanManagement() {
                       </div>
                     </div>
                     <div className="w-8 flex justify-center">
-                      {isPremium ? (
-                        <Check className="w-5 h-5 text-green-500" />
+                      {hasPremiumFeatures ? (
+                        <Check className={`w-5 h-5 ${isTrial ? 'text-blue-500' : 'text-green-500'}`} />
                       ) : (
                         <X className="w-5 h-5 text-slate-400" />
                       )}
@@ -269,7 +310,7 @@ export function PlanManagement() {
                 onClick={() => setShowUpgradeModal(true)}
                 className="w-full bg-orange-600 hover:bg-orange-700 text-white"
               >
-                Upgrade to Premium - {formattedMonthlyPrice}/month
+                {isTrial ? 'Convert to Premium' : 'Upgrade to Premium'} - {formattedMonthlyPrice}/month
               </Button>
             </div>
           )}
