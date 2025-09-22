@@ -130,6 +130,17 @@ export class PlansService {
         max_active_goals: 5,
         daily_calculator_uses: 3
       }
+    } else if (planType === 'trial') {
+      // Trial users get premium-level limits but with time restriction
+      return {
+        plan_type: 'trial',
+        storage_limit: 10 * 1024 * 1024 * 1024, // 10GB
+        max_file_size: 100 * 1024 * 1024, // 100MB
+        monthly_documents: 10000,
+        monthly_journal_entries: 10000,
+        max_active_goals: 1000,
+        daily_calculator_uses: 1000
+      }
     } else {
       return {
         plan_type: 'premium',
