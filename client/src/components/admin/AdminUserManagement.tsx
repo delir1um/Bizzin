@@ -5,10 +5,14 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
 import { 
   Search, 
   Filter, 
@@ -24,9 +28,18 @@ import {
   DollarSign,
   MoreHorizontal
 } from "lucide-react"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { supabase } from "@/lib/supabase"
 import { format } from "date-fns"
+
+interface UserPlan {
+  user_id: string
+  plan_type: 'free' | 'premium'
+  expires_at: string | null
+  created_at: string
+  status?: string | null
+  cancelled_at?: string | null
+}
 
 interface UserProfile {
   user_id: string
@@ -35,8 +48,12 @@ interface UserProfile {
   last_name: string
   full_name: string
   business_name: string
-  plan_type: 'free' | 'premium'
+  plan_type: 'free' | 'premium' | 'trial'
   plan_status: 'active' | 'cancelled' | 'expired'
+  expires_at: string | null
+  trial_days_remaining: number | null
+  paid_member_duration: number | null
+  is_trial: boolean
   created_at: string
   last_login: string
   is_active: boolean
@@ -46,11 +63,23 @@ interface UserProfile {
   last_activity: string
 }
 
+// Trial editing form schema
+const trialEditSchema = z.object({
+  daysToAdd: z.number().min(-365, 'Cannot subtract more than 365 days').max(365, 'Cannot add more than 365 days'),
+  action: z.enum(['add', 'set_exact']),
+  exactDate: z.string().optional()
+})
+
+type TrialEditFormValues = z.infer<typeof trialEditSchema>
+
 export function AdminUserManagement() {
   const [searchTerm, setSearchTerm] = useState("")
   const [planFilter, setPlanFilter] = useState<string>("all")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null)
+  const [trialEditUser, setTrialEditUser] = useState<UserProfile | null>(null)
+  const [isTrialEditOpen, setIsTrialEditOpen] = useState(false)
+  const queryClient = useQueryClient()
 
   // Fetch users from whatever tables exist
   const { data: users, isLoading, refetch } = useQuery<UserProfile[]>({
@@ -82,8 +111,8 @@ export function AdminUserManagement() {
         
         // Handle potentially missing tables gracefully
         const [plansResult, journalResult, goalsResult, documentsResult] = await Promise.allSettled([
-          // supabase.from('user_plans').select('user_id, plan_type').in('user_id', userIds), // DISABLED TO PREVENT HEAD REQUESTS
-          Promise.resolve({ data: [], error: null }),
+          // Re-enable user_plans query for trial management with status fields
+          supabase.from('user_plans').select('user_id, plan_type, expires_at, created_at, status, cancelled_at').in('user_id', userIds),
           supabase.from('journal_entries').select('user_id').in('user_id', userIds),
           supabase.from('goals').select('user_id, status, title').in('user_id', userIds),
           supabase.from('documents').select('user_id, file_size, name').in('user_id', userIds)
@@ -96,13 +125,13 @@ export function AdminUserManagement() {
 
         console.log('Detailed query results:', {
           plansData: plansData.data?.length || 0,
-          plansError: plansData.error?.message || 'none',
+          plansError: plansData.error ? 'error' : 'none',
           journalData: journalData.data?.length || 0,
-          journalError: journalData.error?.message || 'none',
+          journalError: journalData.error ? 'error' : 'none',
           goalsData: goalsData.data?.length || 0,
-          goalsError: goalsData.error?.message || 'none',
+          goalsError: goalsData.error ? 'error' : 'none',
           documentsData: documentsData.data?.length || 0,
-          documentsError: documentsData.error?.message || 'none'
+          documentsError: documentsData.error ? 'error' : 'none'
         })
 
         console.log('Raw data fetched:', {
@@ -113,17 +142,51 @@ export function AdminUserManagement() {
         })
 
         const users: UserProfile[] = profileData.map((profile: any) => {
-          const userPlan = plansData.data?.find(p => p.user_id === profile.user_id)
-          const journalCount = journalData.data?.filter(j => j.user_id === profile.user_id).length || 0
-          const userGoals = goalsData.data?.filter(g => g.user_id === profile.user_id) || []
-          const completedGoals = userGoals.filter(g => g.status === 'completed').length
-          const userDocs = documentsData.data?.filter(d => d.user_id === profile.user_id) || []
+          const userPlan = plansData.data?.find((p: any) => p.user_id === profile.user_id) as UserPlan | undefined
+          const journalCount = journalData.data?.filter((j: any) => j.user_id === profile.user_id).length || 0
+          const userGoals = goalsData.data?.filter((g: any) => g.user_id === profile.user_id) || []
+          const completedGoals = userGoals.filter((g: any) => g.status === 'completed').length
+          const userDocs = documentsData.data?.filter((d: any) => d.user_id === profile.user_id) || []
           const storageUsed = userDocs.reduce((sum: number, doc: any) => sum + (doc.file_size || 0), 0)
+          
+          // Calculate trial and paid status
+          const now = new Date()
+          const expiresAt = userPlan?.expires_at ? new Date(userPlan.expires_at) : null
+          const planCreatedAt = userPlan?.created_at ? new Date(userPlan.created_at) : null
+          
+          let isTrial = false
+          let trialDaysRemaining = null
+          let paidMemberDuration = null
+          let actualPlanType: 'free' | 'premium' | 'trial' = userPlan?.plan_type || 'free'
+          let planStatus: 'active' | 'cancelled' | 'expired' = 'active'
+          
+          if (userPlan?.plan_type === 'free' && expiresAt) {
+            // This is a trial user (free plan with expiry)
+            isTrial = true
+            actualPlanType = 'trial'
+            if (expiresAt > now) {
+              trialDaysRemaining = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+            } else {
+              trialDaysRemaining = 0 // Expired trial
+              planStatus = 'expired'
+            }
+          } else if (userPlan?.plan_type === 'premium' && planCreatedAt) {
+            // Calculate how long they've been a paid member
+            paidMemberDuration = Math.floor((now.getTime() - planCreatedAt.getTime()) / (1000 * 60 * 60 * 24))
+          }
+          
+          // Determine plan status - check for cancellation
+          if (userPlan?.status === 'cancelled' || userPlan?.cancelled_at) {
+            planStatus = 'cancelled'
+          } else if (expiresAt && expiresAt < now && isTrial) {
+            planStatus = 'expired'
+          }
           
           console.log(`User ${profile.email} stats:`, {
             journal: journalCount,
             goals: { total: userGoals.length, completed: completedGoals },
-            docs: { count: userDocs.length, storage: storageUsed }
+            docs: { count: userDocs.length, storage: storageUsed },
+            plan: { type: actualPlanType, isTrial, trialDaysRemaining, paidMemberDuration }
           })
 
           return {
@@ -133,8 +196,12 @@ export function AdminUserManagement() {
             last_name: profile.last_name || '',
             full_name: profile.full_name || `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.email || 'Unknown',
             business_name: profile.business_name || '',
-            plan_type: (userPlan?.plan_type as 'free' | 'premium') || 'free',
-            plan_status: 'active' as 'active' | 'cancelled' | 'expired',
+            plan_type: actualPlanType,
+            plan_status: planStatus,
+            expires_at: userPlan?.expires_at || null,
+            trial_days_remaining: trialDaysRemaining,
+            paid_member_duration: paidMemberDuration,
+            is_trial: isTrial,
             created_at: profile.created_at,
             last_login: profile.last_login,
             is_active: profile.is_active ?? true,
@@ -173,17 +240,69 @@ export function AdminUserManagement() {
     refetchInterval: 60000 // Refresh every minute
   })
 
+  // Trial days editing mutation
+  const updateTrialDaysMutation = useMutation({
+    mutationFn: async ({ userId, daysToAdd }: { userId: string; daysToAdd: number }) => {
+      // First, get the current user plan to check existing expiry
+      const { data: userPlan, error: fetchError } = await supabase
+        .from('user_plans')
+        .select('expires_at')
+        .eq('user_id', userId)
+        .single()
+      
+      if (fetchError) throw fetchError
+      
+      const now = new Date()
+      let baseDate: Date
+      
+      // Determine base date: use current expiry if still valid, otherwise use now
+      if (userPlan.expires_at) {
+        const currentExpiry = new Date(userPlan.expires_at)
+        baseDate = currentExpiry > now ? currentExpiry : now
+      } else {
+        baseDate = now
+      }
+      
+      // Add the days to the base date
+      const newExpiryDate = new Date(baseDate.getTime() + (daysToAdd * 24 * 60 * 60 * 1000))
+      
+      // Validate the new date (prevent setting expiry too far in past)
+      if (newExpiryDate < new Date(now.getTime() - (365 * 24 * 60 * 60 * 1000))) {
+        throw new Error('Cannot set expiry more than 1 year in the past')
+      }
+      
+      const { error } = await supabase
+        .from('user_plans')
+        .update({ expires_at: newExpiryDate.toISOString() })
+        .eq('user_id', userId)
+      
+      if (error) throw error
+      return { userId, newExpiryDate, baseDate }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] })
+    }
+  })
+
+  const editTrialDays = (user: UserProfile) => {
+    setTrialEditUser(user)
+    setIsTrialEditOpen(true)
+  }
+
   const handleExportUsers = () => {
     if (!users) return
 
     const csvContent = [
-      ['Email', 'Name', 'Business', 'Plan', 'Status', 'Created', 'Last Login', 'Journal Entries', 'Goals', 'Storage (MB)'].join(','),
+      ['Email', 'Name', 'Business', 'Plan', 'Status', 'Trial Days Left', 'Paid Days', 'Expires At', 'Created', 'Last Login', 'Journal Entries', 'Goals', 'Storage (MB)'].join(','),
       ...users.map((user: UserProfile) => [
         user.email,
         user.full_name || `${user.first_name} ${user.last_name}`,
         user.business_name || '',
         user.plan_type,
         user.plan_status,
+        user.trial_days_remaining !== null ? user.trial_days_remaining : '',
+        user.paid_member_duration !== null ? user.paid_member_duration : '',
+        user.expires_at ? format(new Date(user.expires_at), 'yyyy-MM-dd') : '',
         format(new Date(user.created_at), 'yyyy-MM-dd'),
         user.last_login ? format(new Date(user.last_login), 'yyyy-MM-dd') : 'Never',
         user.total_journal_entries,
@@ -227,6 +346,7 @@ export function AdminUserManagement() {
               <SelectContent>
                 <SelectItem value="all">All Plans</SelectItem>
                 <SelectItem value="free">Free</SelectItem>
+                <SelectItem value="trial">Trial</SelectItem>
                 <SelectItem value="premium">Premium</SelectItem>
               </SelectContent>
             </Select>
@@ -266,6 +386,7 @@ export function AdminUserManagement() {
                     <TableHead>User</TableHead>
                     <TableHead>Business</TableHead>
                     <TableHead>Plan</TableHead>
+                    <TableHead>Trial Status</TableHead>
                     <TableHead>Activity</TableHead>
                     <TableHead>Usage</TableHead>
                     <TableHead>Joined</TableHead>
@@ -299,8 +420,12 @@ export function AdminUserManagement() {
                       
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Badge variant={user.plan_type === 'premium' ? 'default' : 'secondary'}>
+                          <Badge variant={
+                            user.plan_type === 'premium' ? 'default' : 
+                            user.plan_type === 'trial' ? 'secondary' : 'outline'
+                          }>
                             {user.plan_type === 'premium' && <Crown className="w-3 h-3 mr-1" />}
+                            {user.plan_type === 'trial' && <Calendar className="w-3 h-3 mr-1" />}
                             {user.plan_type}
                           </Badge>
                           <Badge variant={
@@ -309,6 +434,56 @@ export function AdminUserManagement() {
                           }>
                             {user.plan_status}
                           </Badge>
+                        </div>
+                      </TableCell>
+                      
+                      <TableCell>
+                        <div className="text-sm space-y-1">
+                          {user.is_trial ? (
+                            <>
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">
+                                  {user.trial_days_remaining !== null ? (
+                                    user.trial_days_remaining > 0 ? (
+                                      <span className="text-green-600">{user.trial_days_remaining} days left</span>
+                                    ) : (
+                                      <span className="text-red-600">Expired</span>
+                                    )
+                                  ) : (
+                                    <span className="text-muted-foreground">No expiry</span>
+                                  )}
+                                </span>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="h-6 w-6 p-0"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    editTrialDays(user)
+                                  }}
+                                  data-testid={`button-edit-trial-${user.user_id}`}
+                                >
+                                  <Edit className="w-3 h-3" />
+                                </Button>
+                              </div>
+                              {user.expires_at && (
+                                <div className="text-xs text-muted-foreground">
+                                  Expires: {format(new Date(user.expires_at), 'MMM d, yyyy')}
+                                </div>
+                              )}
+                            </>
+                          ) : user.plan_type === 'premium' && user.paid_member_duration !== null ? (
+                            <div>
+                              <span className="font-medium text-blue-600">
+                                {user.paid_member_duration} days paid
+                              </span>
+                              <div className="text-xs text-muted-foreground">
+                                Since: {format(new Date(user.created_at), 'MMM d, yyyy')}
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">Regular user</span>
+                          )}
                         </div>
                       </TableCell>
                       
@@ -376,6 +551,36 @@ export function AdminUserManagement() {
           )}
         </CardContent>
       </Card>
+
+      {/* Trial Days Edit Dialog */}
+      <TrialEditDialog 
+        user={trialEditUser}
+        isOpen={isTrialEditOpen}
+        onClose={() => {
+          setIsTrialEditOpen(false)
+          setTrialEditUser(null)
+        }}
+        onSubmit={(daysToAdd) => {
+          if (trialEditUser) {
+            updateTrialDaysMutation.mutate(
+              { userId: trialEditUser.user_id, daysToAdd },
+              {
+                onSuccess: ({ newExpiryDate }) => {
+                  setIsTrialEditOpen(false)
+                  setTrialEditUser(null)
+                  // Using a simple alert for now - could be replaced with toast
+                  alert(`Trial updated successfully!\nNew expiry date: ${format(newExpiryDate, 'MMM d, yyyy')}`)
+                },
+                onError: (error) => {
+                  console.error('Error updating trial:', error)
+                  alert('Failed to update trial days. Please try again.')
+                }
+              }
+            )
+          }
+        }}
+        isLoading={updateTrialDaysMutation.isPending}
+      />
     </div>
   )
 }
@@ -765,5 +970,102 @@ function UserDetailView({ user }: { user: UserProfile }) {
         </Card>
       </TabsContent>
     </Tabs>
+  )
+}
+
+// Separate component for trial editing dialog
+function TrialEditDialog({ 
+  user, 
+  isOpen, 
+  onClose, 
+  onSubmit, 
+  isLoading 
+}: {
+  user: UserProfile | null
+  isOpen: boolean
+  onClose: () => void
+  onSubmit: (daysToAdd: number) => void
+  isLoading: boolean
+}) {
+  const form = useForm<TrialEditFormValues>({
+    resolver: zodResolver(trialEditSchema),
+    defaultValues: {
+      daysToAdd: 0,
+      action: 'add'
+    }
+  })
+
+  const handleSubmit = (values: TrialEditFormValues) => {
+    onSubmit(values.daysToAdd)
+  }
+
+  if (!user) return null
+
+  const currentDays = user.trial_days_remaining || 0
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Edit Trial Days</DialogTitle>
+        </DialogHeader>
+        
+        <div className="space-y-4">
+          <div className="text-sm text-muted-foreground">
+            <div><strong>User:</strong> {user.email}</div>
+            <div><strong>Current Trial:</strong> {currentDays} days remaining</div>
+            {user.expires_at && (
+              <div><strong>Expires:</strong> {format(new Date(user.expires_at), 'MMM d, yyyy')}</div>
+            )}
+          </div>
+
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="daysToAdd"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Days to Add/Subtract</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        {...field}
+                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                        data-testid="input-trial-days"
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Enter positive numbers to extend trial, negative to reduce it.
+                      Range: -365 to +365 days.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <DialogFooter>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={onClose}
+                  disabled={isLoading}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={isLoading}
+                  data-testid="button-save-trial"
+                >
+                  {isLoading ? 'Updating...' : 'Update Trial'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }
