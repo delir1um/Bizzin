@@ -13,10 +13,11 @@ export function usePlans() {
     error,
     refetch
   } = useQuery({
-    queryKey: ['usage-status-v2', user?.id], // Force cache refresh
+    queryKey: ['usage-status-v3-force-refresh', user?.id, Date.now()], // Force complete cache invalidation
     queryFn: () => user ? PlansService.getUserUsageStatus(user.id) : null,
     enabled: !!user, // Re-enable now that table exists
-    staleTime: 30000, // 30 seconds
+    staleTime: 0, // Never use stale data
+    gcTime: 0, // Don't cache at all (cacheTime is now gcTime in v5)
     refetchOnWindowFocus: false,
   })
 
