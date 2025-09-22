@@ -2,67 +2,81 @@ import { supabase } from '@/lib/supabase'
 import type { UserPlan, UsageLimits, PlanLimits, UsageStatus, PlanType } from '@/types/plans'
 
 export class PlansService {
-  // Get user's current plan
+  // Environment verification - log Supabase connection details
+  static logEnvironmentInfo() {
+    const url = import.meta.env.VITE_SUPABASE_URL
+    const key = import.meta.env.VITE_SUPABASE_ANON_KEY
+    console.log('🌍 Environment Info:', {
+      url: url,
+      keyPrefix: key ? key.substring(0, 20) + '...' : 'undefined',
+      projectRef: url ? url.split('.')[0].split('://')[1] : 'unknown'
+    })
+  }
+
+  // Get user's current plan using server-side function to bypass replica lag
   static async getUserPlan(userId: string): Promise<UserPlan | null> {
     try {
-      console.log('🔍 Fetching plan for user:', userId)
+      // Log environment info for debugging
+      this.logEnvironmentInfo()
       
-      // Force fresh data by bypassing any potential caching
-      const { data, error } = await supabase
-        .from('user_plans')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
+      console.log('🔍 Fetching plan for user via RPC:', userId)
+      
+      // Use server-side function to get active plan from primary database
+      const { data, error } = await supabase.rpc('get_active_user_plan', {
+        user_uuid: userId
+      })
 
-      console.log('📊 Plan query result (FRESH):', { data, error })
+      console.log('📊 RPC plan query result:', { data, error })
 
       if (error) {
-        console.error('🚨 Plan query error details:', error)
-        // If no plan exists, create a free plan for the user
-        if (error.code === 'PGRST116') {
-          console.log('No plan found for user, creating free plan')
-          try {
-            const { data: newPlan, error: createError } = await supabase
-              .from('user_plans')
-              .insert([{ user_id: userId, plan_type: 'free' }])
-              .select()
-              .single()
+        console.error('🚨 RPC plan query error:', error)
+        console.log('🔄 Falling back to direct query with improved selection logic...')
+        
+        // Fallback to direct query but with better logic
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('user_plans')
+          .select('*')
+          .eq('user_id', userId)
+          .is('cancelled_at', null) // Only active plans
+          .order('plan_type', { ascending: false }) // trial > premium > free
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
 
-            if (createError) {
-              console.log('Error creating user plan, using default:', createError.message)
-              return this.createDefaultFreePlan(userId)
-            }
-
-            return newPlan
-          } catch (insertError) {
-            console.log('Insert failed, using default free plan')
-            return this.createDefaultFreePlan(userId)
-          }
+        console.log('📊 Fallback query result:', { data: fallbackData, error: fallbackError })
+        
+        if (fallbackError) {
+          throw new Error(`Fallback query failed: ${fallbackError.message}`)
         }
         
-        console.log('Plan query error, using default:', error.message)
-        return this.createDefaultFreePlan(userId)
+        return fallbackData
       }
 
-      return data || this.createDefaultFreePlan(userId)
+      // RPC returns an array, take the first result
+      const plan = data?.[0] || null
+      
+      if (!plan) {
+        console.log('⚠️ No active plan found for user:', userId)
+        return null
+      }
+
+      console.log('✅ Found active plan via RPC:', plan.plan_type, 'expires:', plan.expires_at || plan.trial_ends_at)
+      return plan
     } catch (error) {
-      console.log('getUserPlan failed, using default free plan')
-      return this.createDefaultFreePlan(userId)
+      console.error('❌ getUserPlan failed:', error)
+      throw error // Don't silently fall back - surface the error
     }
   }
 
-  // Create a default free plan for users when database is not available
-  static createDefaultFreePlan(userId: string): UserPlan {
-    const now = new Date().toISOString()
-    return {
-      id: `default-${userId}`,
-      user_id: userId,
-      plan_type: 'free',
-
-      created_at: now,
-      updated_at: now
+  // Diagnostic function to check database connection
+  static async diagnosticCheck(): Promise<any> {
+    try {
+      const { data, error } = await supabase.rpc('diagnose_database_node')
+      console.log('🔍 Database diagnostic:', { data, error })
+      return data
+    } catch (error) {
+      console.error('❌ Diagnostic check failed:', error)
+      return null
     }
   }
 
