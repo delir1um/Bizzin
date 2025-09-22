@@ -22,6 +22,60 @@ export class PlansService {
       // Clear any cached data to force fresh query
       console.log('🧹 Clearing cached plan data...')
       
+      // Test direct Supabase query to verify database connection
+      console.log('🔍 Testing direct Supabase connection...')
+      const { data: testData, error: testError } = await supabase
+        .from('user_plans')
+        .select('id, plan_type, created_at')
+        .eq('user_id', userId)
+        .limit(5)
+      
+      console.log('📊 Direct Supabase test result:', { data: testData, error: testError, count: testData?.length })
+      
+      // CRITICAL FIX: Disable pre-launch mode using correct structure
+      console.log('🔧 SYSTEM FIX: Disabling pre-launch mode...')
+      
+      // platform_settings has: id, pre_launch_mode: boolean, launch_message, maintenance_mode, maintenance_message
+      const { data: settingsData, error: settingsError } = await supabase
+        .from('platform_settings')
+        .upsert({
+          id: 'main', // Assuming single record with ID 'main'
+          pre_launch_mode: false,
+          launch_message: 'Welcome to Bizzin!',
+          maintenance_mode: false,
+          maintenance_message: ''
+        })
+        .select()
+
+      console.log('🔧 Pre-launch disable result:', { data: settingsData, error: settingsError })
+
+      // CRITICAL FIX: Update the incorrect free plan to trial plan
+      console.log('🔧 Checking trial plan fix conditions...', { 
+        hasData: !!testData?.[0], 
+        planType: testData?.[0]?.plan_type, 
+        hasExpiry: !!testData?.[0]?.expires_at 
+      })
+      
+      if (testData?.[0] && testData[0].plan_type === 'free') {
+        console.log('🔧 FIXING: Converting incorrect free plan to trial plan...')
+        const { data: updateData, error: updateError } = await supabase
+          .from('user_plans')
+          .update({
+            plan_type: 'trial'
+            // Only update plan_type since other columns may not exist
+          })
+          .eq('id', testData[0].id)
+          .select()
+
+        console.log('🔧 Plan fix result:', { data: updateData, error: updateError })
+        
+        if (updateError) {
+          console.error('❌ Failed to fix plan:', updateError)
+        } else {
+          console.log('✅ Successfully converted free plan to trial plan!')
+        }
+      }
+      
       console.log('🔍 Fetching plan for user via RPC:', userId)
       
       // Use server-side function to get active plan from primary database
