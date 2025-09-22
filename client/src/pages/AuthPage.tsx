@@ -131,7 +131,6 @@ export default function AuthPage() {
           console.error('Supabase signup error details:', {
             message: error.message,
             status: error.status,
-            statusText: error.statusText,
             details: error
           })
           setMessage(`Signup failed: ${error.message}`)
