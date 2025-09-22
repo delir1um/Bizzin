@@ -118,37 +118,56 @@ export default function AuthPage() {
     const { email, password } = data
 
     if (mode === "signUp") {
-      const { data: signUpData, error } = await supabase.auth.signUp({ 
-        email, 
-        password 
-      })
+      try {
+        console.log('Starting signup process for:', email)
+        const { data: signUpData, error } = await supabase.auth.signUp({ 
+          email, 
+          password 
+        })
 
-      if (error) {
-        setMessage(error.message)
-      } else {
-        // Process referral if code provided (from form or URL)
-        const codeToProcess = referralCode || data.referralCode
-        if (codeToProcess && codeToProcess.trim() && signUpData.user) {
-          try {
-            // Validate the code first
-            const isValid = await ReferralService.validateReferralCode(codeToProcess)
-            if (isValid) {
-              const success = await ReferralService.processReferralSignup(codeToProcess, signUpData.user.id)
-              if (success) {
-                setMessage("Account created! Check your email for confirmation. Welcome bonus applied - you'll get 30 days free when you upgrade!")
+        console.log('Signup response:', { data: signUpData, error })
+
+        if (error) {
+          console.error('Supabase signup error details:', {
+            message: error.message,
+            status: error.status,
+            statusText: error.statusText,
+            details: error
+          })
+          setMessage(`Signup failed: ${error.message}`)
+          return
+        }
+
+        if (signUpData.user) {
+          // Process referral if code provided (from form or URL)
+          const codeToProcess = referralCode || data.referralCode
+          if (codeToProcess && codeToProcess.trim()) {
+            try {
+              // Validate the code first
+              const isValid = await ReferralService.validateReferralCode(codeToProcess)
+              if (isValid) {
+                const success = await ReferralService.processReferralSignup(codeToProcess, signUpData.user.id)
+                if (success) {
+                  setMessage("Account created! Check your email for confirmation. Welcome bonus applied - you'll get 30 days free when you upgrade!")
+                } else {
+                  setMessage("Account created! Check your email for confirmation. (Referral could not be processed)")
+                }
               } else {
-                setMessage("Account created! Check your email for confirmation. (Referral could not be processed)")
+                setMessage("Account created! Check your email for confirmation. (Referral code not found)")
               }
-            } else {
-              setMessage("Account created! Check your email for confirmation. (Referral code not found)")
+            } catch (referralError) {
+              console.error('Error processing referral:', referralError)
+              setMessage("Account created! Check your email for confirmation.")
             }
-          } catch (referralError) {
-            console.error('Error processing referral:', referralError)
-            setMessage("Account created! Check your email for confirmation.")
+          } else {
+            setMessage("Account created! Check your email for confirmation. Your 14-day free trial will begin when you confirm your email!")
           }
         } else {
           setMessage("Check your email for confirmation.")
         }
+      } catch (signupError) {
+        console.error('Error during signup process:', signupError)
+        setMessage("Signup failed. Please try again or contact support if the problem persists.")
       }
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password })

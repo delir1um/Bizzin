@@ -56,9 +56,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               .from('user_profiles')
               .select('user_id')
               .eq('user_id', session.user.id)
-              .single()
+              .maybeSingle()
             
-            if (profileCheckError && profileCheckError.code === 'PGRST116') {
+            if (!existingProfile && !profileCheckError) {
               // Profile doesn't exist, create it
               console.log('Creating user profile for new user:', session.user.id)
               const { error: createProfileError } = await supabase
@@ -89,9 +89,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               .from('user_plans')
               .select('user_id')
               .eq('user_id', session.user.id)
-              .single()
+              .maybeSingle()
             
-            if (planCheckError && planCheckError.code === 'PGRST116') {
+            if (!existingPlan && !planCheckError) {
               // Plan doesn't exist, create it with 14-day trial
               console.log('Creating user plan with 14-day trial for new user:', session.user.id)
               const trialExpiry = new Date()
