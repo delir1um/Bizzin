@@ -10,9 +10,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { useAuth } from "@/hooks/AuthProvider"
 import { supabase } from "@/lib/supabase"
-import { User, Settings, Mail, Phone, MapPin, Calendar, Save, AlertCircle, CheckCircle, Camera, Upload, Trash2, Crown, Users, Bell } from "lucide-react"
+import { User, Settings, Mail, Phone, MapPin, Calendar, Save, AlertCircle, CheckCircle, Camera, Upload, Trash2, Crown, Users, Bell, CreditCard } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PlanManagement } from "@/components/profile/PlanManagement"
+import { BillingManagement } from "@/components/profile/BillingManagement"
 import { ReferralDashboard } from "@/components/referrals/ReferralDashboard"
 import { NotificationManagement } from "@/components/profile/NotificationManagement"
 import { motion, AnimatePresence } from "framer-motion"
@@ -252,7 +253,7 @@ export default function ProfilePage() {
       </motion.div>
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full max-w-2xl grid-cols-4">
+        <TabsList className="grid w-full max-w-3xl grid-cols-5">
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <Settings className="w-4 h-4" />
             Profile
@@ -260,6 +261,10 @@ export default function ProfilePage() {
           <TabsTrigger value="plan" className="flex items-center gap-2">
             <Crown className="w-4 h-4" />
             Plan
+          </TabsTrigger>
+          <TabsTrigger value="billing" className="flex items-center gap-2">
+            <CreditCard className="w-4 h-4" />
+            Billing
           </TabsTrigger>
           <TabsTrigger value="referrals" className="flex items-center gap-2">
             <Users className="w-4 h-4" />
@@ -566,6 +571,10 @@ export default function ProfilePage() {
 
         <TabsContent value="plan" className="space-y-6">
           <PlanManagement />
+        </TabsContent>
+
+        <TabsContent value="billing" className="space-y-6">
+          <BillingManagement />
         </TabsContent>
 
         <TabsContent value="referrals" className="space-y-6">

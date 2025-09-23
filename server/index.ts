@@ -70,6 +70,14 @@ app.use((req, res, next) => {
   const gracePeriodRoutes = await import('./routes/grace-period.js');
   app.use('/api/grace-period', gracePeriodRoutes.default);
   
+  // Add Plans API routes - user billing and subscription management
+  const plansRoutes = await import('./routes/plans.js');
+  app.use('/api/plans', plansRoutes.default);
+  
+  // Add Payment API routes - user payment history and management
+  const paymentRoutes = await import('./routes/payment.js');
+  app.use('/api/payment', paymentRoutes.default);
+  
   const server = await registerRoutes(app);
   
   // Initialize single email system - SimpleEmailScheduler (production ready)
