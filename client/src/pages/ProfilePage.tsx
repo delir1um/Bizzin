@@ -9,7 +9,9 @@ import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { useAuth } from "@/hooks/AuthProvider"
+import { useUserProfile } from "@/hooks/useUserProfile"
 import { supabase } from "@/lib/supabase"
+import { queryClient } from "@/lib/queryClient"
 import { User, Settings, Mail, Phone, MapPin, Calendar, Save, AlertCircle, CheckCircle, Camera, Upload, Trash2, Crown, Users, Bell, CreditCard } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PlanManagement } from "@/components/profile/PlanManagement"
@@ -26,7 +28,6 @@ const profileSchema = z.object({
   full_name: z.string().min(1, "Full name is required").max(100, "Full name must be less than 100 characters"),
   business_name: z.string().max(100, "Business name must be less than 100 characters").optional(),
   phone: z.string().max(20, "Phone number must be less than 20 characters").optional(),
-  location: z.string().max(100, "Location must be less than 100 characters").optional(),
   bio: z.string().max(500, "Bio must be less than 500 characters").optional(),
 })
 
@@ -34,6 +35,7 @@ type ProfileFormData = z.infer<typeof profileSchema>
 
 export default function ProfilePage() {
   const { user } = useAuth()
+  const profile = useUserProfile()
   const { isTrial, isPremium, isLoading: isPlanLoading } = usePlans()
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -50,20 +52,18 @@ export default function ProfilePage() {
     resolver: zodResolver(profileSchema),
   })
 
-  // Load existing profile data
+  // Load existing profile data from database
   useEffect(() => {
-    if (user?.user_metadata) {
-      const metadata = user.user_metadata
-      setValue('first_name', metadata.first_name || '')
-      setValue('last_name', metadata.last_name || '')
-      setValue('full_name', metadata.full_name || '')
-      setValue('business_name', metadata.business_name || '')
-      setValue('phone', metadata.phone || '')
-      setValue('location', metadata.location || '')
-      setValue('bio', metadata.bio || '')
-      setAvatarUrl(metadata.avatar_url || null)
+    if (profile.first_name !== undefined) { // Only update when profile data is loaded
+      setValue('first_name', profile.first_name || '')
+      setValue('last_name', profile.last_name || '')
+      setValue('full_name', profile.full_name || '')
+      setValue('business_name', profile.business_name || '')
+      setValue('phone', profile.phone || '')
+      setValue('bio', profile.bio || '')
+      setAvatarUrl(profile.avatar_url || null)
     }
-  }, [user, setValue])
+  }, [profile, setValue])
 
   // Handle file upload
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,15 +104,19 @@ export default function ProfilePage() {
 
       const avatarUrl = data.publicUrl
 
-      // Update user metadata with avatar URL
-      const { error: updateError } = await supabase.auth.updateUser({
-        data: {
-          ...user.user_metadata,
-          avatar_url: avatarUrl
-        }
-      })
+      // Update user_profiles table with avatar URL
+      const { error: updateError } = await supabase
+        .from('user_profiles')
+        .update({ 
+          avatar_url: avatarUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id)
 
       if (updateError) throw updateError
+
+      // Invalidate the user profile cache to trigger a refetch
+      queryClient.invalidateQueries({ queryKey: ['user-profile', user.id] })
 
       setAvatarUrl(avatarUrl)
       setMessage({ type: 'success', text: 'Profile picture updated successfully!' })
@@ -129,21 +133,25 @@ export default function ProfilePage() {
 
   // Handle avatar removal
   const handleRemoveAvatar = async () => {
-    if (!user || !user.user_metadata?.avatar_url) return
+    if (!user || !profile.avatar_url) return
 
     setUploading(true)
     setMessage(null)
 
     try {
-      // Update user metadata to remove avatar URL
-      const { error } = await supabase.auth.updateUser({
-        data: {
-          ...user.user_metadata,
-          avatar_url: null
-        }
-      })
+      // Update user_profiles table to remove avatar URL
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({ 
+          avatar_url: null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id)
 
       if (error) throw error
+
+      // Invalidate the user profile cache to trigger a refetch
+      queryClient.invalidateQueries({ queryKey: ['user-profile', user.id] })
 
       setAvatarUrl(null)
       setMessage({ type: 'success', text: 'Profile picture removed successfully!' })
@@ -165,20 +173,25 @@ export default function ProfilePage() {
     setMessage(null)
     
     try {
-      const { error } = await supabase.auth.updateUser({
-        data: {
+      // Update user_profiles table in database
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({
           first_name: data.first_name,
           last_name: data.last_name || '',
           full_name: data.full_name,
           business_name: data.business_name || '',
           phone: data.phone || '',
-          location: data.location || '',
           bio: data.bio || '',
-          avatar_url: avatarUrl || null, // Preserve existing avatar URL
-        }
-      })
+          avatar_url: avatarUrl || null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id)
 
       if (error) throw error
+
+      // Invalidate the user profile cache to trigger a refetch
+      queryClient.invalidateQueries({ queryKey: ['user-profile', user.id] })
 
       setMessage({ type: 'success', text: 'Profile updated successfully!' })
       
@@ -367,12 +380,6 @@ export default function ProfilePage() {
                   })}
                 </span>
               </div>
-              {user.user_metadata?.location && (
-                <div className="flex items-center gap-2 text-sm">
-                  <MapPin className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">{user.user_metadata.location}</span>
-                </div>
-              )}
               {user.user_metadata?.phone && (
                 <div className="flex items-center gap-2 text-sm">
                   <Phone className="w-4 h-4 text-muted-foreground" />
@@ -517,17 +524,6 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="location">Location</Label>
-                  <Input
-                    id="location"
-                    {...register('location')}
-                    placeholder="City, Country"
-                  />
-                  {errors.location && (
-                    <p className="text-sm text-red-600">{errors.location.message}</p>
-                  )}
-                </div>
               </div>
 
               <Separator />
