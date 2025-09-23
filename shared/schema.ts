@@ -36,6 +36,12 @@ export type UserProfile = {
   daily_email?: boolean;
   daily_email_time?: string; // HH:MM format in user's timezone
   timezone?: string;
+  // Admin suspension fields
+  is_suspended?: boolean;
+  suspended_at?: string;
+  suspended_by?: string; // admin user_id who suspended the account
+  suspension_reason?: string;
+  suspension_expires_at?: string; // optional auto-unsuspend date
 };
 
 // Daily Email Settings Table
@@ -104,6 +110,29 @@ export type AdminUser = {
   user_id: string;
   email: string;
   is_admin: boolean;
+  created_at: string;
+};
+
+// Admin Audit Log Table - tracks all admin actions
+export type AdminAuditLog = {
+  id: string;
+  admin_user_id: string; // who performed the action
+  target_user_id: string; // who was affected by the action
+  action_type: 'suspend_account' | 'unsuspend_account' | 'reset_password' | 'send_email' | 'edit_profile' | 'update_trial_days' | 'delete_account';
+  action_details: Record<string, any>; // JSON object with action-specific data
+  ip_address?: string;
+  user_agent?: string;
+  created_at: string;
+};
+
+// User Activity Log Table - tracks user actions for admin review
+export type UserActivityLog = {
+  id: string;
+  user_id: string;
+  action_type: 'login' | 'logout' | 'profile_update' | 'password_change' | 'journal_entry' | 'goal_created' | 'document_upload' | 'password_reset_request';
+  details?: Record<string, any>; // JSON object with action-specific data
+  ip_address?: string;
+  user_agent?: string;
   created_at: string;
 };
 
@@ -434,6 +463,49 @@ export const updateCalculatorHistorySchema = z.object({
   tags: z.array(z.string()).optional(),
 });
 
+// Admin action schemas
+export const suspendUserSchema = z.object({
+  reason: z.string().min(1).max(500),
+  expires_at: z.string().optional(), // ISO date string for auto-unsuspend
+});
+
+export const createAdminAuditLogSchema = z.object({
+  admin_user_id: z.string().uuid(),
+  target_user_id: z.string().uuid(),
+  action_type: z.enum(['suspend_account', 'unsuspend_account', 'reset_password', 'send_email', 'edit_profile', 'update_trial_days', 'delete_account']),
+  action_details: z.record(z.any()),
+  ip_address: z.string().optional(),
+  user_agent: z.string().optional(),
+});
+
+export const createUserActivityLogSchema = z.object({
+  user_id: z.string().uuid(),
+  action_type: z.enum(['login', 'logout', 'profile_update', 'password_change', 'journal_entry', 'goal_created', 'document_upload', 'password_reset_request']),
+  details: z.record(z.any()).optional(),
+  ip_address: z.string().optional(),
+  user_agent: z.string().optional(),
+});
+
+export const sendAdminEmailSchema = z.object({
+  subject: z.string().min(1).max(200),
+  message: z.string().min(1),
+  email_type: z.enum(['notification', 'warning', 'account_update', 'system_message']).default('notification'),
+});
+
+export const updateUserProfileAdminSchema = z.object({
+  first_name: z.string().optional(),
+  last_name: z.string().optional(),
+  full_name: z.string().optional(),
+  business_name: z.string().optional(),
+  business_type: z.string().optional(),
+  business_size: z.string().optional(),
+  phone: z.string().optional(),
+  bio: z.string().optional(),
+  is_active: z.boolean().optional(),
+  email_notifications: z.boolean().optional(),
+  daily_email: z.boolean().optional(),
+});
+
 // Type inference from schemas
 export type CreateUserProfile = z.infer<typeof createUserProfileSchema>;
 export type CreateJournalEntry = z.infer<typeof createJournalEntrySchema>;
@@ -447,3 +519,8 @@ export type CreatePodcastEpisode = z.infer<typeof createPodcastEpisodeSchema>;
 export type UpdatePodcastEpisode = z.infer<typeof updatePodcastEpisodeSchema>;
 export type CreateCalculatorHistory = z.infer<typeof createCalculatorHistorySchema>;
 export type UpdateCalculatorHistory = z.infer<typeof updateCalculatorHistorySchema>;
+export type SuspendUser = z.infer<typeof suspendUserSchema>;
+export type CreateAdminAuditLog = z.infer<typeof createAdminAuditLogSchema>;
+export type CreateUserActivityLog = z.infer<typeof createUserActivityLogSchema>;
+export type SendAdminEmail = z.infer<typeof sendAdminEmailSchema>;
+export type UpdateUserProfileAdmin = z.infer<typeof updateUserProfileAdminSchema>;
