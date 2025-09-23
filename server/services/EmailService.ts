@@ -64,7 +64,8 @@ export class EmailService {
         { name: 'signup-confirmation', file: 'signup-confirmation.hbs' },
         { name: 'password-reset', file: 'password-reset.hbs' },
         { name: 'base-system', file: 'base-system-email.hbs' },
-        { name: 'payment-failure', file: 'payment-failure.hbs' }
+        { name: 'payment-failure', file: 'payment-failure.hbs' },
+        { name: 'payment-success', file: 'payment-success.hbs' }
       ];
 
       for (const template of templates) {
@@ -1585,6 +1586,85 @@ Visit Bizzin to add your journal entry and update your goals!
       return result;
     } catch (error: any) {
       console.error(`❌ Failed to send payment failure email to ${userEmail}:`, error.message);
+      return false;
+    }
+  }
+
+  // Send payment success confirmation with subscription details
+  async sendPaymentSuccessEmail(
+    userEmail: string,
+    userName: string,
+    amount: number,
+    currency: string = 'ZAR',
+    transactionId: string,
+    paymentDate: string,
+    nextBillingDate: string,
+    paymentMethod: string = 'Card',
+    wasSuspended: boolean = false
+  ): Promise<boolean> {
+    try {
+      const templateData = {
+        subject: '✅ Payment Successful - Welcome Back! | Bizzin',
+        user_name: userName,
+        amount: amount.toFixed(2),
+        currency: currency,
+        transaction_id: transactionId,
+        payment_date: new Date(paymentDate).toLocaleDateString('en-US', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        }),
+        next_billing_date: new Date(nextBillingDate).toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        }),
+        payment_method: paymentMethod,
+        was_suspended: wasSuspended,
+        dashboard_url: process.env.NODE_ENV === 'production' 
+          ? 'https://bizzin.co.za/dashboard' 
+          : 'http://localhost:5000/dashboard',
+        unsubscribe_url: process.env.NODE_ENV === 'production' 
+          ? 'https://bizzin.co.za/profile?tab=notifications' 
+          : 'http://localhost:5000/profile?tab=notifications'
+      };
+
+      console.log(`📧 Sending payment success email to ${userEmail} (${currency} ${amount.toFixed(2)})`);
+      
+      const result = await this.sendSystemEmail('payment-success', userEmail, templateData);
+      
+      if (result) {
+        console.log(`✅ Payment success email sent successfully to ${userEmail}`);
+        
+        // Log to payment transactions for audit trail
+        try {
+          await supabase
+            .from('payment_transactions')
+            .insert({
+              user_id: null, // Will be updated when we have user context
+              transaction_id: `email_success_${Date.now()}`,
+              amount: amount,
+              currency: currency,
+              status: 'email_sent',
+              paystack_reference: `payment_success_notification_${Date.now()}`,
+              metadata: {
+                type: 'payment_success_email',
+                recipient: userEmail,
+                original_transaction_id: transactionId,
+                was_suspended: wasSuspended,
+                next_billing_date: nextBillingDate
+              }
+            });
+        } catch (auditError) {
+          console.warn('⚠️ Failed to log payment success email to audit trail:', auditError);
+          // Don't fail the email send because of audit logging issues
+        }
+      }
+      
+      return result;
+    } catch (error: any) {
+      console.error(`❌ Failed to send payment success email to ${userEmail}:`, error.message);
       return false;
     }
   }

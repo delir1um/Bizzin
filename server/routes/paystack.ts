@@ -3,6 +3,7 @@ import express from 'express';
 import crypto from 'crypto';
 import { supabase } from '../lib/supabase.js';
 import type { PaymentTransaction, PaymentStatus } from '../../client/src/types/plans.js';
+import { EmailService } from '../services/EmailService.js';
 
 const router = express.Router();
 
@@ -280,8 +281,47 @@ const handleChargeSuccess = async (data: any) => {
     return;
   }
 
+  // Check if user was previously suspended
+  const { data: userPlan } = await supabase
+    .from('user_plans')
+    .select('payment_status')
+    .eq('user_id', userId)
+    .single();
+  
+  const wasSuspended = userPlan?.payment_status === 'suspended' || userPlan?.payment_status === 'grace_period';
+
   await recordPaymentTransaction(userId, data, 'success');
   await updateUserPlanStatus(userId, 'active', data);
+  
+  // Send payment success email
+  try {
+    const { data: userProfile } = await supabase
+      .from('user_profiles')
+      .select('email, full_name')
+      .eq('user_id', userId)
+      .single();
+    
+    if (userProfile?.email) {
+      const emailService = new EmailService();
+      const amount = data.amount / 100; // Convert from kobo to naira
+      const nextBillingDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days from now
+      
+      await emailService.sendPaymentSuccessEmail(
+        userProfile.email,
+        userProfile.full_name || 'Valued Customer',
+        amount,
+        data.currency || 'ZAR',
+        data.reference,
+        new Date().toISOString(),
+        nextBillingDate,
+        data.channel || 'Card',
+        wasSuspended
+      );
+    }
+  } catch (emailError) {
+    console.error('Failed to send payment success email:', emailError);
+    // Don't fail the webhook processing because of email issues
+  }
   
   console.log(`✅ Processed successful charge for user ${userId}: ${data.reference}`);
 };
@@ -326,8 +366,47 @@ const handleInvoiceEvent = async (data: any) => {
   }
 
   if (data.status === 'success') {
+    // Check if user was previously suspended
+    const { data: userPlan } = await supabase
+      .from('user_plans')
+      .select('payment_status')
+      .eq('user_id', userId)
+      .single();
+    
+    const wasSuspended = userPlan?.payment_status === 'suspended' || userPlan?.payment_status === 'grace_period';
+
     await recordPaymentTransaction(userId, data, 'success');
     await updateUserPlanStatus(userId, 'active', data);
+    
+    // Send payment success email
+    try {
+      const { data: userProfile } = await supabase
+        .from('user_profiles')
+        .select('email, full_name')
+        .eq('user_id', userId)
+        .single();
+      
+      if (userProfile?.email) {
+        const emailService = new EmailService();
+        const amount = data.amount / 100; // Convert from kobo to naira
+        const nextBillingDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days from now
+        
+        await emailService.sendPaymentSuccessEmail(
+          userProfile.email,
+          userProfile.full_name || 'Valued Customer',
+          amount,
+          data.currency || 'ZAR',
+          data.reference,
+          new Date().toISOString(),
+          nextBillingDate,
+          data.channel || 'Card',
+          wasSuspended
+        );
+      }
+    } catch (emailError) {
+      console.error('Failed to send payment success email:', emailError);
+      // Don't fail the webhook processing because of email issues
+    }
   } else if (data.status === 'failed') {
     await recordPaymentTransaction(userId, data, 'failed');
     await updateUserPlanStatus(userId, 'failed', data);
