@@ -1,8 +1,8 @@
 // Supabase client for server-side operations
 import { createClient } from '@supabase/supabase-js';
 
-// PRODUCTION: Require proper server environment variables - NO FALLBACKS
-const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL!;
+// PRODUCTION FIX: Force correct database connection
+const supabaseUrl = process.env.VITE_SUPABASE_URL!; // Use same as frontend
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 if (!supabaseUrl) {
