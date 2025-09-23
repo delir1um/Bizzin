@@ -29,6 +29,10 @@ export function usePlans() {
                   (usageStatus?.user_plan?.plan_type === 'free' && 
                    usageStatus?.user_plan?.expires_at && 
                    new Date(usageStatus?.user_plan?.expires_at) > new Date())
+
+  // NEW: Detect expired trials - when usageStatus exists but user_plan is null
+  // This means they had a trial that expired and now have no active plan
+  const isExpiredTrial = usageStatus && !usageStatus.user_plan
   
   // Trial users get premium features with time limit
   const hasPremiumFeatures = isPremium || isTrial
@@ -73,6 +77,7 @@ export function usePlans() {
     isPremium,
     isFree,
     isTrial,
+    isExpiredTrial,
     hasPremiumFeatures,
     canUploadDocument,
     canCreateJournalEntry,

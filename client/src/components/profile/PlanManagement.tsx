@@ -55,7 +55,7 @@ export function PlanManagement() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [showFreeLimits, setShowFreeLimits] = useState(false)
   const { user } = useAuth()
-  const { usageStatus, isPremium, isFree, isTrial, hasPremiumFeatures, isLoading, refetch } = usePlans()
+  const { usageStatus, isPremium, isFree, isTrial, isExpiredTrial, hasPremiumFeatures, isLoading, refetch } = usePlans()
   
   // Get ZAR pricing for display
   const monthlyPrice = PaystackService.getSubscriptionPrice('monthly')
@@ -129,14 +129,16 @@ export function PlanManagement() {
               </div>
               <div>
                 <CardTitle className="text-slate-900 dark:text-white">
-                  Current Plan: {isPremium ? 'Premium' : isTrial ? 'Premium Trial' : 'Free'}
+                  Current Plan: {isPremium ? 'Premium' : isTrial ? 'Premium Trial' : isExpiredTrial ? 'Expired Trial' : 'Free'}
                 </CardTitle>
                 <p className="text-sm text-slate-600 dark:text-slate-300">
                   {isPremium 
                     ? 'You have access to all premium features'
                     : isTrial 
                       ? `Trial expires in ${remainingTrialDays} day${remainingTrialDays !== 1 ? 's' : ''} - enjoy premium features!`
-                      : 'Upgrade to unlock unlimited access'
+                      : isExpiredTrial
+                        ? 'Your trial has expired. Upgrade to continue accessing premium features.'
+                        : 'Upgrade to unlock unlimited access'
                   }
                 </p>
               </div>
@@ -147,10 +149,12 @@ export function PlanManagement() {
                 ? isTrial 
                   ? "bg-blue-500 hover:bg-blue-600 text-white"
                   : "bg-orange-500 hover:bg-orange-600 text-white" 
-                : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
+                : isExpiredTrial
+                  ? "bg-red-500 text-white"
+                  : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
               }
             >
-              {isPremium ? 'Premium' : isTrial ? 'Trial' : 'Free'}
+              {isPremium ? 'Premium' : isTrial ? 'Trial' : isExpiredTrial ? 'Expired' : 'Free'}
             </Badge>
           </div>
         </CardHeader>
