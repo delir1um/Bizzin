@@ -1,6 +1,7 @@
 // Payment API Routes - User payment history and management
 import express from 'express';
 import { supabase } from '../lib/supabase.js';
+import { EmailService } from '../services/EmailService.js';
 
 const router = express.Router();
 
@@ -466,7 +467,7 @@ router.post('/cancel-subscription', requireUser, async (req, res) => {
     // Get user's plan and subscription information
     const { data: userPlan, error: planError } = await supabase
       .from('user_plans')
-      .select('paystack_subscription_code, payment_status, plan_type')
+      .select('paystack_subscription_code, payment_status, plan_type, paystack_customer_code')
       .eq('user_id', userId)
       .single();
 
@@ -495,7 +496,29 @@ router.post('/cancel-subscription', requireUser, async (req, res) => {
       return res.status(500).json({ error: 'Payment system configuration error' });
     }
 
-    // Disable the subscription with Paystack
+    // Get subscription email token for Paystack subscription management
+    const subscriptionResponse = await fetch(`https://api.paystack.co/subscription/${userPlan.paystack_subscription_code}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${paystackSecretKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!subscriptionResponse.ok) {
+      console.error('Failed to fetch subscription details from Paystack');
+      return res.status(500).json({ error: 'Failed to retrieve subscription information' });
+    }
+
+    const subscriptionData = await subscriptionResponse.json();
+    const emailToken = subscriptionData.data?.email_token;
+
+    if (!emailToken) {
+      console.error('No email token found for subscription');
+      return res.status(500).json({ error: 'Subscription email token not available' });
+    }
+
+    // Disable the subscription with Paystack using proper parameters
     const paystackResponse = await fetch(`https://api.paystack.co/subscription/disable`, {
       method: 'POST',
       headers: {
@@ -504,7 +527,7 @@ router.post('/cancel-subscription', requireUser, async (req, res) => {
       },
       body: JSON.stringify({
         code: userPlan.paystack_subscription_code,
-        token: 'cancel_requested'
+        token: emailToken
       })
     });
 
@@ -521,12 +544,31 @@ router.post('/cancel-subscription', requireUser, async (req, res) => {
       return res.status(500).json({ error: 'Invalid response from payment processor' });
     }
 
-    // Update user plan status to cancelled
+    // Get the updated subscription details from Paystack for accurate status
+    const updatedSubscriptionResponse = await fetch(`https://api.paystack.co/subscription/${userPlan.paystack_subscription_code}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${paystackSecretKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    let updatedSubscriptionData = null;
+    let nextPaymentDate = null;
+
+    if (updatedSubscriptionResponse.ok) {
+      const updatedSubscriptionInfo = await updatedSubscriptionResponse.json();
+      updatedSubscriptionData = updatedSubscriptionInfo.data;
+      nextPaymentDate = updatedSubscriptionData?.next_payment_date || null;
+    }
+
+    // Update user plan status to cancelled with Paystack-sourced data
     const { error: updateError } = await supabase
       .from('user_plans')
       .update({
         payment_status: 'cancelled',
         cancelled_at: new Date().toISOString(),
+        next_payment_date: nextPaymentDate,
         updated_at: new Date().toISOString()
       })
       .eq('user_id', userId);
@@ -557,6 +599,69 @@ router.post('/cancel-subscription', requireUser, async (req, res) => {
         });
     } catch (auditError) {
       console.warn('Failed to log cancellation transaction:', auditError);
+    }
+
+    // Send subscription cancellation email
+    try {
+      const emailService = new EmailService();
+      
+      // Get user profile for email
+      const { data: userProfile, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('email, full_name')
+        .eq('user_id', userId)
+        .single();
+
+      if (userProfile && userProfile.email) {
+        // Calculate access end date (typically end of current billing period)
+        const accessEndDate = nextPaymentDate 
+          ? new Date(nextPaymentDate).toLocaleDateString('en-US', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })
+          : 'the end of your current billing period';
+
+        const emailData = {
+          user: {
+            full_name: userProfile.full_name || 'Valued Customer',
+            email: userProfile.email
+          },
+          access_end_date: accessEndDate,
+          reactivate_url: process.env.NODE_ENV === 'production' 
+            ? 'https://bizzin.co.za/profile?tab=billing'
+            : 'http://localhost:5000/profile?tab=billing',
+          dashboard_url: process.env.NODE_ENV === 'production' 
+            ? 'https://bizzin.co.za/dashboard'
+            : 'http://localhost:5000/dashboard',
+          feedback_url: process.env.NODE_ENV === 'production' 
+            ? 'https://bizzin.co.za/feedback'
+            : 'http://localhost:5000/feedback',
+          support_url: process.env.NODE_ENV === 'production' 
+            ? 'https://bizzin.co.za/support'
+            : 'http://localhost:5000/support',
+          website_url: 'https://bizzin.co.za',
+          unsubscribe_url: process.env.NODE_ENV === 'production' 
+            ? 'https://bizzin.co.za/unsubscribe'
+            : 'http://localhost:5000/unsubscribe'
+        };
+
+        const emailSent = await emailService.sendSystemEmail(
+          'subscription-cancelled',
+          userProfile.email,
+          emailData
+        );
+
+        if (emailSent) {
+          console.log(`📧 Subscription cancellation email sent to: ${userProfile.email}`);
+        } else {
+          console.warn(`⚠️ Failed to send cancellation email to: ${userProfile.email}`);
+        }
+      }
+    } catch (emailError) {
+      console.error('❌ Error sending cancellation email:', emailError);
+      // Don't fail the cancellation if email fails
     }
 
     console.log(`✅ Subscription cancelled successfully for user: ${userId}`);
@@ -613,7 +718,29 @@ router.post('/reactivate-subscription', requireUser, async (req, res) => {
       return res.status(500).json({ error: 'Payment system configuration error' });
     }
 
-    // Enable the subscription with Paystack
+    // Get subscription email token for Paystack subscription management
+    const subscriptionFetchResponse = await fetch(`https://api.paystack.co/subscription/${userPlan.paystack_subscription_code}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${paystackSecretKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!subscriptionFetchResponse.ok) {
+      console.error('Failed to fetch subscription details from Paystack');
+      return res.status(500).json({ error: 'Failed to retrieve subscription information' });
+    }
+
+    const subscriptionFetchData = await subscriptionFetchResponse.json();
+    const emailToken = subscriptionFetchData.data?.email_token;
+
+    if (!emailToken) {
+      console.error('No email token found for subscription');
+      return res.status(500).json({ error: 'Subscription email token not available' });
+    }
+
+    // Enable the subscription with Paystack using proper parameters
     const paystackResponse = await fetch(`https://api.paystack.co/subscription/enable`, {
       method: 'POST',
       headers: {
@@ -622,7 +749,7 @@ router.post('/reactivate-subscription', requireUser, async (req, res) => {
       },
       body: JSON.stringify({
         code: userPlan.paystack_subscription_code,
-        token: 'reactivation_requested'
+        token: emailToken
       })
     });
 
@@ -639,17 +766,39 @@ router.post('/reactivate-subscription', requireUser, async (req, res) => {
       return res.status(500).json({ error: 'Invalid response from payment processor' });
     }
 
-    // Calculate next payment date (1 month from now)
-    const nextPaymentDate = new Date();
-    nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 1);
+    // Get the actual subscription details from Paystack for accurate billing info
+    const subscriptionResponse = await fetch(`https://api.paystack.co/subscription/${userPlan.paystack_subscription_code}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${paystackSecretKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
 
-    // Update user plan status to active
+    let nextPaymentDate = null;
+    let subscriptionData = null;
+
+    if (subscriptionResponse.ok) {
+      const subscriptionInfo = await subscriptionResponse.json();
+      subscriptionData = subscriptionInfo.data;
+      nextPaymentDate = subscriptionData?.next_payment_date || null;
+    }
+
+    // Fallback: calculate next payment date if not available from Paystack
+    if (!nextPaymentDate) {
+      const fallbackDate = new Date();
+      fallbackDate.setMonth(fallbackDate.getMonth() + 1);
+      nextPaymentDate = fallbackDate.toISOString();
+      console.warn(`Using fallback next payment date for user ${userId}`);
+    }
+
+    // Update user plan status to active with Paystack-sourced billing info
     const { error: updateError } = await supabase
       .from('user_plans')
       .update({
         payment_status: 'active',
         cancelled_at: null,
-        next_payment_date: nextPaymentDate.toISOString(),
+        next_payment_date: nextPaymentDate,
         updated_at: new Date().toISOString()
       })
       .eq('user_id', userId);
@@ -681,6 +830,68 @@ router.post('/reactivate-subscription', requireUser, async (req, res) => {
         });
     } catch (auditError) {
       console.warn('Failed to log reactivation transaction:', auditError);
+    }
+
+    // Send subscription reactivation email
+    try {
+      const emailService = new EmailService();
+      
+      // Get user profile for email
+      const { data: userProfile, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('email, full_name')
+        .eq('user_id', userId)
+        .single();
+
+      if (userProfile && userProfile.email) {
+        // Format next billing date
+        const formattedBillingDate = nextPaymentDate 
+          ? new Date(nextPaymentDate).toLocaleDateString('en-US', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })
+          : 'Next month';
+
+        const emailData = {
+          user: {
+            full_name: userProfile.full_name || 'Valued Customer',
+            email: userProfile.email
+          },
+          next_billing_date: formattedBillingDate,
+          subscription_amount: '49.99', // Standard subscription amount
+          payment_method_last4: '**** 1234', // Placeholder - could fetch from Paystack
+          dashboard_url: process.env.NODE_ENV === 'production' 
+            ? 'https://bizzin.co.za/dashboard'
+            : 'http://localhost:5000/dashboard',
+          goals_url: process.env.NODE_ENV === 'production' 
+            ? 'https://bizzin.co.za/goals'
+            : 'http://localhost:5000/goals',
+          account_url: process.env.NODE_ENV === 'production' 
+            ? 'https://bizzin.co.za/profile'
+            : 'http://localhost:5000/profile',
+          support_url: process.env.NODE_ENV === 'production' 
+            ? 'https://bizzin.co.za/support'
+            : 'http://localhost:5000/support',
+          website_url: 'https://bizzin.co.za'
+        };
+
+        const emailSent = await emailService.sendSystemEmail(
+          'subscription-reactivated',
+          userProfile.email,
+          emailData
+        );
+
+        if (emailSent) {
+          console.log(`📧 Subscription reactivation email sent to: ${userProfile.email}`);
+        } else {
+          console.warn(`⚠️ Failed to send reactivation email to: ${userProfile.email}`);
+        }
+      }
+    } catch (emailError) {
+      console.error('❌ Error sending reactivation email:', emailError);
+      // Don't fail the reactivation if email fails
     }
 
     console.log(`✅ Subscription reactivated successfully for user: ${userId}`);

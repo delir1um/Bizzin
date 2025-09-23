@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome Back! Subscription Reactivated - Bizzin</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            color: #2D3748;
+            background-color: #F7FAFC;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #FFFFFF;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #EA7A57 0%, #E56B47 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .status-card {
+            background: #F0FDF4;
+            border: 1px solid #86EFAC;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .status-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        .status-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #16A34A;
+            margin-bottom: 10px;
+        }
+        .status-description {
+            color: #15803D;
+            font-size: 16px;
+        }
+        .welcome-message {
+            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+            border-radius: 8px;
+            padding: 25px;
+            margin: 25px 0;
+            text-align: center;
+        }
+        .welcome-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #92400E;
+            margin-bottom: 10px;
+        }
+        .welcome-subtitle {
+            color: #A16207;
+            font-size: 16px;
+        }
+        .info-section {
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #F8FAFC;
+            border-radius: 8px;
+            border-left: 4px solid #EA7A57;
+        }
+        .info-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2D3748;
+            margin-bottom: 15px;
+        }
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .info-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #E2E8F0;
+            display: flex;
+            align-items: center;
+        }
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        .info-item .icon {
+            margin-right: 12px;
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+        .billing-info {
+            background: #EBF8FF;
+            border: 1px solid #90CDF4;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .billing-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1E40AF;
+            margin-bottom: 10px;
+        }
+        .billing-details {
+            color: #1E3A8A;
+            font-size: 14px;
+        }
+        .action-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #EA7A57 0%, #E56B47 100%);
+            color: white;
+            text-decoration: none;
+            padding: 14px 28px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 10px;
+            transition: transform 0.2s ease;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background: #F7FAFC;
+            color: #4A5568;
+            border: 2px solid #E2E8F0;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 25px 0;
+        }
+        .feature-card {
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 6px;
+            padding: 15px;
+            text-align: center;
+        }
+        .feature-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .feature-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2D3748;
+        }
+        .footer {
+            background-color: #2D3748;
+            color: #A0AEC0;
+            padding: 30px;
+            text-align: center;
+            font-size: 14px;
+        }
+        .footer a {
+            color: #EA7A57;
+            text-decoration: none;
+        }
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #E2E8F0, transparent);
+            margin: 30px 0;
+        }
+        @media (max-width: 600px) {
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">Bizzin</div>
+            <div class="subtitle">Business Management Platform</div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Welcome Message -->
+            <div class="welcome-message">
+                <div class="welcome-title">Welcome Back!</div>
+                <div class="welcome-subtitle">We're thrilled to have you back on your entrepreneurial journey</div>
+            </div>
+
+            <!-- Greeting -->
+            <h1 style="color: #2D3748; margin-bottom: 20px;">Hi {{user.full_name}},</h1>
+            
+            <!-- Status Card -->
+            <div class="status-card">
+                <div class="status-icon">🎉</div>
+                <div class="status-title">Subscription Reactivated</div>
+                <div class="status-description">
+                    Your Bizzin subscription is now active and all premium features are available.
+                </div>
+            </div>
+
+            <!-- What's Active -->
+            <div class="info-section">
+                <div class="info-title">What's restored immediately:</div>
+                <ul class="info-list">
+                    <li class="info-item">
+                        <span class="icon">🚀</span>
+                        <span>Full access to all premium features and tools</span>
+                    </li>
+                    <li class="info-item">
+                        <span class="icon">📊</span>
+                        <span>Unlimited goals, journal entries, and document storage</span>
+                    </li>
+                    <li class="info-item">
+                        <span class="icon">🤖</span>
+                        <span>AI-powered insights and sentiment analysis</span>
+                    </li>
+                    <li class="info-item">
+                        <span class="icon">📈</span>
+                        <span>Advanced business calculators and financial tools</span>
+                    </li>
+                    <li class="info-item">
+                        <span class="icon">🎓</span>
+                        <span>Premium podcast training content and resources</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Billing Information -->
+            <div class="billing-info">
+                <div class="billing-title">💳 Billing Information</div>
+                <div class="billing-details">
+                    <strong>Next billing date:</strong> {{next_billing_date}}<br>
+                    <strong>Amount:</strong> R{{subscription_amount}} / month<br>
+                    <strong>Payment method:</strong> {{payment_method_last4}}
+                </div>
+            </div>
+
+            <!-- Premium Features -->
+            <div style="margin: 30px 0;">
+                <h3 style="color: #2D3748; text-align: center; margin-bottom: 20px;">
+                    Your Premium Features Are Ready
+                </h3>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <div class="feature-title">Unlimited Goals</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📝</div>
+                        <div class="feature-title">AI Journal Analysis</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💼</div>
+                        <div class="feature-title">BizBuilder Tools</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📱</div>
+                        <div class="feature-title">Mobile Access</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Call to Action -->
+            <div style="text-align: center; margin: 30px 0;">
+                <h2 style="color: #2D3748; margin-bottom: 15px;">Ready to grow your business?</h2>
+                <p style="color: #4A5568; margin-bottom: 25px;">
+                    Jump back into your dashboard and continue building your entrepreneurial success.
+                </p>
+                
+                <div class="action-section">
+                    <a href="{{dashboard_url}}" class="btn">
+                        Go to Dashboard
+                    </a>
+                    <a href="{{goals_url}}" class="btn btn-secondary">
+                        View My Goals
+                    </a>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Support -->
+            <div style="text-align: center; margin: 30px 0;">
+                <h3 style="color: #2D3748; margin-bottom: 15px;">Need help getting started?</h3>
+                <p style="color: #4A5568; margin-bottom: 20px;">
+                    Our support team is here to help you make the most of your Bizzin subscription.
+                </p>
+                <a href="{{support_url}}" class="btn btn-secondary">
+                    Contact Support
+                </a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>
+                <strong>Bizzin</strong> - Empowering Entrepreneurs<br>
+                <a href="{{account_url}}">Manage Account</a> | 
+                <a href="{{support_url}}">Support</a> | 
+                <a href="{{website_url}}">bizzin.co.za</a>
+            </p>
+            <p style="margin-top: 20px; color: #718096; font-size: 12px;">
+                This email was sent to {{user.email}} because you reactivated your Bizzin subscription.<br>
+                Questions? Just reply to this email or <a href="{{support_url}}">contact our support team</a>.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

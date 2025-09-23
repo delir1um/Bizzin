@@ -144,13 +144,55 @@ export function BillingManagement() {
   // Fetch user plan details with payment information
   const { data: planDetails, isLoading: planDetailsLoading } = useQuery({
     queryKey: ['/api/plans/user-plan-details'],
-    enabled: !!user
+    enabled: !!user,
+    queryFn: async () => {
+      const session = await supabase.auth.getSession();
+      const token = session.data.session?.access_token;
+      
+      if (!token) {
+        throw new Error('No authentication token available');
+      }
+      
+      const response = await fetch('/api/plans/user-plan-details', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch plan details: ${response.status}`);
+      }
+      
+      return response.json();
+    }
   }) as { data: UserPlanDetails, isLoading: boolean }
 
   // Fetch payment history
   const { data: paymentHistory, isLoading: historyLoading } = useQuery({
     queryKey: ['/api/payment/history'],
-    enabled: !!user
+    enabled: !!user,
+    queryFn: async () => {
+      const session = await supabase.auth.getSession();
+      const token = session.data.session?.access_token;
+      
+      if (!token) {
+        throw new Error('No authentication token available');
+      }
+      
+      const response = await fetch('/api/payment/history', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch payment history: ${response.status}`);
+      }
+      
+      return response.json();
+    }
   }) as { data: PaymentHistoryResponse, isLoading: boolean }
 
   const isLoading = plansLoading || planDetailsLoading || historyLoading

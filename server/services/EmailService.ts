@@ -65,7 +65,9 @@ export class EmailService {
         { name: 'password-reset', file: 'password-reset.hbs' },
         { name: 'base-system', file: 'base-system-email.hbs' },
         { name: 'payment-failure', file: 'payment-failure.hbs' },
-        { name: 'payment-success', file: 'payment-success.hbs' }
+        { name: 'payment-success', file: 'payment-success.hbs' },
+        { name: 'subscription-cancelled', file: 'subscription-cancelled.hbs' },
+        { name: 'subscription-reactivated', file: 'subscription-reactivated.hbs' }
       ];
 
       for (const template of templates) {

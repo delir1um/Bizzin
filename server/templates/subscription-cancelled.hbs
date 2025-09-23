@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Cancelled - Bizzin</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            color: #2D3748;
+            background-color: #F7FAFC;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #FFFFFF;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #EA7A57 0%, #E56B47 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .status-card {
+            background: #FEF2F2;
+            border: 1px solid #FCA5A5;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .status-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        .status-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #DC2626;
+            margin-bottom: 10px;
+        }
+        .status-description {
+            color: #7F1D1D;
+            font-size: 16px;
+        }
+        .info-section {
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #F8FAFC;
+            border-radius: 8px;
+            border-left: 4px solid #EA7A57;
+        }
+        .info-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2D3748;
+            margin-bottom: 15px;
+        }
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .info-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #E2E8F0;
+            display: flex;
+            align-items: center;
+        }
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        .info-item .icon {
+            margin-right: 12px;
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+        .action-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #EA7A57 0%, #E56B47 100%);
+            color: white;
+            text-decoration: none;
+            padding: 14px 28px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 10px;
+            transition: transform 0.2s ease;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background: #F7FAFC;
+            color: #4A5568;
+            border: 2px solid #E2E8F0;
+        }
+        .footer {
+            background-color: #2D3748;
+            color: #A0AEC0;
+            padding: 30px;
+            text-align: center;
+            font-size: 14px;
+        }
+        .footer a {
+            color: #EA7A57;
+            text-decoration: none;
+        }
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #E2E8F0, transparent);
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">Bizzin</div>
+            <div class="subtitle">Business Management Platform</div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Greeting -->
+            <h1 style="color: #2D3748; margin-bottom: 20px;">Hi {{user.full_name}},</h1>
+            
+            <!-- Status Card -->
+            <div class="status-card">
+                <div class="status-icon">⏸️</div>
+                <div class="status-title">Subscription Cancelled</div>
+                <div class="status-description">
+                    Your Bizzin subscription has been successfully cancelled as requested.
+                </div>
+            </div>
+
+            <!-- What This Means -->
+            <div class="info-section">
+                <div class="info-title">What this means for your account:</div>
+                <ul class="info-list">
+                    <li class="info-item">
+                        <span class="icon">✅</span>
+                        <span>You'll retain full access to premium features until {{access_end_date}}</span>
+                    </li>
+                    <li class="info-item">
+                        <span class="icon">🚫</span>
+                        <span>No further charges will be made to your payment method</span>
+                    </li>
+                    <li class="info-item">
+                        <span class="icon">💾</span>
+                        <span>All your data (goals, journal entries, documents) remains safe</span>
+                    </li>
+                    <li class="info-item">
+                        <span class="icon">🔄</span>
+                        <span>You can reactivate your subscription at any time</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Account Transition -->
+            <div class="info-section">
+                <div class="info-title">After {{access_end_date}}:</div>
+                <ul class="info-list">
+                    <li class="info-item">
+                        <span class="icon">🆓</span>
+                        <span>Your account will automatically switch to our free plan</span>
+                    </li>
+                    <li class="info-item">
+                        <span class="icon">📊</span>
+                        <span>You can continue using core features with usage limits</span>
+                    </li>
+                    <li class="info-item">
+                        <span class="icon">🔒</span>
+                        <span>Premium features will be temporarily unavailable</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Changed Your Mind? -->
+            <div style="text-align: center; margin: 30px 0;">
+                <h2 style="color: #2D3748; margin-bottom: 15px;">Changed your mind?</h2>
+                <p style="color: #4A5568; margin-bottom: 25px;">
+                    You can reactivate your subscription instantly and pick up right where you left off.
+                </p>
+                
+                <div class="action-section">
+                    <a href="{{reactivate_url}}" class="btn">
+                        Reactivate Subscription
+                    </a>
+                    <a href="{{dashboard_url}}" class="btn btn-secondary">
+                        Go to Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Feedback -->
+            <div style="text-align: center; margin: 30px 0;">
+                <h3 style="color: #2D3748; margin-bottom: 15px;">Help us improve</h3>
+                <p style="color: #4A5568; margin-bottom: 20px;">
+                    We'd love to understand why you cancelled so we can improve Bizzin for everyone.
+                </p>
+                <a href="{{feedback_url}}" class="btn btn-secondary">
+                    Share Feedback
+                </a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>
+                <strong>Bizzin</strong> - Empowering Entrepreneurs<br>
+                <a href="{{unsubscribe_url}}">Unsubscribe</a> | 
+                <a href="{{support_url}}">Support</a> | 
+                <a href="{{website_url}}">bizzin.co.za</a>
+            </p>
+            <p style="margin-top: 20px; color: #718096; font-size: 12px;">
+                This email was sent to {{user.email}} because you cancelled your Bizzin subscription.<br>
+                If you believe this was sent in error, please <a href="{{support_url}}">contact our support team</a>.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
