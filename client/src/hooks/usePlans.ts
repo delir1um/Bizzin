@@ -21,77 +21,99 @@ export function usePlans() {
     refetchOnWindowFocus: false,
   })
 
-  const isPremium = usageStatus?.user_plan?.plan_type === 'premium' && 
-                    usageStatus?.user_plan?.payment_status === 'active'
-  const isFree = usageStatus?.user_plan?.plan_type === 'free'
+  // ADMIN OVERRIDE: Force anton@cloudfusion.co.za to be seen as premium
+  const isAdminUser = user?.email === 'anton@cloudfusion.co.za'
+  
+  // Override plan data for admin user
+  const finalUsageStatus = isAdminUser ? {
+    ...usageStatus,
+    plan_type: 'premium',
+    user_plan: {
+      id: 'admin-override',
+      user_id: user.id,
+      plan_type: 'premium',
+      payment_status: 'active',
+      expires_at: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      is_trial: false
+    }
+  } : usageStatus
+
+  const isPremium = finalUsageStatus?.user_plan?.plan_type === 'premium' && 
+                    finalUsageStatus?.user_plan?.payment_status === 'active'
+  const isFree = finalUsageStatus?.user_plan?.plan_type === 'free'
   
   // CRITICAL: Only active trials count - expired trials should not get trial benefits
-  const isTrial = usageStatus?.user_plan?.plan_type === 'trial' || 
-                  (usageStatus?.user_plan?.plan_type === 'free' && 
-                   usageStatus?.user_plan?.expires_at && 
-                   new Date(usageStatus?.user_plan?.expires_at) > new Date())
+  const isTrial = finalUsageStatus?.user_plan?.plan_type === 'trial' || 
+                  (finalUsageStatus?.user_plan?.plan_type === 'free' && 
+                   finalUsageStatus?.user_plan?.expires_at && 
+                   new Date(finalUsageStatus?.user_plan?.expires_at) > new Date())
 
   // NEW: Grace period logic - premium users with payment issues get 7-day grace period
-  const isInGracePeriod = usageStatus?.user_plan?.payment_status === 'grace_period' &&
-                          usageStatus?.user_plan?.grace_period_end &&
-                          new Date(usageStatus?.user_plan?.grace_period_end) > new Date()
+  const isInGracePeriod = finalUsageStatus?.user_plan?.payment_status === 'grace_period' &&
+                          finalUsageStatus?.user_plan?.grace_period_end &&
+                          new Date(finalUsageStatus?.user_plan?.grace_period_end) > new Date()
 
   // Check if grace period has expired but status hasn't been updated yet
-  const isGracePeriodExpired = usageStatus?.user_plan?.payment_status === 'grace_period' &&
-                               usageStatus?.user_plan?.grace_period_end &&
-                               new Date(usageStatus?.user_plan?.grace_period_end) <= new Date()
+  const isGracePeriodExpired = finalUsageStatus?.user_plan?.payment_status === 'grace_period' &&
+                               finalUsageStatus?.user_plan?.grace_period_end &&
+                               new Date(finalUsageStatus?.user_plan?.grace_period_end) <= new Date()
 
   // Check if account is suspended due to payment failure
-  const isSuspended = usageStatus?.user_plan?.payment_status === 'suspended' ||
-                      usageStatus?.user_plan?.payment_status === 'failed' ||
+  const isSuspended = finalUsageStatus?.user_plan?.payment_status === 'suspended' ||
+                      finalUsageStatus?.user_plan?.payment_status === 'failed' ||
                       isGracePeriodExpired
 
-  // NEW: Detect expired trials - when usageStatus exists but user_plan is null
+  // NEW: Detect expired trials - when finalUsageStatus exists but user_plan is null
   // This means they had a trial that expired and now have no active plan
-  const isExpiredTrial = usageStatus && !usageStatus.user_plan
+  const isExpiredTrial = finalUsageStatus && !finalUsageStatus.user_plan
   
   // Users get premium features if: premium + active, trial, or in grace period
   const hasPremiumFeatures = isPremium || isTrial || isInGracePeriod
 
   // Calculate grace period days remaining
-  const gracePeriodDaysRemaining = usageStatus?.user_plan?.grace_period_end 
-    ? Math.max(0, Math.ceil((new Date(usageStatus.user_plan.grace_period_end).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
+  const gracePeriodDaysRemaining = finalUsageStatus?.user_plan?.grace_period_end 
+    ? Math.max(0, Math.ceil((new Date(finalUsageStatus.user_plan.grace_period_end).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
     : 0
 
-  // Helper functions for checking limits - temporarily allow all for journal entries
-  const canUploadDocument = usageStatus?.can_upload_document ?? false
-  const canCreateJournalEntry = true // Temporarily allow all journal entries 
-  const canCreateGoal = usageStatus?.can_create_goal ?? false
+  // Helper functions for checking limits - admin gets unlimited access
+  const canUploadDocument = isAdminUser ? true : (finalUsageStatus?.can_upload_document ?? false)
+  const canCreateJournalEntry = true // Allow all journal entries 
+  const canCreateGoal = isAdminUser ? true : (finalUsageStatus?.can_create_goal ?? false)
   
   const canUseCalculator = (calculatorId: string): boolean => {
-    return usageStatus?.can_use_calculator(calculatorId) ?? false
+    if (isAdminUser) return true
+    return finalUsageStatus?.can_use_calculator(calculatorId) ?? false
   }
 
   const hasStorageSpace = (fileSizeBytes: number): boolean => {
-    if (!usageStatus) return false
-    const remaining = usageStatus.plan_limits.storage_limit - usageStatus.current_usage.storage_used
+    if (isAdminUser) return true
+    if (!finalUsageStatus) return false
+    const remaining = finalUsageStatus.plan_limits.storage_limit - finalUsageStatus.current_usage.storage_used
     return remaining >= fileSizeBytes
   }
 
   const getRemainingQuota = (type: 'storage' | 'documents' | 'journal' | 'goals') => {
-    if (!usageStatus) return 0
+    if (isAdminUser) return 999999 // Unlimited for admin
+    if (!finalUsageStatus) return 0
     
     switch (type) {
       case 'storage':
-        return usageStatus.plan_limits.storage_limit - usageStatus.current_usage.storage_used
+        return finalUsageStatus.plan_limits.storage_limit - finalUsageStatus.current_usage.storage_used
       case 'documents':
-        return usageStatus.plan_limits.monthly_documents - usageStatus.current_usage.documents_uploaded
+        return finalUsageStatus.plan_limits.monthly_documents - finalUsageStatus.current_usage.documents_uploaded
       case 'journal':
-        return usageStatus.plan_limits.monthly_journal_entries - usageStatus.current_usage.journal_entries_created
+        return finalUsageStatus.plan_limits.monthly_journal_entries - finalUsageStatus.current_usage.journal_entries_created
       case 'goals':
-        return usageStatus.plan_limits.max_active_goals - usageStatus.current_usage.goals_created
+        return finalUsageStatus.plan_limits.max_active_goals - finalUsageStatus.current_usage.goals_created
       default:
         return 0
     }
   }
 
   return {
-    usageStatus,
+    usageStatus: finalUsageStatus,
     isLoading,
     error,
     refetch,
