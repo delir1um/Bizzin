@@ -162,9 +162,9 @@ Please try again or check the server logs for more details.`)
           const totalGoals = user.stats?.total_goals || 0
           const documentsCount = user.stats?.documents || 0
           
-          // For now, set basic plan info - this could be enhanced with actual plan data
-          const planType: 'free' | 'premium' | 'trial' = 'free' // Default, could be enhanced
-          const planStatus: 'active' | 'cancelled' | 'expired' = 'active' // Default, could be enhanced
+          // Use actual plan data from backend (no more hardcoded values)
+          const planType: 'trial' | 'premium' = user.plan?.plan_type || 'trial'
+          const planStatus: 'active' | 'cancelled' | 'expired' = user.plan?.plan_status || 'active'
           
           return {
             user_id: user.user_id,
@@ -175,10 +175,10 @@ Please try again or check the server logs for more details.`)
             business_name: user.business_name || '',
             plan_type: planType,
             plan_status: planStatus,
-            expires_at: null, // Could be enhanced with actual plan data
-            trial_days_remaining: null,
-            paid_member_duration: null,
-            is_trial: false,
+            expires_at: user.plan?.expires_at || null,
+            trial_days_remaining: user.plan?.trial_days_remaining || null,
+            paid_member_duration: user.plan?.paid_member_duration || null,
+            is_trial: user.plan?.is_trial ?? true,
             created_at: user.created_at,
             last_login: user.updated_at, // Using updated_at as proxy for last login
             is_active: user.is_active ?? true,

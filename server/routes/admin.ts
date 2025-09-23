@@ -151,25 +151,75 @@ router.get('/users', async (req, res) => {
     
     console.log(`📋 Found ${profiles?.length || 0} user profiles`);
     
-    // Get additional stats for each user (goals, journal entries, etc.)
-    const usersWithStats = await Promise.all(
+    // Get additional stats and plan data for each user
+    const usersWithStatsAndPlans = await Promise.all(
       (profiles || []).map(async (profile) => {
         try {
-          // Get user stats in parallel
+          // Get user stats and plan data in parallel
           const [
             { count: journalCount },
             { count: goalCount }, 
             { count: completedGoals },
-            { count: documentCount }
+            { count: documentCount },
+            { data: planData, error: planError }
           ] = await Promise.all([
             supabase.from('journal_entries').select('*', { count: 'exact', head: true }).eq('user_id', profile.user_id),
             supabase.from('goals').select('*', { count: 'exact', head: true }).eq('user_id', profile.user_id),
             supabase.from('goals').select('*', { count: 'exact', head: true }).eq('user_id', profile.user_id).eq('status', 'completed'),
-            supabase.from('documents').select('*', { count: 'exact', head: true }).eq('user_id', profile.user_id)
+            supabase.from('documents').select('*', { count: 'exact', head: true }).eq('user_id', profile.user_id),
+            supabase.from('user_plans').select('plan_type, expires_at, created_at, cancelled_at').eq('user_id', profile.user_id).single()
           ]);
+          
+          // Calculate plan information
+          let planType: 'trial' | 'premium' = 'trial'; // Default to trial since no free accounts
+          let planStatus: 'active' | 'cancelled' | 'expired' = 'active';
+          let trialDaysRemaining = null;
+          let paidMemberDuration = null;
+          let isTrial = true;
+          
+          if (planData && !planError) {
+            const now = new Date();
+            const expiresAt = planData.expires_at ? new Date(planData.expires_at) : null;
+            const planCreatedAt = planData.created_at ? new Date(planData.created_at) : null;
+            
+            if (planData.plan_type === 'premium') {
+              // This is a paid user
+              planType = 'premium';
+              isTrial = false;
+              if (planCreatedAt) {
+                paidMemberDuration = Math.floor((now.getTime() - planCreatedAt.getTime()) / (1000 * 60 * 60 * 24));
+              }
+            } else if (planData.plan_type === 'free' && expiresAt) {
+              // This is a trial user (free plan with expiry = trial)
+              planType = 'trial';
+              isTrial = true;
+              if (expiresAt > now) {
+                trialDaysRemaining = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+              } else {
+                trialDaysRemaining = 0;
+                planStatus = 'expired';
+              }
+            }
+            
+            // Check for cancellation
+            if (planData.cancelled_at) {
+              planStatus = 'cancelled';
+            }
+          } else if (!planData) {
+            // No plan record - default to trial
+            console.log(`No plan found for user ${profile.email}, defaulting to trial`);
+          }
           
           return {
             ...profile,
+            plan: {
+              plan_type: planType,
+              plan_status: planStatus,
+              expires_at: planData?.expires_at || null,
+              trial_days_remaining: trialDaysRemaining,
+              paid_member_duration: paidMemberDuration,
+              is_trial: isTrial
+            },
             stats: {
               journal_entries: journalCount || 0,
               total_goals: goalCount || 0,
@@ -181,6 +231,14 @@ router.get('/users', async (req, res) => {
           console.error(`Error fetching stats for ${profile.email}:`, error);
           return {
             ...profile,
+            plan: {
+              plan_type: 'trial' as const,
+              plan_status: 'active' as const,
+              expires_at: null,
+              trial_days_remaining: null,
+              paid_member_duration: null,
+              is_trial: true
+            },
             stats: {
               journal_entries: 0,
               total_goals: 0,
@@ -194,8 +252,8 @@ router.get('/users', async (req, res) => {
     
     res.json({
       success: true,
-      users: usersWithStats,
-      totalUsers: usersWithStats.length
+      users: usersWithStatsAndPlans,
+      totalUsers: usersWithStatsAndPlans.length
     });
     
   } catch (error) {
