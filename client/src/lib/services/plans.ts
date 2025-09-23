@@ -270,11 +270,17 @@ export class PlansService {
       if (!limits || !usage) {
         // Return safe defaults if we can't get limits or usage
         return {
+          user_plan: plan, // CRITICAL: Include user_plan even in fallback
           plan_type: planType,
+          plan_limits: { storage_limit: 50 * 1024 * 1024, monthly_documents: 20, monthly_journal_entries: 10, max_active_goals: 5, daily_calculator_uses: 3 },
+          current_usage: { storage_used: storageInfo.used, documents_uploaded: storageInfo.fileCount, journal_entries_created: journalCount, goals_created: goalsCount, calculator_uses_today: 0 },
           storage: { used: storageInfo.used, limit: 50 * 1024 * 1024, percentage: 0 },
           documents: { used: storageInfo.fileCount, limit: 20, percentage: 0 },
           journal_entries: { used: journalCount, limit: 10, percentage: 0 },
-          goals: { used: goalsCount, limit: 5, percentage: 0 }
+          goals: { used: goalsCount, limit: 5, percentage: 0 },
+          can_upload_document: storageInfo.fileCount < 20,
+          can_create_goal: goalsCount < 5,
+          can_use_calculator: () => true
         }
       }
 
@@ -284,7 +290,16 @@ export class PlansService {
         .reduce((sum, key) => sum + (usage.calculator_uses[key] || 0), 0)
 
       return {
+        user_plan: plan, // CRITICAL: Include user_plan data to fix isExpiredTrial logic
         plan_type: planType,
+        plan_limits: limits,
+        current_usage: {
+          storage_used: storageInfo.used,
+          documents_uploaded: usage.documents_uploaded,
+          journal_entries_created: usage.journal_entries_created,
+          goals_created: goalsCount,
+          calculator_uses_today: calculatorUsagesToday
+        },
         storage: {
           used: storageInfo.used,
           limit: limits.storage_limit,
@@ -309,17 +324,27 @@ export class PlansService {
           used: calculatorUsagesToday,
           limit: limits.daily_calculator_uses,
           percentage: Math.min(100, (calculatorUsagesToday / limits.daily_calculator_uses) * 100)
-        }
+        },
+        // Helper methods for backward compatibility
+        can_upload_document: usage.documents_uploaded < limits.monthly_documents,
+        can_create_goal: goalsCount < limits.max_active_goals,
+        can_use_calculator: (calculatorId: string) => calculatorUsagesToday < limits.daily_calculator_uses
       }
     } catch (error) {
       console.error('Error getting usage status:', error)
       // Return safe defaults in case of error
       return {
+        user_plan: null, // CRITICAL: Explicitly set user_plan to prevent undefined
         plan_type: 'free',
+        plan_limits: { storage_limit: 50 * 1024 * 1024, monthly_documents: 20, monthly_journal_entries: 10, max_active_goals: 5, daily_calculator_uses: 3 },
+        current_usage: { storage_used: 0, documents_uploaded: 0, journal_entries_created: 0, goals_created: 0, calculator_uses_today: 0 },
         storage: { used: 0, limit: 50 * 1024 * 1024, percentage: 0 },
         documents: { used: 0, limit: 20, percentage: 0 },
         journal_entries: { used: 0, limit: 10, percentage: 0 },
-        goals: { used: 0, limit: 5, percentage: 0 }
+        goals: { used: 0, limit: 5, percentage: 0 },
+        can_upload_document: true,
+        can_create_goal: true,
+        can_use_calculator: () => true
       }
     }
   }
