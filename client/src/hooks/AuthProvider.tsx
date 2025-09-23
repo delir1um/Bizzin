@@ -148,29 +148,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Check for trial expiry after all setup is complete
         try {
-          const userPlan = await PlansService.getUserPlan(user.id)
-          console.log('🔍 Checking trial status for user:', user.id, { userPlan })
+          // Get all user plans to check for expired trials (getUserPlan returns null for expired)
+          const { data: allPlans, error: plansError } = await supabase
+            .from('user_plans')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+
+          console.log('🔍 Checking trial status for user:', user.id, { allPlans, plansError })
           
-          if (userPlan) {
+          if (!plansError && allPlans && allPlans.length > 0) {
             const now = new Date()
-            const trialEnd = userPlan.expires_at
             
-            if (trialEnd) {
-              const trialEndDate = new Date(trialEnd)
-              const isExpired = trialEndDate <= now
+            // Check for expired trials (using same logic as PlansService)
+            for (const plan of allPlans) {
+              const isActive = !plan.expires_at || new Date(plan.expires_at) > now
+              const isExpiredTrial = plan.plan_type === 'free' && plan.expires_at && !isActive
+              const isPremium = plan.plan_type === 'premium'
               
-              console.log('📅 Trial check:', {
-                trialEnd,
-                trialEndDate: trialEndDate.toISOString(),
-                now: now.toISOString(),
-                isExpired,
-                planType: userPlan.plan_type
+              console.log('📅 Trial check for plan:', {
+                id: plan.id,
+                planType: plan.plan_type,
+                expiresAt: plan.expires_at,
+                isActive,
+                isExpiredTrial,
+                isPremium
               })
 
-              if (isExpired && userPlan.plan_type !== 'premium') {
+              if (isExpiredTrial) {
                 console.log('🚨 Trial expired, showing modal')
-                setTrialEndDate(trialEnd)
+                setTrialEndDate(plan.expires_at)
                 setShowTrialExpiredModal(true)
+                break // Only show modal once
+              }
+              
+              // If user has premium, don't show expired trial modal
+              if (isPremium && isActive) {
+                console.log('✅ User has active premium plan, no trial modal needed')
+                break
               }
             }
           }
