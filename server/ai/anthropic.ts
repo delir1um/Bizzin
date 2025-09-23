@@ -62,11 +62,11 @@ export async function chat(options: ChatOptions): Promise<ChatResponse | EventEm
     const client = getClient();
     
     // Prepare system message with optional caching
-    const systemMessage = system ? (cacheSystem ? {
+    const systemMessage = system ? (cacheSystem ? [{
       type: 'text' as const,
       text: system,
       cache_control: { type: 'ephemeral' as const }
-    } : system) : undefined;
+    }] : system) : undefined;
 
     // Convert messages to Anthropic format
     const anthropicMessages = messages.map(msg => ({
