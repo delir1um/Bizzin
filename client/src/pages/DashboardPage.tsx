@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useLocation } from 'wouter'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/AuthProvider'
+import { useUserProfile } from '@/hooks/useUserProfile'
 import { GoalsService } from '@/lib/services/goals'
 import { Goal } from '@/types/goals'
 import { JournalService } from '@/lib/services/journal'
@@ -31,6 +32,7 @@ import { isToday, format, subDays, differenceInDays } from 'date-fns'
 export function DashboardPage() {
   const [, setLocation] = useLocation()
   const { user } = useAuth()
+  const profile = useUserProfile()
   const [celebrationTrigger, setCelebrationTrigger] = useState(false)
   const [celebrationToastVisible, setCelebrationToastVisible] = useState(false)
   const [completedGoal, setCompletedGoal] = useState<Goal | null>(null)
@@ -235,8 +237,8 @@ export function DashboardPage() {
                   ease: "easeInOut" 
                 }}
               >
-                {user?.user_metadata?.full_name || 
-                 user?.user_metadata?.first_name || 
+                {profile.full_name || 
+                 profile.first_name || 
                  user?.email?.split('@')[0] || 
                  "Entrepreneur"}
               </motion.span>
