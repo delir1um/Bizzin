@@ -2,6 +2,8 @@ import React, { createContext, useContext, useEffect, useState } from "react"
 import { Session, User as SupabaseUser } from "@supabase/supabase-js"
 import { supabase } from "@/lib/supabase"
 import { ReferralService } from "@/lib/services/referrals"
+import { PlansService } from "@/lib/services/plans"
+import { TrialExpiredModal } from "@/components/plans/TrialExpiredModal"
 
 type AuthContextType = {
   user: SupabaseUser | null
@@ -16,6 +18,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [user, setUser] = useState<SupabaseUser | null>(null)  
   const [loading, setLoading] = useState<boolean>(true)
+  const [showTrialExpiredModal, setShowTrialExpiredModal] = useState<boolean>(false)
+  const [trialEndDate, setTrialEndDate] = useState<string | undefined>(undefined)
 
   useEffect(() => {
     let isMounted = true
@@ -141,6 +145,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
           console.error('Failed to initialize referral stats:', error)
         }
+
+        // Check for trial expiry after all setup is complete
+        try {
+          const userPlan = await PlansService.getUserPlan(user.id)
+          console.log('🔍 Checking trial status for user:', user.id, { userPlan })
+          
+          if (userPlan) {
+            const now = new Date()
+            const trialEnd = userPlan.expires_at
+            
+            if (trialEnd) {
+              const trialEndDate = new Date(trialEnd)
+              const isExpired = trialEndDate <= now
+              
+              console.log('📅 Trial check:', {
+                trialEnd,
+                trialEndDate: trialEndDate.toISOString(),
+                now: now.toISOString(),
+                isExpired,
+                planType: userPlan.plan_type
+              })
+
+              if (isExpired && userPlan.plan_type !== 'premium') {
+                console.log('🚨 Trial expired, showing modal')
+                setTrialEndDate(trialEnd)
+                setShowTrialExpiredModal(true)
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Failed to check trial status:', error)
+        }
         
       } catch (error) {
         console.error('Error during profile/plan creation:', error)
@@ -164,6 +200,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthContext.Provider value={{ user, session, loading, signOut }}>
       {children}
+      <TrialExpiredModal 
+        isOpen={showTrialExpiredModal} 
+        trialEndDate={trialEndDate}
+      />
     </AuthContext.Provider>
   )
 }

@@ -44,8 +44,6 @@ export function TrialExpiredModal({ isOpen, trialEndDate }: TrialExpiredModalPro
     >
       <AlertDialogContent 
         className="max-w-2xl max-h-[90vh] overflow-y-auto"
-        onEscapeKeyDown={(e) => e.preventDefault()} // Disable escape key
-        onPointerDownOutside={(e) => e.preventDefault()} // Disable outside click
         data-testid="modal-trial-expired"
       >
         <AlertDialogHeader>
