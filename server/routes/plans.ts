@@ -46,6 +46,8 @@ router.get('/user-plan-details', requireUser, async (req, res) => {
     const { data: userPlan, error } = await supabase
       .from('user_plans')
       .select(`
+        id,
+        plan_type,
         payment_status,
         last_payment_date,
         next_payment_date,
@@ -53,12 +55,16 @@ router.get('/user-plan-details', requireUser, async (req, res) => {
         grace_period_end,
         paystack_subscription_code,
         paystack_customer_code,
-        plan_type,
+        expires_at,
+        is_trial,
+        trial_ends_at,
         created_at,
         updated_at
       `)
       .eq('user_id', userId)
-      .single();
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
     if (error) {
       console.error('Error fetching user plan:', error);
