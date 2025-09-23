@@ -1,5 +1,5 @@
 // Admin API Routes - Server-side admin operations with service role privileges
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { supabase } from '../lib/supabase.js';
 import { 
   suspendUserSchema, 
@@ -9,6 +9,36 @@ import {
 } from '../../shared/schema.js';
 
 const router = express.Router();
+
+// Admin authentication middleware
+const requireAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // For now, allow access to anton@cloudfusion.co.za only
+    // TODO: In production, this should check proper session/JWT tokens
+    const adminEmail = 'anton@cloudfusion.co.za';
+    
+    // Get the admin user record
+    const { data: adminUser, error } = await supabase
+      .from('user_profiles')
+      .select('user_id, email, is_admin')
+      .eq('email', adminEmail)
+      .eq('is_admin', true)
+      .single();
+
+    if (error || !adminUser) {
+      return res.status(403).json({ 
+        error: 'Access denied: Admin privileges required' 
+      });
+    }
+
+    // Attach admin user info to request for use in handlers
+    (req as any).adminUser = adminUser;
+    next();
+  } catch (error) {
+    console.error('❌ Admin authentication error:', error);
+    res.status(500).json({ error: 'Authentication failed' });
+  }
+};
 
 // Fix split-brain database issue by syncing auth.users with user_profiles
 router.post('/fix-database', async (req, res) => {
@@ -129,7 +159,7 @@ router.post('/fix-database', async (req, res) => {
 });
 
 // Get comprehensive admin user list with service role privileges
-router.get('/users', async (req, res) => {
+router.get('/users', requireAdmin, async (req, res) => {
   try {
     console.log('👥 Fetching complete admin user list with fixed plan logic...');
     
@@ -317,7 +347,7 @@ router.get('/users', async (req, res) => {
 });
 
 // Admin endpoint to update trial days for a user
-router.patch('/trial/:userId', async (req: Request, res: Response) => {
+router.patch('/trial/:userId', requireAdmin, async (req: Request, res: Response) => {
   try {
     console.log('🔧 Admin trial update request:', { 
       userId: req.params.userId, 
@@ -451,7 +481,7 @@ async function createAuditLog(
 }
 
 // Admin endpoint to suspend a user account
-router.post('/suspend/:userId', async (req: Request, res: Response) => {
+router.post('/suspend/:userId', requireAdmin, async (req: Request, res: Response) => {
   try {
     console.log('🚨 Admin suspend request:', { 
       userId: req.params.userId, 
@@ -469,7 +499,7 @@ router.post('/suspend/:userId', async (req: Request, res: Response) => {
     }
 
     const { reason, expires_at } = validation.data;
-    const adminUserId = 'temp-admin-id'; // TODO: Get from JWT token
+    const adminUserId = (req as any).adminUser.user_id;
 
     // Check if user exists
     const { data: targetUser, error: userError } = await supabase
@@ -533,12 +563,12 @@ router.post('/suspend/:userId', async (req: Request, res: Response) => {
 });
 
 // Admin endpoint to unsuspend a user account
-router.post('/unsuspend/:userId', async (req: Request, res: Response) => {
+router.post('/unsuspend/:userId', requireAdmin, async (req: Request, res: Response) => {
   try {
     console.log('🔓 Admin unsuspend request:', { userId: req.params.userId });
 
     const { userId } = req.params;
-    const adminUserId = 'temp-admin-id'; // TODO: Get from JWT token
+    const adminUserId = (req as any).adminUser.user_id;
 
     // Check if user exists and is suspended
     const { data: targetUser, error: userError } = await supabase
@@ -594,12 +624,12 @@ router.post('/unsuspend/:userId', async (req: Request, res: Response) => {
 });
 
 // Admin endpoint to reset user password
-router.post('/reset-password/:userId', async (req: Request, res: Response) => {
+router.post('/reset-password/:userId', requireAdmin, async (req: Request, res: Response) => {
   try {
     console.log('🔑 Admin password reset request:', { userId: req.params.userId });
 
     const { userId } = req.params;
-    const adminUserId = 'temp-admin-id'; // TODO: Get from JWT token
+    const adminUserId = (req as any).adminUser.user_id;
 
     // Check if user exists
     const { data: targetUser, error: userError } = await supabase
@@ -648,7 +678,7 @@ router.post('/reset-password/:userId', async (req: Request, res: Response) => {
 });
 
 // Admin endpoint to send email to user
-router.post('/send-email/:userId', async (req: Request, res: Response) => {
+router.post('/send-email/:userId', requireAdmin, async (req: Request, res: Response) => {
   try {
     console.log('📧 Admin send email request:', { 
       userId: req.params.userId, 
@@ -666,7 +696,7 @@ router.post('/send-email/:userId', async (req: Request, res: Response) => {
     }
 
     const { subject, message, email_type } = validation.data;
-    const adminUserId = 'temp-admin-id'; // TODO: Get from JWT token
+    const adminUserId = (req as any).adminUser.user_id;
 
     // Check if user exists
     const { data: targetUser, error: userError } = await supabase
@@ -710,7 +740,7 @@ router.post('/send-email/:userId', async (req: Request, res: Response) => {
 });
 
 // Admin endpoint to get user activity logs
-router.get('/activity/:userId', async (req: Request, res: Response) => {
+router.get('/activity/:userId', requireAdmin, async (req: Request, res: Response) => {
   try {
     console.log('📊 Admin activity request:', { userId: req.params.userId });
 
@@ -780,7 +810,7 @@ router.get('/activity/:userId', async (req: Request, res: Response) => {
 });
 
 // Admin endpoint to edit user profile
-router.patch('/profile/:userId', async (req: Request, res: Response) => {
+router.patch('/profile/:userId', requireAdmin, async (req: Request, res: Response) => {
   try {
     console.log('✏️ Admin profile edit request:', { 
       userId: req.params.userId, 
@@ -798,7 +828,7 @@ router.patch('/profile/:userId', async (req: Request, res: Response) => {
     }
 
     const profileUpdates = validation.data;
-    const adminUserId = 'temp-admin-id'; // TODO: Get from JWT token
+    const adminUserId = (req as any).adminUser.user_id;
 
     // Check if user exists and get current profile
     const { data: currentProfile, error: userError } = await supabase
