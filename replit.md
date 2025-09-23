@@ -75,8 +75,20 @@ Operates on a unified subscription model with a 14-day free trial followed by a 
 
 **Enhanced User Experience**: Improved milestone weight validation with real-time feedback, color-coded status indicators, and progressive validation that guides users toward proper 100% weight distribution while maintaining workflow flexibility.
 
+**Claude AI Integration Implementation (Sep 23, 2025)**: Successfully integrated a Claude-powered mini-agent into the Bizzin application providing AI chat functionality through API endpoints and React components:
+
+**Backend AI Infrastructure**: Created comprehensive AI configuration system (`server/ai/config.ts`) with Zod validation, Anthropic client wrapper with streaming support (`server/ai/anthropic.ts`), and Express API routes (`server/ai/routes.ts`) providing `/api/ai/health` and `/api/ai/chat` endpoints with Server-Sent Events for real-time streaming responses.
+
+**Frontend AI Components**: Developed `useClaudeChat` React hook with robust streaming support including proper buffering for partial SSE lines, error handling, and message state management. Created `AiChatWidget` drop-in component with minimal CSS styling, auto-resizing textarea, and responsive design.
+
+**Floating AI Assistant**: Implemented floating AI chat widget positioned bottom-right on all pages, exclusively visible to `anton@cloudfusion.co.za` for development and testing purposes. Features responsive design with mobile-optimized full-width modal at 60vh height, shadow styling, and z-index positioning.
+
+**Testing Infrastructure**: Created CLI testing script (`scripts/ai-cli.js`) for command-line AI interactions and smoke test script (`scripts/ai-smoketest.js`) for endpoint validation. Updated environment configuration template in `.env.example` with AI-specific variables.
+
+**Security & Configuration**: Utilizes Replit's Anthropic integration for secure API key management. Currently configured with Claude Sonnet 4 model, 800 token limit, and 0.2 temperature for business-focused responses.
+
 ### Component Architecture
-Features a modular component structure with reusable shadcn/ui components. Business logic is separated into services (e.g., `PlansService`, `PodcastService`) and hooks (e.g., `usePlans`). The layout uses a consistent header/navigation system with theme support.
+Features a modular component structure with reusable shadcn/ui components. Business logic is separated into services (e.g., `PlansService`, `PodcastService`) and hooks (e.g., `usePlans`). The layout uses a consistent header/navigation system with theme support. AI functionality is organized in dedicated `client/src/ai/` directory with UI components and hooks.
 
 ## External Dependencies
 

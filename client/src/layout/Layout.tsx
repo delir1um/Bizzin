@@ -14,12 +14,16 @@ import { Moon, Sun, User, LogOut, Shield } from "lucide-react"
 import { useAuth } from "@/hooks/AuthProvider"
 import { useAdminCheck } from "@/hooks/useAdminCheck"
 import brizzinLogoDark from "@/assets/brizzin-logo-dark-v2.webp"
+import { AiChatWidget } from "@/ai/ui/AiChatWidget"
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { theme, setTheme } = useTheme()
   const [location] = useLocation()
   const { user, signOut } = useAuth()
   const { data: isAdmin, isLoading: adminLoading } = useAdminCheck()
+  
+  // Check if current user should see the AI widget
+  const showAiWidget = user?.email === "anton@cloudfusion.co.za"
   
   const currentLogo = brizzinLogoDark // Always use dark version
 
@@ -207,6 +211,45 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </footer>
+
+      {/* AI Chat Widget - Floating for anton@cloudfusion.co.za only */}
+      {showAiWidget && (
+        <div 
+          className="fixed bottom-6 right-6 z-50 shadow-2xl"
+          style={{
+            width: '380px',
+            height: '500px'
+          }}
+        >
+          <AiChatWidget 
+            title="Business AI Assistant" 
+            className="floating-ai-widget"
+            data-testid="floating-ai-widget"
+          />
+          <style>{`
+            .floating-ai-widget {
+              width: 100% !important;
+              height: 100% !important;
+              max-width: none !important;
+              box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+              border: 1px solid #e2e8f0;
+            }
+            
+            @media (max-width: 640px) {
+              .floating-ai-widget {
+                position: fixed !important;
+                bottom: 0 !important;
+                right: 0 !important;
+                left: 0 !important;
+                width: 100vw !important;
+                height: 60vh !important;
+                border-radius: 12px 12px 0 0 !important;
+                z-index: 60 !important;
+              }
+            }
+          `}</style>
+        </div>
+      )}
     </div>
   )
 }
