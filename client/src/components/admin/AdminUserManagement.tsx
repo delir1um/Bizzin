@@ -82,51 +82,6 @@ export function AdminUserManagement() {
   const [isTrialEditOpen, setIsTrialEditOpen] = useState(false)
   const queryClient = useQueryClient()
 
-  // Fix database using secure server-side admin API
-  const migrateUserData = async () => {
-    console.log('🔧 Starting database fix via server-side admin API...')
-    
-    try {
-      const response = await fetch('/api/admin/fix-database', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-      
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status} ${response.statusText}`)
-      }
-      
-      const result = await response.json()
-      
-      if (result.success) {
-        console.log('✅ Database fix completed successfully!')
-        console.log('📊 Results:', result)
-        
-        alert(`✅ Database synchronization completed!
-
-🔧 Fixed: ${result.totalFixed} user record(s)
-👥 Auth users: ${result.authUsersCount}
-📋 Profile users: ${result.profileUsersCount}
-✨ Created: ${result.createdProfiles.length} profile(s)
-🔄 Updated: ${result.updatedProfiles.length} profile(s)
-
-The admin panel will now refresh to show all users.`)
-        
-        // Refresh the user list to show changes
-        refetch()
-      } else {
-        throw new Error(result.error || 'Database fix failed')
-      }
-      
-    } catch (error) {
-      console.error('💥 Database fix failed:', error)
-      alert(`⚠️ Database fix failed: ${error instanceof Error ? error.message : 'Unknown error'}
-
-Please try again or check the server logs for more details.`)
-    }
-  }
 
   // Fetch users using admin API with service role privileges
   const { data: users, isLoading, refetch } = useQuery<UserProfile[]>({
@@ -335,17 +290,6 @@ Please try again or check the server logs for more details.`)
             <Button onClick={handleExportUsers} variant="outline">
               <Download className="w-4 h-4 mr-2" />
               Export CSV
-            </Button>
-            
-            {/* Migration button - can only update existing users */}
-            <Button 
-              onClick={() => {
-                migrateUserData()
-                alert('✅ Anton\'s profile updated!\n\n⚠️ To add the second user manually:\n1. Go to your Supabase dashboard\n2. Authentication > Users\n3. Create user: info@cloudfusion.co.za\n4. Set name: Info CloudFusion\n\nThe admin panel will then show both users.')
-              }} 
-              variant="secondary"
-            >
-              🔧 Update User Data
             </Button>
           </div>
 
