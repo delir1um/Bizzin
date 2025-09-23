@@ -58,6 +58,10 @@ app.use((req, res, next) => {
   const aiRoutes = await import('./ai/routes.js');
   app.use('/api/ai', aiRoutes.default);
   
+  // Add Paystack webhook routes - secure payment event handling
+  const paystackRoutes = await import('./routes/paystack.js');
+  app.use('/api/paystack', paystackRoutes.default);
+  
   const server = await registerRoutes(app);
   
   // Initialize single email system - SimpleEmailScheduler (production ready)
