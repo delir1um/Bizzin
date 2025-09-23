@@ -219,90 +219,35 @@ Please try again or check the server logs for more details.`)
     refetchInterval: 60000 // Refresh every minute
   })
 
-  // Trial days editing mutation
+  // Trial days editing mutation using admin API
   const updateTrialDaysMutation = useMutation({
     mutationFn: async ({ userId, daysToAdd }: { userId: string; daysToAdd: number }) => {
-      console.log('🔧 Starting trial update mutation:', { userId, daysToAdd });
+      console.log('🔧 Starting trial update via admin API:', { userId, daysToAdd });
       
-      // First, get the current user plan to check existing expiry
-      // Use order by created_at desc and limit 1 to handle multiple plans
-      const { data: userPlans, error: fetchError } = await supabase
-        .from('user_plans')
-        .select('expires_at, id, plan_type, created_at')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        
-      console.log('📋 Plan fetch result:', { userPlans, fetchError });
-      
-      if (fetchError) {
-        console.error('❌ Error fetching user plan:', fetchError);
-        throw new Error(`Failed to fetch user plan: ${fetchError.message}`);
-      }
-      
-      const userPlan = userPlans?.[0]
-      if (!userPlan) {
-        console.error('❌ No user plan found for user:', userId);
-        throw new Error('No user plan found for this user');
+      const response = await fetch(`/api/admin/trial/${userId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ daysToAdd }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('❌ Admin API error:', errorData);
+        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
       }
 
-      console.log('📅 Found user plan:', userPlan);
-      
-      const now = new Date()
-      let baseDate: Date
-      
-      // Determine base date: use current expiry if still valid, otherwise use now
-      if (userPlan.expires_at) {
-        const currentExpiry = new Date(userPlan.expires_at)
-        baseDate = currentExpiry > now ? currentExpiry : now
-        console.log('🗓️ Using expiry date as base:', { currentExpiry, baseDate });
-      } else {
-        baseDate = now
-        console.log('🗓️ No expiry date, using current time as base:', baseDate);
-      }
-      
-      // Add the days to the base date
-      const newExpiryDate = new Date(baseDate.getTime() + (daysToAdd * 24 * 60 * 60 * 1000))
-      console.log('🔄 Calculated new expiry:', { baseDate, daysToAdd, newExpiryDate });
-      
-      // Validate the new date (prevent setting expiry too far in past)
-      if (newExpiryDate < new Date(now.getTime() - (365 * 24 * 60 * 60 * 1000))) {
-        const errorMsg = 'Cannot set expiry more than 1 year in the past';
-        console.error('❌ Date validation failed:', errorMsg);
-        throw new Error(errorMsg);
-      }
-      
-      console.log('💾 Attempting to update plan record:', { 
-        planId: userPlan.id, 
-        newExpiry: newExpiryDate.toISOString() 
-      });
-      
-      // Update the specific plan record by ID to avoid ambiguity
-      const { data: updateData, error: updateError } = await supabase
-        .from('user_plans')
-        .update({ 
-          expires_at: newExpiryDate.toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', userPlan.id)
-        .select()
-      
-      console.log('💾 Update result:', { updateData, updateError });
-      
-      if (updateError) {
-        console.error('❌ Update error:', updateError);
-        throw new Error(`Failed to update trial: ${updateError.message}`);
-      }
-      
-      console.log('✅ Trial update successful!');
-      return { userId, newExpiryDate, baseDate, userPlan }
+      const result = await response.json();
+      console.log('✅ Admin API success:', result);
+      return result;
     },
     onSuccess: (data) => {
-      console.log('🎉 Mutation success:', data);
+      console.log('🎉 Trial update mutation success:', data);
       queryClient.invalidateQueries({ queryKey: ['admin-users'] })
     },
     onError: (error) => {
-      console.error('❌ Mutation failed:', error);
+      console.error('❌ Trial update mutation failed:', error);
     }
   })
 

@@ -310,4 +310,116 @@ router.get('/users', async (req, res) => {
   }
 });
 
+// Admin endpoint to update trial days for a user
+router.patch('/trial/:userId', async (req: Request, res: Response) => {
+  try {
+    console.log('🔧 Admin trial update request:', { 
+      userId: req.params.userId, 
+      body: req.body 
+    });
+
+    const { userId } = req.params
+    const { daysToAdd } = req.body
+
+    if (!userId || typeof daysToAdd !== 'number') {
+      return res.status(400).json({ 
+        error: 'Missing required fields: userId and daysToAdd (number)' 
+      })
+    }
+
+    // Get the current user plan using service role
+    const { data: userPlans, error: fetchError } = await supabase
+      .from('user_plans')
+      .select('id, expires_at, plan_type, created_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+
+    console.log('📋 Service role plan fetch:', { userPlans, fetchError });
+
+    if (fetchError) {
+      console.error('❌ Error fetching user plan with service role:', fetchError);
+      return res.status(500).json({ 
+        error: `Failed to fetch user plan: ${fetchError.message}` 
+      });
+    }
+
+    const userPlan = userPlans?.[0]
+    if (!userPlan) {
+      console.error('❌ No user plan found for user:', userId);
+      return res.status(404).json({ 
+        error: 'No user plan found for this user' 
+      });
+    }
+
+    console.log('📅 Found user plan via service role:', userPlan);
+
+    const now = new Date()
+    let baseDate: Date
+
+    // Determine base date: use current expiry if still valid, otherwise use now
+    if (userPlan.expires_at) {
+      const currentExpiry = new Date(userPlan.expires_at)
+      baseDate = currentExpiry > now ? currentExpiry : now
+    } else {
+      baseDate = now
+    }
+
+    // Add the days to the base date
+    const newExpiryDate = new Date(baseDate.getTime() + (daysToAdd * 24 * 60 * 60 * 1000))
+    
+    console.log('🔄 Trial calculation:', { 
+      baseDate: baseDate.toISOString(), 
+      daysToAdd, 
+      newExpiryDate: newExpiryDate.toISOString() 
+    });
+
+    // Validate the new date (prevent setting expiry too far in past)
+    if (newExpiryDate < new Date(now.getTime() - (365 * 24 * 60 * 60 * 1000))) {
+      return res.status(400).json({ 
+        error: 'Cannot set expiry more than 1 year in the past' 
+      });
+    }
+
+    // Update the specific plan record using service role
+    const { data: updateData, error: updateError } = await supabase
+      .from('user_plans')
+      .update({ 
+        expires_at: newExpiryDate.toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userPlan.id)
+      .select()
+
+    console.log('💾 Service role update result:', { updateData, updateError });
+
+    if (updateError) {
+      console.error('❌ Update error with service role:', updateError);
+      return res.status(500).json({ 
+        error: `Failed to update trial: ${updateError.message}` 
+      });
+    }
+
+    console.log('✅ Admin trial update successful!');
+    
+    res.json({
+      success: true,
+      message: 'Trial days updated successfully',
+      data: {
+        userId,
+        previousExpiry: userPlan.expires_at,
+        newExpiry: newExpiryDate.toISOString(),
+        daysAdded: daysToAdd
+      }
+    })
+
+  } catch (error) {
+    console.error('❌ Admin trial update failed:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    })
+  }
+});
+
 export default router;
