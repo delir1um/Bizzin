@@ -173,4 +173,287 @@ router.get('/latest-status', requireUser, async (req, res) => {
   }
 });
 
+// Generate secure payment method update URL using Paystack
+router.post('/update-payment-method', requireUser, async (req, res) => {
+  try {
+    const userId = (req as any).authenticatedUser.id;
+    
+    console.log(`💳 Generating payment method update URL for user: ${userId}`);
+    
+    // Get user's plan and customer information
+    const { data: userPlan, error: planError } = await supabase
+      .from('user_plans')
+      .select('paystack_customer_code, paystack_subscription_code')
+      .eq('user_id', userId)
+      .single();
+
+    if (planError || !userPlan) {
+      return res.status(404).json({ error: 'User plan not found' });
+    }
+
+    // Check if user has an active subscription
+    if (!userPlan.paystack_subscription_code) {
+      return res.status(400).json({ 
+        error: 'No active subscription found',
+        message: 'You need an active subscription to update payment methods'
+      });
+    }
+
+    // Get user profile for email
+    const { data: userProfile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('email, full_name')
+      .eq('user_id', userId)
+      .single();
+
+    if (profileError || !userProfile) {
+      return res.status(404).json({ error: 'User profile not found' });
+    }
+
+    const paystackSecretKey = process.env.PAYSTACK_SECRET_KEY;
+    if (!paystackSecretKey) {
+      console.error('PAYSTACK_SECRET_KEY not configured');
+      return res.status(500).json({ error: 'Payment system configuration error' });
+    }
+
+    // Generate unique reference for this card update transaction
+    const updateReference = `card_update_${userId}_${Date.now()}`;
+    
+    // Create return URL for after payment method update
+    const returnUrl = process.env.NODE_ENV === 'production' 
+      ? 'https://bizzin.co.za/profile?tab=billing&update=success'
+      : 'http://localhost:5000/profile?tab=billing&update=success';
+
+    // Initialize Paystack transaction for card update (R0.01 authorization)
+    const paystackData = {
+      reference: updateReference,
+      amount: 1, // R0.01 in kobo for card authorization
+      email: userProfile.email,
+      currency: 'ZAR',
+      callback_url: returnUrl,
+      metadata: {
+        type: 'card_update',
+        user_id: userId,
+        customer_code: userPlan.paystack_customer_code,
+        subscription_code: userPlan.paystack_subscription_code,
+        purpose: 'Update payment method for subscription'
+      },
+      channels: ['card'] // Only allow card payments
+    };
+
+    // Call Paystack transaction initialization API
+    const paystackResponse = await fetch('https://api.paystack.co/transaction/initialize', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${paystackSecretKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(paystackData)
+    });
+
+    if (!paystackResponse.ok) {
+      const errorText = await paystackResponse.text();
+      console.error('Paystack transaction initialization failed:', errorText);
+      return res.status(500).json({ error: 'Failed to initialize payment method update with Paystack' });
+    }
+
+    const paystackResult = await paystackResponse.json();
+    
+    if (!paystackResult.status || !paystackResult.data?.authorization_url) {
+      console.error('Paystack response invalid:', paystackResult);
+      return res.status(500).json({ error: 'Invalid response from payment processor' });
+    }
+
+    // Log the payment method update attempt
+    try {
+      await supabase
+        .from('payment_transactions')
+        .insert({
+          user_id: userId,
+          transaction_id: updateReference,
+          amount: 0.01, // R0.01 for authorization
+          currency: 'ZAR',
+          status: 'pending',
+          payment_method: 'card_update',
+          paystack_reference: updateReference,
+          metadata: {
+            type: 'card_update',
+            customer_code: userPlan.paystack_customer_code,
+            subscription_code: userPlan.paystack_subscription_code,
+            paystack_access_code: paystackResult.data.access_code,
+            authorization_url: paystackResult.data.authorization_url,
+            initiated_at: new Date().toISOString()
+          }
+        });
+    } catch (auditError) {
+      console.warn('Failed to log payment method update attempt:', auditError);
+    }
+
+    console.log(`✅ Payment method update session created for user: ${userId}`);
+    
+    res.json({
+      success: true,
+      authorization_url: paystackResult.data.authorization_url,
+      access_code: paystackResult.data.access_code,
+      reference: updateReference,
+      message: 'Payment method update session created successfully'
+    });
+
+  } catch (error) {
+    console.error('❌ Error creating payment method update session:', error);
+    res.status(500).json({ error: 'Failed to create payment method update session' });
+  }
+});
+
+// Verify payment method update completion using Paystack
+router.post('/verify-payment-method-update', requireUser, async (req, res) => {
+  try {
+    const userId = (req as any).authenticatedUser.id;
+    const { reference } = req.body;
+    
+    console.log(`🔍 Verifying payment method update for user: ${userId}, reference: ${reference}`);
+    
+    if (!reference) {
+      return res.status(400).json({ error: 'Transaction reference is required' });
+    }
+
+    // Check if this reference belongs to the user
+    const { data: transaction, error: transactionError } = await supabase
+      .from('payment_transactions')
+      .select('*')
+      .eq('paystack_reference', reference)
+      .eq('user_id', userId)
+      .single();
+
+    if (transactionError || !transaction) {
+      return res.status(404).json({ error: 'Transaction not found' });
+    }
+
+    if (transaction.status === 'success') {
+      return res.json({
+        success: true,
+        status: 'success',
+        message: 'Payment method already updated successfully'
+      });
+    }
+
+    const paystackSecretKey = process.env.PAYSTACK_SECRET_KEY;
+    if (!paystackSecretKey) {
+      console.error('PAYSTACK_SECRET_KEY not configured');
+      return res.status(500).json({ error: 'Payment system configuration error' });
+    }
+
+    // Verify with Paystack
+    const verifyResponse = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${paystackSecretKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!verifyResponse.ok) {
+      const errorText = await verifyResponse.text();
+      console.error('Paystack verification failed:', errorText);
+      return res.status(500).json({ error: 'Failed to verify with payment processor' });
+    }
+
+    const verifyResult = await verifyResponse.json();
+    
+    if (!verifyResult.status) {
+      console.error('Paystack verification response invalid:', verifyResult);
+      return res.status(400).json({ error: 'Invalid verification response from payment processor' });
+    }
+
+    const transactionData = verifyResult.data;
+    
+    if (transactionData.status === 'success') {
+      // Get user plan to update the authorization
+      const { data: userPlan, error: planError } = await supabase
+        .from('user_plans')
+        .select('paystack_customer_code, paystack_subscription_code')
+        .eq('user_id', userId)
+        .single();
+
+      // Update the transaction status
+      await supabase
+        .from('payment_transactions')
+        .update({
+          status: 'success',
+          metadata: {
+            ...transaction.metadata,
+            completed_at: new Date().toISOString(),
+            verified: true,
+            paystack_authorization: transactionData.authorization,
+            verification_data: {
+              amount: transactionData.amount,
+              currency: transactionData.currency,
+              channel: transactionData.channel,
+              verified_at: new Date().toISOString()
+            }
+          }
+        })
+        .eq('id', transaction.id);
+
+      // If there's a subscription, update it with the new authorization
+      if (userPlan?.paystack_subscription_code && transactionData.authorization?.authorization_code) {
+        try {
+          // Update subscription with new authorization
+          const subscriptionUpdateResponse = await fetch(`https://api.paystack.co/subscription/${userPlan.paystack_subscription_code}`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${paystackSecretKey}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              authorization: transactionData.authorization.authorization_code
+            })
+          });
+
+          if (subscriptionUpdateResponse.ok) {
+            console.log(`✅ Subscription updated with new authorization for user: ${userId}`);
+          } else {
+            console.warn('Failed to update subscription with new authorization:', await subscriptionUpdateResponse.text());
+          }
+        } catch (subscriptionError) {
+          console.warn('Error updating subscription authorization:', subscriptionError);
+        }
+      }
+
+      console.log(`✅ Payment method update verified and completed for user: ${userId}`);
+      
+      res.json({
+        success: true,
+        status: 'success',
+        authorization: transactionData.authorization,
+        message: 'Payment method updated successfully'
+      });
+    } else {
+      // Update transaction with failed status
+      await supabase
+        .from('payment_transactions')
+        .update({
+          status: 'failed',
+          metadata: {
+            ...transaction.metadata,
+            failed_at: new Date().toISOString(),
+            failure_reason: transactionData.gateway_response || 'Transaction not successful',
+            verification_data: transactionData
+          }
+        })
+        .eq('id', transaction.id);
+
+      res.status(400).json({
+        success: false,
+        status: transactionData.status,
+        message: transactionData.gateway_response || 'Payment method update failed'
+      });
+    }
+
+  } catch (error) {
+    console.error('❌ Error verifying payment method update:', error);
+    res.status(500).json({ error: 'Failed to verify payment method update' });
+  }
+});
+
 export default router;

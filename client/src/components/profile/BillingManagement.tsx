@@ -6,7 +6,9 @@ import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { usePlans } from "@/hooks/usePlans"
 import { useAuth } from "@/hooks/AuthProvider"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useToast } from "@/hooks/use-toast"
+import { supabase } from "@/lib/supabase"
 import { 
   CreditCard, 
   Calendar, 
@@ -125,6 +127,8 @@ export function BillingManagement() {
   const { user } = useAuth()
   const { usageStatus, isLoading: plansLoading, refetch } = usePlans()
   const [refreshing, setRefreshing] = useState(false)
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
 
   // Fetch user plan details with payment information
   const { data: planDetails, isLoading: planDetailsLoading } = useQuery({
@@ -139,6 +143,118 @@ export function BillingManagement() {
   }) as { data: PaymentHistoryResponse, isLoading: boolean }
 
   const isLoading = plansLoading || planDetailsLoading || historyLoading
+
+  // Payment method update mutation
+  const updatePaymentMethodMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/payment/update-payment-method', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+        }
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || error.error || 'Failed to create payment method update session');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Redirect to Paystack payment authorization page
+      if (data.authorization_url) {
+        toast({
+          title: "Payment Method Update",
+          description: "Redirecting to secure payment page to update your card details.",
+        });
+        
+        // Store the reference for verification when user returns
+        localStorage.setItem('payment_update_reference', data.reference);
+        
+        // Redirect to Paystack authorization page
+        window.location.href = data.authorization_url;
+      } else {
+        throw new Error('No authorization URL received from payment processor');
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to create payment method update session. Please try again.",
+        variant: "destructive",
+      });
+    }
+  })
+
+  // Payment method verification mutation (for when user returns from Paystack)
+  const verifyPaymentMethodMutation = useMutation({
+    mutationFn: async (reference: string) => {
+      const response = await fetch('/api/payment/verify-payment-method-update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+        },
+        body: JSON.stringify({ reference })
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || error.error || 'Failed to verify payment method update');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Remove stored reference
+      localStorage.removeItem('payment_update_reference');
+      
+      if (data.success) {
+        toast({
+          title: "Payment Method Updated",
+          description: "Your payment method has been updated successfully.",
+        });
+        
+        // Refresh billing data
+        queryClient.invalidateQueries({ queryKey: ['/api/plans/user-plan-details'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/payment/history'] });
+      } else {
+        toast({
+          title: "Update Failed",
+          description: data.message || "Payment method update was not successful.",
+          variant: "destructive",
+        });
+      }
+    },
+    onError: (error: any) => {
+      // Remove stored reference on error
+      localStorage.removeItem('payment_update_reference');
+      
+      toast({
+        title: "Verification Failed",
+        description: error.message || "Failed to verify payment method update.",
+        variant: "destructive",
+      });
+    }
+  })
+
+  // Check for payment method update completion on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const updateParam = urlParams.get('update');
+    const storedReference = localStorage.getItem('payment_update_reference');
+    
+    if (updateParam === 'success' && storedReference) {
+      // User returned from Paystack, verify the payment method update
+      verifyPaymentMethodMutation.mutate(storedReference);
+      
+      // Clean up URL parameters
+      const newUrl = window.location.pathname + window.location.search.replace(/[?&]update=success/, '');
+      window.history.replaceState({}, '', newUrl.replace(/[?&]$/, ''));
+    }
+  }, [verifyPaymentMethodMutation])
 
   const handleRefreshBilling = async () => {
     setRefreshing(true)
@@ -354,9 +470,19 @@ export function BillingManagement() {
                   </p>
                 </div>
               </div>
-              <Button variant="outline" size="sm" data-testid="button-update-payment-method">
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Update Method
+              <Button 
+                variant="outline" 
+                size="sm" 
+                data-testid="button-update-payment-method"
+                onClick={() => updatePaymentMethodMutation.mutate()}
+                disabled={updatePaymentMethodMutation.isPending}
+              >
+                {updatePaymentMethodMutation.isPending ? (
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                )}
+                {updatePaymentMethodMutation.isPending ? 'Processing...' : 'Update Method'}
               </Button>
             </div>
           </CardContent>
