@@ -511,7 +511,7 @@ Please try again or check the server logs for more details.`)
                             <DialogHeader>
                               <DialogTitle>User Details: {user.full_name || user.email}</DialogTitle>
                             </DialogHeader>
-                            {selectedUser && <UserDetailView user={selectedUser} />}
+                            {selectedUser && <UserDetailView user={selectedUser} refetch={refetch} />}
                           </DialogContent>
                         </Dialog>
                       </TableCell>
@@ -568,7 +568,7 @@ Please try again or check the server logs for more details.`)
   )
 }
 
-function UserDetailView({ user }: { user: UserProfile }) {
+function UserDetailView({ user, refetch }: { user: UserProfile, refetch: () => void }) {
   return (
     <Tabs defaultValue="profile" className="w-full">
       <TabsList className="grid w-full grid-cols-4">
@@ -844,7 +844,7 @@ function UserDetailView({ user }: { user: UserProfile }) {
                         
                         const result = await response.json()
                         alert(`✅ Profile updated successfully!\nChanges: ${result.data.changes.join(', ')}`)
-                        window.location.reload() // Force refresh to see changes
+                        refetch() // Refresh user data without full page reload
                       }
                     } catch (error) {
                       console.error('Error updating profile:', error)
@@ -960,7 +960,7 @@ function UserDetailView({ user }: { user: UserProfile }) {
                           
                           const result = await response.json()
                           alert(`✅ ${user.first_name || user.email} has been suspended!\n\n🚫 Account access blocked\n📝 Reason: ${reason}\n🛡️ Action logged in audit trail`)
-                          window.location.reload()
+                          refetch() // Refresh user data without full page reload
                         } catch (error) {
                           console.error('Error suspending user:', error)
                           alert('Failed to suspend account. Please try again.')
@@ -979,7 +979,7 @@ function UserDetailView({ user }: { user: UserProfile }) {
                           
                           const result = await response.json()
                           alert(`✅ ${user.first_name || user.email} has been unsuspended!\n\n✅ Account access restored\n🛡️ Action logged in audit trail`)
-                          window.location.reload()
+                          refetch() // Refresh user data without full page reload
                         } catch (error) {
                           console.error('Error unsuspending user:', error)
                           alert('Failed to unsuspend account. Please try again.')
