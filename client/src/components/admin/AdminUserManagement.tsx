@@ -543,11 +543,16 @@ Please try again or check the server logs for more details.`)
             updateTrialDaysMutation.mutate(
               { userId: trialEditUser.user_id, daysToAdd },
               {
-                onSuccess: ({ newExpiryDate }) => {
+                onSuccess: (response) => {
                   setIsTrialEditOpen(false)
                   setTrialEditUser(null)
                   // Using a simple alert for now - could be replaced with toast
-                  alert(`Trial updated successfully!\nNew expiry date: ${format(newExpiryDate, 'MMM d, yyyy')}`)
+                  const newExpiryDate = response.data?.newExpiry || response.newExpiryDate
+                  if (newExpiryDate) {
+                    alert(`Trial updated successfully!\nNew expiry date: ${format(new Date(newExpiryDate), 'MMM d, yyyy')}`)
+                  } else {
+                    alert('Trial updated successfully!')
+                  }
                 },
                 onError: (error) => {
                   console.error('Error updating trial:', error)
