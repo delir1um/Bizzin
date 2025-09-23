@@ -58,6 +58,7 @@ interface UserProfile {
   last_login: string
   is_active: boolean
   total_journal_entries: number
+  total_goals: number
   completed_goals: number
   storage_used: number
   last_activity: string
@@ -183,6 +184,7 @@ Please try again or check the server logs for more details.`)
             last_login: user.updated_at, // Using updated_at as proxy for last login
             is_active: user.is_active ?? true,
             total_journal_entries: journalCount,
+            total_goals: totalGoals,
             completed_goals: completedGoals,
             storage_used: 0, // Could be enhanced with storage calculation
             last_activity: user.updated_at || user.created_at
@@ -483,7 +485,7 @@ Please try again or check the server logs for more details.`)
                       <TableCell>
                         <div className="text-sm space-y-1">
                           <div>{user.total_journal_entries} entries</div>
-                          <div>{user.completed_goals} goals</div>
+                          <div>{user.total_goals} goals</div>
                           <div className="text-xs text-muted-foreground">
                             {Math.round(user.storage_used / (1024 * 1024))}MB storage
                           </div>
