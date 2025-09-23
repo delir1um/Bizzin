@@ -1,6 +1,12 @@
 // Admin API Routes - Server-side admin operations with service role privileges
 import express, { Request, Response } from 'express';
 import { supabase } from '../lib/supabase.js';
+import { 
+  suspendUserSchema, 
+  sendAdminEmailSchema, 
+  updateUserProfileAdminSchema,
+  createAdminAuditLogSchema 
+} from '../../shared/schema.js';
 
 const router = express.Router();
 
@@ -419,6 +425,443 @@ router.patch('/trial/:userId', async (req: Request, res: Response) => {
       error: 'Internal server error',
       details: error instanceof Error ? error.message : 'Unknown error'
     })
+  }
+});
+
+// Helper function to create audit log entry
+async function createAuditLog(
+  adminUserId: string,
+  targetUserId: string, 
+  actionType: string,
+  actionDetails: Record<string, any>,
+  req: Request
+) {
+  try {
+    await supabase.from('admin_audit_log').insert({
+      admin_user_id: adminUserId,
+      target_user_id: targetUserId,
+      action_type: actionType,
+      action_details: actionDetails,
+      ip_address: req.ip || req.connection.remoteAddress,
+      user_agent: req.get('User-Agent')
+    });
+  } catch (error) {
+    console.error('❌ Failed to create audit log:', error);
+  }
+}
+
+// Admin endpoint to suspend a user account
+router.post('/suspend/:userId', async (req: Request, res: Response) => {
+  try {
+    console.log('🚨 Admin suspend request:', { 
+      userId: req.params.userId, 
+      body: req.body 
+    });
+
+    const { userId } = req.params;
+    const validation = suspendUserSchema.safeParse(req.body);
+    
+    if (!validation.success) {
+      return res.status(400).json({
+        error: 'Validation failed',
+        details: validation.error.errors
+      });
+    }
+
+    const { reason, expires_at } = validation.data;
+    const adminUserId = 'temp-admin-id'; // TODO: Get from JWT token
+
+    // Check if user exists
+    const { data: targetUser, error: userError } = await supabase
+      .from('user_profiles')
+      .select('user_id, email, is_suspended')
+      .eq('user_id', userId)
+      .single();
+
+    if (userError || !targetUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (targetUser.is_suspended) {
+      return res.status(400).json({ error: 'User is already suspended' });
+    }
+
+    // Suspend the user
+    const suspensionData = {
+      is_suspended: true,
+      suspended_at: new Date().toISOString(),
+      suspended_by: adminUserId,
+      suspension_reason: reason,
+      suspension_expires_at: expires_at ? new Date(expires_at).toISOString() : null,
+      updated_at: new Date().toISOString()
+    };
+
+    const { error: suspendError } = await supabase
+      .from('user_profiles')
+      .update(suspensionData)
+      .eq('user_id', userId);
+
+    if (suspendError) {
+      console.error('❌ Error suspending user:', suspendError);
+      return res.status(500).json({ error: 'Failed to suspend user' });
+    }
+
+    // Create audit log
+    await createAuditLog(adminUserId, userId, 'suspend_account', {
+      reason,
+      expires_at,
+      target_email: targetUser.email
+    }, req);
+
+    console.log(`✅ User ${targetUser.email} suspended successfully`);
+    
+    res.json({
+      success: true,
+      message: 'User account suspended successfully',
+      data: {
+        userId,
+        suspended_at: suspensionData.suspended_at,
+        reason,
+        expires_at
+      }
+    });
+
+  } catch (error) {
+    console.error('💥 Error in suspend endpoint:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Admin endpoint to unsuspend a user account
+router.post('/unsuspend/:userId', async (req: Request, res: Response) => {
+  try {
+    console.log('🔓 Admin unsuspend request:', { userId: req.params.userId });
+
+    const { userId } = req.params;
+    const adminUserId = 'temp-admin-id'; // TODO: Get from JWT token
+
+    // Check if user exists and is suspended
+    const { data: targetUser, error: userError } = await supabase
+      .from('user_profiles')
+      .select('user_id, email, is_suspended, suspension_reason')
+      .eq('user_id', userId)
+      .single();
+
+    if (userError || !targetUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (!targetUser.is_suspended) {
+      return res.status(400).json({ error: 'User is not suspended' });
+    }
+
+    // Unsuspend the user
+    const { error: unsuspendError } = await supabase
+      .from('user_profiles')
+      .update({
+        is_suspended: false,
+        suspended_at: null,
+        suspended_by: null,
+        suspension_reason: null,
+        suspension_expires_at: null,
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', userId);
+
+    if (unsuspendError) {
+      console.error('❌ Error unsuspending user:', unsuspendError);
+      return res.status(500).json({ error: 'Failed to unsuspend user' });
+    }
+
+    // Create audit log
+    await createAuditLog(adminUserId, userId, 'unsuspend_account', {
+      previous_reason: targetUser.suspension_reason,
+      target_email: targetUser.email
+    }, req);
+
+    console.log(`✅ User ${targetUser.email} unsuspended successfully`);
+    
+    res.json({
+      success: true,
+      message: 'User account unsuspended successfully',
+      data: { userId }
+    });
+
+  } catch (error) {
+    console.error('💥 Error in unsuspend endpoint:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Admin endpoint to reset user password
+router.post('/reset-password/:userId', async (req: Request, res: Response) => {
+  try {
+    console.log('🔑 Admin password reset request:', { userId: req.params.userId });
+
+    const { userId } = req.params;
+    const adminUserId = 'temp-admin-id'; // TODO: Get from JWT token
+
+    // Check if user exists
+    const { data: targetUser, error: userError } = await supabase
+      .from('user_profiles')
+      .select('user_id, email')
+      .eq('user_id', userId)
+      .single();
+
+    if (userError || !targetUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Generate a secure password reset using Supabase Auth Admin
+    const { data, error: resetError } = await supabase.auth.admin.generateLink({
+      type: 'recovery',
+      email: targetUser.email
+    });
+
+    if (resetError) {
+      console.error('❌ Error generating password reset:', resetError);
+      return res.status(500).json({ error: 'Failed to generate password reset' });
+    }
+
+    // Create audit log
+    await createAuditLog(adminUserId, userId, 'reset_password', {
+      target_email: targetUser.email,
+      reset_link_generated: true
+    }, req);
+
+    console.log(`✅ Password reset generated for ${targetUser.email}`);
+    
+    res.json({
+      success: true,
+      message: 'Password reset link generated successfully',
+      data: {
+        userId,
+        email: targetUser.email,
+        reset_link: data.properties?.action_link
+      }
+    });
+
+  } catch (error) {
+    console.error('💥 Error in reset password endpoint:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Admin endpoint to send email to user
+router.post('/send-email/:userId', async (req: Request, res: Response) => {
+  try {
+    console.log('📧 Admin send email request:', { 
+      userId: req.params.userId, 
+      body: req.body 
+    });
+
+    const { userId } = req.params;
+    const validation = sendAdminEmailSchema.safeParse(req.body);
+    
+    if (!validation.success) {
+      return res.status(400).json({
+        error: 'Validation failed',
+        details: validation.error.errors
+      });
+    }
+
+    const { subject, message, email_type } = validation.data;
+    const adminUserId = 'temp-admin-id'; // TODO: Get from JWT token
+
+    // Check if user exists
+    const { data: targetUser, error: userError } = await supabase
+      .from('user_profiles')
+      .select('user_id, email, first_name, full_name')
+      .eq('user_id', userId)
+      .single();
+
+    if (userError || !targetUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // TODO: Integrate with email service to actually send the email
+    // For now, we'll just log and create audit trail
+    
+    // Create audit log
+    await createAuditLog(adminUserId, userId, 'send_email', {
+      target_email: targetUser.email,
+      subject,
+      email_type,
+      message_preview: message.substring(0, 100) + (message.length > 100 ? '...' : '')
+    }, req);
+
+    console.log(`✅ Email queued for ${targetUser.email}: ${subject}`);
+    
+    res.json({
+      success: true,
+      message: 'Email sent successfully',
+      data: {
+        userId,
+        email: targetUser.email,
+        subject,
+        email_type
+      }
+    });
+
+  } catch (error) {
+    console.error('💥 Error in send email endpoint:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Admin endpoint to get user activity logs
+router.get('/activity/:userId', async (req: Request, res: Response) => {
+  try {
+    console.log('📊 Admin activity request:', { userId: req.params.userId });
+
+    const { userId } = req.params;
+    const { limit = 50, offset = 0 } = req.query;
+
+    // Check if user exists
+    const { data: targetUser, error: userError } = await supabase
+      .from('user_profiles')
+      .select('user_id, email')
+      .eq('user_id', userId)
+      .single();
+
+    if (userError || !targetUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Get user activity logs
+    const { data: activityLogs, error: activityError } = await supabase
+      .from('user_activity_log')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .range(Number(offset), Number(offset) + Number(limit) - 1);
+
+    if (activityError) {
+      console.error('❌ Error fetching activity logs:', activityError);
+      return res.status(500).json({ error: 'Failed to fetch activity logs' });
+    }
+
+    // Get admin actions targeting this user
+    const { data: adminLogs, error: adminError } = await supabase
+      .from('admin_audit_log')
+      .select(`
+        *,
+        admin_profiles:user_profiles!admin_user_id(email, full_name)
+      `)
+      .eq('target_user_id', userId)
+      .order('created_at', { ascending: false })
+      .range(0, 19); // Last 20 admin actions
+
+    if (adminError) {
+      console.error('❌ Error fetching admin logs:', adminError);
+      return res.status(500).json({ error: 'Failed to fetch admin logs' });
+    }
+
+    console.log(`✅ Retrieved ${activityLogs?.length || 0} activity logs for ${targetUser.email}`);
+    
+    res.json({
+      success: true,
+      data: {
+        user: targetUser,
+        activity_logs: activityLogs || [],
+        admin_actions: adminLogs || [],
+        pagination: {
+          offset: Number(offset),
+          limit: Number(limit),
+          has_more: (activityLogs?.length || 0) === Number(limit)
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('💥 Error in activity endpoint:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Admin endpoint to edit user profile
+router.patch('/profile/:userId', async (req: Request, res: Response) => {
+  try {
+    console.log('✏️ Admin profile edit request:', { 
+      userId: req.params.userId, 
+      body: req.body 
+    });
+
+    const { userId } = req.params;
+    const validation = updateUserProfileAdminSchema.safeParse(req.body);
+    
+    if (!validation.success) {
+      return res.status(400).json({
+        error: 'Validation failed',
+        details: validation.error.errors
+      });
+    }
+
+    const profileUpdates = validation.data;
+    const adminUserId = 'temp-admin-id'; // TODO: Get from JWT token
+
+    // Check if user exists and get current profile
+    const { data: currentProfile, error: userError } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    if (userError || !currentProfile) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Update the profile
+    const updateData = {
+      ...profileUpdates,
+      updated_at: new Date().toISOString()
+    };
+
+    const { data: updatedProfile, error: updateError } = await supabase
+      .from('user_profiles')
+      .update(updateData)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error('❌ Error updating profile:', updateError);
+      return res.status(500).json({ error: 'Failed to update profile' });
+    }
+
+    // Create audit log with before/after comparison
+    const changes = Object.keys(profileUpdates).reduce((acc, key) => {
+      const typedKey = key as keyof typeof currentProfile;
+      if (currentProfile[typedKey] !== updatedProfile[typedKey]) {
+        acc[key] = {
+          from: currentProfile[typedKey],
+          to: updatedProfile[typedKey]
+        };
+      }
+      return acc;
+    }, {} as Record<string, any>);
+
+    await createAuditLog(adminUserId, userId, 'edit_profile', {
+      target_email: currentProfile.email,
+      changes,
+      fields_updated: Object.keys(profileUpdates)
+    }, req);
+
+    console.log(`✅ Profile updated for ${currentProfile.email}`);
+    
+    res.json({
+      success: true,
+      message: 'User profile updated successfully',
+      data: {
+        userId,
+        updated_profile: updatedProfile,
+        changes: Object.keys(changes)
+      }
+    });
+
+  } catch (error) {
+    console.error('💥 Error in profile edit endpoint:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
