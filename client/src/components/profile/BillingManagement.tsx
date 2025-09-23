@@ -4,6 +4,14 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { usePlans } from "@/hooks/usePlans"
 import { useAuth } from "@/hooks/AuthProvider"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
@@ -22,7 +30,8 @@ import {
   RefreshCw,
   Shield,
   DollarSign,
-  Zap
+  Zap,
+  RotateCcw
 } from "lucide-react"
 import { motion } from "framer-motion"
 import type { PaymentTransaction } from "@/types/plans"
@@ -129,6 +138,8 @@ export function BillingManagement() {
   const [refreshing, setRefreshing] = useState(false)
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
+  const [reactivateDialogOpen, setReactivateDialogOpen] = useState(false)
 
   // Fetch user plan details with payment information
   const { data: planDetails, isLoading: planDetailsLoading } = useQuery({
@@ -240,6 +251,84 @@ export function BillingManagement() {
     }
   })
 
+  // Subscription cancellation mutation
+  const cancelSubscriptionMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/payment/cancel-subscription', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+        }
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || error.error || 'Failed to cancel subscription');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setCancelDialogOpen(false);
+      toast({
+        title: "Subscription Cancelled",
+        description: "Your subscription has been cancelled successfully. You can reactivate it at any time.",
+      });
+      
+      // Refresh billing data
+      queryClient.invalidateQueries({ queryKey: ['/api/plans/user-plan-details'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/payment/history'] });
+    },
+    onError: (error: any) => {
+      setCancelDialogOpen(false);
+      toast({
+        title: "Cancellation Failed",
+        description: error.message || "Failed to cancel subscription. Please try again.",
+        variant: "destructive",
+      });
+    }
+  })
+
+  // Subscription reactivation mutation
+  const reactivateSubscriptionMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/payment/reactivate-subscription', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+        }
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || error.error || 'Failed to reactivate subscription');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setReactivateDialogOpen(false);
+      toast({
+        title: "Subscription Reactivated",
+        description: "Your subscription has been reactivated successfully. Welcome back!",
+      });
+      
+      // Refresh billing data
+      queryClient.invalidateQueries({ queryKey: ['/api/plans/user-plan-details'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/payment/history'] });
+    },
+    onError: (error: any) => {
+      setReactivateDialogOpen(false);
+      toast({
+        title: "Reactivation Failed",
+        description: error.message || "Failed to reactivate subscription. Please try again.",
+        variant: "destructive",
+      });
+    }
+  })
+
   // Check for payment method update completion on component mount
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -324,17 +413,52 @@ export function BillingManagement() {
                   </p>
                 </div>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRefreshBilling}
-                disabled={refreshing}
-                className="flex items-center gap-2"
-                data-testid="button-refresh-billing"
-              >
-                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
+              <div className="flex items-center gap-2">
+                {/* Subscription Management Buttons */}
+                {paymentStatus === 'active' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCancelDialogOpen(true)}
+                    disabled={cancelSubscriptionMutation.isPending}
+                    className="flex items-center gap-2 text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-950"
+                    data-testid="button-cancel-subscription"
+                  >
+                    <XCircle className="w-4 h-4" />
+                    Cancel Subscription
+                  </Button>
+                )}
+                
+                {paymentStatus === 'cancelled' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setReactivateDialogOpen(true)}
+                    disabled={reactivateSubscriptionMutation.isPending}
+                    className="flex items-center gap-2 text-green-600 border-green-200 hover:bg-green-50 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-950"
+                    data-testid="button-reactivate-subscription"
+                  >
+                    {reactivateSubscriptionMutation.isPending ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <RotateCcw className="w-4 h-4" />
+                    )}
+                    {reactivateSubscriptionMutation.isPending ? 'Processing...' : 'Reactivate'}
+                  </Button>
+                )}
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRefreshBilling}
+                  disabled={refreshing}
+                  className="flex items-center gap-2"
+                  data-testid="button-refresh-billing"
+                >
+                  <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -620,6 +744,134 @@ export function BillingManagement() {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Subscription Cancellation Dialog */}
+      <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <XCircle className="w-5 h-5" />
+              Cancel Subscription
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to cancel your subscription? This action will:
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-3 py-4">
+            <div className="flex items-start gap-3">
+              <div className="w-2 h-2 rounded-full bg-red-400 mt-2" />
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Stop automatic billing starting from your next billing cycle
+              </p>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="w-2 h-2 rounded-full bg-red-400 mt-2" />
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                You'll retain access to premium features until the end of your current billing period
+              </p>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="w-2 h-2 rounded-full bg-green-400 mt-2" />
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                You can reactivate your subscription at any time
+              </p>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCancelDialogOpen(false)}
+              disabled={cancelSubscriptionMutation.isPending}
+            >
+              Keep Subscription
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => cancelSubscriptionMutation.mutate()}
+              disabled={cancelSubscriptionMutation.isPending}
+              data-testid="button-confirm-cancel"
+            >
+              {cancelSubscriptionMutation.isPending ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Cancelling...
+                </>
+              ) : (
+                <>
+                  <XCircle className="w-4 h-4 mr-2" />
+                  Cancel Subscription
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Subscription Reactivation Dialog */}
+      <Dialog open={reactivateDialogOpen} onOpenChange={setReactivateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-green-600">
+              <RotateCcw className="w-5 h-5" />
+              Reactivate Subscription
+            </DialogTitle>
+            <DialogDescription>
+              Welcome back! Reactivating your subscription will:
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-3 py-4">
+            <div className="flex items-start gap-3">
+              <div className="w-2 h-2 rounded-full bg-green-400 mt-2" />
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Restore full access to all premium features immediately
+              </p>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="w-2 h-2 rounded-full bg-green-400 mt-2" />
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Resume automatic billing starting from next month
+              </p>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="w-2 h-2 rounded-full bg-blue-400 mt-2" />
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Your existing payment method will be used for future billing
+              </p>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setReactivateDialogOpen(false)}
+              disabled={reactivateSubscriptionMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => reactivateSubscriptionMutation.mutate()}
+              disabled={reactivateSubscriptionMutation.isPending}
+              className="bg-green-600 hover:bg-green-700"
+              data-testid="button-confirm-reactivate"
+            >
+              {reactivateSubscriptionMutation.isPending ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Reactivating...
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Reactivate Subscription
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
