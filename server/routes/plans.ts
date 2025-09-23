@@ -42,22 +42,13 @@ router.get('/user-plan-details', requireUser, async (req, res) => {
     
     console.log(`📋 Fetching plan details for user: ${userId}`);
     
-    // Get user plan with payment status and subscription details
+    // Get user plan with payment status and subscription details  
     const { data: userPlan, error } = await supabase
       .from('user_plans')
       .select(`
         id,
         plan_type,
-        payment_status,
-        last_payment_date,
-        next_payment_date,
-        failed_payment_count,
-        grace_period_end,
-        paystack_subscription_code,
-        paystack_customer_code,
         expires_at,
-        is_trial,
-        trial_ends_at,
         created_at,
         updated_at
       `)
@@ -74,9 +65,10 @@ router.get('/user-plan-details', requireUser, async (req, res) => {
     if (!userPlan) {
       // Return default free plan if no plan exists
       return res.json({
-        payment_status: 'free',
         plan_type: 'free',
-        failed_payment_count: 0
+        expires_at: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       });
     }
 
@@ -98,7 +90,7 @@ router.get('/status', requireUser, async (req, res) => {
     // Get user plan status
     const { data: userPlan, error: planError } = await supabase
       .from('user_plans')
-      .select('plan_type, payment_status, expires_at, trial_ends_at')
+      .select('plan_type, expires_at')
       .eq('user_id', userId)
       .single();
 
