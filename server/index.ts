@@ -66,6 +66,10 @@ app.use((req, res, next) => {
   const paymentStatusRoutes = await import('./routes/payment-status.js');
   app.use('/api/payment-status', paymentStatusRoutes.default);
   
+  // Add Grace Period API routes - admin grace period management
+  const gracePeriodRoutes = await import('./routes/grace-period.js');
+  app.use('/api/grace-period', gracePeriodRoutes.default);
+  
   const server = await registerRoutes(app);
   
   // Initialize single email system - SimpleEmailScheduler (production ready)
@@ -75,6 +79,11 @@ app.use((req, res, next) => {
   simpleEmailScheduler.start().catch(error => {
     console.error('❌ Failed to start email scheduler:', error);
   });
+
+  // Initialize Grace Period Scheduler for automatic account suspension
+  console.log('⏰ Initializing Grace Period Scheduler...');
+  const { GracePeriodScheduler } = await import('./services/GracePeriodScheduler.js');
+  GracePeriodScheduler.start();
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

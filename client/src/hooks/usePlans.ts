@@ -21,7 +21,8 @@ export function usePlans() {
     refetchOnWindowFocus: false,
   })
 
-  const isPremium = usageStatus?.user_plan?.plan_type === 'premium'
+  const isPremium = usageStatus?.user_plan?.plan_type === 'premium' && 
+                    usageStatus?.user_plan?.payment_status === 'active'
   const isFree = usageStatus?.user_plan?.plan_type === 'free'
   
   // CRITICAL: Only active trials count - expired trials should not get trial benefits
@@ -30,12 +31,32 @@ export function usePlans() {
                    usageStatus?.user_plan?.expires_at && 
                    new Date(usageStatus?.user_plan?.expires_at) > new Date())
 
+  // NEW: Grace period logic - premium users with payment issues get 7-day grace period
+  const isInGracePeriod = usageStatus?.user_plan?.payment_status === 'grace_period' &&
+                          usageStatus?.user_plan?.grace_period_end &&
+                          new Date(usageStatus?.user_plan?.grace_period_end) > new Date()
+
+  // Check if grace period has expired but status hasn't been updated yet
+  const isGracePeriodExpired = usageStatus?.user_plan?.payment_status === 'grace_period' &&
+                               usageStatus?.user_plan?.grace_period_end &&
+                               new Date(usageStatus?.user_plan?.grace_period_end) <= new Date()
+
+  // Check if account is suspended due to payment failure
+  const isSuspended = usageStatus?.user_plan?.payment_status === 'suspended' ||
+                      usageStatus?.user_plan?.payment_status === 'failed' ||
+                      isGracePeriodExpired
+
   // NEW: Detect expired trials - when usageStatus exists but user_plan is null
   // This means they had a trial that expired and now have no active plan
   const isExpiredTrial = usageStatus && !usageStatus.user_plan
   
-  // Trial users get premium features with time limit
-  const hasPremiumFeatures = isPremium || isTrial
+  // Users get premium features if: premium + active, trial, or in grace period
+  const hasPremiumFeatures = isPremium || isTrial || isInGracePeriod
+
+  // Calculate grace period days remaining
+  const gracePeriodDaysRemaining = usageStatus?.user_plan?.grace_period_end 
+    ? Math.max(0, Math.ceil((new Date(usageStatus.user_plan.grace_period_end).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
+    : 0
 
   // Helper functions for checking limits - temporarily allow all for journal entries
   const canUploadDocument = usageStatus?.can_upload_document ?? false
@@ -79,6 +100,12 @@ export function usePlans() {
     isTrial,
     isExpiredTrial,
     hasPremiumFeatures,
+    // Grace period state
+    isInGracePeriod,
+    isGracePeriodExpired,
+    isSuspended,
+    gracePeriodDaysRemaining,
+    // Access control functions
     canUploadDocument,
     canCreateJournalEntry,
     canCreateGoal,
