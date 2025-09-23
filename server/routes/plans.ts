@@ -50,7 +50,14 @@ router.get('/user-plan-details', requireUser, async (req, res) => {
         plan_type,
         expires_at,
         created_at,
-        updated_at
+        updated_at,
+        payment_status,
+        last_payment_date,
+        next_payment_date,
+        failed_payment_count,
+        grace_period_end,
+        paystack_customer_code,
+        paystack_subscription_code
       `)
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
@@ -63,13 +70,7 @@ router.get('/user-plan-details', requireUser, async (req, res) => {
     }
 
     if (!userPlan) {
-      // Return default free plan if no plan exists
-      return res.json({
-        plan_type: 'free',
-        expires_at: null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      });
+      return res.status(404).json({ error: 'No plan found for user' });
     }
 
     console.log(`✅ Plan details retrieved for user: ${userId}`);

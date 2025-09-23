@@ -35,8 +35,8 @@ export class PlansService {
       return {
         id: planData.id || 'unknown',
         user_id: userId,
-        plan_type: planData.plan_type || 'free',
-        payment_status: planData.payment_status || 'free',
+        plan_type: planData.plan_type,
+        payment_status: planData.payment_status || 'active',
         expires_at: planData.expires_at,
         created_at: planData.created_at || new Date().toISOString(),
         updated_at: planData.updated_at || new Date().toISOString(),
