@@ -35,6 +35,7 @@ import {
 } from "lucide-react"
 import { motion } from "framer-motion"
 import type { PaymentTransaction } from "@/types/plans"
+import { PaystackService } from "@/lib/services/paystack"
 
 interface UserPlanDetails {
   payment_status: string
@@ -642,7 +643,7 @@ export function BillingManagement() {
               <div>
                 <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Amount</p>
                 <p className="text-lg font-semibold">
-                  {isTrial ? 'Free Trial' : isPremium ? 'R599.00/month' : 'Free'}
+                  {isTrial ? 'Free Trial' : isPremium ? `${PaystackService.formatAmount(PaystackService.getSubscriptionPrice('monthly'))}/month` : 'Free'}
                 </p>
               </div>
             </div>
