@@ -1,5 +1,5 @@
 // Admin API Routes - Server-side admin operations with service role privileges
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { supabase } from '../lib/supabase.js';
 
 const router = express.Router();
