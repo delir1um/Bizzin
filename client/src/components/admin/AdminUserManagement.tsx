@@ -223,13 +223,18 @@ Please try again or check the server logs for more details.`)
   const updateTrialDaysMutation = useMutation({
     mutationFn: async ({ userId, daysToAdd }: { userId: string; daysToAdd: number }) => {
       // First, get the current user plan to check existing expiry
-      const { data: userPlan, error: fetchError } = await supabase
+      // Use order by created_at desc and limit 1 to handle multiple plans
+      const { data: userPlans, error: fetchError } = await supabase
         .from('user_plans')
-        .select('expires_at')
+        .select('expires_at, id')
         .eq('user_id', userId)
-        .single()
-      
+        .order('created_at', { ascending: false })
+        .limit(1)
+        
       if (fetchError) throw fetchError
+      
+      const userPlan = userPlans?.[0]
+      if (!userPlan) throw new Error('No user plan found')
       
       const now = new Date()
       let baseDate: Date
@@ -250,10 +255,11 @@ Please try again or check the server logs for more details.`)
         throw new Error('Cannot set expiry more than 1 year in the past')
       }
       
+      // Update the specific plan record by ID to avoid ambiguity
       const { error } = await supabase
         .from('user_plans')
         .update({ expires_at: newExpiryDate.toISOString() })
-        .eq('user_id', userId)
+        .eq('id', userPlan.id)
       
       if (error) throw error
       return { userId, newExpiryDate, baseDate }
