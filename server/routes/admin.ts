@@ -220,41 +220,6 @@ router.get('/users', requireAdmin, async (req, res) => {
     const usersWithStatsAndPlans = await Promise.all(
       (profiles || []).map(async (profile) => {
         try {
-          // ADMIN OVERRIDE: Force anton@cloudfusion.co.za to show as premium
-          if (profile.email === 'anton@cloudfusion.co.za') {
-            console.log('🔧 ADMIN OVERRIDE: Forcing premium plan for anton@cloudfusion.co.za');
-            
-            // Get user stats for admin
-            const [
-              { count: journalCount },
-              { count: goalCount }, 
-              { count: completedGoals },
-              { count: documentCount }
-            ] = await Promise.all([
-              supabase.from('journal_entries').select('*', { count: 'exact', head: true }).eq('user_id', profile.user_id),
-              supabase.from('goals').select('*', { count: 'exact', head: true }).eq('user_id', profile.user_id),
-              supabase.from('goals').select('*', { count: 'exact', head: true }).eq('user_id', profile.user_id).eq('status', 'completed'),
-              supabase.from('documents').select('*', { count: 'exact', head: true }).eq('user_id', profile.user_id)
-            ]);
-            
-            return {
-              ...profile,
-              plan: {
-                plan_type: 'premium',
-                plan_status: 'active',
-                expires_at: null,
-                trial_days_remaining: null,
-                paid_member_duration: 365, // Show as long-term premium user
-                is_trial: false
-              },
-              stats: {
-                journal_entries: journalCount || 0,
-                total_goals: goalCount || 0,
-                completed_goals: completedGoals || 0,
-                documents: documentCount || 0
-              }
-            };
-          }
           
           // Find user's plan from the pre-fetched plans
           const userPlan = allPlans?.find(plan => plan.user_id === profile.user_id);

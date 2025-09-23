@@ -21,24 +21,8 @@ export function usePlans() {
     refetchOnWindowFocus: false,
   })
 
-  // ADMIN OVERRIDE: Force anton@cloudfusion.co.za to be seen as premium
-  const isAdminUser = user?.email === 'anton@cloudfusion.co.za'
-  
-  // Override plan data for admin user
-  const finalUsageStatus = isAdminUser ? {
-    ...usageStatus,
-    plan_type: 'premium',
-    user_plan: {
-      id: 'admin-override',
-      user_id: user.id,
-      plan_type: 'premium',
-      payment_status: 'active',
-      expires_at: null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      is_trial: false
-    }
-  } : usageStatus
+  // Use actual usage status from database - no overrides
+  const finalUsageStatus = usageStatus
 
   const isPremium = finalUsageStatus?.user_plan?.plan_type === 'premium' && 
                     finalUsageStatus?.user_plan?.payment_status === 'active'
@@ -77,25 +61,22 @@ export function usePlans() {
     ? Math.max(0, Math.ceil((new Date(finalUsageStatus.user_plan.grace_period_end).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
     : 0
 
-  // Helper functions for checking limits - admin gets unlimited access
-  const canUploadDocument = isAdminUser ? true : (finalUsageStatus?.can_upload_document ?? false)
+  // Helper functions for checking limits - use actual plan data
+  const canUploadDocument = finalUsageStatus?.can_upload_document ?? false
   const canCreateJournalEntry = true // Allow all journal entries 
-  const canCreateGoal = isAdminUser ? true : (finalUsageStatus?.can_create_goal ?? false)
+  const canCreateGoal = finalUsageStatus?.can_create_goal ?? false
   
   const canUseCalculator = (calculatorId: string): boolean => {
-    if (isAdminUser) return true
     return finalUsageStatus?.can_use_calculator(calculatorId) ?? false
   }
 
   const hasStorageSpace = (fileSizeBytes: number): boolean => {
-    if (isAdminUser) return true
     if (!finalUsageStatus) return false
     const remaining = finalUsageStatus.plan_limits.storage_limit - finalUsageStatus.current_usage.storage_used
     return remaining >= fileSizeBytes
   }
 
   const getRemainingQuota = (type: 'storage' | 'documents' | 'journal' | 'goals') => {
-    if (isAdminUser) return 999999 // Unlimited for admin
     if (!finalUsageStatus) return 0
     
     switch (type) {
