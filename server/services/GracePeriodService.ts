@@ -1,8 +1,10 @@
 // Grace Period Service - Manage 7-day grace periods after payment failures
 import { supabase } from '../lib/supabase.js';
+import { EmailService } from './EmailService.js';
 import type { PaymentStatus } from '../../client/src/types/plans.js';
 
 export class GracePeriodService {
+  private static emailService = new EmailService();
   
   // Initialize grace period when payment fails
   static async startGracePeriod(userId: string, failureReason?: string): Promise<{
@@ -80,6 +82,38 @@ export class GracePeriodService {
       }
 
       console.log(`✅ Grace period started for user ${userId}, expires: ${gracePeriodEnd.toISOString()}`);
+
+      // Send payment failure email notification
+      try {
+        console.log(`📧 Sending payment failure email for user ${userId}`);
+        
+        // Get user profile for email
+        const { data: authUser } = await supabase.auth.admin.getUserById(userId);
+        const userEmail = authUser?.user?.email;
+        const userName = authUser?.user?.user_metadata?.full_name || 
+                        authUser?.user?.email?.split('@')[0] || 
+                        'Valued Customer';
+
+        if (userEmail) {
+          const emailResult = await this.emailService.sendPaymentFailureEmail(
+            userEmail,
+            userName,
+            7, // 7 days grace period
+            failureReason
+          );
+
+          if (emailResult) {
+            console.log(`✅ Payment failure email sent to ${userEmail}`);
+          } else {
+            console.warn(`⚠️ Failed to send payment failure email to ${userEmail}`);
+          }
+        } else {
+          console.warn(`⚠️ No email address found for user ${userId}, skipping email notification`);
+        }
+      } catch (emailError) {
+        console.error('Failed to send payment failure email:', emailError);
+        // Don't fail the grace period start because of email issues
+      }
 
       return {
         success: true,

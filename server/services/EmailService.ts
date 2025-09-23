@@ -63,7 +63,8 @@ export class EmailService {
         { name: 'daily-email', file: 'daily-email-dark.hbs' },
         { name: 'signup-confirmation', file: 'signup-confirmation.hbs' },
         { name: 'password-reset', file: 'password-reset.hbs' },
-        { name: 'base-system', file: 'base-system-email.hbs' }
+        { name: 'base-system', file: 'base-system-email.hbs' },
+        { name: 'payment-failure', file: 'payment-failure.hbs' }
       ];
 
       for (const template of templates) {
@@ -1527,5 +1528,64 @@ Visit Bizzin to add your journal entry and update your goals!
       Email: userEmail,
       RedirectTo: resetUrl
     });
+  }
+
+  // Send payment failure notification with grace period information
+  async sendPaymentFailureEmail(
+    userEmail: string, 
+    userName: string, 
+    graceDaysRemaining: number, 
+    failureReason?: string,
+    updatePaymentUrl?: string
+  ): Promise<boolean> {
+    try {
+      const templateData = {
+        subject: '⚠️ Payment Issue - Action Required | Bizzin',
+        user_name: userName,
+        grace_days_remaining: graceDaysRemaining,
+        failure_reason: failureReason || 'Unable to process payment method',
+        update_payment_url: updatePaymentUrl || (process.env.NODE_ENV === 'production' 
+          ? 'https://bizzin.co.za/profile?tab=billing' 
+          : 'http://localhost:5000/profile?tab=billing'),
+        unsubscribe_url: process.env.NODE_ENV === 'production' 
+          ? 'https://bizzin.co.za/profile?tab=notifications' 
+          : 'http://localhost:5000/profile?tab=notifications'
+      };
+
+      console.log(`📧 Sending payment failure email to ${userEmail} (${graceDaysRemaining} days grace period)`);
+      
+      const result = await this.sendSystemEmail('payment-failure', userEmail, templateData);
+      
+      if (result) {
+        console.log(`✅ Payment failure email sent successfully to ${userEmail}`);
+        
+        // Log to payment transactions for audit trail
+        try {
+          await supabase
+            .from('payment_transactions')
+            .insert({
+              user_id: null, // Will be updated when we have user context
+              transaction_id: `email_${Date.now()}`,
+              amount: 0,
+              status: 'email_sent',
+              paystack_reference: `payment_failure_notification_${Date.now()}`,
+              metadata: {
+                type: 'payment_failure_email',
+                recipient: userEmail,
+                grace_days_remaining: graceDaysRemaining,
+                failure_reason: failureReason
+              }
+            });
+        } catch (auditError) {
+          console.warn('⚠️ Failed to log payment failure email to audit trail:', auditError);
+          // Don't fail the email send because of audit logging issues
+        }
+      }
+      
+      return result;
+    } catch (error: any) {
+      console.error(`❌ Failed to send payment failure email to ${userEmail}:`, error.message);
+      return false;
+    }
   }
 }
