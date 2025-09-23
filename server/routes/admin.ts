@@ -125,7 +125,7 @@ router.post('/fix-database', async (req, res) => {
 // Get comprehensive admin user list with service role privileges
 router.get('/users', async (req, res) => {
   try {
-    console.log('👥 Fetching complete admin user list...');
+    console.log('👥 Fetching complete admin user list with fixed plan logic...');
     
     // Get all user profiles with service role privileges (bypasses RLS)
     const { data: profiles, error: profileError } = await supabase
@@ -151,46 +151,68 @@ router.get('/users', async (req, res) => {
     
     console.log(`📋 Found ${profiles?.length || 0} user profiles`);
     
-    // Get additional stats and plan data for each user
+    // Get ALL user plans first to avoid individual queries  
+    const { data: allPlans, error: plansError } = await supabase
+      .from('user_plans')
+      .select('user_id, plan_type, expires_at, created_at')
+      .order('created_at', { ascending: false });
+    
+    console.log(`📊 Found ${allPlans?.length || 0} plan records total`);
+    if (plansError) {
+      console.error('Error fetching plans:', plansError);
+    }
+    
+    // Get additional stats for each user and match with plan data
     const usersWithStatsAndPlans = await Promise.all(
       (profiles || []).map(async (profile) => {
         try {
-          // Get user stats and plan data in parallel
+          // Find user's plan from the pre-fetched plans
+          const userPlan = allPlans?.find(plan => plan.user_id === profile.user_id);
+          
+          console.log(`🔍 Plan lookup for ${profile.email}:`, {
+            user_id: profile.user_id,
+            found_plan: !!userPlan,
+            plan_details: userPlan
+          });
+          
+          // Get user stats
           const [
             { count: journalCount },
             { count: goalCount }, 
             { count: completedGoals },
-            { count: documentCount },
-            { data: planData, error: planError }
+            { count: documentCount }
           ] = await Promise.all([
             supabase.from('journal_entries').select('*', { count: 'exact', head: true }).eq('user_id', profile.user_id),
             supabase.from('goals').select('*', { count: 'exact', head: true }).eq('user_id', profile.user_id),
             supabase.from('goals').select('*', { count: 'exact', head: true }).eq('user_id', profile.user_id).eq('status', 'completed'),
-            supabase.from('documents').select('*', { count: 'exact', head: true }).eq('user_id', profile.user_id),
-            supabase.from('user_plans').select('plan_type, expires_at, created_at, cancelled_at').eq('user_id', profile.user_id).single()
+            supabase.from('documents').select('*', { count: 'exact', head: true }).eq('user_id', profile.user_id)
           ]);
           
           // Calculate plan information
-          let planType: 'trial' | 'premium' = 'trial'; // Default to trial since no free accounts
+          let planType: 'trial' | 'premium' = 'trial';
           let planStatus: 'active' | 'cancelled' | 'expired' = 'active';
           let trialDaysRemaining = null;
           let paidMemberDuration = null;
           let isTrial = true;
           
-          if (planData && !planError) {
+          if (userPlan) {
             const now = new Date();
-            const expiresAt = planData.expires_at ? new Date(planData.expires_at) : null;
-            const planCreatedAt = planData.created_at ? new Date(planData.created_at) : null;
+            const expiresAt = userPlan.expires_at ? new Date(userPlan.expires_at) : null;
+            const planCreatedAt = userPlan.created_at ? new Date(userPlan.created_at) : null;
             
-            if (planData.plan_type === 'premium') {
-              // This is a paid user
+            console.log(`✅ Processing plan for ${profile.email}:`, {
+              plan_type: userPlan.plan_type,
+              expires_at: userPlan.expires_at,
+              now: now.toISOString()
+            });
+            
+            if (userPlan.plan_type === 'premium') {
               planType = 'premium';
               isTrial = false;
               if (planCreatedAt) {
                 paidMemberDuration = Math.floor((now.getTime() - planCreatedAt.getTime()) / (1000 * 60 * 60 * 24));
               }
-            } else if (planData.plan_type === 'free' && expiresAt) {
-              // This is a trial user (free plan with expiry = trial)
+            } else if (userPlan.plan_type === 'free' && expiresAt) {
               planType = 'trial';
               isTrial = true;
               if (expiresAt > now) {
@@ -199,15 +221,17 @@ router.get('/users', async (req, res) => {
                 trialDaysRemaining = 0;
                 planStatus = 'expired';
               }
+              console.log(`📅 Trial calculation for ${profile.email}:`, {
+                trialDaysRemaining,
+                planStatus,
+                expires_at: expiresAt.toISOString(),
+                days_diff: Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+              });
             }
             
-            // Check for cancellation
-            if (planData.cancelled_at) {
-              planStatus = 'cancelled';
-            }
-          } else if (!planData) {
-            // No plan record - default to trial
-            console.log(`No plan found for user ${profile.email}, defaulting to trial`);
+            // Note: cancelled_at column causes Supabase issues, skip for now
+          } else {
+            console.log(`❌ No plan found for ${profile.email}, using default trial`);
           }
           
           return {
@@ -215,7 +239,7 @@ router.get('/users', async (req, res) => {
             plan: {
               plan_type: planType,
               plan_status: planStatus,
-              expires_at: planData?.expires_at || null,
+              expires_at: userPlan?.expires_at || null,
               trial_days_remaining: trialDaysRemaining,
               paid_member_duration: paidMemberDuration,
               is_trial: isTrial
