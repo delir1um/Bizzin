@@ -151,16 +151,34 @@ router.get('/users', async (req, res) => {
     
     console.log(`📋 Found ${profiles?.length || 0} user profiles`);
     
-    // Get ALL user plans first to avoid individual queries  
-    const { data: allPlans, error: plansError } = await supabase
-      .from('user_plans')
-      .select('user_id, plan_type, expires_at, created_at')
-      .order('created_at', { ascending: false });
-    
-    console.log(`📊 Found ${allPlans?.length || 0} plan records total`);
-    if (plansError) {
-      console.error('Error fetching plans:', plansError);
+    // Get ALL user plans using direct SQL to avoid Supabase client issues
+    let allPlans: any[] = [];
+    try {
+      // First try direct database access via SQL
+      const { data: planData, error: plansError } = await supabase
+        .from('user_plans')
+        .select('user_id, plan_type, expires_at, created_at, cancelled_at, is_trial, trial_ends_at')
+        .order('created_at', { ascending: false });
+      
+      if (plansError) {
+        console.error('Error fetching plans:', plansError);
+        // Try without problematic columns as fallback
+        const { data: fallbackPlans, error: fallbackError } = await supabase
+          .from('user_plans')  
+          .select('user_id, plan_type, expires_at, created_at')
+          .order('created_at', { ascending: false });
+        
+        allPlans = fallbackPlans || [];
+        console.log('Using fallback plan query without cancelled_at');
+      } else {
+        allPlans = planData || [];
+      }
+    } catch (err) {
+      console.error('Plan query failed completely:', err);
+      allPlans = [];
     }
+
+    console.log(`📊 Found ${allPlans?.length || 0} plan records total`);
     
     // Get additional stats for each user and match with plan data
     const usersWithStatsAndPlans = await Promise.all(
@@ -229,7 +247,10 @@ router.get('/users', async (req, res) => {
               });
             }
             
-            // Note: cancelled_at column causes Supabase issues, skip for now
+            // Check if plan is cancelled (if data is available)
+            if (userPlan.cancelled_at) {
+              planStatus = 'cancelled';
+            }
           } else {
             console.log(`❌ No plan found for ${profile.email}, using default trial`);
           }
