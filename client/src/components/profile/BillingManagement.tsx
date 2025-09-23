@@ -105,6 +105,24 @@ const getPaymentStatusConfig = (status: string) => {
         borderColor: 'border-gray-200 dark:border-gray-800',
         icon: Pause
       }
+    case 'trial':
+      return {
+        label: 'Free Trial',
+        color: 'bg-blue-500',
+        textColor: 'text-blue-700 dark:text-blue-300',
+        bgColor: 'bg-blue-50 dark:bg-blue-950',
+        borderColor: 'border-blue-200 dark:border-blue-800',
+        icon: Zap
+      }
+    case 'free':
+      return {
+        label: 'Free Plan',
+        color: 'bg-slate-500',
+        textColor: 'text-slate-700 dark:text-slate-300',
+        bgColor: 'bg-slate-50 dark:bg-slate-950',
+        borderColor: 'border-slate-200 dark:border-slate-800',
+        icon: Shield
+      }
     default:
       return {
         label: 'Unknown',
@@ -134,18 +152,39 @@ const getTransactionStatusBadge = (status: string) => {
 
 export function BillingManagement() {
   const { user } = useAuth()
-  const { usageStatus, isLoading: plansLoading, refetch } = usePlans()
+  const { usageStatus, isLoading: plansLoading, refetch, isTrial, isPremium, isFree } = usePlans()
   const [refreshing, setRefreshing] = useState(false)
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
   const [reactivateDialogOpen, setReactivateDialogOpen] = useState(false)
 
-  // Fetch user plan details with payment information
+  // Fetch user plan details with payment information  
   const { data: planDetails, isLoading: planDetailsLoading } = useQuery({
     queryKey: ['/api/plans/user-plan-details'],
     enabled: !!user,
     queryFn: async () => {
+      // For trial users, return trial status immediately
+      if (isTrial && usageStatus?.user_plan) {
+        return {
+          payment_status: 'trial',
+          plan_type: usageStatus.user_plan.plan_type,
+          paystack_subscription_code: undefined,
+          paystack_customer_code: undefined,
+          next_payment_date: usageStatus.user_plan.expires_at
+        } as UserPlanDetails
+      }
+
+      // For free users, return free status
+      if (isFree) {
+        return {
+          payment_status: 'free',
+          plan_type: 'free',
+          paystack_subscription_code: undefined,
+          paystack_customer_code: undefined
+        } as UserPlanDetails
+      }
+
       const session = await supabase.auth.getSession();
       const token = session.data.session?.access_token;
       
@@ -161,7 +200,13 @@ export function BillingManagement() {
       });
       
       if (!response.ok) {
-        throw new Error(`Failed to fetch plan details: ${response.status}`);
+        // For non-premium users, don't throw error, return appropriate status
+        return {
+          payment_status: isTrial ? 'trial' : 'free',
+          plan_type: usageStatus?.user_plan?.plan_type || 'free',
+          paystack_subscription_code: undefined,
+          paystack_customer_code: undefined
+        } as UserPlanDetails
       }
       
       return response.json();
@@ -590,11 +635,15 @@ export function BillingManagement() {
               </div>
               <div>
                 <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Billing Cycle</p>
-                <p className="text-lg font-semibold">Monthly</p>
+                <p className="text-lg font-semibold">
+                  {isTrial ? 'Trial Period' : isPremium ? 'Monthly' : 'N/A'}
+                </p>
               </div>
               <div>
                 <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Amount</p>
-                <p className="text-lg font-semibold">R599.00/month</p>
+                <p className="text-lg font-semibold">
+                  {isTrial ? 'Free Trial' : isPremium ? 'R599.00/month' : 'Free'}
+                </p>
               </div>
             </div>
 

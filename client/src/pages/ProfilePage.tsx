@@ -16,6 +16,7 @@ import { PlanManagement } from "@/components/profile/PlanManagement"
 import { BillingManagement } from "@/components/profile/BillingManagement"
 import { ReferralDashboard } from "@/components/referrals/ReferralDashboard"
 import { NotificationManagement } from "@/components/profile/NotificationManagement"
+import { usePlans } from "@/hooks/usePlans"
 import { motion, AnimatePresence } from "framer-motion"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
@@ -33,6 +34,7 @@ type ProfileFormData = z.infer<typeof profileSchema>
 
 export default function ProfilePage() {
   const { user } = useAuth()
+  const { isTrial, isPremium, isLoading: isPlanLoading } = usePlans()
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
@@ -262,10 +264,13 @@ export default function ProfilePage() {
             <Crown className="w-4 h-4" />
             Plan
           </TabsTrigger>
-          <TabsTrigger value="billing" className="flex items-center gap-2">
-            <CreditCard className="w-4 h-4" />
-            Billing
-          </TabsTrigger>
+          {/* Only show billing tab for premium users, not trial/free users */}
+          {!isPlanLoading && isPremium && (
+            <TabsTrigger value="billing" className="flex items-center gap-2">
+              <CreditCard className="w-4 h-4" />
+              Billing
+            </TabsTrigger>
+          )}
           <TabsTrigger value="referrals" className="flex items-center gap-2">
             <Users className="w-4 h-4" />
             Referrals
@@ -573,9 +578,12 @@ export default function ProfilePage() {
           <PlanManagement />
         </TabsContent>
 
-        <TabsContent value="billing" className="space-y-6">
-          <BillingManagement />
-        </TabsContent>
+        {/* Only show billing content for premium users */}
+        {!isPlanLoading && isPremium && (
+          <TabsContent value="billing" className="space-y-6">
+            <BillingManagement />
+          </TabsContent>
+        )}
 
         <TabsContent value="referrals" className="space-y-6">
           <ReferralDashboard />
