@@ -62,6 +62,10 @@ app.use((req, res, next) => {
   const paystackRoutes = await import('./routes/paystack.js');
   app.use('/api/paystack', paystackRoutes.default);
   
+  // Add Payment Status API routes - admin payment management tools
+  const paymentStatusRoutes = await import('./routes/payment-status.js');
+  app.use('/api/payment-status', paymentStatusRoutes.default);
+  
   const server = await registerRoutes(app);
   
   // Initialize single email system - SimpleEmailScheduler (production ready)
