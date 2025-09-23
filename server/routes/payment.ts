@@ -456,4 +456,247 @@ router.post('/verify-payment-method-update', requireUser, async (req, res) => {
   }
 });
 
+// Cancel active subscription
+router.post('/cancel-subscription', requireUser, async (req, res) => {
+  try {
+    const userId = (req as any).authenticatedUser.id;
+    
+    console.log(`🚫 Processing subscription cancellation for user: ${userId}`);
+    
+    // Get user's plan and subscription information
+    const { data: userPlan, error: planError } = await supabase
+      .from('user_plans')
+      .select('paystack_subscription_code, payment_status, plan_type')
+      .eq('user_id', userId)
+      .single();
+
+    if (planError || !userPlan) {
+      return res.status(404).json({ error: 'User plan not found' });
+    }
+
+    // Check if user has an active subscription to cancel
+    if (!userPlan.paystack_subscription_code) {
+      return res.status(400).json({ 
+        error: 'No active subscription found',
+        message: 'You do not have an active subscription to cancel'
+      });
+    }
+
+    if (userPlan.payment_status === 'cancelled') {
+      return res.status(400).json({
+        error: 'Subscription already cancelled',
+        message: 'Your subscription is already cancelled'
+      });
+    }
+
+    const paystackSecretKey = process.env.PAYSTACK_SECRET_KEY;
+    if (!paystackSecretKey) {
+      console.error('PAYSTACK_SECRET_KEY not configured');
+      return res.status(500).json({ error: 'Payment system configuration error' });
+    }
+
+    // Disable the subscription with Paystack
+    const paystackResponse = await fetch(`https://api.paystack.co/subscription/disable`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${paystackSecretKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        code: userPlan.paystack_subscription_code,
+        token: 'cancel_requested'
+      })
+    });
+
+    if (!paystackResponse.ok) {
+      const errorText = await paystackResponse.text();
+      console.error('Paystack subscription cancellation failed:', errorText);
+      return res.status(500).json({ error: 'Failed to cancel subscription with payment processor' });
+    }
+
+    const paystackResult = await paystackResponse.json();
+    
+    if (!paystackResult.status) {
+      console.error('Paystack cancellation response invalid:', paystackResult);
+      return res.status(500).json({ error: 'Invalid response from payment processor' });
+    }
+
+    // Update user plan status to cancelled
+    const { error: updateError } = await supabase
+      .from('user_plans')
+      .update({
+        payment_status: 'cancelled',
+        cancelled_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', userId);
+
+    if (updateError) {
+      console.error('Failed to update user plan status:', updateError);
+      return res.status(500).json({ error: 'Failed to update subscription status' });
+    }
+
+    // Log the cancellation transaction
+    try {
+      await supabase
+        .from('payment_transactions')
+        .insert({
+          user_id: userId,
+          transaction_id: `cancel_${Date.now()}`,
+          amount: 0,
+          currency: 'ZAR',
+          status: 'success',
+          payment_method: 'subscription_cancellation',
+          paystack_reference: `cancel_${userPlan.paystack_subscription_code}`,
+          metadata: {
+            type: 'subscription_cancellation',
+            subscription_code: userPlan.paystack_subscription_code,
+            cancelled_at: new Date().toISOString(),
+            paystack_response: paystackResult
+          }
+        });
+    } catch (auditError) {
+      console.warn('Failed to log cancellation transaction:', auditError);
+    }
+
+    console.log(`✅ Subscription cancelled successfully for user: ${userId}`);
+    
+    res.json({
+      success: true,
+      message: 'Subscription cancelled successfully',
+      status: 'cancelled',
+      cancelled_at: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('❌ Error cancelling subscription:', error);
+    res.status(500).json({ error: 'Failed to cancel subscription' });
+  }
+});
+
+// Reactivate cancelled subscription
+router.post('/reactivate-subscription', requireUser, async (req, res) => {
+  try {
+    const userId = (req as any).authenticatedUser.id;
+    
+    console.log(`🔄 Processing subscription reactivation for user: ${userId}`);
+    
+    // Get user's plan and subscription information
+    const { data: userPlan, error: planError } = await supabase
+      .from('user_plans')
+      .select('paystack_subscription_code, payment_status, plan_type, paystack_customer_code')
+      .eq('user_id', userId)
+      .single();
+
+    if (planError || !userPlan) {
+      return res.status(404).json({ error: 'User plan not found' });
+    }
+
+    // Check if subscription can be reactivated
+    if (userPlan.payment_status !== 'cancelled') {
+      return res.status(400).json({ 
+        error: 'Subscription not cancelled',
+        message: 'Your subscription is not in a cancelled state'
+      });
+    }
+
+    if (!userPlan.paystack_subscription_code) {
+      return res.status(400).json({ 
+        error: 'No subscription found',
+        message: 'No subscription found to reactivate'
+      });
+    }
+
+    const paystackSecretKey = process.env.PAYSTACK_SECRET_KEY;
+    if (!paystackSecretKey) {
+      console.error('PAYSTACK_SECRET_KEY not configured');
+      return res.status(500).json({ error: 'Payment system configuration error' });
+    }
+
+    // Enable the subscription with Paystack
+    const paystackResponse = await fetch(`https://api.paystack.co/subscription/enable`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${paystackSecretKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        code: userPlan.paystack_subscription_code,
+        token: 'reactivation_requested'
+      })
+    });
+
+    if (!paystackResponse.ok) {
+      const errorText = await paystackResponse.text();
+      console.error('Paystack subscription reactivation failed:', errorText);
+      return res.status(500).json({ error: 'Failed to reactivate subscription with payment processor' });
+    }
+
+    const paystackResult = await paystackResponse.json();
+    
+    if (!paystackResult.status) {
+      console.error('Paystack reactivation response invalid:', paystackResult);
+      return res.status(500).json({ error: 'Invalid response from payment processor' });
+    }
+
+    // Calculate next payment date (1 month from now)
+    const nextPaymentDate = new Date();
+    nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 1);
+
+    // Update user plan status to active
+    const { error: updateError } = await supabase
+      .from('user_plans')
+      .update({
+        payment_status: 'active',
+        cancelled_at: null,
+        next_payment_date: nextPaymentDate.toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', userId);
+
+    if (updateError) {
+      console.error('Failed to update user plan status:', updateError);
+      return res.status(500).json({ error: 'Failed to update subscription status' });
+    }
+
+    // Log the reactivation transaction
+    try {
+      await supabase
+        .from('payment_transactions')
+        .insert({
+          user_id: userId,
+          transaction_id: `reactivate_${Date.now()}`,
+          amount: 0,
+          currency: 'ZAR',
+          status: 'success',
+          payment_method: 'subscription_reactivation',
+          paystack_reference: `reactivate_${userPlan.paystack_subscription_code}`,
+          metadata: {
+            type: 'subscription_reactivation',
+            subscription_code: userPlan.paystack_subscription_code,
+            reactivated_at: new Date().toISOString(),
+            next_payment_date: nextPaymentDate.toISOString(),
+            paystack_response: paystackResult
+          }
+        });
+    } catch (auditError) {
+      console.warn('Failed to log reactivation transaction:', auditError);
+    }
+
+    console.log(`✅ Subscription reactivated successfully for user: ${userId}`);
+    
+    res.json({
+      success: true,
+      message: 'Subscription reactivated successfully',
+      status: 'active',
+      next_payment_date: nextPaymentDate.toISOString(),
+      reactivated_at: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('❌ Error reactivating subscription:', error);
+    res.status(500).json({ error: 'Failed to reactivate subscription' });
+  }
+});
+
 export default router;
