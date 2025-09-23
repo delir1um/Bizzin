@@ -788,10 +788,28 @@ function UserDetailView({ user }: { user: UserProfile }) {
               <Button 
                 variant="outline" 
                 className="w-full justify-start"
-                onClick={() => {
-                  const subject = `Regarding Your ${user.business_name ? user.business_name + ' ' : ''}Bizzin Account`
-                  const body = `Hi ${user.first_name || user.email},\n\nI hope this message finds you well.\n\nBest regards,\nThe Bizzin Team`
-                  window.open(`mailto:${user.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`)
+                onClick={async () => {
+                  const subject = prompt(`Email subject for ${user.first_name || user.email}:`, 
+                    `Regarding Your ${user.business_name ? user.business_name + ' ' : ''}Bizzin Account`)
+                  const message = prompt(`Email message:`, 
+                    `Hi ${user.first_name || user.email},\n\nI hope this message finds you well.\n\nBest regards,\nThe Bizzin Team`)
+                  
+                  if (subject && message) {
+                    try {
+                      const response = await fetch(`/api/admin/send-email/${user.user_id}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ subject, message, email_type: 'notification' })
+                      })
+                      
+                      if (!response.ok) throw new Error('Failed to send email')
+                      
+                      alert(`✅ Email sent to ${user.email}!\nSubject: ${subject}`)
+                    } catch (error) {
+                      console.error('Error sending email:', error)
+                      alert('Failed to send email. Please try again.')
+                    }
+                  }
                 }}
               >
                 <Mail className="w-4 h-4 mr-2" />
@@ -816,14 +834,16 @@ function UserDetailView({ user }: { user: UserProfile }) {
                       }
                       
                       if (Object.keys(updates).length > 0) {
-                        const { error } = await supabase
-                          .from('user_profiles')
-                          .update(updates)
-                          .eq('user_id', user.user_id)
+                        const response = await fetch(`/api/admin/profile/${user.user_id}`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(updates)
+                        })
                         
-                        if (error) throw error
+                        if (!response.ok) throw new Error('Failed to update profile')
                         
-                        alert('Profile updated successfully!')
+                        const result = await response.json()
+                        alert(`✅ Profile updated successfully!\nChanges: ${result.data.changes.join(', ')}`)
                         window.location.reload() // Force refresh to see changes
                       }
                     } catch (error) {
@@ -842,12 +862,12 @@ function UserDetailView({ user }: { user: UserProfile }) {
                 className="w-full justify-start"
                 onClick={async () => {
                   try {
-                    // Fetch detailed activity data from Supabase
-                    const [journalEntries, goals, documents] = await Promise.all([
-                      supabase.from('journal_entries').select('created_at').eq('user_id', user.user_id).order('created_at', { ascending: false }).limit(5),
-                      supabase.from('goals').select('title, created_at, completed').eq('user_id', user.user_id).order('created_at', { ascending: false }).limit(5),
-                      supabase.from('documents').select('filename, created_at').eq('user_id', user.user_id).order('created_at', { ascending: false }).limit(5)
-                    ])
+                    const response = await fetch(`/api/admin/activity/${user.user_id}?limit=20`)
+                    
+                    if (!response.ok) throw new Error('Failed to fetch activity logs')
+                    
+                    const result = await response.json()
+                    const { activity_logs, admin_actions } = result.data
                     
                     let activityLog = `=== ACTIVITY LOG FOR ${user.email.toUpperCase()} ===\n\n`
                     activityLog += `📊 ACCOUNT SUMMARY:\n`
@@ -856,33 +876,28 @@ function UserDetailView({ user }: { user: UserProfile }) {
                     activityLog += `• Plan: ${user.plan_type} (${user.plan_status})\n`
                     activityLog += `• Storage: ${Math.round(user.storage_used / (1024 * 1024))}MB\n\n`
                     
-                    if (journalEntries.data && journalEntries.data.length > 0) {
-                      activityLog += `📝 RECENT JOURNAL ENTRIES (${user.total_journal_entries} total):\n`
-                      journalEntries.data.forEach((entry, i) => {
-                        activityLog += `${i + 1}. ${format(new Date(entry.created_at), 'MMM d, yyyy HH:mm')}\n`
+                    if (admin_actions && admin_actions.length > 0) {
+                      activityLog += `🛡️ ADMIN ACTIONS (${admin_actions.length} recent):\n`
+                      admin_actions.forEach((action: any, i: number) => {
+                        const adminEmail = action.admin_profiles?.email || 'Unknown Admin'
+                        activityLog += `${i + 1}. ${action.action_type.replace('_', ' ')} by ${adminEmail} (${format(new Date(action.created_at), 'MMM d, HH:mm')})\n`
                       })
                       activityLog += `\n`
                     }
                     
-                    if (goals.data && goals.data.length > 0) {
-                      activityLog += `🎯 RECENT GOALS (${user.completed_goals} completed):\n`
-                      goals.data.forEach((goal, i) => {
-                        activityLog += `${i + 1}. ${goal.title} - ${goal.completed ? '✅ Completed' : '⏳ In Progress'}\n`
+                    if (activity_logs && activity_logs.length > 0) {
+                      activityLog += `📈 USER ACTIVITY (${activity_logs.length} recent):\n`
+                      activity_logs.forEach((log: any, i: number) => {
+                        activityLog += `${i + 1}. ${log.action_type.replace('_', ' ')} (${format(new Date(log.created_at), 'MMM d, HH:mm')})\n`
                       })
-                      activityLog += `\n`
-                    }
-                    
-                    if (documents.data && documents.data.length > 0) {
-                      activityLog += `📄 RECENT DOCUMENTS:\n`
-                      documents.data.forEach((doc, i) => {
-                        activityLog += `${i + 1}. ${doc.filename} - ${format(new Date(doc.created_at), 'MMM d, yyyy')}\n`
-                      })
+                    } else {
+                      activityLog += `📈 USER ACTIVITY: No recent activity tracked\n`
                     }
                     
                     alert(activityLog)
                   } catch (error) {
-                    console.error('Error fetching activity log:', error)
-                    alert(`Basic Activity Log for ${user.email}:\n\n• Account created: ${format(new Date(user.created_at), 'MMM d, yyyy')}\n• Last login: ${user.last_login ? format(new Date(user.last_login), 'MMM d, yyyy') : 'Never'}\n• Journal entries: ${user.total_journal_entries}\n• Goals completed: ${user.completed_goals}\n• Storage used: ${Math.round(user.storage_used / (1024 * 1024))}MB`)
+                    console.error('Error fetching activity data:', error)
+                    alert(`⚠️ Failed to load detailed activity log.\n\nBasic info for ${user.email}:\n• Account created: ${format(new Date(user.created_at), 'MMM d, yyyy')}\n• Last login: ${user.last_login ? format(new Date(user.last_login), 'MMM d, yyyy') : 'Never'}\n• Journal entries: ${user.total_journal_entries}\n• Goals completed: ${user.completed_goals}`)
                   }
                 }}
               >
@@ -895,19 +910,21 @@ function UserDetailView({ user }: { user: UserProfile }) {
                   variant="outline" 
                   className="w-full justify-start text-orange-600 hover:text-orange-700 mt-2"
                   onClick={async () => {
-                    if (confirm(`Reset ${user.first_name || user.email}'s password?\n\nThis will:\n• Send a password reset email to their address\n• Allow them to create a new password\n• Invalidate their current session\n\nConfirm password reset?`)) {
+                    if (confirm(`Reset ${user.first_name || user.email}'s password?\n\nThis will:\n• Generate a secure password reset link\n• Log the action in the admin audit trail\n• Allow them to create a new password\n\nConfirm password reset?`)) {
                       try {
-                        // Use Supabase Auth API to reset password
-                        const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-                          redirectTo: `${window.location.origin}/auth?mode=reset`
+                        const response = await fetch(`/api/admin/reset-password/${user.user_id}`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' }
                         })
                         
-                        if (error) throw error
+                        if (!response.ok) throw new Error('Failed to reset password')
                         
-                        alert(`✅ Password reset email sent to ${user.email}!\n\nThey will receive instructions to create a new password.`)
+                        const result = await response.json()
+                        
+                        alert(`✅ Password reset generated for ${user.email}!\n\n🔐 Secure reset link created\n📝 Action logged in audit trail\n\nThe user will be able to use the reset link to create a new password.`)
                       } catch (error) {
                         console.error('Error resetting password:', error)
-                        alert('Failed to send password reset email. Please try again or check if the email exists in the system.')
+                        alert('Failed to generate password reset. Please try again.')
                       }
                     }
                   }}
@@ -920,32 +937,59 @@ function UserDetailView({ user }: { user: UserProfile }) {
                   variant="outline" 
                   className={`w-full justify-start mt-2 ${user.is_active ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'}`}
                   onClick={async () => {
-                    const action = user.is_active ? 'suspend' : 'activate'
-                    const actionPast = user.is_active ? 'suspended' : 'activated'
+                    const isSuspending = user.is_active
+                    const action = isSuspending ? 'suspend' : 'unsuspend'
+                    const actionPast = isSuspending ? 'suspended' : 'unsuspended'
                     
-                    if (confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} ${user.first_name || user.email}'s account?\n\n${user.is_active ? 'This will prevent them from logging in until reactivated.' : 'This will restore their access to the platform.'}\n\nConfirm ${action}?`)) {
-                      try {
-                        const { error } = await supabase
-                          .from('user_profiles')
-                          .update({ 
-                            is_active: !user.is_active,
-                            updated_at: new Date().toISOString()
+                    if (isSuspending) {
+                      // Suspend account - need reason
+                      const reason = prompt(`Why are you suspending ${user.first_name || user.email}'s account?\n\nReason:`, '')
+                      if (!reason) return
+                      
+                      const confirmText = `Suspend ${user.first_name || user.email}'s account?\n\n• This will prevent them from logging in\n• Reason: ${reason}\n• Action will be logged in audit trail\n\nConfirm suspension?`
+                      
+                      if (confirm(confirmText)) {
+                        try {
+                          const response = await fetch(`/api/admin/suspend/${user.user_id}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ reason })
                           })
-                          .eq('user_id', user.user_id)
-                        
-                        if (error) throw error
-                        
-                        alert(`✅ ${user.first_name || user.email} has been ${actionPast}!`)
-                        window.location.reload() // Force refresh to see changes
-                      } catch (error) {
-                        console.error(`Error ${action}ing user:`, error)
-                        alert(`Failed to ${action} user. Please try again.`)
+                          
+                          if (!response.ok) throw new Error('Failed to suspend account')
+                          
+                          const result = await response.json()
+                          alert(`✅ ${user.first_name || user.email} has been suspended!\n\n🚫 Account access blocked\n📝 Reason: ${reason}\n🛡️ Action logged in audit trail`)
+                          window.location.reload()
+                        } catch (error) {
+                          console.error('Error suspending user:', error)
+                          alert('Failed to suspend account. Please try again.')
+                        }
+                      }
+                    } else {
+                      // Unsuspend account
+                      if (confirm(`Unsuspend ${user.first_name || user.email}'s account?\n\n• This will restore their platform access\n• Action will be logged in audit trail\n\nConfirm unsuspension?`)) {
+                        try {
+                          const response = await fetch(`/api/admin/unsuspend/${user.user_id}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }
+                          })
+                          
+                          if (!response.ok) throw new Error('Failed to unsuspend account')
+                          
+                          const result = await response.json()
+                          alert(`✅ ${user.first_name || user.email} has been unsuspended!\n\n✅ Account access restored\n🛡️ Action logged in audit trail`)
+                          window.location.reload()
+                        } catch (error) {
+                          console.error('Error unsuspending user:', error)
+                          alert('Failed to unsuspend account. Please try again.')
+                        }
                       }
                     }
                   }}
                 >
                   <Activity className="w-4 h-4 mr-2" />
-                  {user.is_active ? 'Suspend Account' : 'Activate Account'}
+                  {user.is_active ? 'Suspend Account' : 'Unsuspend Account'}
                 </Button>
               </div>
             </div>
