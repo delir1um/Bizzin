@@ -210,6 +210,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut()
     setSession(null)
     setUser(null)
+    // Clear trial expiry modal when signing out
+    setShowTrialExpiredModal(false)
+    setTrialEndDate(undefined)
   }
 
   return (
