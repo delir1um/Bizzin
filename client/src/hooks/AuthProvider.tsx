@@ -85,6 +85,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!existingProfile && !profileCheckError) {
           // Profile doesn't exist, create it
           console.log('Creating user profile for new user:', user.id)
+          
+          // Generate referral code for this new user first
+          const newUserReferralCode = ReferralService.generateReferralCode(user.email!)
+          
+          // Check for pending referral data
+          const pendingReferralCode = ReferralService.consumePendingReferral(user.id)
+          let referredByUserId: string | undefined
+          let shouldRetryPendingReferral = false
+          
+          if (pendingReferralCode) {
+            console.log('Processing pending referral:', pendingReferralCode)
+            
+            // Prevent self-referral
+            if (pendingReferralCode === newUserReferralCode) {
+              console.error('Self-referral attempt blocked:', pendingReferralCode)
+            } else {
+              const referrerId = await ReferralService.getReferrerUserId(pendingReferralCode)
+              if (referrerId && referrerId !== user.id) {
+                referredByUserId = referrerId
+                console.log('Found valid referrer:', referredByUserId)
+              } else if (referrerId === user.id) {
+                console.error('Self-referral blocked - referrer same as new user')
+              }
+            }
+          }
+          
           const { error: createProfileError } = await supabase
             .from('user_profiles')
             .insert({
@@ -97,14 +123,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               daily_email: false,
               daily_email_time: '08:00',
               timezone: 'Africa/Johannesburg',
+              referral_code: newUserReferralCode, // Set user's own referral code
+              referred_by_user_id: referredByUserId, // Set referrer if available
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
             })
           
           if (createProfileError) {
             console.error('Failed to create user profile:', createProfileError)
+            // Restore pending referral for retry if profile creation failed
+            if (pendingReferralCode) {
+              ReferralService.setPendingReferral(user.id, pendingReferralCode)
+              shouldRetryPendingReferral = true
+            }
           } else {
-            console.log('User profile created successfully')
+            console.log('User profile created successfully with referral code:', newUserReferralCode)
+            
+            // Complete referral processing if we had a referrer
+            if (referredByUserId) {
+              try {
+                const success = await ReferralService.completeReferralSignup(user.id, referredByUserId)
+                if (success) {
+                  console.log('Referral processing completed successfully')
+                } else {
+                  console.error('Failed to complete referral processing')
+                  // Restore pending referral for retry
+                  if (pendingReferralCode) {
+                    ReferralService.setPendingReferral(user.id, pendingReferralCode)
+                    shouldRetryPendingReferral = true
+                  }
+                }
+              } catch (error) {
+                console.error('Error completing referral:', error)
+                // Restore pending referral for retry
+                if (pendingReferralCode) {
+                  ReferralService.setPendingReferral(user.id, pendingReferralCode)
+                  shouldRetryPendingReferral = true
+                }
+              }
+            }
           }
         }
         
@@ -139,8 +196,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           const stats = await ReferralService.getReferralStats(user.id)
           if (!stats && user.email) {
-            // User doesn't have referral stats yet, initialize them
-            await ReferralService.initializeUserReferralStats(user.id, user.email)
+            // Get the referral code from user_profiles to ensure consistency
+            const { data: profileData } = await supabase
+              .from('user_profiles')
+              .select('referral_code')
+              .eq('user_id', user.id)
+              .single()
+            
+            const referralCode = profileData?.referral_code || ReferralService.generateReferralCode(user.email)
+            
+            // User doesn't have referral stats yet, initialize them with the same code
+            await ReferralService.initializeUserReferralStatsWithCode(user.id, user.email, referralCode)
           }
         } catch (error) {
           console.error('Failed to initialize referral stats:', error)

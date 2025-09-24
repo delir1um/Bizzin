@@ -58,6 +58,9 @@ export default function AuthPage() {
     
     if (refCode) {
       setReferralCode(refCode)
+      // Store temporarily in case user needs to confirm email
+      ReferralService.setTemporaryReferralCode(refCode)
+      
       // Validate referral code
       ReferralService.validateReferralCode(refCode).then(valid => {
         setReferralValid(valid)
@@ -146,24 +149,22 @@ export default function AuthPage() {
         }
 
         if (signUpData.user) {
-          // Process referral if code provided (from form or URL)
+          // Store referral if code provided (from form or URL) for processing during profile creation
           const codeToProcess = referralCode || data.referralCode
           if (codeToProcess && codeToProcess.trim()) {
             try {
               // Validate the code first
               const isValid = await ReferralService.validateReferralCode(codeToProcess)
               if (isValid) {
-                const success = await ReferralService.processReferralSignup(codeToProcess, signUpData.user.id)
-                if (success) {
-                  setMessage("Account created! Check your email for confirmation. Welcome bonus applied - you'll get 30 days free when you upgrade!")
-                } else {
-                  setMessage("Account created! Check your email for confirmation. (Referral could not be processed)")
-                }
+                // Store referral for processing during profile creation
+                ReferralService.setPendingReferral(signUpData.user.id, codeToProcess)
+                console.log('✅ Referral code stored for user:', signUpData.user.id)
+                setMessage("Account created! Check your email for confirmation. Welcome bonus applied - you'll get 30 days free when you upgrade!")
               } else {
                 setMessage("Account created! Check your email for confirmation. (Referral code not found)")
               }
             } catch (referralError) {
-              console.error('Error processing referral:', referralError)
+              console.error('Error validating referral:', referralError)
               setMessage("Account created! Check your email for confirmation.")
             }
           } else {

@@ -34,6 +34,91 @@ export interface ReferralDashboard {
 }
 
 export class ReferralService {
+  private static readonly PENDING_REFERRAL_KEY = 'pendingReferral'
+  private static readonly TEMP_REFERRAL_KEY = 'tempReferralCode'
+
+  /**
+   * Store referral code persistently during signup process
+   * Uses localStorage to survive page reloads and email confirmations
+   */
+  static setPendingReferral(userId: string, referralCode: string): void {
+    const cleanCode = referralCode.trim().toUpperCase()
+    // Store with user-specific key after signup
+    localStorage.setItem(`${this.PENDING_REFERRAL_KEY}:${userId}`, cleanCode)
+    // Also store as temp code before signup (backup)
+    localStorage.setItem(this.TEMP_REFERRAL_KEY, cleanCode)
+    console.log('📋 Stored pending referral code for user:', userId)
+  }
+
+  /**
+   * Store temporary referral code before user is created
+   * Used when user hasn't signed up yet
+   */
+  static setTemporaryReferralCode(referralCode: string): void {
+    const cleanCode = referralCode.trim().toUpperCase()
+    localStorage.setItem(this.TEMP_REFERRAL_KEY, cleanCode)
+    console.log('📋 Stored temporary referral code')
+  }
+
+  /**
+   * Get and remove pending referral for user
+   * Checks both user-specific and temporary storage
+   */
+  static consumePendingReferral(userId: string): string | undefined {
+    // Try user-specific key first
+    let referralCode = localStorage.getItem(`${this.PENDING_REFERRAL_KEY}:${userId}`)
+    if (referralCode) {
+      localStorage.removeItem(`${this.PENDING_REFERRAL_KEY}:${userId}`)
+      console.log('📋 Consumed user-specific referral code for:', userId)
+      return referralCode
+    }
+
+    // Fallback to temporary storage
+    referralCode = localStorage.getItem(this.TEMP_REFERRAL_KEY)
+    if (referralCode) {
+      localStorage.removeItem(this.TEMP_REFERRAL_KEY)
+      console.log('📋 Consumed temporary referral code for:', userId)
+      return referralCode
+    }
+
+    return undefined
+  }
+
+  /**
+   * Clear all pending referral data (cleanup)
+   */
+  static clearPendingReferrals(): void {
+    localStorage.removeItem(this.TEMP_REFERRAL_KEY)
+    // Clear user-specific keys (basic cleanup)
+    const keys = Object.keys(localStorage)
+    keys.forEach(key => {
+      if (key.startsWith(this.PENDING_REFERRAL_KEY + ':')) {
+        localStorage.removeItem(key)
+      }
+    })
+  }
+
+  /**
+   * Get referrer user ID from referral code
+   * Returns null if code is invalid or referrer not found
+   */
+  static async getReferrerUserId(referralCode: string): Promise<string | null> {
+    if (!referralCode || referralCode.trim() === '') {
+      return null
+    }
+
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('user_id')
+      .eq('referral_code', referralCode.trim().toUpperCase())
+      .single()
+
+    if (error || !data) {
+      return null
+    }
+
+    return data.user_id
+  }
   /**
    * Generate a unique referral code for a user
    */
@@ -123,75 +208,69 @@ export class ReferralService {
   }
 
   /**
-   * Get list of user's referrals
+   * Get list of user's referrals using new schema
    */
   static async getUserReferrals(userId: string): Promise<ReferralEntry[]> {
     const { data, error } = await supabase
       .from('referrals')
       .select(`
         id,
-        referee_id,
-        is_active,
-        signup_date,
-        activation_date,
-        deactivation_date
+        referred_user_id,
+        status,
+        created_at,
+        converted_at,
+        user_profiles!referrals_referred_user_id_fkey (email)
       `)
-      .eq('referrer_id', userId)
-      .order('signup_date', { ascending: false })
+      .eq('referrer_user_id', userId)
+      .order('created_at', { ascending: false })
 
     if (error) {
       console.error('Error fetching user referrals:', error)
       return []
     }
 
-    // Return referrals with placeholder emails (will be populated when foreign keys are properly set up)
+    // Map to ReferralEntry format
     return data.map(referral => ({
       id: referral.id,
-      referee_email: `User ${referral.referee_id.substring(0, 8)}...`,
-      is_active: referral.is_active,
-      signup_date: referral.signup_date,
-      activation_date: referral.activation_date,
-      deactivation_date: referral.deactivation_date
+      referee_email: (referral.user_profiles as any)?.email || `User ${referral.referred_user_id.substring(0, 8)}...`,
+      is_active: referral.status === 'captured' || referral.status === 'converted',
+      signup_date: referral.created_at,
+      activation_date: referral.converted_at,
+      deactivation_date: referral.status === 'invalid' ? referral.created_at : null
     }))
   }
 
   /**
-   * Process a new user signup with referral code
+   * Complete referral processing after user profile is created
+   * This creates the referral record in the database
    */
-  static async processReferralSignup(referralCode: string, newUserId: string): Promise<boolean> {
+  static async completeReferralSignup(newUserId: string, referrerUserId: string): Promise<boolean> {
     try {
-      // Find the referrer by referral code
-      const { data: referrerData, error: referrerError } = await supabase
-        .from('user_referral_stats')
-        .select('user_id')
-        .eq('referral_code', referralCode)
-        .single()
-
-      if (referrerError || !referrerData) {
-        console.error('Invalid referral code:', referralCode)
+      // Prevent self-referral
+      if (referrerUserId === newUserId) {
+        console.error('Self-referral not allowed')
         return false
       }
 
-      // Check if referral already exists (duplicate prevention)
+      // Check if user is already referred (one referral per user)
       const { data: existingReferral } = await supabase
         .from('referrals')
         .select('id')
-        .eq('referee_id', newUserId)
+        .eq('referred_user_id', newUserId)
         .single()
 
       if (existingReferral) {
-        console.log('Referral already exists for this user')
+        console.log('User already has a referral record')
         return true // Don't error, just indicate it's already processed
       }
 
-      // Create referral record
+      // Create referral record using new schema
       const { error: referralError } = await supabase
         .from('referrals')
         .insert({
-          referrer_id: referrerData.user_id,
-          referee_id: newUserId,
-          referral_code: referralCode,
-          is_active: false // Will be activated when user subscribes
+          referrer_user_id: referrerUserId,
+          referred_user_id: newUserId,
+          status: 'captured' // Initial status until conversion
         })
 
       if (referralError) {
@@ -204,40 +283,47 @@ export class ReferralService {
         return false
       }
 
-      // Update referrer's total referrals count
-      const { data: currentStats } = await supabase
-        .from('user_referral_stats')
-        .select('total_referrals')
-        .eq('user_id', referrerData.user_id)
-        .single()
-
-      const { error: updateError } = await supabase
-        .from('user_referral_stats')
-        .update({ 
-          total_referrals: (currentStats?.total_referrals || 0) + 1,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', referrerData.user_id)
-
-      if (updateError) {
-        console.error('Error updating referrer stats:', updateError)
-      }
-
+      console.log(`✅ Referral captured: referrer ${referrerUserId} referred user ${newUserId}`)
       return true
     } catch (error) {
-      console.error('Error processing referral signup:', error)
+      console.error('Error completing referral signup:', error)
       return false
     }
   }
 
   /**
+   * Legacy method for backward compatibility
+   * Process a new user signup with referral code
+   */
+  static async processReferralSignup(referralCode: string, newUserId: string): Promise<boolean> {
+    const referrerUserId = await this.getReferrerUserId(referralCode)
+    if (!referrerUserId) {
+      console.error('Invalid referral code:', referralCode)
+      return false
+    }
+
+    // Prevent self-referral
+    if (referrerUserId === newUserId) {
+      console.error('Self-referral not allowed')
+      return false
+    }
+
+    return await this.completeReferralSignup(newUserId, referrerUserId)
+  }
+
+  /**
    * Validate a referral code
+   * Updated to use user_profiles table
    */
   static async validateReferralCode(referralCode: string): Promise<boolean> {
+    if (!referralCode || referralCode.trim() === '') {
+      return false
+    }
+    
     const { data, error } = await supabase
-      .from('user_referral_stats')
-      .select('referral_code')
-      .eq('referral_code', referralCode)
+      .from('user_profiles')
+      .select('referral_code, user_id')
+      .eq('referral_code', referralCode.trim().toUpperCase())
       .single()
 
     return !error && !!data
@@ -473,4 +559,36 @@ export class ReferralService {
       percentage: Math.round(percentage)
     }
   }
+
+  /**
+   * Initialize referral stats with a specific referral code (for consistency with user_profiles)
+   */
+  static async initializeUserReferralStatsWithCode(userId: string, email: string, referralCode: string): Promise<boolean> {
+    try {
+      const code = (referralCode || this.generateReferralCode(email)).trim().toUpperCase()
+      
+      const { error } = await supabase
+        .from('user_referral_stats')
+        .upsert({
+          user_id: userId,
+          referral_code: code,
+          total_referrals: 0,
+          active_referrals: 0,
+          bonus_days_earned: 0,
+          bonus_days_used: 0
+        }, { onConflict: 'user_id' })
+
+      if (error) {
+        console.error('Error initializing referral stats with code:', error)
+        return false
+      }
+      
+      console.log(`✅ Initialized referral stats for user ${userId} with code: ${code}`)
+      return true
+    } catch (error) {
+      console.error('Error in initializeUserReferralStatsWithCode:', error)
+      return false
+    }
+  }
+
 }
