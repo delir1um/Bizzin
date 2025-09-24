@@ -62,7 +62,7 @@ export default function AdminDashboardPage() {
   // Fetch admin statistics with comprehensive real data
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['admin-stats'],
-    enabled: false, // Disable to prevent any HEAD requests
+    enabled: !!isAdmin, // Only enable if user is admin
     queryFn: async () => {
       console.log('Fetching comprehensive admin stats...')
       
