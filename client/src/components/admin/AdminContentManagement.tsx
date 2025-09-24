@@ -99,8 +99,14 @@ function FooterContentManagement() {
       
       return response.json()
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
+      // Invalidate admin content cache
       queryClient.invalidateQueries({ queryKey: ['admin-footer-content'] })
+      // Invalidate specific footer content cache for modals
+      queryClient.invalidateQueries({ queryKey: ['footer-content', variables.type] })
+      // Invalidate all footer content caches
+      queryClient.invalidateQueries({ queryKey: ['footer-content'] })
+      
       toast({
         title: "Content Updated",
         description: "Footer content has been successfully updated.",
