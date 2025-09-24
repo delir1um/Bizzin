@@ -48,16 +48,21 @@ export class GoalsService {
         goals = []
       }
       
-      // Fetch milestones for each milestone-based goal
-      for (const goal of goals) {
-        if (goal.progress_type === 'milestone') {
+      // Fetch milestones for milestone-based goals in parallel
+      const milestonePromises = goals
+        .filter(goal => goal.progress_type === 'milestone')
+        .map(async (goal) => {
           try {
             goal.milestones = await MilestonesService.getMilestonesByGoalId(goal.id)
           } catch (milestoneError) {
             console.warn(`Failed to fetch milestones for goal ${goal.id}:`, milestoneError)
             goal.milestones = []
           }
-        }
+        })
+
+      // Wait for all milestone fetching to complete
+      if (milestonePromises.length > 0) {
+        await Promise.all(milestonePromises)
       }
 
       console.log(`[GOALS_FETCH] Retrieved ${goals.length} validated goals for user ${userId}`)

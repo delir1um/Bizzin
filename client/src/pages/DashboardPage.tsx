@@ -380,9 +380,7 @@ export function DashboardPage() {
             </motion.div>
             <motion.div whileHover={{ y: -4, transition: { duration: 0.2 } }}>
               <SafeCard>
-                {goalsLoading ? (
-                  <SkeletonCard height={520} />
-                ) : goalsError ? (
+                {goalsError ? (
                   <div className="p-4 text-red-600 bg-red-50 dark:bg-red-950 rounded-lg border border-red-200 dark:border-red-800">
                     <p className="font-medium">Goals data failed to load</p>
                     <p className="text-sm mt-1">Please refresh to try again</p>
