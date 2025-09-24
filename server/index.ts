@@ -98,6 +98,10 @@ app.use((req, res, next) => {
   const gracePeriodRoutes = await import('./routes/grace-period.js');
   app.use('/api/grace-period', gracePeriodRoutes.default);
   
+  // Add Referrals API routes - referral code validation and management
+  const referralsRoutes = await import('./routes/referrals.js');
+  app.use('/api/referrals', referralsRoutes.default);
+  
   // Add Plans API routes - user billing and subscription management
   const plansRoutes = await import('./routes/plans.js');
   app.use('/api/plans', plansRoutes.default);

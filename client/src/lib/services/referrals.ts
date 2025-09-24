@@ -99,27 +99,6 @@ export class ReferralService {
   }
 
   /**
-   * Get referrer user ID from referral code
-   * Returns null if code is invalid or referrer not found
-   */
-  static async getReferrerUserId(referralCode: string): Promise<string | null> {
-    if (!referralCode || referralCode.trim() === '') {
-      return null
-    }
-
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .select('user_id')
-      .eq('referral_code', referralCode.trim().toUpperCase())
-      .single()
-
-    if (error || !data) {
-      return null
-    }
-
-    return data.user_id
-  }
-  /**
    * Generate a unique referral code for a user
    */
   static generateReferralCode(email: string): string {
@@ -313,20 +292,68 @@ export class ReferralService {
 
   /**
    * Validate a referral code
-   * Updated to use user_profiles table
+   * Uses server-side endpoint to bypass permission issues
    */
   static async validateReferralCode(referralCode: string): Promise<boolean> {
     if (!referralCode || referralCode.trim() === '') {
       return false
     }
     
+    try {
+      const response = await fetch(`/api/referrals/validate/${encodeURIComponent(referralCode.trim().toUpperCase())}`)
+      const data = await response.json()
+      return data.valid === true
+    } catch (error) {
+      console.error('Error validating referral code:', error)
+      return false
+    }
+  }
+
+  /**
+   * Get referrer user ID from referral code
+   * Returns null if code is invalid or referrer not found
+   * Now uses server-side endpoint for consistency
+   */
+  static async getReferrerUserId(referralCode: string): Promise<string | null> {
+    if (!referralCode || referralCode.trim() === '') {
+      return null
+    }
+
+    try {
+      const response = await fetch(`/api/referrals/validate/${encodeURIComponent(referralCode.trim().toUpperCase())}`)
+      const data = await response.json()
+      
+      if (data.valid && data.referrer?.user_id) {
+        return data.referrer.user_id
+      }
+      
+      return null
+    } catch (error) {
+      console.error('Error getting referrer user ID:', error)
+      return null
+    }
+  }
+
+  /**
+   * Legacy method: Get referrer user ID from referral code via direct database query
+   * Keeping for backward compatibility but now deprecated due to permission issues
+   */
+  static async getReferrerUserIdLegacy(referralCode: string): Promise<string | null> {
+    if (!referralCode || referralCode.trim() === '') {
+      return null
+    }
+
     const { data, error } = await supabase
       .from('user_profiles')
-      .select('referral_code, user_id')
+      .select('user_id')
       .eq('referral_code', referralCode.trim().toUpperCase())
       .single()
 
-    return !error && !!data
+    if (error || !data) {
+      return null
+    }
+
+    return data.user_id
   }
 
   /**
