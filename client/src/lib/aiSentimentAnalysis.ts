@@ -31,11 +31,12 @@ export interface BusinessSentiment {
   category?: string;
 }
 
-// Hugging Face model endpoints (free inference API) - updated for better business context accuracy
+// LEGACY: Old HuggingFace models - kept for fallback but replaced by unified Qwen3/Kimi system
+// These are now only used when unified system is completely unavailable
 const HF_MODELS = {
-  sentiment: 'siebert/sentiment-roberta-large-english', // Trained on diverse professional text, 75%+ accuracy on business contexts
-  emotion: 'j-hartmann/emotion-english-distilroberta-base', // Good for workplace emotions
-  business: 'tabularisai/multilingual-sentiment-analysis' // Alternative for global teams
+  sentiment: 'siebert/sentiment-roberta-large-english', // Backup: Trained on professional text
+  emotion: 'j-hartmann/emotion-english-distilroberta-base', // Backup: Workplace emotions  
+  business: 'tabularisai/multilingual-sentiment-analysis' // Backup: Global teams
 };
 
 // Cache for reducing API calls
@@ -48,47 +49,12 @@ export function clearSentimentCache() {
   console.log('Sentiment cache cleared for testing');
 }
 
-// Enhanced insights generation using Claude API
+// REPLACED: Expensive Claude API with unified Qwen3/Kimi system (10x cost reduction)
+// Enhanced insights now provided by our unified AI system in callUnifiedKimiAnalysis()
+// Legacy function kept for reference but disabled to prevent costs
 async function generateEnhancedInsights(entryText: string, sentimentData: any): Promise<string[] | null> {
-  // Only try enhanced insights for substantial entries
-  if (entryText.length < 30) {
-    return null;
-  }
-
-  try {
-    console.log('🚀 Generating enhanced insights with Claude API...');
-    
-    const response = await fetch('/api/ai/insights/generate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        entry_id: `temp_${Date.now()}`,
-        entry_text: entryText,
-        entry_mood: sentimentData.mood || 'neutral',
-        entry_energy: sentimentData.energy || 'medium',
-        recent_entries: [], // TODO: Could be enhanced with context
-        goals: [], // TODO: Could be enhanced with user goals
-        user_id: 'current_user'
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Insights API error: ${response.status}`);
-    }
-
-    const insightResponse = await response.json();
-    console.log('✅ Enhanced insights generated successfully');
-    
-    // Return just the actions as insights for now
-    // This integrates with the existing insights display system
-    return insightResponse.insight.actions || null;
-    
-  } catch (error) {
-    console.warn('⚠️ Enhanced insights generation failed:', error);
-    return null;
-  }
+  console.log('⚠️ Legacy Claude insights disabled - using unified Qwen3/Kimi system instead');
+  return null; // Always return null to force usage of our cost-effective unified system
 }
 
 // Enhanced business keywords for local analysis

@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
-import { chat } from './anthropic.js';
+// REMOVED: Expensive Claude API - replaced by unified Qwen3/Kimi system
+// import { chat } from './anthropic.js';
 import { AI_CONFIG } from './config.js';
 import { insightsConfig } from '../config/insights.js';
 import { InsightResponse } from '../../shared/schemas/insights.js';
