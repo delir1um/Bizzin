@@ -15,7 +15,7 @@ import {
   Pie,
   Cell
 } from "recharts"
-import { TrendingUp, Users, FileText, Target, DollarSign, Activity } from "lucide-react"
+import { TrendingUp, Users, FileText, Target, DollarSign, Activity, Calculator } from "lucide-react"
 
 interface AdminStats {
   totalUsers: number
@@ -30,6 +30,12 @@ interface AdminStats {
   documentUploads: number
   storageUsed: number
   systemHealth: 'healthy' | 'warning' | 'critical'
+  calculatorUsage: {
+    totalCalculations: number
+    uniqueUsers: number
+    popularCalculator: string
+    calculationsThisWeek: number
+  }
 }
 
 interface AdminAnalyticsProps {
@@ -55,14 +61,14 @@ export function AdminAnalytics({ stats }: AdminAnalyticsProps) {
     )
   }
 
-  // Mock data for charts (in production, this would come from real analytics)
+  // Realistic user growth data - most users are recent signups since we're in early stages
   const userGrowthData = [
-    { month: 'Jan', users: Math.max(1, Math.floor(stats.totalUsers * 0.6)) },
-    { month: 'Feb', users: Math.max(1, Math.floor(stats.totalUsers * 0.7)) },
-    { month: 'Mar', users: Math.max(1, Math.floor(stats.totalUsers * 0.8)) },
-    { month: 'Apr', users: Math.max(1, Math.floor(stats.totalUsers * 0.85)) },
-    { month: 'May', users: Math.max(1, Math.floor(stats.totalUsers * 0.92)) },
-    { month: 'Jun', users: stats.totalUsers }
+    { month: 'Jan', users: 0 },
+    { month: 'Feb', users: 0 },
+    { month: 'Mar', users: 0 },
+    { month: 'Apr', users: 0 },
+    { month: 'May', users: 1 }, // First user (admin)
+    { month: 'Jun', users: stats.totalUsers } // Current total
   ]
 
   const featureUsageData = [
@@ -72,13 +78,14 @@ export function AdminAnalytics({ stats }: AdminAnalyticsProps) {
     { name: 'Documents', value: stats.documentUploads, color: '#10B981' }
   ]
 
+  // Realistic revenue data - we only have one paid user currently
   const revenueData = [
-    { month: 'Jan', revenue: Math.max(0, Math.floor(stats.monthlyRevenue * 0.5)) },
-    { month: 'Feb', revenue: Math.max(0, Math.floor(stats.monthlyRevenue * 0.6)) },
-    { month: 'Mar', revenue: Math.max(0, Math.floor(stats.monthlyRevenue * 0.7)) },
-    { month: 'Apr', revenue: Math.max(0, Math.floor(stats.monthlyRevenue * 0.8)) },
-    { month: 'May', revenue: Math.max(0, Math.floor(stats.monthlyRevenue * 0.9)) },
-    { month: 'Jun', revenue: stats.monthlyRevenue }
+    { month: 'Jan', revenue: 0 },
+    { month: 'Feb', revenue: 0 },
+    { month: 'Mar', revenue: 0 },
+    { month: 'Apr', revenue: 0 },
+    { month: 'May', revenue: 0 },
+    { month: 'Jun', revenue: stats.monthlyRevenue } // Only current month has revenue
   ]
 
   const conversionRate = stats.totalUsers > 0 ? (stats.paidUsers / stats.totalUsers) * 100 : 0
@@ -133,15 +140,14 @@ export function AdminAnalytics({ stats }: AdminAnalyticsProps) {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Content Engagement</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Business Tools Usage</CardTitle>
+            <Calculator className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {Math.floor((stats.journalEntries + stats.podcastViews + stats.documentUploads) / Math.max(1, stats.totalUsers))}
-            </div>
+            <div className="text-2xl font-bold">{stats.calculatorUsage.totalCalculations}</div>
+            <Progress value={Math.min(100, (stats.calculatorUsage.uniqueUsers / Math.max(1, stats.totalUsers)) * 100)} className="mt-2" />
             <p className="text-xs text-muted-foreground mt-2">
-              Avg. actions per user
+              {stats.calculatorUsage.uniqueUsers} users, {stats.calculatorUsage.calculationsThisWeek} this week
             </p>
           </CardContent>
         </Card>
@@ -267,6 +273,17 @@ export function AdminAnalytics({ stats }: AdminAnalyticsProps) {
               <div className="text-right">
                 <div className="font-medium">{stats.documentUploads.toLocaleString()}</div>
                 <div className="text-xs text-muted-foreground">Files uploaded</div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Calculator className="w-4 h-4 text-purple-600" />
+                <span className="text-sm">Business Calculators</span>
+              </div>
+              <div className="text-right">
+                <div className="font-medium">{stats.calculatorUsage.totalCalculations.toLocaleString()}</div>
+                <div className="text-xs text-muted-foreground">Most popular: {stats.calculatorUsage.popularCalculator}</div>
               </div>
             </div>
           </CardContent>

@@ -49,6 +49,12 @@ interface AdminStats {
   documentUploads: number
   storageUsed: number
   systemHealth: 'healthy' | 'warning' | 'critical'
+  calculatorUsage: {
+    totalCalculations: number
+    uniqueUsers: number
+    popularCalculator: string
+    calculationsThisWeek: number
+  }
 }
 
 export default function AdminDashboardPage() {
@@ -79,7 +85,13 @@ export default function AdminDashboardPage() {
         podcastViews: 0,
         documentUploads: 0,
         storageUsed: 0,
-        systemHealth: 'healthy' as 'healthy' | 'warning' | 'critical'
+        systemHealth: 'healthy' as 'healthy' | 'warning' | 'critical',
+        calculatorUsage: {
+          totalCalculations: 0,
+          uniqueUsers: 0,
+          popularCalculator: 'None',
+          calculationsThisWeek: 0
+        }
       }
 
       try {
@@ -87,34 +99,51 @@ export default function AdminDashboardPage() {
         let usersData = null
         let usersError = null
         
-        // First try getting user_profiles with correct column names
-        const profilesResult = await supabase
-          .from('user_profiles')
-          .select('user_id, created_at, updated_at')
-        
-        console.log('User profiles query:', { data: profilesResult.data, error: profilesResult.error })
-        
-        if (!profilesResult.error && profilesResult.data) {
-          usersData = profilesResult.data
-          stats.totalUsers = profilesResult.data.length
-        } else {
-          // Fallback: try auth.users (may not work due to RLS)
-          console.log('Trying auth.users as fallback...')
+        // Get accurate user count from admin API (which has access to all users)
+        try {
+          const response = await fetch('/api/admin/users')
+          const userData = await response.json()
           
-          // If no users found, at least count that we have 1 admin (you)
-          stats.totalUsers = 1 // Minimum 1 since admin is logged in
+          if (userData.success && userData.users) {
+            usersData = userData.users
+            stats.totalUsers = userData.users.length
+            console.log('Admin API user count:', stats.totalUsers, 'users')
+          } else {
+            throw new Error('Failed to fetch from admin API')
+          }
+        } catch (error) {
+          console.log('Admin API failed, trying user_profiles...')
+          // Fallback to user_profiles
+          const profilesResult = await supabase
+            .from('user_profiles')
+            .select('user_id, created_at, updated_at')
+          
+          if (!profilesResult.error && profilesResult.data) {
+            usersData = profilesResult.data
+            stats.totalUsers = profilesResult.data.length
+          } else {
+            stats.totalUsers = 1 // Minimum fallback
+          }
         }
         
         if (usersData && usersData.length > 0) {
           // Calculate active users (updated in last 7 days)
           const sevenDaysAgo = new Date()
           sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-          stats.activeUsers = usersData.filter(user => 
-            new Date(user.updated_at || user.created_at) > sevenDaysAgo
-          ).length
+          
+          // For admin API data, check last_seen or created_at
+          stats.activeUsers = usersData.filter((user: any) => {
+            const lastActivity = new Date(user.last_seen || user.updated_at || user.created_at)
+            return lastActivity > sevenDaysAgo
+          }).length
+          
+          console.log('Active users calculation:', {
+            totalUsers: stats.totalUsers,
+            activeUsers: stats.activeUsers,
+            sevenDaysAgo: sevenDaysAgo.toISOString()
+          })
         } else {
-          // If we can't get user data, assume admin is active
-          stats.activeUsers = 1
+          stats.activeUsers = Math.min(1, stats.totalUsers)
         }
 
         // 2. Get paid users and revenue from user_plans (gracefully handle missing table)
@@ -194,7 +223,47 @@ export default function AdminDashboardPage() {
           ).length
         }
 
-        // 7. Get podcast progress/views
+        // 7. Get calculator usage statistics
+        const { data: calculatorData, error: calculatorError } = await supabase
+          .from('calculator_history')
+          .select('id, user_id, calculator_type, created_at')
+        
+        if (!calculatorError && calculatorData) {
+          stats.calculatorUsage.totalCalculations = calculatorData.length
+          
+          // Get unique users who have used calculators
+          const uniqueCalcUsers = new Set(calculatorData.map(calc => calc.user_id))
+          stats.calculatorUsage.uniqueUsers = uniqueCalcUsers.size
+          
+          // Find most popular calculator type
+          const calculatorCounts: Record<string, number> = {}
+          calculatorData.forEach(calc => {
+            calculatorCounts[calc.calculator_type] = (calculatorCounts[calc.calculator_type] || 0) + 1
+          })
+          
+          const popularCalc = Object.entries(calculatorCounts)
+            .sort(([,a], [,b]) => b - a)[0]?.[0] || 'None'
+          
+          // Format calculator names nicely
+          const calculatorNames: Record<string, string> = {
+            'business_budget': 'Budget Calculator',
+            'cash_flow': 'Cash Flow Calculator', 
+            'break_even': 'Break-Even Calculator',
+            'loan_amortisation': 'Loan Calculator'
+          }
+          stats.calculatorUsage.popularCalculator = calculatorNames[popularCalc] || popularCalc
+          
+          // Get calculations from this week
+          const weekAgo = new Date()
+          weekAgo.setDate(weekAgo.getDate() - 7)
+          stats.calculatorUsage.calculationsThisWeek = calculatorData.filter(calc => 
+            new Date(calc.created_at) >= weekAgo
+          ).length
+          
+          console.log('Calculator usage stats:', stats.calculatorUsage)
+        }
+
+        // 8. Get podcast progress/views
         const { data: podcastData, error: podcastError } = await supabase
           .from('user_podcast_progress')
           .select('completed, progress_seconds')
