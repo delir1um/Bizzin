@@ -2,6 +2,33 @@ import { supabase } from '@/lib/supabase'
 import type { JournalEntry, CreateJournalEntry, UpdateJournalEntry } from '@/types/journal'
 import { analyzeBusinessSentimentAI } from '@/lib/aiSentimentAnalysis'
 import type { BusinessSentiment } from '@/lib/aiSentimentAnalysis'
+import { z } from 'zod'
+
+// Zod schema for database journal entry validation - matches existing JournalEntry type
+const JournalEntryDatabaseSchema = z.object({
+  id: z.string(),
+  user_id: z.string(),
+  title: z.string(),
+  content: z.string(),
+  mood: z.string().nullable().optional(),
+  entry_date: z.string().nullable().optional(),
+  tags: z.array(z.string()).nullable().optional(),
+  related_goal_id: z.string().nullable().optional(),
+  sentiment_data: z.object({
+    primary_mood: z.string().optional(),
+    confidence: z.number().min(0).max(100).optional(),
+    business_category: z.string().optional(),
+    key_insights: z.array(z.string()).optional(),
+    action_items: z.array(z.string()).optional(),
+    emotion_intensity: z.number().min(0).max(10).optional(),
+    overall_sentiment: z.enum(['positive', 'negative', 'neutral']).optional(),
+  }).nullable().optional(),
+  ai_insights: z.array(z.string()).nullable().optional(),
+  created_at: z.string().optional(),
+  updated_at: z.string().optional(),
+}).passthrough() // Allow additional properties
+
+const JournalEntryArraySchema = z.array(JournalEntryDatabaseSchema)
 
 // Generate contextual business insights based on AI analysis results
 function generateContextualInsights(aiAnalysis: BusinessSentiment, content: string): string[] {
@@ -108,7 +135,27 @@ export class JournalService {
       throw new Error(`Failed to fetch journal entries: ${error.message}`)
     }
 
-    return data || []
+    // Validate and sanitize data with Zod
+    let entries: JournalEntry[]
+    try {
+      const validatedData = JournalEntryArraySchema.parse(data || [])
+      entries = validatedData as JournalEntry[] // Type assertion after validation
+    } catch (validationError) {
+      console.warn('Journal entries data validation warning:', validationError)
+      // Log partial validation failures but return what we can
+      entries = (data || []).filter((entry: any) => {
+        try {
+          JournalEntryDatabaseSchema.parse(entry)
+          return true
+        } catch {
+          console.warn(`Skipping invalid journal entry ${entry?.id || 'unknown'}`)
+          return false
+        }
+      }) as JournalEntry[] // Type assertion
+    }
+
+    console.log(`[JOURNAL_FETCH] Retrieved ${entries.length} validated entries for user ${userId}`)
+    return entries
   }
 
   static async searchEntries(userId: string, searchTerm: string): Promise<JournalEntry[]> {

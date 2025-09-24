@@ -2,6 +2,25 @@ import { supabase } from '@/lib/supabase'
 import { Goal, GoalStats, Milestone } from '@/types/goals'
 import { MilestonesService } from './milestones'
 import { goalLogger } from '@/lib/logger'
+import { z } from 'zod'
+
+// Zod schema for database goal validation - matches existing Goal type
+const GoalDatabaseSchema = z.object({
+  id: z.string(),
+  user_id: z.string(),
+  title: z.string(),
+  description: z.string().nullable().optional(),
+  progress: z.number().min(0).max(100).default(0),
+  status: z.enum(['not_started', 'in_progress', 'completed', 'at_risk']).default('not_started'),
+  priority: z.enum(['low', 'medium', 'high']).default('medium'),
+  deadline: z.string(), // ISO date string
+  created_at: z.string().optional(),
+  updated_at: z.string().optional(),
+  progress_type: z.enum(['manual', 'milestone']).default('manual'),
+  milestones: z.array(z.any()).optional().default([]),
+}).passthrough() // Allow additional properties
+
+const GoalArraySchema = z.array(GoalDatabaseSchema)
 
 export class GoalsService {
   static async getUserGoals(userId: string): Promise<Goal[]> {
@@ -17,7 +36,17 @@ export class GoalsService {
         throw new Error(`Failed to fetch goals: ${error.message}`)
       }
 
-      const goals = data || []
+      // Validate and sanitize data with Zod
+      let goals: Goal[]
+      try {
+        const validatedData = GoalArraySchema.parse(data || [])
+        goals = validatedData as Goal[] // Type assertion after validation
+      } catch (validationError) {
+        console.warn('Goals data validation warning:', validationError)
+        goalLogger.logError('GOALS_VALIDATION', validationError, undefined, userId, 'Data validation failed')
+        // Return sanitized empty array if validation fails completely
+        goals = []
+      }
       
       // Fetch milestones for each milestone-based goal
       for (const goal of goals) {
@@ -31,7 +60,7 @@ export class GoalsService {
         }
       }
 
-      console.log(`[GOALS_FETCH] Retrieved ${goals.length} goals for user ${userId}`)
+      console.log(`[GOALS_FETCH] Retrieved ${goals.length} validated goals for user ${userId}`)
       return goals
     } catch (error) {
       goalLogger.logError('FETCH_GOALS', error, undefined, userId, 'Exception in getUserGoals')
