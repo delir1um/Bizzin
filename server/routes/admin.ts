@@ -99,6 +99,43 @@ router.get('/users', requireAdmin, async (req, res) => {
 
     console.log(`📊 Found ${allPlans?.length || 0} plan records total`);
     
+    // Get referral data using direct SQL to bypass schema caching
+    let referralData: Record<string, any> = {};
+    try {
+      console.log('🔍 Fetching referral data via SQL...');
+      const { data: referralResults, error: referralError } = await supabase.rpc('exec_sql', {
+        sql_query: `
+          SELECT 
+            up.user_id,
+            up.referral_code,
+            up.referred_by_user_id,
+            referrer.email as referrer_email,
+            referrer.full_name as referrer_name,
+            referrer.referral_code as referrer_code,
+            (SELECT COUNT(*) FROM user_profiles WHERE referred_by_user_id = up.user_id) as referrals_made_count
+          FROM user_profiles up
+          LEFT JOIN user_profiles referrer ON up.referred_by_user_id = referrer.user_id
+        `
+      });
+      
+      if (!referralError && referralResults) {
+        // Convert array results to object keyed by user_id
+        referralResults.forEach((row: any) => {
+          referralData[row.user_id] = {
+            referral_code: row.referral_code,
+            referred_by_user_id: row.referred_by_user_id,
+            referrer_email: row.referrer_email,
+            referrer_name: row.referrer_name,
+            referrer_code: row.referrer_code,
+            referrals_made_count: parseInt(row.referrals_made_count) || 0
+          };
+        });
+        console.log(`📊 Loaded referral data for ${Object.keys(referralData).length} users`);
+      }
+    } catch (error) {
+      console.error('❌ Error fetching referral data:', error);
+    }
+    
     // Get additional stats for each user and match with plan data
     const usersWithStatsAndPlans = await Promise.all(
       (profiles || []).map(async (profile) => {
@@ -176,8 +213,22 @@ router.get('/users', requireAdmin, async (req, res) => {
             console.log(`❌ No plan found for ${profile.email}, using default trial`);
           }
           
+          // Get referral information for this user
+          const userReferralData = referralData[profile.user_id];
+          let referredBy = null;
+          
+          if (userReferralData?.referred_by_user_id && userReferralData?.referrer_email) {
+            referredBy = {
+              user_id: userReferralData.referred_by_user_id,
+              email: userReferralData.referrer_email,
+              name: userReferralData.referrer_name || userReferralData.referrer_email,
+              referral_code: userReferralData.referrer_code
+            };
+          }
+
           return {
             ...profile,
+            referral_code: userReferralData?.referral_code || null,
             plan: {
               plan_type: planType,
               plan_status: planStatus,
@@ -191,12 +242,19 @@ router.get('/users', requireAdmin, async (req, res) => {
               total_goals: goalCount || 0,
               completed_goals: completedGoals || 0,
               documents: documentCount || 0
+            },
+            referrals: {
+              referred_by: referredBy,
+              referrals_made_count: userReferralData?.referrals_made_count || 0
             }
           };
         } catch (error) {
           console.error(`Error fetching stats for ${profile.email}:`, error);
+          const userReferralData = referralData[profile.user_id];
+          
           return {
             ...profile,
+            referral_code: userReferralData?.referral_code || null,
             plan: {
               plan_type: 'trial' as const,
               plan_status: 'active' as const,
@@ -210,6 +268,10 @@ router.get('/users', requireAdmin, async (req, res) => {
               total_goals: 0,
               completed_goals: 0,
               documents: 0
+            },
+            referrals: {
+              referred_by: null,
+              referrals_made_count: userReferralData?.referrals_made_count || 0
             }
           };
         }
