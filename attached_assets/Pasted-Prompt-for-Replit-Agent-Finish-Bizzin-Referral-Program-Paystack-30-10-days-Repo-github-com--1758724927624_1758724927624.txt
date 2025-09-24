@@ -1,0 +1,189 @@
+Prompt for Replit Agent — Finish Bizzin Referral Program (Paystack, +30/+10 days)
+
+Repo: github.com/delir1um/Bizzin (TypeScript, client/server, Supabase SQL) 
+GitHub
+
+Gateway: Paystack (use webhooks + verify endpoint) 
+Paystack
++2
+Paystack
++2
+
+Objective
+
+Make the referral system fully functional and idempotent with Paystack:
+
+New user enters a referral code at signup (already in UI).
+
+When that user converts to Premium via Paystack, they get +30 bonus days and the referrer gets +10 bonus days.
+
+Must work for one-time checkout and subscription flows. Use Paystack webhooks (charge.success, invoice.create, invoice.payment_failed, subscription.*) and/or verify when needed. 
+Paystack
++2
+Paystack
++2
+
+0) Repo scan & notes
+
+Search the codebase for existing Paystack hooks/keys and subscription logic: paystack, webhook, premium, payment_status, subscription, referral, referral_code, bonus, supabase.
+
+Identify where signup posts the optional referral code (visible in the signup UI). Wire capture there.
+
+Create a short doc at docs/referrals/00-current-state.md summarizing current endpoints, envs, and tables you found.
+
+1) Schema (Supabase) — add if missing
+
+Using the project’s SQL migration style (see database/ and existing supabase_schema_setup.sql), add:
+
+users (existing):
+
+referral_code TEXT UNIQUE NOT NULL (8 chars, uppercase)
+
+referred_by_user_id UUID NULL (FK → users.id)
+
+referrals:
+
+id UUID PK, referrer_user_id UUID NOT NULL, referred_user_id UUID UNIQUE NOT NULL
+
+status TEXT CHECK IN ('captured','converted','invalid') DEFAULT 'captured'
+
+created_at TIMESTAMPTZ DEFAULT now(), converted_at TIMESTAMPTZ NULL
+
+subscription_credits:
+
+id UUID PK, user_id UUID NOT NULL, days INT NOT NULL
+
+reason TEXT CHECK IN ('signup_bonus','referrer_bonus','admin_adjustment','reversal')
+
+source_referral_id UUID NULL (FK → referrals.id)
+
+applied BOOL DEFAULT FALSE, created_at TIMESTAMPTZ DEFAULT now()
+
+Backfill users.referral_code for all existing users; generate deterministic 8-char base36 codes (exclude ambiguous chars).
+
+2) Capture referral at signup
+
+In the signup handler (server side), when referral_code is present:
+
+Look up the referrer by users.referral_code.
+
+If found and not self, set users.referred_by_user_id for the new user and create referrals row (captured).
+
+Enforce: one referral per referred user, immutable once set.
+
+Invalid/missing code should not block signup.
+
+3) Paystack integration (server)
+
+Implement a robust webhook endpoint (e.g., POST /api/paystack/webhook):
+
+Verify x-paystack-signature (HMAC SHA512 of raw body with Paystack secret). Reject if invalid. 
+Paystack
+
+Handle these events:
+
+charge.success — treat as conversion if it represents the user’s first successful upgrade (one-time or first sub charge).
+
+invoice.create / invoice.payment_failed — optional logging/metrics only.
+
+subscription.* — if you rely on subscriptions, treat the first successful cycle as conversion (Paystack triggers charge.success on the cycle that succeeds). 
+Paystack
+
+In ambiguous cases, call Verify Transaction with the transaction reference to confirm success. 
+Paystack
+
+User resolution: Map webhook payload → app user (email, metadata, or stored paystack_customer_code/reference). Add/confirm a durable mapping field in users.
+
+Idempotency: Before awarding credits, check a unique key like referrals.referred_user_id status='converted'. If already converted, no-op. Persist a processed-event ledger keyed by event_id if helpful.
+
+4) Conversion routine (+30/+10)
+
+When a referred user is detected as first-time paid:
+
+In a transaction:
+
+Load referrals by referred_user_id with status='captured'. If none, exit.
+
+Insert into subscription_credits:
+
+referred user: +30 days, reason='signup_bonus', with source_referral_id
+
+referrer: +10 days, reason='referrer_bonus', with source_referral_id
+
+Update referrals.status='converted', set converted_at=now().
+
+Make the routine idempotent (repeat webhooks shouldn’t duplicate credits).
+
+5) Apply credits to entitlement
+
+Implement a helper used by your premium/entitlement checks:
+
+effectiveExpiry = max(paidExpiry, now) + sum(unapplied credit days)
+
+
+If you materialize expiry, mark each credit applied=true within a transaction to avoid double counting.
+
+If you compute on read, ensure all reads include credit sums.
+
+6) API + UI wiring
+
+Add GET /api/referrals/me/summary returning the 4 KPIs shown in your Referral page (Total, Active (captured), Days Earned from referrals, Extension Days total).
+
+Add POST /api/referrals/validate for soft client-side validation of codes.
+
+Ensure the Admin users list and Financial views show: “Referred by”, referral status badges, and “Extension Days”.
+
+7) Env & config
+
+Add and document:
+
+PAYSTACK_SECRET_KEY
+
+PAYSTACK_WEBHOOK_SECRET (if you keep it separate; otherwise use secret key for HMAC)
+
+APP_BASE_URL and webhook path you’ll register on the Paystack dashboard.
+
+Include a README at docs/referrals/README.md with the webhook URL to register and manual test steps. Reference Paystack docs links for webhooks, subscriptions and verify. 
+Paystack
++2
+Paystack
++2
+
+8) Tests
+
+Add integration/unit tests for:
+
+Referral capture: valid code, invalid code, self-referral blocked, immutable after set.
+
+Webhook verification: bad signature rejected; good signature accepted.
+
+Conversion: first paid event → exactly two credits; repeat events → no duplicates.
+
+Effective expiry calculation (multiple credits).
+
+9) Acceptance criteria
+
+New user enters valid referral code at signup → referrals.status='captured'.
+
+On first successful Paystack payment (webhook arrives), system grants +30 to referred, +10 to referrer; status='converted'.
+
+Effective expiry reflects credits for both parties.
+
+Replaying the same webhook / verify flow yields no extra credits.
+
+Dashboard Referral page KPIs align with DB.
+
+Admin screens show “Referred by” and totals.
+
+Doc with webhook URL + steps is committed.
+
+Notes
+
+Paystack lifecycle: subscriptions send invoice.create ahead of due date and charge.success on successful charge; use those to gate conversion. 
+Paystack
+
+Either webhooks or verify can confirm a one-time payment; prefer webhooks and fall back to verify if necessary. 
+Paystack
++1
+
+Please implement exactly as above and push migrations + code + docs. If you find existing referral tables/endpoints, adapt to this plan but preserve the +30/+10 rules and idempotency.
