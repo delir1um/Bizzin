@@ -1,9 +1,33 @@
 import express, { type Request, Response, NextFunction } from "express";
+import helmet from "helmet";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import huggingfaceRouter from "./huggingface";
 
 const app = express();
+
+// Add Helmet with CSP configuration
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives: {
+        "default-src": ["'self'", "https:", "data:", "blob:"],
+        "script-src": ["'self'", "'unsafe-eval'", "'wasm-unsafe-eval'", "https:", "blob:"],
+        "style-src": ["'self'", "'unsafe-inline'", "https:"],
+        "img-src": ["'self'", "data:", "blob:", "https:"],
+        "font-src": ["'self'", "data:", "https:"],
+        "connect-src": ["'self'", "https:", "wss:", "https://*.supabase.co"],
+        "frame-src": ["https:"],
+        "base-uri": ["'self'"],
+        "form-action": ["'self'"]
+      }
+    },
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
+  })
+);
+
 // Increase body size limit for video uploads (200MB to handle larger files)
 app.use(express.json({ limit: '200mb' }));
 app.use(express.urlencoded({ limit: '200mb', extended: false }));
