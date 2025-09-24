@@ -17,8 +17,8 @@ interface AnalysisRequest {
 const analysisCache = new Map<string, { data: KimiBusinessAnalysis; timestamp: number }>();
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
-// Clear cache to fix duplicate analysis bug
-console.log('🔄 Clearing analysis cache to fix duplicate analysis issue...');
+// Clear cache to fix duplicate analysis bug and ensure date fix works
+console.log('🔄 Clearing analysis cache to fix duplicate analysis issue and ensure date context works...');
 analysisCache.clear();
 
 /**
