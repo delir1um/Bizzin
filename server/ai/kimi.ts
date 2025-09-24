@@ -9,41 +9,41 @@ Unified AI Provider Configuration
 
 // AI Provider options (in order of preference: free first, then cheapest)
 const AI_PROVIDERS = [
-  // Qwen3 - FREE tier via OpenRouter (correct model names)
+  // Qwen3 - FREE tier via OpenRouter (using proper API key)
   {
     name: "Qwen3 Free",
     baseURL: "https://openrouter.ai/api/v1",
     model: "qwen/qwen-2.5-72b-instruct:free",
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: process.env.OPENROUTER_API_KEY,
     cost: "FREE",
     strengths: ["reasoning", "multilingual", "business analysis"]
   },
-  // Kimi K2 - Cheap backup option
+  // Kimi K2 FREE via OpenRouter
   {
-    name: "Kimi K2",
+    name: "Kimi K2 Free",
+    baseURL: "https://openrouter.ai/api/v1",
+    model: "moonshotai/kimi-k2:free",
+    apiKey: process.env.OPENROUTER_API_KEY,
+    cost: "FREE",
+    strengths: ["coding", "agentic", "structured output"]
+  },
+  // Kimi K2 - Paid backup via AI/ML API
+  {
+    name: "Kimi K2 Paid",
     baseURL: "https://api.aimlapi.com/v1",
     model: "moonshot/kimi-k2-preview",
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: process.env.AIML_API_KEY,
     cost: "$0.15-2.50/1M tokens",
     strengths: ["coding", "agentic", "structured output"]
   },
-  // Additional Qwen2.5 options via OpenRouter
+  // Additional Qwen2.5 paid options via OpenRouter
   {
     name: "Qwen2.5 Paid",
     baseURL: "https://openrouter.ai/api/v1", 
     model: "qwen/qwen-2.5-72b-instruct",
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: process.env.OPENROUTER_API_KEY,
     cost: "$0.40-$1.20/1M tokens",
     strengths: ["reasoning", "multilingual", "256K context"]
-  },
-  // Additional Kimi K2 providers
-  {
-    name: "Kimi K2 Alt",
-    baseURL: "https://api.together.xyz/v1",
-    model: "moonshotai/Kimi-K2-Instruct", 
-    apiKey: process.env.OPENAI_API_KEY,
-    cost: "$0.15-2.50/1M tokens",
-    strengths: ["coding", "agentic", "tool calling"]
   }
 ];
 
