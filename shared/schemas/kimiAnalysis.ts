@@ -50,12 +50,15 @@ export function validateKimiAnalysis(data: unknown): KimiBusinessAnalysis {
 // Prompt template for Kimi K2 business analysis
 export const KIMI_BUSINESS_ANALYSIS_PROMPT = `You are a senior business advisor specializing in entrepreneurial insights. Analyze this business journal entry and provide comprehensive analysis in the exact JSON format specified.
 
+CURRENT DATE: {current_date}
+
 CRITICAL REQUIREMENTS:
-1. Generate SPECIFIC actionable steps with dates/deadlines when possible
+1. Generate SPECIFIC actionable steps with realistic future dates/deadlines (use dates AFTER the current date above)
 2. Identify REAL business risks based on the actual situation
 3. Avoid generic motivational advice
 4. Focus on concrete business implications
 5. Ensure all arrays have the required minimum items
+6. When suggesting deadlines, use dates that are realistically in the future from the current date provided
 
 Journal Entry: "{entry_text}"
 

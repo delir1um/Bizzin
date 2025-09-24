@@ -58,8 +58,16 @@ export async function analyzeBusinessJournalEntry(request: AnalysisRequest): Pro
     const recentContext = request.recent_entries?.slice(0, 2)?.join('. ') || 'No recent context';
     const goalsContext = request.goals?.slice(0, 3)?.join(', ') || 'No specific goals mentioned';
     
-    // Build prompt with context
+    // Build prompt with context and current date
+    const currentDate = new Date().toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      timeZone: 'Africa/Johannesburg' // User's timezone from replit.md
+    });
+    
     const prompt = KIMI_BUSINESS_ANALYSIS_PROMPT
+      .replace('{current_date}', currentDate)
       .replace('{entry_text}', request.entry_text)
       .replace('{recent_entries}', recentContext)
       .replace('{goals}', goalsContext)
