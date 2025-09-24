@@ -278,10 +278,15 @@ function generateEnhancedTemplateInsight(
   const hasMarketData = themes.marketInsights?.length > 0;
   const hasSafety = /safety|OSHA|protocol|equipment|training/i.test(text);
   
-  // Customer service and operational crisis detection
+  // Business crisis and challenge detection
   const hasCustomerServiceCrisis = /customer service|support tickets|response times|satisfaction scores|customer satisfaction|negative mentions|threatened to cancel|usability issues|customer complaints|social media negative/i.test(text);
   const hasOperationalCrisis = /overwhelmed|stressed|behind|delayed|pressure|urgent|crisis|failed|failure|issue|problem/i.test(text);
   const hasProductIssues = /product update|new features|user interface|rollback|onboarding|interface changes|usability/i.test(text);
+  const hasSupplyChainCrisis = /supplier|supply chain|material shortage|price increase|cost increase|margin|vendor|procurement/i.test(text);
+  const hasFinancialCrisis = /revenue decline|declining revenue|cash flow|burn rate|acquisition cost|lifetime value|profit margin|financial pressure/i.test(text);
+  const hasPersonnelCrisis = /fired|terminated|head of|marketing strategy|team shocked|personnel|staff issues|key employee/i.test(text);
+  const hasCompetitiveThreat = /competitor|competitive|threat|similar product|better features|half the price|match pricing|pivot|market segment/i.test(text);
+  const hasBudgetPlanning = /budget planning|q4 budget|quarterly budget|department resources|optimize costs|growth investments|profitability targets/i.test(text);
   
   // Extract specific details from the text for personalization
   const numbers = text.match(/\d+(%|\$|,|million|k|hours|days|weeks)/gi) || [];
@@ -289,8 +294,20 @@ function generateEnhancedTemplateInsight(
   
   let insight = "";
   
-  // Customer service crisis management (highest priority for challenge category)
-  if (category === 'challenge' && hasCustomerServiceCrisis) {
+  // Specific business crisis management (highest priority for challenge category)
+  if (category === 'challenge' && hasSupplyChainCrisis) {
+    insight = `Supply chain disruptions require immediate risk mitigation and long-term supplier diversification. Evaluate alternative suppliers, negotiate interim pricing arrangements, and assess which cost increases can be absorbed versus passed to customers. Implement supplier risk assessment protocols, build buffer inventory for critical materials, and develop pricing flexibility strategies. Use this crisis to strengthen supply chain resilience through multiple supplier relationships and better contract terms that include price protection clauses.`;
+  }
+  else if (category === 'challenge' && hasFinancialCrisis) {
+    insight = `Revenue declines demand systematic analysis of customer acquisition, retention, and pricing strategies. Immediately audit your customer acquisition costs, lifetime value calculations, and churn patterns to identify the highest-impact improvements. Focus on retaining existing customers through enhanced value delivery rather than just acquiring new ones. Implement cash flow forecasting, reduce non-essential expenses, and consider strategic pivots in pricing or service delivery. Financial pressure often reveals operational inefficiencies that, once fixed, create stronger unit economics.`;
+  }
+  else if (category === 'challenge' && hasPersonnelCrisis) {
+    insight = `Leadership terminations create both immediate operational gaps and opportunities to strengthen organizational systems. Document all processes and relationships the departed leader managed, redistribute responsibilities based on team strengths, and implement checks preventing similar issues. Use this transition to evaluate whether role structures need redesigning, establish clearer accountability frameworks, and strengthen succession planning across all critical positions. Transparent communication with the team about changes and improvements helps rebuild trust and confidence.`;
+  }
+  else if (category === 'challenge' && hasCompetitiveThreat) {
+    insight = `Competitive pressure demands strategic response rather than reactive price matching. Analyze your unique value proposition, customer relationships, and operational advantages that competitors cannot easily replicate. Consider whether to compete on price, differentiate through superior service, or target different customer segments where you have natural advantages. Use this threat as motivation to accelerate innovation, strengthen customer loyalty programs, and identify market opportunities your competitor may have overlooked in their aggressive pricing strategy.`;
+  }
+  else if (category === 'challenge' && hasCustomerServiceCrisis) {
     if (hasProductIssues) {
       insight = `Product-related customer service crises require immediate dual-track response: short-term customer retention and long-term product improvement. Prioritize direct customer communication acknowledging the issues and providing clear timelines for resolution. Consider implementing temporary support measures like extended response hours or dedicated escalation channels. Document all feedback patterns to inform future product decisions and create systematic testing processes that catch usability issues before release. This crisis can strengthen customer relationships if handled with transparency and swift action.`;
     } else {
@@ -300,6 +317,10 @@ function generateEnhancedTemplateInsight(
   // Operational challenges and stress management  
   else if (category === 'challenge' && hasOperationalCrisis) {
     insight = `Operational pressure reveals system weaknesses that, once addressed, become competitive advantages. Focus on identifying bottlenecks that create cascading delays and implement buffer systems preventing single points of failure. This might mean cross-training team members, automating routine processes, or restructuring workflows to reduce interdependencies. Use this stressed period to document current processes and build more resilient operations that can handle increased demand without proportional stress increases.`;
+  }
+  // Budget and financial planning scenarios
+  else if (category === 'planning' && hasBudgetPlanning) {
+    insight = `Effective budget planning balances growth investments with operational efficiency and risk management. Prioritize resource allocation based on measurable ROI, competitive advantage potential, and strategic importance. Create budget scenarios for different growth rates and market conditions, ensuring flexibility to adjust spending based on performance. Focus on investments that reduce future costs or increase revenue per employee. Document assumptions behind budget decisions and establish quarterly review processes to optimize allocation based on actual results versus projections.`;
   }
   // Safety and compliance challenges
   else if (hasSafety && keyActions.length > 0) {
@@ -1014,24 +1035,25 @@ function containsPlanningIndicators(text: string): boolean {
     // Strategic planning (specific contexts)
     'strategic planning', 'strategic roadmap', 'business strategy', 'long term strategy',
     'planning session', 'strategic meeting', 'planning phase', 'planning stage',
+    // Budget and financial planning
+    'budget planning', 'q4 budget', 'quarterly budget', 'annual budget', 'budget analysis',
+    'financial planning', 'resource allocation', 'cost optimization', 'department resources',
+    'spending plan', 'budget targets', 'profitability targets', 'growth investments',
     // Future thinking (specific contexts)
     'future planning', 'next quarter planning', 'planning for next year', 'upcoming planning',
-    'planning ahead', 'forward planning',
+    'planning ahead', 'forward planning', 'quarterly planning', 'annual planning',
     // Decision making (planning-specific)
     'planning to decide', 'considering strategy', 'evaluating options', 'analyzing approaches',
-    'reviewing strategy', 'strategic review',
+    'reviewing strategy', 'strategic review', 'decision framework', 'planning decisions',
     // Goal setting (planning-specific)
     'planning goals', 'setting objectives', 'planning targets', 'planning priorities',
-    'strategic objectives', 'strategic goals',
-    // Resource planning (specific)
-    'budget planning', 'resource allocation', 'planning investment', 'financial planning',
-    'spending plan', 'resource planning',
+    'strategic objectives', 'strategic goals', 'milestone planning', 'roadmap planning',
     // Process planning (specific)
     'process planning', 'planning procedures', 'planning systems', 'planning framework',
-    'structural planning', 'operational planning',
+    'structural planning', 'operational planning', 'workflow planning', 'project planning',
     // Research and preparation (planning-specific)
     'planning research', 'strategic investigation', 'planning exploration',
-    'preparing strategy', 'getting ready to plan'
+    'preparing strategy', 'getting ready to plan', 'preparation phase'
   ];
   
   return planningIndicators.some(indicator => lowerText.includes(indicator));
