@@ -916,6 +916,9 @@ function containsChallengeIndicators(text: string): boolean {
     'difficult', 'challenging', 'struggle', 'stuck', 'blocked', 'frustrated',
     // Personnel issues
     'fired', 'quit', 'resigned', 'terminated', 'conflict', 'disagreement',
+    'layoffs', 'laid off', 'downsizing', 'redundancies', 'morale is low', 'low morale',
+    'considering leaving', 'thinking of leaving', 'want to leave', 'employees leaving',
+    'key employees', 'productivity dropped', 'productivity has dropped', 'performance issues',
     // Financial stress
     'cash flow', 'debt', 'loss', 'expensive', 'costly', 'budget',
     // Operational challenges
@@ -1035,21 +1038,38 @@ function containsPlanningIndicators(text: string): boolean {
 }
 
 function containsLearningIndicators(text: string): boolean {
-  const indicators = [
-    // Learning language
-    'learned', 'learning', 'lesson', 'insight', 'understanding', 'realized',
-    // Knowledge acquisition
-    'discovered', 'found out', 'figured out', 'understand', 'knowledge',
-    // Skill development
-    'training', 'course', 'workshop', 'conference', 'seminar', 'education',
-    // Reflection and analysis
-    'reflecting', 'thinking about', 'analyzing', 'reviewing', 'considering',
-    // Experience processing
-    'experience', 'feedback', 'observation', 'notice', 'pattern',
-    // Research and study
-    'research', 'study', 'investigation', 'analysis', 'examination'
+  const lowerText = text.toLowerCase();
+  
+  // Don't classify as learning if it's clearly a challenge context
+  const challengeContext = [
+    'layoffs', 'fired', 'quit', 'crisis', 'problem', 'failure', 'failed',
+    'morale is low', 'productivity dropped', 'overwhelmed', 'struggling'
   ];
-  return indicators.some(indicator => text.includes(indicator));
+  
+  const hasChallengeContext = challengeContext.some(phrase => lowerText.includes(phrase));
+  
+  // If clear challenge context, don't classify as learning
+  if (hasChallengeContext) {
+    return false;
+  }
+  
+  const learningIndicators = [
+    // Specific learning language (not generic)
+    'learned valuable lessons', 'learned from', 'key learning', 'learning experience',
+    'lesson learned', 'lessons from', 'insights gained', 'understanding improved',
+    'realized that', 'discovered that', 'found out that', 'figured out how',
+    // Skill development (specific contexts)
+    'training completed', 'course finished', 'workshop attended', 'conference learnings',
+    'seminar insights', 'educational experience', 'skill development',
+    // Reflection and analysis (learning-specific)
+    'reflecting on lessons', 'analyzing what worked', 'reviewing learnings',
+    'learning from experience', 'educational feedback', 'knowledge gained',
+    // Research and study (learning-specific)
+    'research findings', 'study results', 'investigation revealed', 'analysis showed',
+    'examination uncovered', 'learning research', 'educational study'
+  ];
+  
+  return learningIndicators.some(indicator => lowerText.includes(indicator));
 }
 
 // Content analysis functions for generating specific insights
