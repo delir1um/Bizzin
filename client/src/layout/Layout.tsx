@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { Link, useLocation } from "wouter"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -14,6 +15,7 @@ import { Moon, Sun, User, LogOut, Shield } from "lucide-react"
 import { useAuth } from "@/hooks/AuthProvider"
 import { useUserProfile } from "@/hooks/useUserProfile"
 import { useAdminCheck } from "@/hooks/useAdminCheck"
+import { FooterContentModal, type FooterContentType } from "@/components/footer/FooterContentModal"
 import brizzinLogoDark from "@/assets/brizzin-logo-dark-v2.webp"
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -22,12 +24,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { user, signOut } = useAuth()
   const profile = useUserProfile()
   const { data: isAdmin, isLoading: adminLoading } = useAdminCheck()
+  const [isFooterModalOpen, setIsFooterModalOpen] = useState(false)
+  const [footerContentType, setFooterContentType] = useState<FooterContentType | null>(null)
   
   
   const currentLogo = brizzinLogoDark // Always use dark version
 
   const toggleTheme = () => {
     setTheme(theme === "light" ? "dark" : "light")
+  }
+
+  const handleFooterLinkClick = (contentType: FooterContentType) => {
+    setFooterContentType(contentType)
+    setIsFooterModalOpen(true)
   }
 
   const isActive = (path: string) => {
@@ -184,15 +193,27 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </div>
             </div>
             <div className="flex space-x-6">
-              <a href="#privacy" className="text-slate-400 hover:text-white text-sm transition-colors">
+              <button
+                onClick={() => handleFooterLinkClick('privacy')}
+                className="text-slate-400 hover:text-white text-sm transition-colors cursor-pointer"
+                data-testid="link-footer-privacy"
+              >
                 Privacy
-              </a>
-              <a href="#terms" className="text-slate-400 hover:text-white text-sm transition-colors">
+              </button>
+              <button
+                onClick={() => handleFooterLinkClick('terms')}
+                className="text-slate-400 hover:text-white text-sm transition-colors cursor-pointer"
+                data-testid="link-footer-terms"
+              >
                 Terms
-              </a>
-              <a href="#contact" className="text-slate-400 hover:text-white text-sm transition-colors">
+              </button>
+              <button
+                onClick={() => handleFooterLinkClick('contact')}
+                className="text-slate-400 hover:text-white text-sm transition-colors cursor-pointer"
+                data-testid="link-footer-contact"
+              >
                 Contact
-              </a>
+              </button>
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-slate-800 text-center">
@@ -211,6 +232,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </footer>
 
+      {/* Footer Content Modal */}
+      <FooterContentModal
+        isOpen={isFooterModalOpen}
+        onClose={() => setIsFooterModalOpen(false)}
+        contentType={footerContentType}
+      />
     </div>
   )
 }
