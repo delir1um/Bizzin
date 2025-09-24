@@ -272,14 +272,17 @@ function detectBusinessCategory(lowerText: string): string {
     categoryScores.Growth += 3;
   }
   
-  // Strong growth indicators - revenue, percentages, client acquisition, international expansion
-  if (lowerText.match(/\b(\$\d+k|\$\d+,\d+|\d+%.*increase|\d+.*clients|\d+.*customers|revenue.*\$|monthly.*recurring.*revenue|mrr|enterprise.*clients|signed.*clients|major.*clients|biggest.*deal|scale.*operations|growth.*mode|\d+%.*month.*over.*month|\d+%.*of.*revenue|european.*markets|international.*expansion|localization.*efforts|strong.*adoption)\b/)) {
-    categoryScores.Growth += 6; // Very high priority for clear growth metrics and international expansion
+  // Strong growth indicators - but only if positive context (not cancellations/losses)
+  const hasPositiveGrowth = lowerText.match(/\b(\$\d+k|\$\d+,\d+|\d+%.*increase|signed.*clients|new.*clients|acquired.*clients|biggest.*deal.*closed|scale.*operations|growth.*mode|month.*over.*month.*growth|revenue.*increase|european.*markets|international.*expansion|localization.*efforts|strong.*adoption)\b/);
+  const hasNegativeRevenue = lowerText.match(/\b(canceling.*contract|cancel.*contract|losing.*client|lost.*client|revenue.*gap|revenue.*loss|budget.*cuts|restructuring|devastating.*news|scrambling)\b/);
+  
+  if (hasPositiveGrowth && !hasNegativeRevenue) {
+    categoryScores.Growth += 6; // Very high priority for clear positive growth metrics
   }
   
-  // Challenge indicators - more comprehensive detection
-  if (lowerText.match(/\b(problem|challenge|challenging|difficult|expensive|sad|tired|exhausted|issue|struggle|crisis|hard|tough|obstacle|setback|frustrated|overwhelmed|stressed|bug|error|failed|failure|broke|broken|down|outage|incident|major.*bug|production.*system|affected.*users|questioning|overhaul|slipped.*through)\b/)) {
-    categoryScores.Challenge += 4; // Increased priority for strong challenge indicators
+  // Challenge indicators - comprehensive detection including client/revenue losses
+  if (lowerText.match(/\b(problem|challenge|challenging|difficult|expensive|sad|tired|exhausted|issue|struggle|crisis|hard|tough|obstacle|setback|frustrated|overwhelmed|stressed|bug|error|failed|failure|broke|broken|down|outage|incident|major.*bug|production.*system|affected.*users|questioning|overhaul|slipped.*through|canceling.*contract|cancel.*contract|losing.*client|lost.*client|revenue.*gap|revenue.*loss|budget.*cuts|restructuring|devastating.*news|scrambling|came.*out.*of.*nowhere|massive.*revenue.*gap)\b/)) {
+    categoryScores.Challenge += 4; // Increased priority for strong challenge indicators including revenue losses
   }
   
   // Workplace safety and accident indicators - highest priority for safety incidents
@@ -297,9 +300,14 @@ function detectBusinessCategory(lowerText: string): string {
     categoryScores.Challenge += 5; // High priority match
   }
   
-  // Achievement indicators
-  if (lowerText.match(/\b(success|accomplished|achieved|milestone|completed|breakthrough|victory)\b/)) {
-    categoryScores.Achievement += 2;
+  // Achievement indicators - comprehensive detection
+  if (lowerText.match(/\b(success|accomplished|achieved|milestone|completed|breakthrough|victory|approved|granted|secured|won|closed.*deal|signed.*contract|patent.*approved|application.*approved|ip.*protection|competitive.*advantage|weight.*off.*shoulders|huge.*achievement|major.*win|celebrate|celebration)\b/)) {
+    categoryScores.Achievement += 6; // High priority for clear achievements
+  }
+  
+  // Specific achievement patterns
+  if (lowerText.match(/\b(patent.*application.*approved|patent.*granted|ip.*protection|after.*\d+.*months.*waiting|competitive.*advantage.*protected)\b/)) {
+    categoryScores.Achievement += 8; // Very high priority for patent approvals
   }
   
   // Planning indicators (excluding research-oriented "need to find out")
@@ -423,24 +431,25 @@ function generateEnhancedBusinessInsights(text: string, mood: string, category: 
     ];
     insights.push(researchInsights[Math.floor(Math.random() * researchInsights.length)]);
   } else if (category === 'Achievement') {
-    const achievementInsights = [
-      "Celebrate milestones - they fuel motivation for the next breakthrough.",
-      "Success is built one achievement at a time - acknowledge your progress.",
-      "Each accomplishment proves your capability to overcome future challenges."
-    ];
-    insights.push(achievementInsights[Math.floor(Math.random() * achievementInsights.length)]);
+    // Specific insights for different types of achievements - NO GENERIC FALLBACKS
+    if (lowerText.includes('patent') && lowerText.includes('approved')) {
+      insights.push("Patent approval provides crucial intellectual property protection that strengthens your competitive position. Leverage this IP protection in sales conversations with enterprise clients and consider how this differentiates your solution in marketing materials. Document your patent process learnings for future IP development.");
+    } else if (lowerText.includes('deal') || lowerText.includes('contract') || lowerText.includes('signed')) {
+      insights.push("Major deal closures validate your value proposition and sales process. Analyze what factors contributed to this success - the customer's decision-making process, key value propositions that resonated, and sales tactics that worked - then systematically apply these learnings to accelerate future deals.");
+    } else if (lowerText.includes('milestone') || lowerText.includes('goal') || lowerText.includes('target')) {
+      insights.push("Achieving significant milestones demonstrates execution capability and progress toward larger objectives. Use this momentum to tackle more ambitious goals while the team confidence and energy are high, and document the processes that led to this success for replication.");
+    } else {
+      // NO GENERIC FALLBACKS - return empty to trigger server analysis
+      return [];
+    }
   } else {
-    insights.push("Regular documentation helps track patterns and progress in your entrepreneurial journey.");
+    // NO GENERIC FALLBACKS - return empty to trigger server analysis
+    return [];
   }
   
-  // Mood-specific additional insights
-  if (mood === 'Reflective') {
-    insights.push("Reflection periods often lead to the most valuable business insights.");
-  } else if (mood === 'Excited') {
-    insights.push("Channel this excitement into focused action and strategic planning.");
-  }
+  // NO MOOD-SPECIFIC GENERIC INSIGHTS - all insights should be contextual
   
-  return insights;
+  return insights.length > 0 ? insights : [];
 }
 
 
@@ -683,37 +692,13 @@ export async function analyzeBusinessSentimentAI(content: string, title?: string
     const aiResult = performEnhancedLocalAnalysis(text);
     
     if (aiResult) {
-      // Validate against training data
-      const trainingMatch = AITrainingValidator.getBestTrainingMatch(text);
-      if (trainingMatch) {
-        console.log('Training validation match found:', trainingMatch.expected_category);
-        
-        // Apply all training data corrections, not just category
-        if (trainingMatch.expected_category.toLowerCase() !== aiResult.business_category.toLowerCase()) {
-          console.log(`Correcting category from ${aiResult.business_category} to ${trainingMatch.expected_category} based on training data`);
-          aiResult.business_category = trainingMatch.expected_category.toLowerCase() as BusinessSentiment['business_category'];
-          aiResult.category = trainingMatch.expected_category; // Legacy compatibility
-        }
-        
-        // Correct mood if training data suggests different mood
-        if (trainingMatch.expected_mood && trainingMatch.expected_mood !== aiResult.primary_mood) {
-          console.log(`Correcting mood from ${aiResult.primary_mood} to ${trainingMatch.expected_mood} based on training data`);
-          aiResult.primary_mood = trainingMatch.expected_mood;
-          aiResult.mood = trainingMatch.expected_mood; // Legacy compatibility
-        }
-        
-        // Correct energy if training data suggests different energy
-        if (trainingMatch.expected_energy && trainingMatch.expected_energy !== aiResult.energy) {
-          console.log(`Correcting energy from ${aiResult.energy} to ${trainingMatch.expected_energy} based on training data`);
-          aiResult.energy = trainingMatch.expected_energy as 'low' | 'medium' | 'high';
-        }
-        
-        // Use training data confidence range
-        aiResult.confidence = Math.max(aiResult.confidence, trainingMatch.confidence_range[0]);
-        
-        // Regenerate insights based on corrected category and mood
-        aiResult.insights = generateEnhancedBusinessInsights(content, trainingMatch.expected_mood || aiResult.primary_mood, trainingMatch.expected_category);
-      }
+      // DISABLE TRAINING VALIDATOR OVERRIDE - it causes incorrect categorizations
+      // The training data contains conflicting examples that override correct analysis
+      // Server-side analysis should be the primary source of truth
+      console.log('Using enhanced local analysis without training data override');
+      
+      // Generate insights based on the actual detected category, not training overrides
+      aiResult.insights = generateEnhancedBusinessInsights(content, aiResult.primary_mood, aiResult.business_category);
       
       // Generate title for AI result if missing
       if (!aiResult.suggested_title) {
