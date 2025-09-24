@@ -17,6 +17,10 @@ interface AnalysisRequest {
 const analysisCache = new Map<string, { data: KimiBusinessAnalysis; timestamp: number }>();
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
+// Clear cache to fix duplicate analysis bug
+console.log('🔄 Clearing analysis cache to fix duplicate analysis issue...');
+analysisCache.clear();
+
 /**
  * Unified business analysis using best available AI provider
  * Primary: Qwen3 (free), Backup: Kimi K2 (cheap)
@@ -162,14 +166,30 @@ async function applyQualityChecks(analysis: KimiBusinessAnalysis, originalText: 
 }
 
 /**
- * Generate cache key for request
+ * Generate cache key for request using actual content hashing
  */
 function generateCacheKey(request: AnalysisRequest): string {
-  const textHash = request.entry_text.substring(0, 100);
-  const contextHash = (request.recent_entries || []).join('|').substring(0, 50);
-  const goalsHash = (request.goals || []).join('|').substring(0, 50);
+  // Create a simple hash from the actual content
+  const textContent = request.entry_text.toLowerCase().replace(/\s+/g, ' ').trim();
+  const contextContent = (request.recent_entries || []).join('|').toLowerCase();
+  const goalsContent = (request.goals || []).join('|').toLowerCase();
   
-  return `kimi_${textHash.length}_${contextHash.length}_${goalsHash.length}`;
+  // Simple hash function to avoid collisions
+  function simpleHash(str: string): string {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash).toString(36);
+  }
+  
+  const textHash = simpleHash(textContent);
+  const contextHash = simpleHash(contextContent);
+  const goalsHash = simpleHash(goalsContent);
+  
+  return `kimi_${textHash}_${contextHash}_${goalsHash}`;
 }
 
 /**
