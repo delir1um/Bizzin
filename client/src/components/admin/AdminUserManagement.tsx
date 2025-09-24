@@ -228,7 +228,7 @@ export function AdminUserManagement() {
     mutationFn: async (userId: string) => {
       console.log('🗑️ Starting user deletion via admin API:', { userId });
       
-      const response = await fetch(`/api/admin/delete/${userId}`, {
+      const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
