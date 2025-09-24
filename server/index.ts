@@ -110,6 +110,10 @@ app.use((req, res, next) => {
   const footerContentRoutes = await import('./routes/footer-content.js');
   app.use('/api/footer-content', footerContentRoutes.default);
   
+  // Add Migration API routes - temporary database setup endpoints
+  const migrationRoutes = await import('./routes/migration.js');
+  app.use('/api/migration', migrationRoutes.default);
+  
   const server = await registerRoutes(app);
   
   // Initialize single email system - SimpleEmailScheduler (production ready)

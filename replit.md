@@ -16,12 +16,16 @@ Built with React 18 and TypeScript, using Vite. It employs a component-based app
 Supabase Auth is used for user authentication, with user profiles extending the `auth.users` table. React context manages user sessions with automatic token refresh. Admin access is controlled via an `admin_users` table or `is_admin` column in `user_profiles`, implementing comprehensive role-based access control.
 
 ### Database Design
-Utilizes Supabase PostgreSQL for its database, featuring schemas for `user_profiles`, `journal_entries`, `goals`, `documents`, `podcast_episodes`, `user_plans`, `user_podcast_progress`, `calculator_history`, and `admin` tables. Row-Level Security (RLS) ensures data isolation. All database operations are client-side via the Supabase SDK.
+**CRITICAL: SUPABASE ONLY** - This project uses Supabase PostgreSQL EXCLUSIVELY for all database operations. NEVER use any other database (Neon, local PostgreSQL, etc.). All database operations must go through Supabase.
+
+Utilizes Supabase PostgreSQL for its database, featuring schemas for `user_profiles`, `journal_entries`, `goals`, `documents`, `podcast_episodes`, `user_plans`, `user_podcast_progress`, `calculator_history`, `footer_content`, and `admin` tables. Row-Level Security (RLS) ensures data isolation. All database operations are client-side via the Supabase SDK.
 
 ### AI-Powered Features
 Integrates authentic AI sentiment analysis using the Hugging Face inference API, specifically `cardiffnlp/twitter-roberta-base-sentiment` and `j-hartmann/emotion-english-distilroberta-base` models. This provides 85-95% accuracy for mood detection, energy levels, and business categorization based on content analysis. A robust API quota protection system ensures continuous service for paid users, featuring automatic fallback to keyword-based analysis during quota limits, real-time monitoring, graceful degradation, and auto-recovery. Enhanced business insights provide contextual entrepreneurial guidance derived from existing AI sentiment data. Dynamic AI version management updates version labels based on analysis source.
 
 ### Data Architecture Decisions
+**STRICT SUPABASE-ONLY POLICY** - All database operations MUST use Supabase. No exceptions. Never use execute_sql_tool or any other database connection.
+
 All data access is centralized through `@/lib/supabase` using the Supabase client-side SDK. The system maintains proper table relationships with foreign keys and supports real-time subscriptions. Supabase Storage handles secure file uploads.
 
 ### Business Model & Calculator Features
