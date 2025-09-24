@@ -62,6 +62,14 @@ interface UserProfile {
   completed_goals: number
   storage_used: number
   last_activity: string
+  // Referral information
+  referred_by: {
+    user_id: string
+    email: string
+    name: string
+    referral_code: string
+  } | null
+  referrals_made_count: number
 }
 
 // Trial editing form schema
@@ -142,7 +150,10 @@ export function AdminUserManagement() {
             total_goals: totalGoals,
             completed_goals: completedGoals,
             storage_used: 0, // Could be enhanced with storage calculation
-            last_activity: user.updated_at || user.created_at
+            last_activity: user.updated_at || user.created_at,
+            // Referral information from backend
+            referred_by: user.referrals?.referred_by || null,
+            referrals_made_count: user.referrals?.referrals_made_count || 0
           }
         })
 
@@ -313,6 +324,8 @@ export function AdminUserManagement() {
                     <TableHead>Trial Status</TableHead>
                     <TableHead>Activity</TableHead>
                     <TableHead>Usage</TableHead>
+                    <TableHead>Referred By</TableHead>
+                    <TableHead>Referrals Made</TableHead>
                     <TableHead>Joined</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -432,6 +445,31 @@ export function AdminUserManagement() {
                           <div>{user.total_goals} goals</div>
                           <div className="text-xs text-muted-foreground">
                             {Math.round(user.storage_used / (1024 * 1024))}MB storage
+                          </div>
+                        </div>
+                      </TableCell>
+                      
+                      {/* Referred By Column */}
+                      <TableCell>
+                        <div className="text-sm">
+                          {user.referred_by ? (
+                            <div>
+                              <div className="font-medium">{user.referred_by.name}</div>
+                              <div className="text-xs text-muted-foreground">{user.referred_by.email}</div>
+                              <div className="text-xs text-muted-foreground">Code: {user.referred_by.referral_code}</div>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">Direct signup</span>
+                          )}
+                        </div>
+                      </TableCell>
+
+                      {/* Referrals Made Column */}
+                      <TableCell>
+                        <div className="text-sm">
+                          <div className="font-medium">{user.referrals_made_count}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {user.referrals_made_count === 1 ? 'referral' : 'referrals'}
                           </div>
                         </div>
                       </TableCell>
