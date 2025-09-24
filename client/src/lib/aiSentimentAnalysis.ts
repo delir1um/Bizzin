@@ -740,8 +740,23 @@ export async function analyzeBusinessSentimentAI(content: string, title?: string
       // Server-side analysis should be the primary source of truth
       console.log('Using enhanced local analysis without training data override');
       
-      // Generate insights based on the actual detected category, not training overrides
-      aiResult.insights = generateEnhancedBusinessInsights(content, aiResult.primary_mood, aiResult.business_category);
+      // Try enhanced insights generation with Claude API first
+      try {
+        console.log('🚀 Trying enhanced Claude insights for local analysis...');
+        const enhancedInsights = await generateEnhancedInsights(content, aiResult);
+        if (enhancedInsights && enhancedInsights.length > 0) {
+          console.log('✅ Using enhanced Claude-generated insights');
+          aiResult.insights = enhancedInsights;
+          aiResult.analysis_source = 'claude-enhanced';
+        } else {
+          console.log('⚠️ Claude insights returned empty, using fallback');
+          aiResult.insights = generateEnhancedBusinessInsights(content, aiResult.primary_mood, aiResult.business_category);
+        }
+      } catch (error) {
+        console.warn('⚠️ Enhanced insights failed, falling back to standard insights:', error);
+        // Generate insights based on the actual detected category, not training overrides
+        aiResult.insights = generateEnhancedBusinessInsights(content, aiResult.primary_mood, aiResult.business_category);
+      }
       
       // Generate title for AI result if missing
       if (!aiResult.suggested_title) {
