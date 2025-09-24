@@ -941,7 +941,7 @@ function containsChallengeIndicators(text: string): boolean {
     'considering leaving', 'thinking of leaving', 'want to leave', 'employees leaving',
     'key employees', 'productivity dropped', 'productivity has dropped', 'performance issues',
     // Financial stress
-    'cash flow', 'debt', 'loss', 'expensive', 'costly', 'budget',
+    'cash flow', 'debt', 'loss', 'expensive', 'costly', 'budget crisis', 'budget problem', 'budget shortfall', 'budget deficit', 'over budget', 'budget overrun',
     // Operational challenges
     'delayed', 'behind', 'overwhelmed', 'stressed', 'pressure', 'urgent',
     // External pressures
