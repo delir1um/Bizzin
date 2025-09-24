@@ -9,11 +9,11 @@ Unified AI Provider Configuration
 
 // AI Provider options (in order of preference: free first, then cheapest)
 const AI_PROVIDERS = [
-  // Qwen3 - FREE tier via OpenRouter
+  // Qwen3 - FREE tier via OpenRouter (correct model names)
   {
     name: "Qwen3 Free",
     baseURL: "https://openrouter.ai/api/v1",
-    model: "qwen/qwen3-32b:free",
+    model: "qwen/qwen-2.5-72b-instruct:free",
     apiKey: process.env.OPENAI_API_KEY,
     cost: "FREE",
     strengths: ["reasoning", "multilingual", "business analysis"]
@@ -27,13 +27,13 @@ const AI_PROVIDERS = [
     cost: "$0.15-2.50/1M tokens",
     strengths: ["coding", "agentic", "structured output"]
   },
-  // Additional Qwen3 paid options
+  // Additional Qwen2.5 options via OpenRouter
   {
-    name: "Qwen3 Paid",
+    name: "Qwen2.5 Paid",
     baseURL: "https://openrouter.ai/api/v1", 
-    model: "qwen/qwen3-32b",
+    model: "qwen/qwen-2.5-72b-instruct",
     apiKey: process.env.OPENAI_API_KEY,
-    cost: "$0.735-2.94/1M tokens",
+    cost: "$0.40-$1.20/1M tokens",
     strengths: ["reasoning", "multilingual", "256K context"]
   },
   // Additional Kimi K2 providers
