@@ -3,34 +3,7 @@ import { supabase } from '../lib/supabase.js';
 
 const router = express.Router();
 
-// Test endpoint to see what the server can access
-router.get('/test', async (req, res) => {
-  try {
-    console.log('🧪 Testing server database connection...');
-    
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .select('user_id, email, referral_code')
-      .limit(5);
-    
-    console.log('🧪 Test query result:', { 
-      success: !error, 
-      error: error?.message, 
-      dataCount: data?.length,
-      data: data?.map(u => ({ email: u.email, code: u.referral_code }))
-    });
-    
-    return res.json({ 
-      success: !error, 
-      error: error?.message,
-      dataCount: data?.length || 0,
-      referralCodes: data?.map(u => ({ email: u.email, code: u.referral_code })) || []
-    });
-  } catch (error) {
-    console.error('💥 Test error:', error);
-    return res.status(500).json({ error: 'Test failed' });
-  }
-});
+
 
 // Validate referral code endpoint
 router.get('/validate/:code', async (req, res) => {
