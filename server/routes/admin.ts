@@ -99,41 +99,48 @@ router.get('/users', requireAdmin, async (req, res) => {
 
     console.log(`📊 Found ${allPlans?.length || 0} plan records total`);
     
-    // Get referral data using direct SQL to bypass schema caching
+    // Get referral data using simplified approach
     let referralData: Record<string, any> = {};
     try {
-      console.log('🔍 Fetching referral data via SQL...');
-      const { data: referralResults, error: referralError } = await supabase.rpc('exec_sql', {
-        sql_query: `
-          SELECT 
-            up.user_id,
-            up.referral_code,
-            up.referred_by_user_id,
-            referrer.email as referrer_email,
-            referrer.full_name as referrer_name,
-            referrer.referral_code as referrer_code,
-            (SELECT COUNT(*) FROM user_profiles WHERE referred_by_user_id = up.user_id) as referrals_made_count
-          FROM user_profiles up
-          LEFT JOIN user_profiles referrer ON up.referred_by_user_id = referrer.user_id
-        `
-      });
+      console.log('🔍 Fetching referral data with fallback approach...');
       
-      if (!referralError && referralResults) {
-        // Convert array results to object keyed by user_id
-        referralResults.forEach((row: any) => {
-          referralData[row.user_id] = {
-            referral_code: row.referral_code,
-            referred_by_user_id: row.referred_by_user_id,
-            referrer_email: row.referrer_email,
-            referrer_name: row.referrer_name,
-            referrer_code: row.referrer_code,
-            referrals_made_count: parseInt(row.referrals_made_count) || 0
+      // First, get all users with their referral codes and referred_by_user_id
+      const { data: allUsers, error: usersError } = await supabase
+        .from('user_profiles')
+        .select('user_id, referral_code, referred_by_user_id, email, full_name');
+
+      if (usersError) {
+        console.error('Error fetching users for referral data:', usersError);
+        // Continue with empty referral data instead of failing
+      } else if (allUsers) {
+        console.log(`🔍 Got ${allUsers.length} users for referral processing`);
+        
+        // Create lookup map for user info
+        const userLookup = allUsers.reduce((acc, user) => {
+          acc[user.user_id] = user;
+          return acc;
+        }, {} as Record<string, any>);
+        
+        // Build referral data for each user
+        for (const user of allUsers) {
+          const referrerInfo = user.referred_by_user_id ? userLookup[user.referred_by_user_id] : null;
+          const referralsMadeCount = allUsers.filter(u => u.referred_by_user_id === user.user_id).length;
+          
+          referralData[user.user_id] = {
+            referral_code: user.referral_code,
+            referred_by_user_id: user.referred_by_user_id,
+            referrer_email: referrerInfo?.email || null,
+            referrer_name: referrerInfo?.full_name || null,
+            referrer_code: referrerInfo?.referral_code || null,
+            referrals_made_count: referralsMadeCount
           };
-        });
+        }
+        
         console.log(`📊 Loaded referral data for ${Object.keys(referralData).length} users`);
       }
     } catch (error) {
       console.error('❌ Error fetching referral data:', error);
+      // Continue with empty referral data to prevent complete failure
     }
     
     // Get additional stats for each user and match with plan data

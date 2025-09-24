@@ -26,7 +26,9 @@ import {
   FileText,
   Target,
   DollarSign,
-  MoreHorizontal
+  MoreHorizontal,
+  Trash2,
+  AlertTriangle
 } from "lucide-react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { supabase } from "@/lib/supabase"
@@ -88,6 +90,8 @@ export function AdminUserManagement() {
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null)
   const [trialEditUser, setTrialEditUser] = useState<UserProfile | null>(null)
   const [isTrialEditOpen, setIsTrialEditOpen] = useState(false)
+  const [deleteUser, setDeleteUser] = useState<UserProfile | null>(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const queryClient = useQueryClient()
 
 
@@ -219,9 +223,53 @@ export function AdminUserManagement() {
     }
   })
 
+  // Delete user mutation using admin API
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      console.log('🗑️ Starting user deletion via admin API:', { userId });
+      
+      const response = await fetch(`/api/admin/delete/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('❌ Admin delete API error:', errorData);
+        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ Admin delete API success:', result);
+      return result;
+    },
+    onSuccess: (data) => {
+      console.log('🎉 User deletion mutation success:', data);
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] })
+      setIsDeleteDialogOpen(false)
+      setDeleteUser(null)
+    },
+    onError: (error) => {
+      console.error('❌ User deletion mutation failed:', error);
+    }
+  })
+
   const editTrialDays = (user: UserProfile) => {
     setTrialEditUser(user)
     setIsTrialEditOpen(true)
+  }
+
+  const confirmDeleteUser = (user: UserProfile) => {
+    setDeleteUser(user)
+    setIsDeleteDialogOpen(true)
+  }
+
+  const handleDeleteUser = () => {
+    if (deleteUser) {
+      deleteUserMutation.mutate(deleteUser.user_id)
+    }
   }
 
   const handleExportUsers = () => {
@@ -481,23 +529,36 @@ export function AdminUserManagement() {
                       </TableCell>
                       
                       <TableCell>
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => setSelectedUser(user)}
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-4xl">
-                            <DialogHeader>
-                              <DialogTitle>User Details: {user.full_name || user.email}</DialogTitle>
-                            </DialogHeader>
-                            {selectedUser && <UserDetailView user={selectedUser} refetch={refetch} />}
-                          </DialogContent>
-                        </Dialog>
+                        <div className="flex items-center gap-2">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => setSelectedUser(user)}
+                                data-testid={`button-view-${user.user_id}`}
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-4xl">
+                              <DialogHeader>
+                                <DialogTitle>User Details: {user.full_name || user.email}</DialogTitle>
+                              </DialogHeader>
+                              {selectedUser && <UserDetailView user={selectedUser} refetch={refetch} />}
+                            </DialogContent>
+                          </Dialog>
+                          
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => confirmDeleteUser(user)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            data-testid={`button-delete-${user.user_id}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -548,6 +609,67 @@ export function AdminUserManagement() {
         }}
         isLoading={updateTrialDaysMutation.isPending}
       />
+
+      {/* Delete User Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-red-600" />
+              Delete User Account
+            </DialogTitle>
+          </DialogHeader>
+          
+          {deleteUser && (
+            <div className="space-y-4">
+              <div className="text-sm">
+                <p className="text-red-600 font-medium mb-2">
+                  ⚠️ This action cannot be undone!
+                </p>
+                <p>
+                  You are about to permanently delete the following user and all their data:
+                </p>
+                <div className="mt-2 p-3 bg-slate-100 dark:bg-slate-800 rounded">
+                  <div className="font-medium">{deleteUser.full_name || deleteUser.email}</div>
+                  <div className="text-muted-foreground">{deleteUser.email}</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    • {deleteUser.total_journal_entries} journal entries
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    • {deleteUser.total_goals} goals
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    • All uploaded documents and files
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    • Plan and billing information
+                  </div>
+                </div>
+              </div>
+              
+              <DialogFooter>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsDeleteDialogOpen(false)}
+                  disabled={deleteUserMutation.isPending}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="destructive"
+                  onClick={handleDeleteUser}
+                  disabled={deleteUserMutation.isPending}
+                  data-testid="button-confirm-delete"
+                >
+                  {deleteUserMutation.isPending ? 'Deleting...' : 'Delete User'}
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
@@ -555,10 +677,11 @@ export function AdminUserManagement() {
 function UserDetailView({ user, refetch }: { user: UserProfile, refetch: () => void }) {
   return (
     <Tabs defaultValue="profile" className="w-full">
-      <TabsList className="grid w-full grid-cols-4">
+      <TabsList className="grid w-full grid-cols-5">
         <TabsTrigger value="profile">Profile</TabsTrigger>
         <TabsTrigger value="activity">Activity</TabsTrigger>
         <TabsTrigger value="billing">Billing</TabsTrigger>
+        <TabsTrigger value="referrals">Referrals</TabsTrigger>
         <TabsTrigger value="actions">Actions</TabsTrigger>
       </TabsList>
       
@@ -755,6 +878,167 @@ function UserDetailView({ user, refetch }: { user: UserProfile, refetch: () => v
               ) : (
                 <div className="text-center py-4 text-muted-foreground">
                   No payment history - currently on free trial
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </TabsContent>
+      
+      <TabsContent value="referrals" className="space-y-4">
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Referral Status</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <label className="text-sm font-medium">User's Own Referral Code</label>
+                <div className="flex items-center gap-2 mt-1">
+                  <code className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-sm">
+                    {user.user_id.split('-')[0].toUpperCase()}
+                  </code>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const code = user.user_id.split('-')[0].toUpperCase()
+                      navigator.clipboard.writeText(code)
+                      alert('Referral code copied to clipboard!')
+                    }}
+                  >
+                    Copy
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  This code can be shared to refer new users
+                </p>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium">Referrals Made</label>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-2xl font-bold text-green-600">
+                    {user.referrals_made_count}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    {user.referrals_made_count === 1 ? 'user referred' : 'users referred'}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Referral Performance</label>
+                <div className="mt-2 space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span>Conversion Rate</span>
+                    <span className="text-muted-foreground">
+                      {user.referrals_made_count > 0 ? '100%' : '0%'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Potential Earnings</span>
+                    <span className="text-muted-foreground">
+                      R{(user.referrals_made_count * 50).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Referred By</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {user.referred_by ? (
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium">Referrer Name</label>
+                    <p className="text-sm text-muted-foreground font-medium">
+                      {user.referred_by.name}
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium">Referrer Email</label>
+                    <p className="text-sm text-muted-foreground">
+                      {user.referred_by.email}
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium">Referral Code Used</label>
+                    <code className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-sm">
+                      {user.referred_by.referral_code}
+                    </code>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium">Signup Date</label>
+                    <p className="text-sm text-muted-foreground">
+                      {format(new Date(user.created_at), 'MMMM d, yyyy')}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                    <span className="text-xl">👤</span>
+                  </div>
+                  <p className="font-medium">Direct Signup</p>
+                  <p className="text-sm">This user signed up directly without a referral code</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Referral Timeline</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 p-3 border rounded">
+                <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                  <span className="text-blue-600 dark:text-blue-400 text-sm">📅</span>
+                </div>
+                <div>
+                  <div className="font-medium">User Joined Bizzin</div>
+                  <div className="text-sm text-muted-foreground">
+                    {format(new Date(user.created_at), 'MMMM d, yyyy')} • 
+                    {user.referred_by ? ` via ${user.referred_by.name}'s referral` : ' Direct signup'}
+                  </div>
+                </div>
+              </div>
+              
+              {user.referrals_made_count > 0 && (
+                <div className="flex items-center gap-3 p-3 border rounded">
+                  <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                    <span className="text-green-600 dark:text-green-400 text-sm">🎯</span>
+                  </div>
+                  <div>
+                    <div className="font-medium">First Successful Referral</div>
+                    <div className="text-sm text-muted-foreground">
+                      Referred {user.referrals_made_count} user{user.referrals_made_count !== 1 ? 's' : ''} to join Bizzin
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {user.referrals_made_count === 0 && (
+                <div className="flex items-center gap-3 p-3 border rounded opacity-50">
+                  <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                    <span className="text-slate-400 text-sm">⏳</span>
+                  </div>
+                  <div>
+                    <div className="font-medium text-muted-foreground">No Referrals Yet</div>
+                    <div className="text-sm text-muted-foreground">
+                      User hasn't referred anyone to Bizzin yet
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
