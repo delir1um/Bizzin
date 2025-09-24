@@ -660,18 +660,25 @@ function detectSemanticBusinessCategory(
       weight: 0.95  // Increased weight to prioritize achievements over other categories
     },
     {
-      // Enhanced Growth: Mixed positive emotions + growth keywords OR excitement about expansion
+      // Enhanced Growth: Stricter detection to avoid false positives in challenge scenarios
       condition: (s: any, e: string, es: number) => {
-        const growthEmotions = hasEmotion(['joy', 'surprise', 'neutral', 'optimism']);
+        const growthEmotions = hasEmotion(['joy', 'surprise', 'optimism']);
         const hasGrowthKeywords = containsGrowthIndicators(lowerText);
-        const positiveOrNeutral = s.type === 'positive' || (s.type === 'neutral' && s.confidence < 0.8);
+        const hasChallengeKeywords = containsChallengeIndicators(lowerText);
+        const positiveConfident = s.type === 'positive' && s.confidence > 0.6;
+        const neutralPositive = s.type === 'neutral' && s.confidence < 0.7 && growthEmotions;
         
-        return (hasGrowthKeywords && positiveOrNeutral) ||
-               (growthEmotions && hasGrowthKeywords) ||
-               (s.type === 'positive' && s.confidence > 0.8 && hasGrowthKeywords);
+        // Don't classify as growth if clear challenge indicators are present
+        if (hasChallengeKeywords || s.type === 'negative') {
+          return false;
+        }
+        
+        return (hasGrowthKeywords && positiveConfident) ||
+               (growthEmotions && hasGrowthKeywords && s.type !== 'negative') ||
+               (neutralPositive && hasGrowthKeywords);
       },
       category: 'growth',
-      weight: 0.85
+      weight: 0.75  // Reduced weight to defer to challenge detection
     },
     {
       // Enhanced Planning: Any planning keywords + non-negative sentiment OR strategic thinking
@@ -714,17 +721,21 @@ function detectSemanticBusinessCategory(
       weight: 0.9  // High priority but not higher than achievements
     },
     {
-      // Challenge: Negative emotions + challenge indicators (keeping existing but refined)
+      // Challenge: Enhanced detection for business problems and crises
       condition: (s: any, e: string, es: number) => {
         const challengeEmotions = hasEmotion(['anger', 'sadness', 'fear', 'disgust']);
         const hasChallengeKeywords = containsChallengeIndicators(lowerText);
-        const strongNegative = s.type === 'negative' && s.confidence > 0.6;
+        const moderateNegative = s.type === 'negative' && s.confidence > 0.4; // Lowered threshold
+        const neutralWithChallengeContext = s.type === 'neutral' && hasChallengeKeywords;
         
-        return (strongNegative && challengeEmotions) ||
-               (hasChallengeKeywords && (challengeEmotions || strongNegative));
+        // Enhanced conditions to catch more challenge scenarios
+        return (hasChallengeKeywords) || // Challenge keywords alone are strong indicator
+               (moderateNegative && challengeEmotions) ||
+               (neutralWithChallengeContext) || // Neutral sentiment but clear challenge content
+               (s.type === 'negative' && s.confidence > 0.5); // Moderate negative sentiment
       },
       category: 'challenge',
-      weight: 0.8
+      weight: 0.9  // Increased weight to prioritize over growth in ambiguous cases
     },
     {
       // Reflection: Neutral emotions + reflective content OR low confidence mixed signals
@@ -868,29 +879,68 @@ function containsChallengeIndicators(text: string): boolean {
     // Operational challenges
     'delayed', 'behind', 'overwhelmed', 'stressed', 'pressure', 'urgent',
     // External pressures
-    'competitor', 'threat', 'risk', 'concern', 'worry', 'accident'
+    'competitor', 'threat', 'risk', 'concern', 'worry', 'accident',
+    // Customer service crisis indicators
+    'response times', 'satisfaction scores', 'customer satisfaction', 'negative mentions',
+    'threatened to cancel', 'threaten to cancel', 'usability issues', 'user experience issues',
+    'support tickets', 'customer complaints', 'service quality', 'quality issues',
+    'dissatisfied customers', 'unhappy customers', 'angry customers', 'frustrated customers',
+    'cancellation threats', 'churn rate', 'customer churn', 'retention issues',
+    'feedback negative', 'poor ratings', 'bad reviews', 'social media negative',
+    'dropping satisfaction', 'satisfaction drop', 'scores dropping', 'declining satisfaction'
   ];
   return indicators.some(indicator => text.includes(indicator));
 }
 
 function containsGrowthIndicators(text: string): boolean {
-  const indicators = [
-    // Revenue growth
+  const positiveGrowthIndicators = [
+    // Revenue growth (specific positive contexts)
     'revenue increase', 'sales growth', 'income growth', 'profit growth',
-    // Business scaling
-    'scaling', 'expansion', 'growing', 'expand', 'scale', 'increase',
-    // Team growth
-    'hiring', 'new team', 'staff', 'employees', 'recruiting', 'onboarding',
-    // Market expansion
-    'market', 'customers', 'clients', 'user growth', 'subscriber',
-    // Product growth
-    'new product', 'features', 'development', 'innovation', 'upgrade',
+    'revenue exceeded', 'sales exceeded', 'revenue milestone', 'record revenue',
+    // Business scaling (positive contexts)
+    'successful scaling', 'expansion plans', 'growing successfully', 'scaling up',
+    'expanding into', 'growth strategy', 'scale efficiently',
+    // Team growth (positive contexts)
+    'hiring spree', 'team expansion', 'new hires', 'recruiting success', 
+    'successful onboarding', 'team growth', 'staff expansion',
+    // Market expansion (positive contexts)
+    'market expansion', 'new market', 'market penetration', 'user growth',
+    'customer growth', 'subscriber growth', 'growing user base',
+    // Product growth (positive contexts)
+    'product launch success', 'feature adoption', 'successful launch',
+    'innovation breakthrough', 'upgrade success', 'product market fit',
     // Opportunity language
-    'opportunity', 'potential', 'promising', 'exciting', 'momentum',
+    'growth opportunity', 'expansion opportunity', 'market opportunity',
+    'promising potential', 'exciting growth', 'momentum building',
     // Investment and funding
-    'funding', 'investment', 'capital', 'round', 'investor'
+    'funding secured', 'investment round', 'capital raised', 'investor interest'
   ];
-  return indicators.some(indicator => text.includes(indicator));
+  
+  // Context-aware detection - avoid false positives in negative scenarios
+  const challengeContext = [
+    'crisis', 'problem', 'issue', 'failed', 'failure', 'struggling',
+    'difficult', 'challenging', 'overwhelmed', 'negative', 'dropping',
+    'declining', 'poor', 'bad', 'dissatisfied', 'unhappy', 'frustrated',
+    'threat', 'concern', 'worry', 'risk'
+  ];
+  
+  const lowerText = text.toLowerCase();
+  
+  // If there are clear challenge indicators, be more strict about growth detection
+  const hasChallengeContext = challengeContext.some(indicator => lowerText.includes(indicator));
+  
+  if (hasChallengeContext) {
+    // Only trigger on very specific positive growth phrases when challenge context exists
+    const specificPositiveGrowth = [
+      'revenue increase', 'sales growth', 'profit growth', 'successful scaling',
+      'expansion plans', 'hiring spree', 'team expansion', 'market expansion',
+      'product launch success', 'funding secured', 'investment round'
+    ];
+    return specificPositiveGrowth.some(indicator => lowerText.includes(indicator));
+  }
+  
+  // Normal growth detection when no challenge context
+  return positiveGrowthIndicators.some(indicator => lowerText.includes(indicator));
 }
 
 function containsPlanningIndicators(text: string): boolean {
