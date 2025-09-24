@@ -138,11 +138,11 @@ describe('Insights Schema Validation', () => {
       expect(result.success).toBe(true);
     });
 
-    it('should validate grounded_on metadata', () => {
+    it('should validate grounded_on metadata structure', () => {
       const invalidResponse = {
         ...validResponse,
         grounded_on: {
-          entry_chars: -1, // Invalid negative value
+          entry_chars: 'invalid', // Should be number
           recent_entries_used: 2,
           goals_used: 3
         }

@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { chat } from './anthropic.js';
 import { AI_CONFIG } from './config.js';
+import { insightsConfig } from '../config/insights.js';
 import { InsightResponse } from '../../shared/schemas/insights.js';
 import { hasBannedPhrases, hasSpecificOverlap, getValidationContext } from '../lib/specificity.js';
 
