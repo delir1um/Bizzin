@@ -1,0 +1,148 @@
+Goal: Replace generic/junky insights with grounded, on-point, actionable guidance for each journal entry.
+
+Scope (files to create/modify):
+
+shared/schemas/insights.ts (new Zod schema)
+
+server/routes/insights.ts or existing AI route (adjust path to your server/worker)
+
+cloudflare-worker/* if API is proxied there (match current wiring)
+
+client/src/features/journal/* (the component that renders AI Business Insights)
+
+client/src/lib/api.ts (or wherever fetch layer lives)
+
+tests/insights.spec.ts (new; use Vitest/Jest)
+
+Use repo test data: ai_enhancement_test_data.json for fixtures. 
+GitHub
+
+Implementation steps:
+
+Create strict schemas (shared/schemas/insights.ts) and export:
+
+import { z } from "zod";
+
+export const Insight = z.object({
+  summary: z.string().min(30).max(280),         // 1–2 sentences, specific
+  actions: z.array(z.string().min(8)).min(2).max(5), // concrete next steps
+  risks: z.array(z.string().min(8)).max(3).optional(),
+  sentiment: z.enum(["Excited","Positive","Neutral","Concerned","Stressed"]),
+  confidence: z.number().min(0).max(1),
+  tags: z.array(z.string()).min(1).max(5)
+});
+
+export const InsightResponse = z.object({
+  entry_id: z.string(),
+  model_version: z.string(),
+  grounded_on: z.object({
+    entry_chars: z.number(),
+    recent_entries_used: z.number(),
+    goals_used: z.number()
+  }),
+  insight: Insight
+});
+
+export type TInsightResponse = z.infer<typeof InsightResponse>;
+
+
+Server/Worker: deterministic, grounded generation
+Create/replace POST /api/insights/generate. Use your model provider (OpenAI/Claude) with JSON-only output and low temperature (0.2).
+
+Prompt template (system):
+
+You are “Bizzin Coach”, a concise business mentor.
+Rules:
+- Only use facts from the provided inputs: {ENTRY}, {RECENT_ENTRIES}, {GOALS}. If insufficient, say so.
+- No generic platitudes (“stay positive”, “keep going”, “work hard”, “embrace challenges”, etc.).
+- Every summary must quote or reference at least one concrete noun/metric from {ENTRY}.
+- Actions must be specific, verifiable, and time-bound (who/what/by when).
+- Keep SA context and spelling (South African English).
+Return JSON that matches the provided JSON Schema exactly.
+
+
+JSON schema (pass via tool or validate post-hoc with Zod): mirror InsightResponse.
+
+User content assembly (server):
+
+ENTRY: the current journal body + meta (mood, energy, time).
+
+RECENT_ENTRIES: last 3–5 entries (short summaries only) to detect trends.
+
+GOALS: top 3 active goals.
+
+Anti-generic guard (server):
+After model returns JSON (parse with Zod), run a quick specificity check:
+
+Require ≥1 keyword overlap with the entry (proper nouns, numbers, or key phrases).
+
+Reject if any banned phrases present: ["stay positive","embrace challenges","keep pushing","synergy","unlock potential","transformative journey"].
+
+If failed, auto-reprompt once with: “Your last draft was too generic. Cite concrete specifics from ENTRY and propose actions with owners & deadlines.”
+
+Example server code (TypeScript, pseudo):
+
+import { InsightResponse } from "@/shared/schemas/insights";
+import { z } from "zod";
+import { banned, hasSpecificOverlap } from "./specificity";
+
+export async function generateInsight(payload) {
+  const { entry, recentEntries, goals, entryId } = payload;
+
+  const prompt = buildPrompt(entry, recentEntries, goals);
+  const json = await callLLMJson({ prompt, temperature: 0.2, max_tokens: 500 });
+
+  let parsed = InsightResponse.safeParse({ ...json, entry_id: entryId, model_version: "v1.0" });
+  if (!parsed.success || banned(json) || !hasSpecificOverlap(entry, json.insight.summary)) {
+    const prompt2 = prompt + "\n\nREWRITE with concrete specifics from ENTRY. Replace any generic wording.";
+    const json2 = await callLLMJson({ prompt: prompt2, temperature: 0.2, max_tokens: 550 });
+    parsed = InsightResponse.safeParse({ ...json2, entry_id: entryId, model_version: "v1.0" });
+  }
+  if (!parsed.success) throw new Error("Insight generation failed validation");
+  return parsed.data;
+}
+
+
+Client: render with zero guesswork
+
+Fetch TInsightResponse; show insight.summary, list actions, optional risks, and a small badge: sentiment • confidence.
+
+If API returns 422/validation, show: “Not enough context to generate a safe insight.”
+
+Unit tests using your sample data (create tests/insights.spec.ts):
+
+Load ai_enhancement_test_data.json fixtures.
+
+Mock the LLM to return (a) generic and (b) specific drafts; assert that generic is rejected and reprompted; assert Zod validation passes for specific.
+
+Include a quick keyword-overlap assertion (at least one noun/number from the entry appears in summary and one action).
+
+Wire up feature flags and caching
+
+Add INSIGHTS_PROVIDER env and a 60s cache per entry_id to avoid re-spend on reloads.
+
+Track model_version in the response for auditability.
+
+Coding constraints to enforce:
+
+Temperature 0.2, top_p 0.9, JSON-only.
+
+shared/ schemas are the single source of truth.
+
+No service keys on the client; server/worker only.
+
+Log re-prompt reason for telemetry (helps us tune later).
+
+Acceptance criteria (Agent must verify):
+
+Typecheck + lint: pnpm tsc --noEmit and pnpm lint → 0 errors.
+
+New tests pass: pnpm test -w tests/insights.spec.ts.
+
+In the UI, insights now (a) mention entry specifics, (b) give 2–5 concrete actions with owners or deadlines, (c) avoid banned phrases, (d) display confidence.
+
+For vague entries, API returns a polite “insufficient context” message rather than hallucinating.
+
+Deliverables:
+
+File diffs grouped by file, plus a short README note in server/routes/insights.ts explaining the guardrail logic.
