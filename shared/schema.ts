@@ -296,6 +296,17 @@ export type UserPodcastProgress = {
   updated_at: string;
 };
 
+// Footer Content Table - manages website footer legal content
+export type FooterContent = {
+  id: string;
+  type: 'privacy' | 'terms' | 'contact';
+  title: string;
+  content: string;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
 // Zod Validation Schemas
 export const createUserProfileSchema = z.object({
   email: z.string().email(),
@@ -433,6 +444,19 @@ export const updatePodcastEpisodeSchema = z.object({
   series_color: z.string().optional(),
 });
 
+export const createFooterContentSchema = z.object({
+  type: z.enum(['privacy', 'terms', 'contact']),
+  title: z.string().min(1).max(200),
+  content: z.string().min(1),
+  is_published: z.boolean().default(true),
+});
+
+export const updateFooterContentSchema = z.object({
+  title: z.string().min(1).max(200).optional(),
+  content: z.string().min(1).optional(),
+  is_published: z.boolean().optional(),
+});
+
 // Calculator History Table - store saved calculations
 export type CalculatorHistory = {
   id: string;
@@ -519,6 +543,8 @@ export type CreatePodcastEpisode = z.infer<typeof createPodcastEpisodeSchema>;
 export type UpdatePodcastEpisode = z.infer<typeof updatePodcastEpisodeSchema>;
 export type CreateCalculatorHistory = z.infer<typeof createCalculatorHistorySchema>;
 export type UpdateCalculatorHistory = z.infer<typeof updateCalculatorHistorySchema>;
+export type CreateFooterContent = z.infer<typeof createFooterContentSchema>;
+export type UpdateFooterContent = z.infer<typeof updateFooterContentSchema>;
 export type SuspendUser = z.infer<typeof suspendUserSchema>;
 export type CreateAdminAuditLog = z.infer<typeof createAdminAuditLogSchema>;
 export type CreateUserActivityLog = z.infer<typeof createUserActivityLogSchema>;
