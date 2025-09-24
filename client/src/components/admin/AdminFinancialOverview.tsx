@@ -77,7 +77,7 @@ export function AdminFinancialOverview() {
   // Fetch financial metrics
   const { data: metrics, isLoading: metricsLoading, refetch } = useQuery({
     queryKey: ['admin-financial-metrics'],
-    enabled: false, // Completely disable to prevent HEAD requests
+    enabled: true, // Enable financial metrics query
     queryFn: async () => {
       console.log('Fetching financial metrics...')
       
@@ -85,10 +85,31 @@ export function AdminFinancialOverview() {
         // Try to fetch user plans data, handle missing table gracefully
         let allPlans: any[] = []
         
-        // DISABLED TO PREVENT HEAD REQUESTS
+        // Fetch user plans data
         try {
-          console.log('user_plans queries disabled to prevent HEAD requests')
-          allPlans = []
+          const plansResult = await supabase
+            .from('user_plans')
+            .select(`
+              id, 
+              user_id, 
+              plan_type, 
+              created_at, 
+              updated_at, 
+              expires_at, 
+              amount_paid, 
+              cancelled_at,
+              payment_status,
+              is_trial,
+              trial_ends_at
+            `)
+            
+          if (!plansResult.error && plansResult.data) {
+            allPlans = plansResult.data
+            console.log('Successfully fetched user plans:', allPlans.length, 'records')
+          } else {
+            console.log('user_plans query error:', plansResult.error)
+            allPlans = []
+          }
         } catch (error) {
           console.log('user_plans table not accessible, using empty data')
           allPlans = []
@@ -278,12 +299,22 @@ export function AdminFinancialOverview() {
   // Fetch real transactions from user_plans (simplified to avoid foreign key issues)
   const { data: recentTransactions } = useQuery({
     queryKey: ['admin-recent-transactions'],
-    enabled: false, // Completely disable to prevent HEAD requests
+    enabled: true, // Enable recent transactions query
     queryFn: async () => {
       try {
         // Since there's no foreign key relationship, just get basic plan data
-        // DISABLED TO PREVENT HEAD REQUESTS
-        const { data: plans, error } = { data: [], error: null }
+        const { data: plans, error } = await supabase
+          .from('user_plans')
+          .select(`
+            id, 
+            user_id, 
+            plan_type, 
+            created_at, 
+            amount_paid,
+            payment_status
+          `)
+          .order('created_at', { ascending: false })
+          .limit(10)
 
         if (error) {
           console.log('user_plans table not available for recent transactions')
