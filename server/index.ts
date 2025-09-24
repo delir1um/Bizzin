@@ -7,13 +7,17 @@ import huggingfaceRouter from "./huggingface";
 const app = express();
 
 // Add Helmet with CSP configuration
+const isProd = process.env.NODE_ENV === 'production';
 app.use(
   helmet({
     contentSecurityPolicy: {
       useDefaults: false,
       directives: {
         "default-src": ["'self'", "https:", "data:", "blob:"],
-        "script-src": ["'self'", "'unsafe-eval'", "'wasm-unsafe-eval'", "https:", "blob:"],
+        "script-src": [
+          "'self'", "'unsafe-eval'", "'wasm-unsafe-eval'", "https:", "blob:",
+          ...(isProd ? [] : ["'unsafe-inline'"])
+        ],
         "style-src": ["'self'", "'unsafe-inline'", "https:"],
         "img-src": ["'self'", "data:", "blob:", "https:"],
         "font-src": ["'self'", "data:", "https:"],
