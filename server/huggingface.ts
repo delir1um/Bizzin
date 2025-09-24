@@ -1310,8 +1310,8 @@ function generateContentSpecificInsight(
     return `Your ability to develop products that customers can use on a daily basis demonstrates strong product-market fit and customer-centric thinking. This combination of development skills and customer value creation is the foundation of successful product businesses. Focus on systematically gathering user feedback to continuously improve the value proposition, and consider how to scale this customer-focused approach across broader market segments. Products that solve real daily problems for customers often have the strongest retention and word-of-mouth growth potential.`;
   }
   
-  console.log('🔍 DEBUG: No specific conditions matched - returning generic fallback');
-  return `Your business reflections show thoughtful analysis of key operational and strategic elements. Use these insights to guide resource allocation and strategic decision-making that addresses the specific challenges and opportunities you've identified in your current situation.`;
+  console.log('🔍 DEBUG: No specific conditions matched - cannot generate contextual insight');
+  throw new Error('CONTENT_SPECIFIC_INSIGHT_FAILED_NO_CONTEXT');
 }
 
 // AI-driven contextual insights generation - enhanced for content-specific business intelligence  
@@ -1413,21 +1413,9 @@ async function generateAIContextualInsights(
   else if (hasOperations || hasMetrics || mood === 'focused') {
     insight = `Operational focus creates sustainable competitive advantages that are difficult for competitors to replicate. Your systematic approach should prioritize identifying and eliminating highest-impact inefficiencies first - usually communication delays, approval bottlenecks, or redundant processes slowing decision-making. Build measurement systems tracking leading indicators rather than just outcomes, and create feedback loops helping your team identify problems before they impact customers. This operational discipline compounds over time, eventually becoming significant cost advantage and quality differentiator in your market position.`;
   }
-  // Achievement and milestone recognition
-  else if (category === 'achievement' || mood === 'accomplished' || mood === 'proud') {
-    insight = `Achievement moments should be leveraged immediately while confidence and momentum are high. Document what specific decisions, systems, or team behaviors contributed to this success so you can replicate the model systematically across other areas. Use this energy to tackle the next level of challenges that would have seemed overwhelming previously - success builds capability and risk tolerance creating compounding advantages. Share this win strategically with stakeholders, customers, or industry contacts to strengthen relationships and attract new opportunities. Momentum attracts momentum in business ecosystems.`;
-  }
-  // Learning, uncertainty, and research scenarios  
-  else if (category === 'learning' || category === 'reflection' || mood === 'uncertain' || mood === 'reflective') {
-    insight = `Uncertainty signals you're operating at the edge of your current knowledge, which is exactly where innovation and competitive advantages are discovered. Transform these questions into systematic experiments with measurable outcomes rather than abstract analysis. Design small tests that validate or disprove your assumptions quickly and cheaply, focusing on uncertainties that would most impact your business if resolved. This experimental mindset converts ambiguity into data-driven decisions and builds your confidence for handling future unknowns systematically.`;
-  }
-  // Challenge and problem-solving scenarios
-  else if (category === 'challenge' || hasChallenges) {
-    insight = `Business challenges often contain the seeds of your next competitive breakthrough when approached systematically rather than reactively. Break this challenge into its component parts: what assumptions are being tested, what resources could be reallocated, and what alternative approaches haven't been considered. Use this pressure to strengthen decision-making frameworks and build organizational resilience that serves you long-term. The most successful entrepreneurs view obstacles as market feedback about opportunities to create value others haven't recognized yet.`;
-  }
-  // Default comprehensive business intelligence
+  // NO GENERIC FALLBACKS - All scenarios must have specific contextual insights
   else {
-    insight = `Every business experience contains patterns and lessons that compound into superior decision-making over time. Your current situation represents specific market feedback about customer needs, operational effectiveness, or competitive positioning that should be documented and analyzed systematically. Consider what this moment reveals about your business model's strengths and vulnerabilities, what assumptions might need testing, and how this experience should influence your resource allocation going forward. The most successful entrepreneurs extract maximum learning from both positive and challenging experiences to build pattern recognition.`;
+    throw new Error('ENHANCED_TEMPLATE_FAILED_NO_CONTEXT');
   }
 
   return [insight];
@@ -1602,11 +1590,15 @@ async function notifyAdminOfAnalysisFailure(
     
     console.log('🚨 AI Analysis failed - notifying admin:', error.message);
     
-    // Send email using existing infrastructure
+    // Send email using base system template with admin notification content
     const emailSent = await simpleEmailScheduler.emailService.sendSystemEmail(
+      'base-system',
       'anton@cloudfusion.co.za',
-      'AI Analysis Failure - Immediate Review Required',
-      emailContent
+      {
+        subject: 'AI Analysis Failure - Immediate Review Required',
+        body: emailContent,
+        platform_url: process.env.NODE_ENV === 'production' ? 'https://bizzin.co.za' : 'http://localhost:5000'
+      }
     );
     
     if (emailSent) {
