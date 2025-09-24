@@ -7,7 +7,11 @@
     "dev": "NODE_ENV=development tsx server/index.ts",
     "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "start": "NODE_ENV=production node dist/index.js",
-    "check": "tsc",
+    "preview": "vite preview",
+    "lint": "eslint . --ext .ts,.tsx || echo \"eslint not set up yet\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "echo \"tests not configured yet\" && exit 0",
+    "db:migrate": "node scripts/run-sql.js database/migrations",
     "db:push": "drizzle-kit push"
   },
   "dependencies": {

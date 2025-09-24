@@ -1,0 +1,87 @@
+Hi — please make these non-breaking fixes to the Bizzin project so the dashboard console no longer shows the CSP errors and so the server runs reliably in Replit. Do the edits, run the app, and report back whether the console errors are gone. Don’t change behaviour around Replit’s preview iframe — those warnings are normal.
+
+Edits to make
+
+Install helmet (if not present):
+
+pnpm add helmet
+
+
+Update server startup (server/index.ts):
+
+At the top of the file add:
+
+import helmet from "helmet";
+
+
+Before any routes are registered, add this block (drop it in right after any existing app.use(...) middleware or right after Express const app = express()):
+
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives: {
+        "default-src": ["'self'", "https:", "data:", "blob:"],
+        "script-src": ["'self'", "'unsafe-eval'", "'wasm-unsafe-eval'", "https:", "blob:"],
+        "style-src": ["'self'", "'unsafe-inline'", "https:"],
+        "img-src": ["'self'", "data:", "blob:", "https:"],
+        "font-src": ["'self'", "data:", "https:"],
+        "connect-src": ["'self'", "https:", "wss:", "https://*.supabase.co"],
+        "frame-src": ["https:"],
+        "base-uri": ["'self'"],
+        "form-action": ["'self'"]
+      }
+    },
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
+  })
+);
+
+
+Important notes inside the change
+
+If Sentry or LaunchDarkly are used, only add their hosts (no ? query strings) into connect-src. Example host: https://o12345.ingest.sentry.io
+
+Remove any current CSP code that contains ’unsafe-dynamic’, report-uri inside default-src, or any full URLs with ?query in default-src.
+
+Ensure server uses Replit port (server/index.ts):
+
+Find where app listens and replace or ensure it uses:
+
+const PORT = Number(process.env.PORT) || 5000;
+app.listen(PORT, "0.0.0.0", () => console.log(`Listening on ${PORT}`));
+
+
+(Optional) Update package.json scripts — add db:migrate if missing:
+
+If db:migrate script is not present, add:
+
+"db:migrate": "node scripts/run-sql.js database/migrations"
+
+
+Run & verify
+
+In Replit Shell:
+
+pnpm install
+pnpm db:migrate    # optional if you use migrations
+pnpm dev
+
+
+Open the Replit preview and load the Bizzin dashboard.
+
+Check Browser Console: the CSP warnings about ’unsafe-dynamic’, report-uri in default-src, and full DSN URLs in source lists should be gone. You may still see Replit iframe warnings about sandbox flags — that’s OK and expected.
+
+If the app fails to start due to port conflict, run:
+
+kill -9 $(lsof -t -i:5000) 2>/dev/null || true
+pnpm dev
+
+
+Deliverable: After changes, reply with:
+
+“Done — console cleaned” OR
+
+If any errors remain, paste the console output and I’ll fix the rest.
+
+Thank you.
