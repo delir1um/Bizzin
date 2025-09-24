@@ -278,20 +278,57 @@ function generateEnhancedTemplateInsight(
   const hasMarketData = themes.marketInsights?.length > 0;
   const hasSafety = /safety|OSHA|protocol|equipment|training/i.test(text);
   
+  // Customer service and operational crisis detection
+  const hasCustomerServiceCrisis = /customer service|support tickets|response times|satisfaction scores|customer satisfaction|negative mentions|threatened to cancel|usability issues|customer complaints|social media negative/i.test(text);
+  const hasOperationalCrisis = /overwhelmed|stressed|behind|delayed|pressure|urgent|crisis|failed|failure|issue|problem/i.test(text);
+  const hasProductIssues = /product update|new features|user interface|rollback|onboarding|interface changes|usability/i.test(text);
+  
   // Extract specific details from the text for personalization
   const numbers = text.match(/\d+(%|\$|,|million|k|hours|days|weeks)/gi) || [];
   const keyActions = text.match(/(completed|achieved|implemented|analyzed|developed|launched|reviewed|invested)/gi) || [];
   
   let insight = "";
   
-  if (hasSafety && keyActions.length > 0) {
+  // Customer service crisis management (highest priority for challenge category)
+  if (category === 'challenge' && hasCustomerServiceCrisis) {
+    if (hasProductIssues) {
+      insight = `Product-related customer service crises require immediate dual-track response: short-term customer retention and long-term product improvement. Prioritize direct customer communication acknowledging the issues and providing clear timelines for resolution. Consider implementing temporary support measures like extended response hours or dedicated escalation channels. Document all feedback patterns to inform future product decisions and create systematic testing processes that catch usability issues before release. This crisis can strengthen customer relationships if handled with transparency and swift action.`;
+    } else {
+      insight = `Customer service challenges demand systematic operational improvements rather than just damage control. Analyze root causes behind response time issues and satisfaction drops - often they stem from unclear escalation processes, insufficient staff training, or outdated support tools. Implement tracking systems measuring customer resolution quality, not just speed metrics. Consider this an opportunity to strengthen your customer feedback loops and competitive differentiation through superior service delivery. Strong support systems become powerful retention and referral engines.`;
+    }
+  }
+  // Operational challenges and stress management  
+  else if (category === 'challenge' && hasOperationalCrisis) {
+    insight = `Operational pressure reveals system weaknesses that, once addressed, become competitive advantages. Focus on identifying bottlenecks that create cascading delays and implement buffer systems preventing single points of failure. This might mean cross-training team members, automating routine processes, or restructuring workflows to reduce interdependencies. Use this stressed period to document current processes and build more resilient operations that can handle increased demand without proportional stress increases.`;
+  }
+  // Safety and compliance challenges
+  else if (hasSafety && keyActions.length > 0) {
     insight = `Your proactive approach to ${keyActions[0]?.toLowerCase() || 'implementing'} safety measures demonstrates strategic leadership that transforms operational challenges into competitive advantages. This systematic approach to workplace safety creates multiple business returns: reduced liability, lower insurance costs, and enhanced company culture that attracts top talent.`;
-  } else if (hasProjects && hasClients && sentiment.type === 'positive') {
+  }
+  // Positive project and client work
+  else if (hasProjects && hasClients && sentiment.type === 'positive') {
     insight = `Your successful project delivery combined with positive client engagement shows strong execution capabilities. This track record of delivering value creates sustainable competitive advantages and referral opportunities. Focus on documenting what made this successful for replication across future engagements.`;
-  } else if (hasMarketData && numbers.length > 0) {
+  }
+  // Market insights and data analysis
+  else if (hasMarketData && numbers.length > 0) {
     insight = `The data insights you've uncovered (${numbers[0] || 'significant metrics'}) represent strategic intelligence that many businesses miss. Your analytical approach to understanding market dynamics positions you to make informed decisions that can capture opportunities competitors overlook.`;
-  } else {
-    insight = `Your ${emotion} approach to ${category.toLowerCase()} demonstrates business maturity that separates successful entrepreneurs from reactive operators. This level of strategic thinking creates sustainable competitive advantages when consistently applied to business operations.`;
+  }
+  // Category-specific fallbacks for other scenarios
+  else if (category === 'growth') {
+    insight = `Growth initiatives require balancing opportunity capture with operational stability. Your strategic approach to expansion should focus on systems and processes that scale efficiently, ensuring quality doesn't deteriorate as volume increases. Consider investing in automation and team development to support sustainable growth.`;
+  }
+  else if (category === 'achievement') {
+    insight = `This achievement represents systematic execution that can be replicated and scaled. Document the key decisions, processes, and team behaviors that contributed to this success. Use this momentum to tackle larger challenges while the confidence and organizational energy are high.`;
+  }
+  else if (category === 'planning') {
+    insight = `Strategic planning effectiveness depends on balancing thorough analysis with decisive action. Your thoughtful approach should include scenario planning for multiple outcomes and clear decision criteria for when to pivot. Focus on creating plans robust enough to handle uncertainty while remaining actionable.`;
+  }
+  else if (category === 'learning') {
+    insight = `Learning insights compound over time when systematically applied to business operations. Document these patterns and observations to inform future decisions. The most valuable learning comes from understanding why something worked or failed, not just what happened.`;
+  }
+  // Generic fallback (now more neutral and less specific)
+  else {
+    insight = `Strategic business thinking involves systematic analysis of challenges and opportunities to build sustainable competitive advantages. Your reflective approach to business operations demonstrates the kind of thoughtful leadership that creates long-term value.`;
   }
   
   return insight;
@@ -814,6 +851,11 @@ function containsAchievementIndicators(text: string): boolean {
     'revenue milestone', 'sales milestone', 'revenue breakthrough', 'profit breakthrough',
     'million in revenue', 'million in funding', 'million in sales', 'record revenue', 'record sales',
     
+    // Deal and contract achievements
+    'deal secured', 'deal closed', 'major deal', 'contract signed', 'contract worth',
+    'fortune 500', 'enterprise deal', 'signed contract', 'secured contract',
+    'million contract', 'million deal', 'negotiation successful', 'negotiations successful',
+    
     // Patent and regulatory achievements - specific compound phrases only
     'patent approved', 'patent awarded', 'patent granted', 'patent received',
     'patent application approved', 'patent application was approved', 'patent application awarded',
@@ -944,23 +986,52 @@ function containsGrowthIndicators(text: string): boolean {
 }
 
 function containsPlanningIndicators(text: string): boolean {
-  const indicators = [
-    // Strategic planning
-    'strategy', 'strategic', 'planning', 'plan', 'roadmap', 'timeline',
-    // Future thinking
-    'future', 'next quarter', 'next year', 'upcoming', 'coming',
-    // Decision making
-    'considering', 'deciding', 'evaluating', 'analyzing', 'reviewing',
-    // Goal setting
-    'goal', 'objectives', 'target', 'milestone', 'priority', 'focus',
-    // Resource planning
-    'budget', 'allocation', 'resources', 'investment', 'spend',
-    // Process planning
-    'process', 'procedure', 'system', 'framework', 'structure',
-    // Research and preparation
-    'research', 'investigating', 'exploring', 'preparing', 'getting ready'
+  const lowerText = text.toLowerCase();
+  
+  // Don't classify as planning if it's clearly an achievement or growth context
+  const achievementContext = [
+    'secured', 'closed', 'signed', 'completed', 'achieved', 'accomplished',
+    'million', 'deal', 'contract', 'funding', 'investment closed'
   ];
-  return indicators.some(indicator => text.includes(indicator));
+  
+  const growthContext = [
+    'growing rapidly', 'expansion', 'scaling', 'revenue growth', 'market expansion',
+    'team growth', 'user growth', 'customer growth'
+  ];
+  
+  const hasAchievementContext = achievementContext.some(word => lowerText.includes(word));
+  const hasGrowthContext = growthContext.some(phrase => lowerText.includes(phrase));
+  
+  // If clear achievement or growth context, don't classify as planning
+  if (hasAchievementContext || hasGrowthContext) {
+    return false;
+  }
+  
+  const planningIndicators = [
+    // Strategic planning (specific contexts)
+    'strategic planning', 'strategic roadmap', 'business strategy', 'long term strategy',
+    'planning session', 'strategic meeting', 'planning phase', 'planning stage',
+    // Future thinking (specific contexts)
+    'future planning', 'next quarter planning', 'planning for next year', 'upcoming planning',
+    'planning ahead', 'forward planning',
+    // Decision making (planning-specific)
+    'planning to decide', 'considering strategy', 'evaluating options', 'analyzing approaches',
+    'reviewing strategy', 'strategic review',
+    // Goal setting (planning-specific)
+    'planning goals', 'setting objectives', 'planning targets', 'planning priorities',
+    'strategic objectives', 'strategic goals',
+    // Resource planning (specific)
+    'budget planning', 'resource allocation', 'planning investment', 'financial planning',
+    'spending plan', 'resource planning',
+    // Process planning (specific)
+    'process planning', 'planning procedures', 'planning systems', 'planning framework',
+    'structural planning', 'operational planning',
+    // Research and preparation (planning-specific)
+    'planning research', 'strategic investigation', 'planning exploration',
+    'preparing strategy', 'getting ready to plan'
+  ];
+  
+  return planningIndicators.some(indicator => lowerText.includes(indicator));
 }
 
 function containsLearningIndicators(text: string): boolean {
