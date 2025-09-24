@@ -141,8 +141,9 @@ async function generateAIBusinessInsight(
     throw new Error('No insight generated');
   } catch (error) {
     console.warn('⚠️ AI insight generation failed, using enhanced template:', error);
-    // Fallback to enhanced template-based insight that incorporates the analysis
-    return generateEnhancedTemplateInsight(text, sentiment, emotion, category, themes);
+    // NO FALLBACKS - Notify admin of analysis failure
+    await notifyAdminOfAnalysisFailure(text, sentiment, emotion, category, error);
+    throw new Error('AI_ANALYSIS_FAILED_GENERATION');
   }
 }
 
@@ -347,9 +348,9 @@ function generateEnhancedTemplateInsight(
   else if (category === 'learning') {
     insight = `Learning insights compound over time when systematically applied to business operations. Document these patterns and observations to inform future decisions. The most valuable learning comes from understanding why something worked or failed, not just what happened.`;
   }
-  // Generic fallback (now more neutral and less specific)
+  // NO GENERIC FALLBACKS - If we reach here, analysis failed
   else {
-    insight = `Strategic business thinking involves systematic analysis of challenges and opportunities to build sustainable competitive advantages. Your reflective approach to business operations demonstrates the kind of thoughtful leadership that creates long-term value.`;
+    throw new Error('AI_ANALYSIS_FAILED_NO_CONTEXT');
   }
   
   return insight;
@@ -432,7 +433,11 @@ function generateFallbackAnalysis(text: string) {
       insights.push('Customer feedback is invaluable. Consider implementing a systematic feedback collection process.');
     }
     
-    return insights.length > 0 ? insights : ['Your business reflection shows thoughtful consideration of key challenges and opportunities.'];
+    // NO GENERIC FALLBACKS - If no insights, this is an analysis failure
+  if (insights.length === 0) {
+    throw new Error('FALLBACK_ANALYSIS_FAILED_NO_INSIGHTS');
+  }
+  return insights;
   };
 
   return {
@@ -1543,6 +1548,79 @@ function normalizeSentimentLabel(label: string, score: number): { type: 'positiv
   return { type: 'neutral', confidence: 0.5 };
 }
 
+// Admin notification system for AI analysis failures
+async function notifyAdminOfAnalysisFailure(
+  text: string, 
+  sentiment: any, 
+  emotion: string, 
+  category: string, 
+  error: any
+) {
+  try {
+    // Import email service (using dynamic import to avoid circular dependencies)
+    const { simpleEmailScheduler } = await import('./services/SimpleEmailScheduler.js');
+    
+    const failureDetails = {
+      timestamp: new Date().toISOString(),
+      originalText: text.substring(0, 500) + (text.length > 500 ? '...' : ''),
+      sentiment: sentiment,
+      emotion: emotion,
+      category: category,
+      error: error.message || error,
+      analysisSource: 'hugging-face-server'
+    };
+    
+    const emailContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h1 style="color: #dc3545; border-bottom: 2px solid #dc3545; padding-bottom: 10px;">🚨 AI Analysis Failure Alert</h1>
+        
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+          <h3>Failure Details:</h3>
+          <p><strong>Timestamp:</strong> ${failureDetails.timestamp}</p>
+          <p><strong>Category:</strong> ${failureDetails.category}</p>
+          <p><strong>Sentiment:</strong> ${failureDetails.sentiment?.type} (${failureDetails.sentiment?.confidence}% confidence)</p>
+          <p><strong>Emotion:</strong> ${failureDetails.emotion}</p>
+          <p><strong>Error:</strong> ${failureDetails.error}</p>
+        </div>
+        
+        <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0;">
+          <h3>Original Text (first 500 chars):</h3>
+          <p style="font-style: italic; background: white; padding: 10px; border-radius: 3px;">${failureDetails.originalText}</p>
+        </div>
+        
+        <div style="background: #d1ecf1; padding: 15px; border-radius: 5px; margin: 20px 0;">
+          <h3>Action Required:</h3>
+          <p>The AI analysis system failed to generate contextual business insights for this journal entry. Please review the content and enhance the analysis templates or categorization logic.</p>
+        </div>
+        
+        <p style="color: #666; font-size: 12px; margin-top: 30px;">
+          This notification was sent from the Bizzin AI Analysis System.<br>
+          Time: ${new Date().toLocaleString('en-ZA', { timeZone: 'Africa/Johannesburg' })} (South Africa)
+        </p>
+      </div>
+    `;
+    
+    console.log('🚨 AI Analysis failed - notifying admin:', error.message);
+    
+    // Send email using existing infrastructure
+    const emailSent = await simpleEmailScheduler.emailService.sendSystemEmail(
+      'anton@cloudfusion.co.za',
+      'AI Analysis Failure - Immediate Review Required',
+      emailContent
+    );
+    
+    if (emailSent) {
+      console.log('✅ Admin notification sent successfully');
+    } else {
+      console.error('❌ Failed to send admin notification email');
+    }
+    
+  } catch (notificationError) {
+    console.error('❌ Failed to send admin notification:', notificationError);
+    // Don't throw here - we don't want to break the main flow
+  }
+}
+
 // Analyze sentiment using Hugging Face models with fallback protection
 router.post('/analyze', async (req, res) => {
   try {
@@ -1819,10 +1897,21 @@ router.post('/analyze', async (req, res) => {
   } catch (error) {
     console.error('❌ Server-side Hugging Face error:', error);
     
-    // Always provide fallback analysis instead of returning errors to users
-    const fallbackResult = generateFallbackAnalysis(req.body.text || '');
-    console.log('🔄 Providing fallback analysis to maintain user experience');
-    res.json(fallbackResult);
+    // Notify admin of analysis failure instead of providing generic fallback
+    await notifyAdminOfAnalysisFailure(
+      req.body.text || '',
+      'unknown',
+      'unknown',
+      'unknown',
+      error
+    );
+    
+    // Return error to user so they know their analysis needs admin review
+    res.status(503).json({ 
+      error: 'AI analysis temporarily unavailable. Admin has been notified.',
+      analysis_failed: true,
+      retry_later: true
+    });
   }
 });
 
