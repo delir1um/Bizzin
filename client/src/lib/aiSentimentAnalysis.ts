@@ -158,10 +158,27 @@ async function callKimiUnifiedAnalysis(text: string, recentEntries: string[] = [
     const result = await response.json();
     console.log('✅ Kimi K2 unified analysis successful:', result);
     
-    // Return the legacy-compatible sentiment format
+    // Generate contextual heading from AI analysis
+    let aiHeading = 'Business journal entry'; // fallback
+    try {
+      const { generateBusinessTitle } = await import('./aiTitleGenerator');
+      aiHeading = generateBusinessTitle(
+        text,
+        result.sentiment.business_category || 'growth',
+        result.sentiment.primary_mood || 'focused',
+        result.sentiment.energy_level || 'medium'
+      );
+      console.log('✅ Generated AI heading:', aiHeading);
+    } catch (error) {
+      console.error('❌ Title generation failed:', error);
+      aiHeading = 'Business journal entry';
+    }
+    
+    // Return the legacy-compatible sentiment format with AI-generated heading
     return {
       ...result.sentiment,
       analysis_source: 'kimi-unified',
+      ai_heading: aiHeading, // Add the generated heading
       // Add metadata from unified analysis
       processing_time_ms: result.processing_time_ms,
       cost_savings: result.cost_savings
@@ -173,9 +190,27 @@ async function callKimiUnifiedAnalysis(text: string, recentEntries: string[] = [
     try {
       const analysisResult = performEnhancedLocalAnalysis(text);
       console.log('Enhanced local analysis successful');
+      
+      // Generate heading for fallback analysis too
+      let aiHeading = 'Business journal entry'; // fallback
+      try {
+        const { generateBusinessTitle } = await import('./aiTitleGenerator');
+        aiHeading = generateBusinessTitle(
+          text,
+          analysisResult.business_category || 'growth',
+          analysisResult.primary_mood || 'focused',
+          analysisResult.energy || 'medium'
+        );
+        console.log('✅ Generated fallback AI heading:', aiHeading);
+      } catch (error) {
+        console.error('❌ Fallback title generation failed:', error);
+        aiHeading = 'Business journal entry';
+      }
+      
       return {
         ...analysisResult,
-        analysis_source: 'enhanced_local_fallback'
+        analysis_source: 'enhanced_local_fallback',
+        ai_heading: aiHeading
       };
     } catch (localError) {
       console.error('Enhanced local analysis failed:', localError);

@@ -14,7 +14,7 @@ export const KimiBusinessAnalysisSchema = z.object({
   
   // Business Insights (replaces Claude)
   insights: z.object({
-    summary: z.string().max(200).describe("Brief situation summary focused on business implications"),
+    summary: z.string().max(300).describe("Brief situation summary focused on business implications"),
     actions: z.array(z.string()).min(2).max(4).describe("Specific actionable steps with deadlines where applicable"),
     risks: z.array(z.string()).min(1).max(3).describe("Potential business risks or challenges to watch"),
     opportunities: z.array(z.string()).max(2).describe("Business opportunities identified").optional(),
