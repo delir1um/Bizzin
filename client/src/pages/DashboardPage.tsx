@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useLocation } from 'wouter'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/AuthProvider'
 import { useUserProfile } from '@/hooks/useUserProfile'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { SafeCard } from '@/components/SafeCard'
+import { SkeletonCard } from '@/components/ui/skeleton-card'
 import { GoalsService } from '@/lib/services/goals'
 import { Goal } from '@/types/goals'
 import { JournalService } from '@/lib/services/journal'
@@ -39,59 +42,103 @@ export function DashboardPage() {
   
   const navigate = (path: string) => setLocation(path)
 
-  // Fetch user goals data
+  // Dashboard query parameters
+  const dashboardParams = useMemo(() => ({
+    from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days ago
+    to: new Date().toISOString(),
+    userId: user?.id || ''
+  }), [user?.id])
+
+  // Fetch user goals data with abort controller
   const {
     data: goals = [],
     isLoading: goalsLoading,
+    isError: goalsError,
+    error: goalsErrorDetails
   } = useQuery({
-    queryKey: ['goals', user?.id],
-    queryFn: () => user ? GoalsService.getUserGoals(user.id) : Promise.resolve([]),
-    enabled: !!user
+    queryKey: ['dash:goals', dashboardParams],
+    queryFn: async ({ signal }) => {
+      if (!user) return []
+      
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 15000)
+      
+      try {
+        const result = await GoalsService.getUserGoals(user.id)
+        return result
+      } finally {
+        clearTimeout(timeout)
+      }
+    },
+    enabled: !!user,
+    staleTime: 30_000
   })
 
-  // Fetch journal entries for insights
+  // Fetch journal entries for insights with abort controller
   const {
     data: journalEntries = [],
     isLoading: journalLoading,
+    isError: journalError,
+    error: journalErrorDetails
   } = useQuery({
-    queryKey: ['journal-entries', user?.id],
-    queryFn: () => user ? JournalService.getUserEntries(user.id) : Promise.resolve([]),
-    enabled: !!user
+    queryKey: ['dash:journal-entries', dashboardParams],
+    queryFn: async ({ signal }) => {
+      if (!user) return []
+      
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 15000)
+      
+      try {
+        const result = await JournalService.getUserEntries(user.id)
+        return result
+      } finally {
+        clearTimeout(timeout)
+      }
+    },
+    enabled: !!user,
+    staleTime: 30_000
   })
 
-  // Fetch storage stats for accurate DocSafe metrics
-  const { data: storageStats } = useQuery({
-    queryKey: ['storage-stats', user?.id],
-    queryFn: async () => {
+  // Fetch storage stats with proper error handling and validation
+  const { 
+    data: storageStats,
+    isLoading: storageLoading,
+    isError: storageError,
+    error: storageErrorDetails
+  } = useQuery({
+    queryKey: ['dash:storage-stats', dashboardParams],
+    queryFn: async ({ signal }) => {
       if (!user) return null
+      
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 15000)
+      
       try {
         const { data: documents } = await (await import('@/lib/supabase')).supabase
           .from('documents')
           .select('file_size')
           .eq('user_id', user.id)
+          .abortSignal(controller.signal)
         
         const totalSize = documents?.reduce((sum: number, doc: any) => sum + doc.file_size, 0) || 0
         const totalDocuments = documents?.length || 0
         const storageLimit = 50 * 1024 * 1024 // 50MB in bytes
         
-        console.log('Calculated stats:', {
-          total_documents: totalDocuments,
-          storage_used: totalSize,
-          storage_limit: storageLimit
-        })
-        
-        return {
+        const result = {
           storage_used: totalSize,
           storage_limit: storageLimit,
           total_documents: totalDocuments,
           storage_percentage: Math.round((totalSize / storageLimit) * 100)
         }
-      } catch (error) {
-        console.error('Error fetching storage stats:', error)
-        return null
+        
+        // Return validated result
+        return result
+      } finally {
+        clearTimeout(timeout)
       }
     },
-    enabled: !!user
+    enabled: !!user,
+    staleTime: 30_000
   })
 
   // Calculate comprehensive business intelligence stats from all features
@@ -205,8 +252,19 @@ export function DashboardPage() {
   const dailyQuote = BusinessQuoteService.getDailyQuote()
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="space-y-8">
+    <ErrorBoundary
+      fallback={(
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="p-8 text-center text-red-600 bg-red-50 dark:bg-red-950 rounded-lg border border-red-200 dark:border-red-800">
+            <h2 className="text-xl font-semibold mb-2">Dashboard Error</h2>
+            <p>Something went wrong loading your dashboard.</p>
+            <p className="text-sm mt-2">Please refresh the page to try again.</p>
+          </div>
+        </div>
+      )}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="space-y-8">
         {/* Welcome Header - Exact Same Animation as Journal & Goals */}
         <motion.div 
           className="text-center"
@@ -304,32 +362,69 @@ export function DashboardPage() {
             transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
           >
             <motion.div whileHover={{ y: -4, transition: { duration: 0.2 } }}>
-              <JournalStatsCard 
-                journalEntries={journalEntries} 
-                onNavigate={navigate} 
-              />
+              <SafeCard>
+                {journalLoading ? (
+                  <SkeletonCard height={520} />
+                ) : journalError ? (
+                  <div className="p-4 text-red-600 bg-red-50 dark:bg-red-950 rounded-lg border border-red-200 dark:border-red-800">
+                    <p className="font-medium">Journal data failed to load</p>
+                    <p className="text-sm mt-1">Please refresh to try again</p>
+                  </div>
+                ) : (
+                  <JournalStatsCard 
+                    journalEntries={journalEntries} 
+                    onNavigate={navigate} 
+                  />
+                )}
+              </SafeCard>
             </motion.div>
             <motion.div whileHover={{ y: -4, transition: { duration: 0.2 } }}>
-              <GoalsStatsCard 
-                goals={goals} 
-                onNavigate={navigate} 
-              />
+              <SafeCard>
+                {goalsLoading ? (
+                  <SkeletonCard height={520} />
+                ) : goalsError ? (
+                  <div className="p-4 text-red-600 bg-red-50 dark:bg-red-950 rounded-lg border border-red-200 dark:border-red-800">
+                    <p className="font-medium">Goals data failed to load</p>
+                    <p className="text-sm mt-1">Please refresh to try again</p>
+                  </div>
+                ) : (
+                  <GoalsStatsCard 
+                    goals={goals} 
+                    onNavigate={navigate} 
+                  />
+                )}
+              </SafeCard>
             </motion.div>
             <motion.div whileHover={{ y: -4, transition: { duration: 0.2 } }}>
-              <TrainingStatsCard 
-                onNavigate={navigate} 
-              />
+              <SafeCard>
+                <TrainingStatsCard 
+                  onNavigate={navigate} 
+                />
+              </SafeCard>
             </motion.div>
             <motion.div whileHover={{ y: -4, transition: { duration: 0.2 } }}>
-              <BizBuilderStatsCard 
-                onNavigate={navigate} 
-              />
+              <SafeCard>
+                <BizBuilderStatsCard 
+                  onNavigate={navigate} 
+                />
+              </SafeCard>
             </motion.div>
             <motion.div whileHover={{ y: -4, transition: { duration: 0.2 } }}>
-              <DocSafeStatsCard 
-                storageStats={storageStats || null} 
-                onNavigate={navigate} 
-              />
+              <SafeCard>
+                {storageLoading ? (
+                  <SkeletonCard height={520} />
+                ) : storageError ? (
+                  <div className="p-4 text-red-600 bg-red-50 dark:bg-red-950 rounded-lg border border-red-200 dark:border-red-800">
+                    <p className="font-medium">Storage data failed to load</p>
+                    <p className="text-sm mt-1">Please refresh to try again</p>
+                  </div>
+                ) : (
+                  <DocSafeStatsCard 
+                    storageStats={storageStats || null} 
+                    onNavigate={navigate} 
+                  />
+                )}
+              </SafeCard>
             </motion.div>
           </motion.div>
 
@@ -380,7 +475,20 @@ export function DashboardPage() {
               transition={{ duration: 0.5, delay: 1.1, ease: "backOut" }}
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
             >
-              <BurnoutRiskCard journalEntries={journalEntries} />
+              <SafeCard>
+                {journalLoading ? (
+                  <SkeletonCard height={480} />
+                ) : journalError || !journalEntries || journalEntries.length === 0 ? (
+                  <div className="p-4 text-gray-600 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 h-[480px] flex items-center justify-center">
+                    <div className="text-center">
+                      <p className="font-medium">Burnout analysis needs journal data</p>
+                      <p className="text-sm mt-1">Start journaling to see insights</p>
+                    </div>
+                  </div>
+                ) : (
+                  <BurnoutRiskCard journalEntries={journalEntries} />
+                )}
+              </SafeCard>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -388,7 +496,20 @@ export function DashboardPage() {
               transition={{ duration: 0.5, delay: 1.2, ease: "backOut" }}
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
             >
-              <BusinessHealthRadar journalEntries={journalEntries} />
+              <SafeCard>
+                {journalLoading ? (
+                  <SkeletonCard height={480} />
+                ) : journalError || !journalEntries || journalEntries.length === 0 ? (
+                  <div className="p-4 text-gray-600 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 h-[480px] flex items-center justify-center">
+                    <div className="text-center">
+                      <p className="font-medium">Business health analysis needs journal data</p>
+                      <p className="text-sm mt-1">Start journaling to see insights</p>
+                    </div>
+                  </div>
+                ) : (
+                  <BusinessHealthRadar journalEntries={journalEntries} />
+                )}
+              </SafeCard>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -396,7 +517,20 @@ export function DashboardPage() {
               transition={{ duration: 0.5, delay: 1.3, ease: "backOut" }}
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
             >
-              <GrowthMomentumCard journalEntries={journalEntries} />
+              <SafeCard>
+                {journalLoading ? (
+                  <SkeletonCard height={480} />
+                ) : journalError || !journalEntries || journalEntries.length === 0 ? (
+                  <div className="p-4 text-gray-600 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 h-[480px] flex items-center justify-center">
+                    <div className="text-center">
+                      <p className="font-medium">Growth momentum analysis needs journal data</p>
+                      <p className="text-sm mt-1">Start journaling to see insights</p>
+                    </div>
+                  </div>
+                ) : (
+                  <GrowthMomentumCard journalEntries={journalEntries} />
+                )}
+              </SafeCard>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -404,11 +538,25 @@ export function DashboardPage() {
               transition={{ duration: 0.5, delay: 1.4, ease: "backOut" }}
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
             >
-              <RecoveryResilienceCard journalEntries={journalEntries} />
+              <SafeCard>
+                {journalLoading ? (
+                  <SkeletonCard height={480} />
+                ) : journalError || !journalEntries || journalEntries.length === 0 ? (
+                  <div className="p-4 text-gray-600 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 h-[480px] flex items-center justify-center">
+                    <div className="text-center">
+                      <p className="font-medium">Recovery resilience analysis needs journal data</p>
+                      <p className="text-sm mt-1">Start journaling to see insights</p>
+                    </div>
+                  </div>
+                ) : (
+                  <RecoveryResilienceCard journalEntries={journalEntries} />
+                )}
+              </SafeCard>
             </motion.div>
           </motion.div>
         </motion.div>
       </div>
     </div>
+    </ErrorBoundary>
   )
 }
