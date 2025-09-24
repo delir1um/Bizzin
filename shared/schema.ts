@@ -42,6 +42,9 @@ export type UserProfile = {
   suspended_by?: string; // admin user_id who suspended the account
   suspension_reason?: string;
   suspension_expires_at?: string; // optional auto-unsuspend date
+  // Referral system fields
+  referral_code: string; // 8-char unique referral code
+  referred_by_user_id?: string; // FK to users who referred this user
 };
 
 // Daily Email Settings Table
@@ -157,7 +160,28 @@ export type UserPlan = {
   updated_at: string;
 };
 
-// User Referrals Table - referral program
+// Referrals Table - new referral tracking
+export type Referral = {
+  id: string;
+  referrer_user_id: string;
+  referred_user_id: string;
+  status: 'captured' | 'converted' | 'invalid';
+  created_at: string;
+  converted_at?: string;
+};
+
+// Subscription Credits Table - bonus days tracking
+export type SubscriptionCredit = {
+  id: string;
+  user_id: string;
+  days: number;
+  reason: 'signup_bonus' | 'referrer_bonus' | 'admin_adjustment' | 'reversal';
+  source_referral_id?: string;
+  applied: boolean;
+  created_at: string;
+};
+
+// Legacy User Referrals Table - keep for backwards compatibility
 export type UserReferral = {
   id: string;
   referrer_id: string;
