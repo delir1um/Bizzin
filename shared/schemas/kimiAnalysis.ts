@@ -24,7 +24,8 @@ export const KimiBusinessAnalysisSchema = z.object({
   
   // Metadata
   analysis_metadata: z.object({
-    model_version: z.string().default("kimi-k2-v1.0"),
+    model_version: z.string().default("unified-ai-v1.0"),
+    provider_used: z.string().describe("AI provider that was used").optional(),
     entry_chars: z.number().describe("Character count of analyzed entry"),
     processing_time_ms: z.number().describe("Analysis processing time"),
     cost_estimate: z.number().describe("Estimated API cost in USD").optional(),

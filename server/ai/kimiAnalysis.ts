@@ -1,4 +1,4 @@
-import { kimiClient, KIMI_MODEL, KIMI_CONFIG } from './kimi.js';
+import { findBestWorkingProvider, AI_CONFIG } from './kimi.js';
 import { 
   KimiBusinessAnalysisSchema, 
   validateKimiAnalysis, 
@@ -18,7 +18,8 @@ const analysisCache = new Map<string, { data: KimiBusinessAnalysis; timestamp: n
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
 /**
- * Unified business analysis using Kimi K2
+ * Unified business analysis using best available AI provider
+ * Primary: Qwen3 (free), Backup: Kimi K2 (cheap)
  * Replaces both HuggingFace sentiment analysis and Claude insights generation
  */
 export async function analyzeBusinessJournalEntry(request: AnalysisRequest): Promise<KimiBusinessAnalysis> {
@@ -39,7 +40,15 @@ export async function analyzeBusinessJournalEntry(request: AnalysisRequest): Pro
   }
   
   try {
-    console.log('🚀 Starting unified Kimi K2 business analysis...');
+    console.log('🚀 Starting unified AI business analysis (Qwen3 free -> Kimi K2 backup)...');
+    
+    // Find the best working AI provider
+    const aiProvider = await findBestWorkingProvider();
+    if (!aiProvider) {
+      throw new Error('No AI providers are available');
+    }
+    
+    console.log(`✅ Using ${aiProvider.provider.name} (${aiProvider.provider.cost})`);
     
     // Prepare context
     const recentContext = request.recent_entries?.slice(0, 2)?.join('. ') || 'No recent context';
@@ -52,9 +61,9 @@ export async function analyzeBusinessJournalEntry(request: AnalysisRequest): Pro
       .replace('{goals}', goalsContext)
       .replace('{entry_length}', request.entry_text.length.toString());
     
-    // Call Kimi K2 API
-    const response = await kimiClient.chat.completions.create({
-      model: KIMI_MODEL,
+    // Call AI API with best provider
+    const response = await aiProvider.client.chat.completions.create({
+      model: aiProvider.model,
       messages: [
         {
           role: "system",
@@ -66,13 +75,13 @@ export async function analyzeBusinessJournalEntry(request: AnalysisRequest): Pro
         }
       ],
       response_format: { type: "json_object" },
-      temperature: KIMI_CONFIG.temperature,
-      max_tokens: KIMI_CONFIG.max_tokens,
+      temperature: AI_CONFIG.temperature,
+      max_tokens: AI_CONFIG.max_tokens,
     });
     
     const responseText = response.choices[0]?.message?.content;
     if (!responseText) {
-      throw new Error('Empty response from Kimi K2 API');
+      throw new Error(`Empty response from ${aiProvider.provider.name} API`);
     }
     
     // Parse and validate response
@@ -81,12 +90,13 @@ export async function analyzeBusinessJournalEntry(request: AnalysisRequest): Pro
       parsedResponse = JSON.parse(responseText);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      throw new Error(`Invalid JSON response from Kimi K2: ${errorMessage}`);
+      throw new Error(`Invalid JSON response from ${aiProvider.provider.name}: ${errorMessage}`);
     }
     
     // Add processing metadata
     parsedResponse.analysis_metadata.processing_time_ms = Date.now() - startTime;
-    parsedResponse.analysis_metadata.cost_estimate = estimateCost(prompt, responseText);
+    parsedResponse.analysis_metadata.cost_estimate = estimateCost(prompt, responseText, aiProvider.provider.cost);
+    parsedResponse.analysis_metadata.provider_used = aiProvider.provider.name;
     
     // Validate against schema
     const validatedAnalysis = validateKimiAnalysis(parsedResponse);
@@ -100,11 +110,11 @@ export async function analyzeBusinessJournalEntry(request: AnalysisRequest): Pro
       timestamp: Date.now()
     });
     
-    console.log('✅ Kimi K2 unified analysis completed successfully');
+    console.log(`✅ ${aiProvider.provider.name} unified analysis completed successfully`);
     return finalAnalysis;
     
   } catch (error) {
-    console.error('❌ Kimi K2 analysis failed:', error);
+    console.error('❌ AI analysis failed:', error);
     
     // Fallback to basic analysis if API fails
     console.log('🔄 Falling back to basic analysis...');
@@ -163,16 +173,33 @@ function generateCacheKey(request: AnalysisRequest): string {
 }
 
 /**
- * Estimate API cost based on token usage
+ * Estimate API cost based on token usage and provider
  */
-function estimateCost(prompt: string, response: string): number {
+function estimateCost(prompt: string, response: string, providerCost: string): number {
+  // Qwen3 free tier costs nothing
+  if (providerCost === "FREE") {
+    return 0;
+  }
+  
   // Rough token estimation: 1 token ≈ 4 characters
   const inputTokens = prompt.length / 4;
   const outputTokens = response.length / 4;
   
-  // Kimi K2 pricing: ~$0.60 input / $2.50 output per 1M tokens
-  const inputCost = (inputTokens / 1000000) * 0.60;
-  const outputCost = (outputTokens / 1000000) * 2.50;
+  // Default to Kimi K2 pricing if cost string not parseable
+  let inputPrice = 0.60;
+  let outputPrice = 2.50;
+  
+  // Try to parse cost from provider string
+  if (providerCost.includes("0.15-2.50")) {
+    inputPrice = 0.15;
+    outputPrice = 2.50;
+  } else if (providerCost.includes("0.735-2.94")) {
+    inputPrice = 0.735;
+    outputPrice = 2.94;
+  }
+  
+  const inputCost = (inputTokens / 1000000) * inputPrice;
+  const outputCost = (outputTokens / 1000000) * outputPrice;
   
   return inputCost + outputCost;
 }
