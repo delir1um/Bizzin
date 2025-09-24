@@ -798,4 +798,72 @@ router.patch('/profile/:userId', requireAdmin, async (req: Request, res: Respons
   }
 });
 
+// Admin endpoint to delete a user account
+router.delete('/users/:userId', requireAdmin, async (req: Request, res: Response) => {
+  try {
+    console.log('🗑️ Admin delete user request:', { userId: req.params.userId });
+
+    const { userId } = req.params;
+    const adminUserId = (req as any).adminUser.user_id;
+
+    // Check if user exists
+    const { data: targetUser, error: userError } = await supabase
+      .from('user_profiles')
+      .select('user_id, email, full_name, is_admin')
+      .eq('user_id', userId)
+      .single();
+
+    if (userError || !targetUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Prevent deletion of admin users
+    if (targetUser.is_admin) {
+      return res.status(403).json({ 
+        error: 'Cannot delete admin users' 
+      });
+    }
+
+    // Prevent self-deletion
+    if (targetUser.user_id === adminUserId) {
+      return res.status(403).json({ 
+        error: 'Cannot delete your own account' 
+      });
+    }
+
+    // Create audit log before deletion
+    await createAuditLog(adminUserId, userId, 'delete_account', {
+      target_email: targetUser.email,
+      target_name: targetUser.full_name,
+      deletion_timestamp: new Date().toISOString()
+    }, req);
+
+    // Delete user from auth.users table (this will cascade to related tables)
+    const { error: authDeleteError } = await supabase.auth.admin.deleteUser(userId);
+    
+    if (authDeleteError) {
+      console.error('❌ Error deleting user from auth:', authDeleteError);
+      return res.status(500).json({ 
+        error: 'Failed to delete user from authentication system',
+        details: authDeleteError.message 
+      });
+    }
+
+    console.log(`✅ User ${targetUser.email} deleted successfully`);
+    
+    res.json({
+      success: true,
+      message: 'User deleted successfully',
+      data: {
+        deletedUserId: userId,
+        deletedUserEmail: targetUser.email
+      }
+    });
+
+  } catch (error) {
+    console.error('💥 Error in delete user endpoint:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;
