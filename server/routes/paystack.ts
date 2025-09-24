@@ -19,7 +19,7 @@ const verifyPaystackSignature = (req: express.Request, res: express.Response, ne
 
     const hash = crypto
       .createHmac('sha512', paystackSecretKey)
-      .update(JSON.stringify(req.body))
+      .update(req.body as Buffer)
       .digest('hex');
 
     const signature = req.headers['x-paystack-signature'] as string;
@@ -238,7 +238,7 @@ router.post('/webhook',
   verifyPaystackSignature,
   async (req, res) => {
     try {
-      const event = req.body;
+      const event = JSON.parse((req.body as Buffer).toString('utf8'));
       await logWebhookEvent(event.event, event.data);
 
       switch (event.event) {
@@ -292,6 +292,25 @@ const handleChargeSuccess = async (data: any) => {
 
   await recordPaymentTransaction(userId, data, 'success');
   await updateUserPlanStatus(userId, 'active', data);
+  // Process referral bonuses if user was referred
+  try {
+    const { ReferralBonusService } = await import("../services/referrals.js");
+    const result = await ReferralBonusService.processConversion(userId);
+    
+    if (result.success && result.processed) {
+      console.log("✅ Referral conversion processed successfully for user:", userId);
+    } else if (result.alreadyProcessed) {
+      console.log("ℹ️ Referral bonuses already processed for user:", userId);
+    } else if (result.noReferral) {
+      console.log("ℹ️ User was not referred, no bonuses to process:", userId);
+    } else if (!result.success) {
+      console.error("❌ Failed to process referral conversion:", result.error);
+    }
+  } catch (referralError) {
+    console.error("Failed to process referral bonuses:", referralError);
+    // Don't fail the webhook processing because of referral issues
+  }
+
   
   // Send payment success email
   try {
