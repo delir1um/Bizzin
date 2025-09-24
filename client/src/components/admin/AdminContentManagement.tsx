@@ -27,7 +27,9 @@ import {
   Clock,
   MoreVertical,
   Edit3,
-  AlertTriangle
+  AlertTriangle,
+  Shield,
+  Save
 } from "lucide-react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { supabase } from "@/lib/supabase"
@@ -180,6 +182,10 @@ export function AdminContentManagement() {
           <TabsTrigger value="announcements" className="flex items-center gap-2">
             <FileText className="w-4 h-4" />
             Announcements
+          </TabsTrigger>
+          <TabsTrigger value="footer-content" className="flex items-center gap-2">
+            <Shield className="w-4 h-4" />
+            Footer Content
           </TabsTrigger>
         </TabsList>
 
@@ -347,6 +353,10 @@ export function AdminContentManagement() {
               <p className="text-muted-foreground">Announcement management interface would be implemented here.</p>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="footer-content">
+          <FooterContentManagement />
         </TabsContent>
       </Tabs>
     </div>
@@ -1027,5 +1037,272 @@ function EpisodeForm({ episode, onClose }: EpisodeFormProps) {
         </Button>
       </div>
     </form>
+  )
+}
+
+// Footer Content Management Component
+interface FooterContent {
+  id: string
+  type: 'privacy' | 'terms' | 'contact'
+  title: string
+  content: string
+  is_published: boolean
+  created_at: string
+  updated_at: string
+}
+
+function FooterContentManagement() {
+  const [selectedContent, setSelectedContent] = useState<FooterContent | null>(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editData, setEditData] = useState({ title: '', content: '', is_published: true })
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+  // Fetch footer content for admin
+  const { data: footerContent, isLoading } = useQuery({
+    queryKey: ['admin-footer-content'],
+    queryFn: async () => {
+      const response = await fetch('/api/footer-content/admin')
+      if (!response.ok) {
+        throw new Error('Failed to fetch footer content')
+      }
+      const result = await response.json()
+      return result.content || []
+    },
+  })
+
+  // Update footer content mutation
+  const updateContentMutation = useMutation({
+    mutationFn: async ({ type, data }: { type: string, data: any }) => {
+      const response = await fetch(`/api/footer-content/${type}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to update content')
+      }
+      
+      return response.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-footer-content'] })
+      toast({
+        title: "Content Updated",
+        description: "Footer content has been successfully updated.",
+      })
+      setIsEditing(false)
+      setSelectedContent(null)
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update content",
+        variant: "destructive",
+      })
+    }
+  })
+
+  const handleEdit = (content: FooterContent) => {
+    setSelectedContent(content)
+    setEditData({
+      title: content.title,
+      content: content.content,
+      is_published: content.is_published
+    })
+    setIsEditing(true)
+  }
+
+  const handleSave = () => {
+    if (!selectedContent) return
+    
+    updateContentMutation.mutate({
+      type: selectedContent.type,
+      data: editData
+    })
+  }
+
+  const getContentTypeIcon = (type: string) => {
+    switch (type) {
+      case 'privacy':
+        return <Shield className="w-5 h-5 text-blue-600" />
+      case 'terms':
+        return <FileText className="w-5 h-5 text-orange-600" />
+      case 'contact':
+        return <Eye className="w-5 h-5 text-green-600" />
+      default:
+        return <FileText className="w-5 h-5 text-gray-600" />
+    }
+  }
+
+  const getDefaultContent = (type: string) => {
+    const defaults = {
+      privacy: { title: 'Privacy Policy', content: 'Privacy policy content...' },
+      terms: { title: 'Terms of Service', content: 'Terms of service content...' },
+      contact: { title: 'Contact Us', content: 'Contact information...' }
+    }
+    return defaults[type as keyof typeof defaults] || { title: type, content: 'Content...' }
+  }
+
+  // Ensure all three types are represented
+  const allContentTypes = ['privacy', 'terms', 'contact']
+  const contentWithDefaults = allContentTypes.map(type => {
+    const existing = footerContent?.find((c: FooterContent) => c.type === type)
+    if (existing) return existing
+    
+    const defaultContent = getDefaultContent(type)
+    return {
+      id: `default-${type}`,
+      type,
+      title: defaultContent.title,
+      content: defaultContent.content,
+      is_published: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+  })
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="w-5 h-5" />
+            Footer Content Management
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="space-y-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="h-20 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {contentWithDefaults.map((content) => (
+                <Card key={content.type} className="border-l-4 border-l-orange-500">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {getContentTypeIcon(content.type)}
+                        <div>
+                          <h3 className="font-semibold text-slate-900 dark:text-white">
+                            {content.title}
+                          </h3>
+                          <p className="text-sm text-slate-600 dark:text-slate-400 capitalize">
+                            {content.type} content
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={content.is_published ? 'default' : 'secondary'}>
+                          {content.is_published ? 'Published' : 'Draft'}
+                        </Badge>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEdit(content)}
+                          data-testid={`button-edit-${content.type}`}
+                        >
+                          <Edit className="w-4 h-4 mr-1" />
+                          Edit
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="mt-3">
+                      <p className="text-sm text-slate-700 dark:text-slate-300 line-clamp-2">
+                        {content.content.substring(0, 120)}...
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditing} onOpenChange={setIsEditing}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {selectedContent && getContentTypeIcon(selectedContent.type)}
+              Edit {selectedContent?.type.charAt(0).toUpperCase()}{selectedContent?.type.slice(1)} Content
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                value={editData.title}
+                onChange={(e) => setEditData(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="Enter title"
+                data-testid="input-content-title"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="content">Content</Label>
+              <Textarea
+                id="content"
+                value={editData.content}
+                onChange={(e) => setEditData(prev => ({ ...prev, content: e.target.value }))}
+                placeholder="Enter content (supports markdown formatting)"
+                className="min-h-[400px] font-mono"
+                data-testid="textarea-content"
+              />
+              <p className="text-xs text-slate-600 dark:text-slate-400">
+                Supports basic markdown: # for headings, ** for bold, * for italic, - for lists
+              </p>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="is_published"
+                checked={editData.is_published}
+                onChange={(e) => setEditData(prev => ({ ...prev, is_published: e.target.checked }))}
+                className="rounded"
+                data-testid="checkbox-published"
+              />
+              <Label htmlFor="is_published">Published (visible to users)</Label>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsEditing(false)}
+              data-testid="button-cancel-edit"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={updateContentMutation.isPending}
+              data-testid="button-save-content"
+            >
+              {updateContentMutation.isPending ? (
+                <>Saving...</>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-1" />
+                  Save Changes
+                </>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
   )
 }
