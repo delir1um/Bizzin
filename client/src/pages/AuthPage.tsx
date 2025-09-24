@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Users } from "lucide-react"
 import { useTheme } from "@/lib/theme-provider"
+import { FooterContentModal, type FooterContentType } from "@/components/footer/FooterContentModal"
 import brizzinLogoDark from "@/assets/brizzin-logo-dark-v2.webp"
 
 const schema = z.object({
@@ -30,9 +31,16 @@ export default function AuthPage() {
   const [referralValid, setReferralValid] = useState(false)
   const [isResettingPassword, setIsResettingPassword] = useState(false)
   const [showResetForm, setShowResetForm] = useState(false)
+  const [isFooterModalOpen, setIsFooterModalOpen] = useState(false)
+  const [footerContentType, setFooterContentType] = useState<FooterContentType | null>(null)
   const { theme } = useTheme()
   
   const currentLogo = brizzinLogoDark // Always use dark version
+
+  const handleFooterLinkClick = (contentType: FooterContentType) => {
+    setFooterContentType(contentType)
+    setIsFooterModalOpen(true)
+  }
 
   const {
     register,
@@ -391,15 +399,30 @@ export default function AuthPage() {
         {/* Terms */}
         <p className="text-center text-xs text-slate-500 dark:text-slate-400 mt-6">
           By continuing, you agree to our{" "}
-          <a href="#terms" className="text-orange-600 hover:text-orange-700 underline">
+          <button
+            onClick={() => handleFooterLinkClick('terms')}
+            className="text-orange-600 hover:text-orange-700 underline cursor-pointer"
+            data-testid="link-terms"
+          >
             Terms of Service
-          </a>{" "}
+          </button>{" "}
           and{" "}
-          <a href="#privacy" className="text-orange-600 hover:text-orange-700 underline">
+          <button
+            onClick={() => handleFooterLinkClick('privacy')}
+            className="text-orange-600 hover:text-orange-700 underline cursor-pointer"
+            data-testid="link-privacy"
+          >
             Privacy Policy
-          </a>
+          </button>
         </p>
       </div>
+
+      {/* Footer Content Modal */}
+      <FooterContentModal
+        isOpen={isFooterModalOpen}
+        onClose={() => setIsFooterModalOpen(false)}
+        contentType={footerContentType}
+      />
     </div>
   )
 }

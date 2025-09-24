@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { AlertTriangle, FileText, Shield, Mail } from "lucide-react"
@@ -242,6 +242,11 @@ export function FooterContentModal({ isOpen, onClose, contentType }: FooterConte
               content?.title || (contentType && getDefaultContent(contentType).title) || 'Content'
             )}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            {contentType === 'privacy' && 'View our privacy policy and data protection information'}
+            {contentType === 'terms' && 'View our terms of service and usage agreement'}
+            {contentType === 'contact' && 'View our contact information and support details'}
+          </DialogDescription>
         </DialogHeader>
 
         <Card>
