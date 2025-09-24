@@ -7,9 +7,9 @@ Unified AI Provider Configuration
 - Both use OpenAI-compatible interfaces
 */
 
-// AI Provider options (in order of preference: free first, then cheapest)
+// AI Provider options - OpenRouter only (simplified setup)
 const AI_PROVIDERS = [
-  // Qwen3 - FREE tier via OpenRouter (using proper API key)
+  // Qwen3 - FREE tier via OpenRouter
   {
     name: "Qwen3 Free",
     baseURL: "https://openrouter.ai/api/v1",
@@ -18,7 +18,7 @@ const AI_PROVIDERS = [
     cost: "FREE",
     strengths: ["reasoning", "multilingual", "business analysis"]
   },
-  // Kimi K2 FREE via OpenRouter
+  // Kimi K2 - FREE tier via OpenRouter
   {
     name: "Kimi K2 Free",
     baseURL: "https://openrouter.ai/api/v1",
@@ -27,16 +27,7 @@ const AI_PROVIDERS = [
     cost: "FREE",
     strengths: ["coding", "agentic", "structured output"]
   },
-  // Kimi K2 - Paid backup via AI/ML API
-  {
-    name: "Kimi K2 Paid",
-    baseURL: "https://api.aimlapi.com/v1",
-    model: "moonshot/kimi-k2-preview",
-    apiKey: process.env.AIML_API_KEY,
-    cost: "$0.15-2.50/1M tokens",
-    strengths: ["coding", "agentic", "structured output"]
-  },
-  // Additional Qwen2.5 paid options via OpenRouter
+  // Qwen2.5 - Paid tier via OpenRouter (if free limits exceeded)
   {
     name: "Qwen2.5 Paid",
     baseURL: "https://openrouter.ai/api/v1", 
