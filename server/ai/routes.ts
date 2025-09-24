@@ -5,6 +5,8 @@ import { AI_CONFIG } from './config.js';
 import { insightsConfig } from '../config/insights.js';
 import { InsightResponse } from '../../shared/schemas/insights.js';
 import { hasBannedPhrases, hasSpecificOverlap, getValidationContext } from '../lib/specificity.js';
+import { analyzeBusinessJournalEntry } from './kimiAnalysis.js';
+import { convertToLegacyFormat } from '../../shared/schemas/kimiAnalysis.js';
 
 const router = Router();
 
@@ -33,6 +35,14 @@ const insightRequestSchema = z.object({
   recent_entries: z.array(z.string()).default([]),
   goals: z.array(z.string()).default([]),
   user_id: z.string().min(1, 'User ID is required')
+});
+
+// Validation schema for unified Kimi analysis requests
+const kimiAnalysisSchema = z.object({
+  entry_text: z.string().min(10, 'Entry text must be at least 10 characters'),
+  recent_entries: z.array(z.string()).default([]),
+  goals: z.array(z.string()).default([]),
+  user_id: z.string().optional()
 });
 
 // Health check endpoint
@@ -329,5 +339,66 @@ function validateInsight(entryText: string, insightJson: any, entryId: string): 
     return { isValid: false, reason: `Schema validation failed: ${error instanceof Error ? error.message : 'Unknown error'}` };
   }
 }
+
+// Unified Kimi K2 analysis endpoint (replaces HuggingFace + Claude)
+router.post('/kimi/analyze', async (req: Request, res: Response) => {
+  try {
+    // Validate request body
+    const validatedData = kimiAnalysisSchema.parse(req.body);
+    
+    const {
+      entry_text,
+      recent_entries,
+      goals,
+      user_id
+    } = validatedData;
+
+    console.log(`🚀 Starting unified Kimi K2 analysis for ${entry_text.length} char entry...`);
+    
+    // Call unified Kimi analysis
+    const kimiAnalysis = await analyzeBusinessJournalEntry({
+      entry_text,
+      recent_entries,
+      goals,
+      user_id
+    });
+    
+    // Convert to legacy format for existing UI compatibility
+    const legacyFormat = convertToLegacyFormat(kimiAnalysis);
+    
+    // Also return the raw analysis for future use
+    const response = {
+      // Legacy format for immediate UI compatibility
+      sentiment: legacyFormat,
+      
+      // New unified format for enhanced features
+      unified_analysis: kimiAnalysis,
+      
+      // Metadata
+      analysis_version: 'kimi-unified-v1.0',
+      cost_savings: '10x cheaper than Claude',
+      processing_time_ms: kimiAnalysis.analysis_metadata.processing_time_ms
+    };
+
+    console.log(`✅ Kimi K2 unified analysis completed in ${kimiAnalysis.analysis_metadata.processing_time_ms}ms`);
+    
+    res.json(response);
+    
+  } catch (error) {
+    console.error('❌ Kimi analysis endpoint error:', error);
+    
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        error: 'Invalid request data',
+        details: error.errors
+      });
+    }
+
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    res.status(500).json({
+      error: errorMessage
+    });
+  }
+});
 
 export default router;

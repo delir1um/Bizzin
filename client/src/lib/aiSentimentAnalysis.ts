@@ -23,6 +23,9 @@ export interface BusinessSentiment {
   user_learned?: boolean;
   suggested_title?: string;
   analysis_source?: string;
+  // Kimi K2 metadata
+  processing_time_ms?: number;
+  cost_savings?: string;
   // Legacy compatibility properties
   mood?: string;
   category?: string;
@@ -165,40 +168,48 @@ const businessContexts = {
   reflection: ['learned', 'realize', 'understand', 'insight', 'feedback', 'review', 'analyze', 'think', 'contemplate', 'evaluate']
 };
 
-// Enhanced Hugging Face API implementation for business sentiment analysis
-async function callEnhancedHuggingFaceAnalysis(text: string): Promise<BusinessSentiment | null> {
-  console.log('🚀 Calling server-side Hugging Face API for:', text.substring(0, 50) + '...');
+// Unified Kimi K2 analysis (replaces HuggingFace + Claude pipeline)
+async function callKimiUnifiedAnalysis(text: string, recentEntries: string[] = [], goals: string[] = []): Promise<BusinessSentiment | null> {
+  console.log('🚀 Calling unified Kimi K2 analysis for:', text.substring(0, 50) + '...');
   
   try {
-    const response = await fetch('/api/huggingface/analyze', {
+    const response = await fetch('/api/ai/kimi/analyze', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({ 
+        entry_text: text,
+        recent_entries: recentEntries,
+        goals: goals
+      }),
     });
 
     if (!response.ok) {
-      throw new Error(`Server API error: ${response.status}`);
+      throw new Error(`Kimi API error: ${response.status}`);
     }
 
     const result = await response.json();
-    console.log('✅ Server-side Hugging Face analysis successful:', result);
+    console.log('✅ Kimi K2 unified analysis successful:', result);
     
+    // Return the legacy-compatible sentiment format
     return {
-      ...result,
-      analysis_source: 'hugging-face-server'
+      ...result.sentiment,
+      analysis_source: 'kimi-unified',
+      // Add metadata from unified analysis
+      processing_time_ms: result.processing_time_ms,
+      cost_savings: result.cost_savings
     };
     
   } catch (error) {
-    console.warn('❌ Server-side Hugging Face analysis failed:', error);
+    console.warn('❌ Kimi K2 unified analysis failed:', error);
     console.log('🔄 Falling back to enhanced local analysis');
     try {
       const analysisResult = performEnhancedLocalAnalysis(text);
       console.log('Enhanced local analysis successful');
       return {
         ...analysisResult,
-        analysis_source: 'enhanced_local'
+        analysis_source: 'enhanced_local_fallback'
       };
     } catch (localError) {
       console.error('Enhanced local analysis failed:', localError);
@@ -706,31 +717,33 @@ export async function analyzeBusinessSentimentAI(content: string, title?: string
   }
   
   try {
-    console.log('Starting AI business sentiment analysis with Hugging Face integration...');
+    console.log('Starting unified Kimi K2 business sentiment analysis...');
     
-    // Try Hugging Face AI models first (actual AI understanding)
-    const huggingFaceResult = await callEnhancedHuggingFaceAnalysis(text);
-    if (huggingFaceResult && huggingFaceResult.analysis_source === 'hugging-face-server') {
-      console.log('Using production AI analysis results:', {
-        category: huggingFaceResult.business_category,
-        mood: huggingFaceResult.primary_mood,
-        energy: huggingFaceResult.energy,
-        confidence: huggingFaceResult.confidence,
-        rulesMatched: 0, // Server-side AI doesn't use rule matching
-        aiHeading: huggingFaceResult.ai_heading
+    // Try unified Kimi K2 analysis first (actual AI understanding)
+    const kimiResult = await callKimiUnifiedAnalysis(text);
+    if (kimiResult && kimiResult.analysis_source === 'kimi-unified') {
+      console.log('Using unified Kimi K2 analysis results:', {
+        category: kimiResult.business_category,
+        mood: kimiResult.primary_mood,
+        energy: kimiResult.energy,
+        confidence: kimiResult.confidence,
+        rulesMatched: 0, // AI analysis doesn't use rule matching
+        aiHeading: kimiResult.ai_heading,
+        processingTime: kimiResult.processing_time_ms,
+        costSavings: kimiResult.cost_savings
       });
       
-      // Cache Hugging Face result WITHOUT additional processing
+      // Cache Kimi result WITHOUT additional processing
       sentimentCache.set(cacheKey, {
-        data: huggingFaceResult,
+        data: kimiResult,
         timestamp: Date.now()
       });
       
-      // Return server result directly - don't override with client-side logic
-      return huggingFaceResult;
+      // Return AI result directly - don't override with client-side logic
+      return kimiResult;
     }
     
-    console.log('Hugging Face unavailable, falling back to enhanced local analysis');
+    console.log('Kimi K2 unavailable, falling back to enhanced local analysis');
     // Use the enhanced local analysis as fallback
     const aiResult = performEnhancedLocalAnalysis(text);
     

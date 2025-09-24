@@ -80,7 +80,8 @@ export async function analyzeBusinessJournalEntry(request: AnalysisRequest): Pro
     try {
       parsedResponse = JSON.parse(responseText);
     } catch (error) {
-      throw new Error(`Invalid JSON response from Kimi K2: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`Invalid JSON response from Kimi K2: ${errorMessage}`);
     }
     
     // Add processing metadata
