@@ -152,7 +152,7 @@ export default function AdminDashboardPage() {
         try {
           const plansResult = await supabase
             .from('user_plans')
-            .select('plan_type, created_at, expires_at')
+            .select('plan_type, created_at, expires_at, user_id')
             
           if (!plansResult.error && plansResult.data) {
             plansData = plansResult.data
@@ -166,19 +166,30 @@ export default function AdminDashboardPage() {
           const now = new Date()
           const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1)
           
-          // Count active premium users
+          // Admin account to exclude (should not be counted as paying customer)
+          const adminUserId = '9502ea97-1adb-4115-ba05-1b6b1b5fa721' // anton@cloudfusion.co.za
+          
+          // Count active premium users (excluding admin accounts)
           stats.paidUsers = plansData.filter(plan => 
             plan.plan_type === 'premium' && 
+            plan.user_id !== adminUserId &&
             (!plan.expires_at || new Date(plan.expires_at) > now)
           ).length
           
-          // Calculate revenue (assuming R99.99 per premium user per month)
-          const premiumPrice = 99.99
+          console.log('Paid users calculation:', {
+            totalPlans: plansData.length,
+            adminExcluded: plansData.filter(plan => plan.user_id === adminUserId).length,
+            finalPaidUsers: stats.paidUsers
+          })
+          
+          // Calculate revenue using correct pricing (R199 per premium user per month)
+          const premiumPrice = 199.00
           stats.totalRevenue = stats.paidUsers * premiumPrice * 12 // Annual estimate
           
-          // Monthly revenue from plans created this month
+          // Monthly revenue from non-admin plans created this month
           const monthlyNewPlans = plansData.filter(plan => 
             plan.plan_type === 'premium' && 
+            plan.user_id !== adminUserId &&
             new Date(plan.created_at) >= currentMonth
           ).length
           stats.monthlyRevenue = monthlyNewPlans * premiumPrice
