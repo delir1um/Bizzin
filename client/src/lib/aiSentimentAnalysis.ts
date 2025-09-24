@@ -45,6 +45,49 @@ export function clearSentimentCache() {
   console.log('Sentiment cache cleared for testing');
 }
 
+// Enhanced insights generation using Claude API
+async function generateEnhancedInsights(entryText: string, sentimentData: any): Promise<string[] | null> {
+  // Only try enhanced insights for substantial entries
+  if (entryText.length < 30) {
+    return null;
+  }
+
+  try {
+    console.log('🚀 Generating enhanced insights with Claude API...');
+    
+    const response = await fetch('/api/ai/insights/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        entry_id: `temp_${Date.now()}`,
+        entry_text: entryText,
+        entry_mood: sentimentData.mood || 'neutral',
+        entry_energy: sentimentData.energy || 'medium',
+        recent_entries: [], // TODO: Could be enhanced with context
+        goals: [], // TODO: Could be enhanced with user goals
+        user_id: 'current_user'
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Insights API error: ${response.status}`);
+    }
+
+    const insightResponse = await response.json();
+    console.log('✅ Enhanced insights generated successfully');
+    
+    // Return just the actions as insights for now
+    // This integrates with the existing insights display system
+    return insightResponse.insight.actions || null;
+    
+  } catch (error) {
+    console.warn('⚠️ Enhanced insights generation failed:', error);
+    return null;
+  }
+}
+
 // Enhanced business keywords for local analysis
 const businessEmotions = {
   confident: {
