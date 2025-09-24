@@ -59,7 +59,9 @@ router.get('/users', requireAdmin, async (req, res) => {
         is_admin,
         is_active,
         created_at,
-        updated_at
+        updated_at,
+        referred_by_user_id,
+        referral_code
       `)
       .order('created_at', { ascending: false });
     
@@ -113,18 +115,39 @@ router.get('/users', requireAdmin, async (req, res) => {
             plan_details: userPlan
           });
           
-          // Get user stats
+          // Get user stats and referral information
           const [
             { count: journalCount },
             { count: goalCount }, 
             { count: completedGoals },
-            { count: documentCount }
+            { count: documentCount },
+            { count: referralsMadeCount }
           ] = await Promise.all([
             supabase.from('journal_entries').select('*', { count: 'exact', head: true }).eq('user_id', profile.user_id),
             supabase.from('goals').select('*', { count: 'exact', head: true }).eq('user_id', profile.user_id),
             supabase.from('goals').select('*', { count: 'exact', head: true }).eq('user_id', profile.user_id).eq('status', 'completed'),
-            supabase.from('documents').select('*', { count: 'exact', head: true }).eq('user_id', profile.user_id)
+            supabase.from('documents').select('*', { count: 'exact', head: true }).eq('user_id', profile.user_id),
+            supabase.from('user_profiles').select('*', { count: 'exact', head: true }).eq('referred_by_user_id', profile.user_id)
           ]);
+
+          // Get who referred this user (if anyone)
+          let referredBy = null;
+          if (profile.referred_by_user_id) {
+            const { data: referrer, error: referrerError } = await supabase
+              .from('user_profiles')
+              .select('user_id, email, full_name, first_name, last_name, referral_code')
+              .eq('user_id', profile.referred_by_user_id)
+              .single();
+            
+            if (!referrerError && referrer) {
+              referredBy = {
+                user_id: referrer.user_id,
+                email: referrer.email,
+                name: referrer.full_name || `${referrer.first_name || ''} ${referrer.last_name || ''}`.trim() || referrer.email,
+                referral_code: referrer.referral_code
+              };
+            }
+          }
 
           
           // Calculate plan information
@@ -191,6 +214,10 @@ router.get('/users', requireAdmin, async (req, res) => {
               total_goals: goalCount || 0,
               completed_goals: completedGoals || 0,
               documents: documentCount || 0
+            },
+            referrals: {
+              referred_by: referredBy,
+              referrals_made_count: referralsMadeCount || 0
             }
           };
         } catch (error) {
@@ -210,6 +237,10 @@ router.get('/users', requireAdmin, async (req, res) => {
               total_goals: 0,
               completed_goals: 0,
               documents: 0
+            },
+            referrals: {
+              referred_by: null,
+              referrals_made_count: 0
             }
           };
         }
