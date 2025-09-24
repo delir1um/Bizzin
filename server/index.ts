@@ -106,6 +106,10 @@ app.use((req, res, next) => {
   const paymentRoutes = await import('./routes/payment.js');
   app.use('/api/payment', paymentRoutes.default);
   
+  // Add Footer Content API routes - managing website footer legal content
+  const footerContentRoutes = await import('./routes/footer-content.js');
+  app.use('/api/footer-content', footerContentRoutes.default);
+  
   const server = await registerRoutes(app);
   
   // Initialize single email system - SimpleEmailScheduler (production ready)
