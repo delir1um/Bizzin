@@ -1,0 +1,138 @@
+Title: Dashboard Reliability Audit (TypeScript + React Query + Supabase)
+
+Goal: Find and fix runtime/typing issues in the dashboard route and widgets.
+
+Scope (files):
+client/src/pages/dashboard/**/*.{ts,tsx}
+client/src/components/**/*Card.{ts,tsx}
+client/src/hooks/**/*.{ts,tsx}
+shared/schemas/**/*.ts
+server/** or worker/** endpoints feeding dashboard.
+
+Steps:
+
+Run pnpm install, then pnpm tsc --noEmit and pnpm lint. Capture all errors/warnings.
+
+For each dashboard widget:
+
+Wrap in loading/error/empty guards.
+
+Stabilise React Query keys (['dash:widget', {from,to,userId}]).
+
+Abortable fetches + cleanup in effects.
+
+Use Zod schema parse at the API boundary.
+
+Match skeleton height to final card (avoid layout shift).
+
+Add or update Zod schemas in shared/schemas. Parse in fetch/adapter layer before reaching the card.
+
+Verify date handling: normalise to UTC in data layer; format in UI.
+
+Add an ErrorBoundary and wrap each card export with it.
+
+Create a lightweight caching layer for expensive endpoints (if Cloudflare Worker exists): 15–60s TTL.
+
+Output diffs only (unified), grouped by file, followed by a short “why” note per change.
+
+Acceptance checks (run & report):
+
+pnpm tsc --noEmit → 0 errors.
+
+pnpm lint → 0 errors, ≤5 warnings.
+
+App boots via pnpm dev without red errors in console.
+
+Dashboard route renders with no “undefined of …” errors and no major layout shift.
+
+Coding patterns to follow:
+
+useQuery guards (isLoading, isError, !data).
+
+useMemo for params; stable query keys.
+
+AbortController for fetches; cleanup in useEffect.
+
+Zod at the edge; never trust any.
+
+No service role keys client-side; Supabase RLS policies enforced.
+
+Provide:
+
+Diffs, then a brief checklist of remaining TODOs (if any).
+
+Drop-in utilities (add to your codebase)
+
+ErrorBoundary.tsx
+
+import * as React from 'react';
+export class ErrorBoundary extends React.Component<{fallback?: React.ReactNode},{hasError:boolean}> {
+  constructor(p:any){ super(p); this.state={hasError:false}; }
+  static getDerivedStateFromError(){ return {hasError:true}; }
+  componentDidCatch(e:any, info:any){ console.error(e, info); }
+  render(){ return this.state.hasError ? (this.props.fallback ?? <div>Something went wrong.</div>) : this.props.children; }
+}
+
+
+SafeCard.tsx
+
+import { ErrorBoundary } from './ErrorBoundary';
+export function SafeCard({ children }: { children: React.ReactNode }) {
+  return <ErrorBoundary fallback={<div className="p-4">Card failed to load.</div>}>{children}</ErrorBoundary>;
+}
+
+
+Query pattern for each widget
+
+const params = React.useMemo(() => ({ from, to, userId }), [from, to, userId]);
+const { data, isLoading, isError, error } = useQuery({
+  queryKey: ['dash:metrics', params],
+  queryFn: () => api.metrics(params),
+  staleTime: 30_000
+});
+
+if (isLoading) return <SkeletonCard height={180} />;
+if (isError)   return <div className="p-4">Error: {String(error)}</div>;
+if (!data?.length) return <div className="p-4">No data for this period.</div>;
+
+
+Zod schema at the boundary (shared/schemas/metrics.ts)
+
+import { z } from 'zod';
+export const Metric = z.object({ title: z.string(), value: z.number().nullable() });
+export const Metrics = z.array(Metric);
+
+
+API adapter with abort + parse
+
+import { Metrics } from '@/shared/schemas/metrics';
+export async function fetchMetrics(p:{from:string;to:string;userId:string}) {
+  const c = new AbortController();
+  const timeout = setTimeout(() => c.abort(), 15000);
+  try {
+    const r = await fetch(`/api/metrics?from=${p.from}&to=${p.to}&u=${p.userId}`, { signal: c.signal });
+    const j = await r.json();
+    return Metrics.parse(j);
+  } finally { clearTimeout(timeout); }
+}
+
+
+Supabase RLS reminder (server-side)
+
+-- Example read policy for multi-tenant data
+create policy "tenant_read"
+on public.metrics
+for select using ( auth.uid() = user_id );
+
+Suggested ESLint rules (catch common dashboard bugs)
+
+.eslintrc additions:
+
+{
+  "rules": {
+    "react-hooks/exhaustive-deps": "error",
+    "@typescript-eslint/no-floating-promises": "error",
+    "@typescript-eslint/no-misused-promises": "error",
+    "no-console": ["warn", { "allow": ["error", "warn"] }]
+  }
+}
