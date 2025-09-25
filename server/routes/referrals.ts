@@ -47,16 +47,31 @@ router.get('/validate/:code', async (req, res) => {
     // DATABASE-DRIVEN VALIDATION: Check for active users in database
     console.log('🔍 Validating against active users in database...');
     
-    // Get all active users from user_profiles table
-    const { data: allUsers, error: usersError } = await supabase
+    // Temporary workaround: Direct validation against known users + generated codes
+    // This bypasses PostgREST schema cache issues while maintaining security
+    console.log('🔄 Using temporary validation workaround due to schema cache issues...');
+    
+    // Get all users and generate their referral codes
+    const { data: users, error: usersError } = await supabase
       .from('user_profiles')
-      .select('user_id, email, full_name, referral_code')
+      .select('user_id, email, full_name')
       .not('email', 'is', null);
-
+    
     if (usersError) {
       console.error('❌ Error fetching users for referral validation:', usersError);
       return res.status(500).json({ valid: false, error: 'Database error' });
     }
+    
+    if (!users || users.length === 0) {
+      console.log('❌ No users found in database');
+      return res.json({ valid: false, error: 'No active users found' });
+    }
+    
+    // Generate referral codes for all users and check for matches
+    const allUsers = users.map(user => ({
+      ...user,
+      referral_code: generateReferralCode(user.email) // Use generated codes as primary
+    }));
 
     if (!allUsers || allUsers.length === 0) {
       console.log('❌ No users found in database');
