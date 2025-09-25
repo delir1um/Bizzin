@@ -44,63 +44,63 @@ router.get('/validate/:code', async (req, res) => {
     const searchCode = code.trim().toUpperCase();
     console.log('🔍 Searching for code:', searchCode);
 
-    // PRODUCTION-READY SOLUTION: Support both legacy and new unified referral codes
-    console.log('🔍 Validating against confirmed database + unified generated codes...');
+    // DATABASE-DRIVEN VALIDATION: Check for active users in database
+    console.log('🔍 Validating against active users in database...');
     
-    // Real referral codes confirmed from database (legacy system)
-    const confirmedReferrals = [
-      { user_id: '9d722107-cfe5-45e1-827a-b9c4f26af884', email: 'admin@example.com', legacy_code: 'ADMI0249EX', name: 'Admin User' },
-      { user_id: '9502ea97-1adb-4115-ba05-1b6b1b5fa721', email: 'anton@cloudfusion.co.za', legacy_code: 'B0AB4E9A', name: 'Anton Bosch' },
-      { user_id: '83a990b5-0ee1-4db6-8b6d-f3f430b7caf6', email: 'coopzbren@gmail.com', legacy_code: 'COOP0249GM', name: 'Cooper Brennan' },
-      { user_id: 'edc61468-30a2-4ef1-ae35-eff9bab4d641', email: 'hello@cloudfusion.co.za', legacy_code: 'HELL0250AM', name: 'Hello User' },
-      { user_id: '9fd5beae-b30f-4656-a3e1-3ffa1874c0eb', email: 'info@cloudfusion.co.za', legacy_code: 'INFO0249CF', name: 'Info CloudFusion' }
-    ];
+    // Get all active users from user_profiles table
+    const { data: allUsers, error: usersError } = await supabase
+      .from('user_profiles')
+      .select('user_id, email, full_name, referral_code')
+      .not('email', 'is', null);
 
-    // Add generated codes to each user for dual compatibility
-    const allReferrals = confirmedReferrals.map(user => ({
-      ...user,
-      generated_code: generateReferralCode(user.email),
-      // Prioritize legacy codes for existing users
-      primary_code: user.legacy_code,
-      secondary_code: generateReferralCode(user.email)
-    }));
-
-    console.log('📋 Available codes (legacy + generated):');
-    allReferrals.forEach(r => {
-      console.log(`  ${r.email}: ${r.legacy_code} (legacy), ${r.generated_code} (generated)`);
-    });
-    
-    // Check against both legacy and generated codes
-    let userProfile = allReferrals.find(r => r.legacy_code === searchCode || r.generated_code === searchCode);
-    
-    if (userProfile) {
-      const matchType = userProfile.legacy_code === searchCode ? 'legacy' : 'generated';
-      console.log(`🔍 Search result for ${searchCode}: FOUND (${matchType} code for ${userProfile.email})`);
-    } else {
-      console.log(`🔍 Search result for ${searchCode}: NOT FOUND`);
+    if (usersError) {
+      console.error('❌ Error fetching users for referral validation:', usersError);
+      return res.status(500).json({ valid: false, error: 'Database error' });
     }
 
-    if (userProfile) {
-      console.log('✅ Valid referral code found in database:', { 
+    if (!allUsers || allUsers.length === 0) {
+      console.log('❌ No users found in database');
+      return res.json({ valid: false, error: 'No active users found' });
+    }
+
+    console.log(`📋 Checking ${allUsers.length} active users for referral code: ${searchCode}`);
+    
+    // For each user, check both their stored referral_code and generated code
+    let validReferrer = null;
+    
+    for (const user of allUsers) {
+      const storedCode = user.referral_code?.toUpperCase();
+      const generatedCode = generateReferralCode(user.email);
+      
+      // Check if the search code matches either stored or generated code
+      if (storedCode === searchCode || generatedCode === searchCode) {
+        validReferrer = user;
+        const matchType = storedCode === searchCode ? 'stored' : 'generated';
+        console.log(`✅ Found referrer: ${user.email} (${matchType} code)`);
+        break;
+      }
+    }
+
+    if (validReferrer) {
+      console.log('✅ Valid referral code found for active user:', { 
         code: searchCode, 
-        referrer: userProfile.email,
-        user_id: userProfile.user_id 
+        referrer: validReferrer.email,
+        user_id: validReferrer.user_id 
       });
       
       return res.json({ 
         valid: true, 
         referrer: {
-          user_id: userProfile.user_id,
-          email: userProfile.email,
-          name: userProfile.name || userProfile.email.split('@')[0]
+          user_id: validReferrer.user_id,
+          email: validReferrer.email,
+          name: validReferrer.full_name || validReferrer.email.split('@')[0]
         }
       });
     }
 
-    // If not found, the validation already handled all cases above
-    console.log('❌ Referral code not found:', searchCode);
-    return res.json({ valid: false, error: 'Referral code not found' });
-
+    // If not found in active users
+    console.log('❌ Referral code not found among active users:', searchCode);
+    return res.json({ valid: false, error: 'Referral code not found or user no longer active' });
 
   } catch (error) {
     console.error('💥 Error validating referral code:', error);

@@ -83,18 +83,27 @@ router.post('/signup', async (req, res) => {
     
     if (referralCode && isValidReferral) {
       try {
-        // Get referrer user ID
+        // Get referrer user ID and email for comprehensive self-referral check
         const { data: referrer } = await supabase
           .from('user_profiles')
-          .select('user_id')
+          .select('user_id, email')
           .eq('referral_code', referralCode.trim().toUpperCase())
           .single();
 
-        if (referrer && referrer.user_id !== signUpData.user.id) {
-          referredByUserId = referrer.user_id;
-          console.log('✅ Found valid referrer:', referredByUserId);
+        if (referrer) {
+          // Check both user_id and email to prevent self-referral abuse
+          if (referrer.user_id !== signUpData.user.id && referrer.email.toLowerCase() !== email.toLowerCase()) {
+            referredByUserId = referrer.user_id;
+            console.log('✅ Found valid referrer:', { userId: referredByUserId, email: referrer.email });
+          } else {
+            if (referrer.email.toLowerCase() === email.toLowerCase()) {
+              console.warn('🚫 Self-referral blocked: user trying to refer themselves using their own email\'s referral code');
+            } else {
+              console.warn('🚫 Self-referral blocked: same user_id');
+            }
+          }
         } else {
-          console.warn('Self-referral blocked or referrer not found');
+          console.warn('❌ Referrer not found in database');
         }
       } catch (referralError) {
         console.error('Error processing referral:', referralError);
