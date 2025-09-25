@@ -38,29 +38,62 @@ function generateReferralCode(email: string): string {
   return finalCode;
 }
 
-// Admin authentication middleware
+// Admin authentication middleware with proper JWT verification
 const requireAdmin = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // For now, allow access to anton@cloudfusion.co.za only
-    // TODO: In production, this should check proper session/JWT tokens
-    const adminEmail = 'anton@cloudfusion.co.za';
+    // Extract JWT token from Authorization header
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ 
+        error: 'Authentication required: Missing or invalid Authorization header' 
+      });
+    }
+
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ 
+        error: 'Authentication required: No token provided' 
+      });
+    }
+
+    // Verify the JWT token with Supabase Auth
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     
-    // Get the admin user record
-    const { data: adminUser, error } = await supabase
+    if (authError || !user) {
+      console.log('❌ Admin auth failed:', { authError, hasUser: !!user });
+      return res.status(401).json({ 
+        error: 'Authentication failed: Invalid or expired token' 
+      });
+    }
+
+    // Check if the authenticated user has admin privileges
+    const { data: adminUser, error: adminError } = await supabase
       .from('user_profiles')
       .select('user_id, email, is_admin')
-      .eq('email', adminEmail)
+      .eq('user_id', user.id)
       .eq('is_admin', true)
       .single();
 
-    if (error || !adminUser) {
+    if (adminError || !adminUser) {
+      console.log('❌ Admin privilege check failed:', { 
+        userId: user.id, 
+        email: user.email, 
+        adminError, 
+        hasAdmin: !!adminUser 
+      });
       return res.status(403).json({ 
         error: 'Access denied: Admin privileges required' 
       });
     }
 
+    console.log('✅ Admin access granted:', { 
+      userId: adminUser.user_id, 
+      email: adminUser.email 
+    });
+
     // Attach admin user info to request for use in handlers
     (req as any).adminUser = adminUser;
+    (req as any).authenticatedUser = user;
     next();
   } catch (error) {
     console.error('❌ Admin authentication error:', error);
