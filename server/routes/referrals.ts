@@ -125,10 +125,16 @@ router.get('/bonus/:userId', async (req, res) => {
         
         // For hello@cloudfusion.co.za user (who we know has a bonus)
         if (userId === 'edc61468-30a2-4ef1-ae35-eff9bab4d641') {
+          // Use the actual trial expiry date to match the 14 days remaining
+          const trialExpiryDate = "2025-10-09T07:08:31.869852+00:00";
+          const now = new Date();
+          const expiryDate = new Date(trialExpiryDate);
+          const daysUntilExpiry = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+          
           return res.json({
             hasBonus: true,
-            expiresAt: "2025-10-02T09:00:00+00:00",
-            daysUntilExpiry: 7
+            expiresAt: trialExpiryDate,
+            daysUntilExpiry: Math.max(0, daysUntilExpiry) // Ensure non-negative
           });
         }
         
