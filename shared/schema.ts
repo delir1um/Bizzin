@@ -45,6 +45,8 @@ export type UserProfile = {
   // Referral system fields
   referral_code: string; // 8-char unique referral code
   referred_by_user_id?: string; // FK to users who referred this user
+  has_referral_bonus?: boolean; // true if user has pending 30-day welcome bonus
+  referral_bonus_expires_at?: string; // when the bonus expires (for urgency)
 };
 
 // Daily Email Settings Table

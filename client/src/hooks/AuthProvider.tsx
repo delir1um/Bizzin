@@ -129,6 +129,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
           }
           
+          // Set referral bonus for referred users (30-day bonus expires in 7 days)
+          const bonusExpiresAt = referredByUserId 
+            ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days from now
+            : undefined
+
           const { error: createProfileError } = await supabase
             .from('user_profiles')
             .insert({
@@ -143,6 +148,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               timezone: 'Africa/Johannesburg',
               referral_code: newUserReferralCode, // Set user's own referral code
               referred_by_user_id: referredByUserId, // Set referrer if available
+              has_referral_bonus: !!referredByUserId, // Grant bonus if referred
+              referral_bonus_expires_at: bonusExpiresAt, // Expires in 7 days for urgency
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
             })
