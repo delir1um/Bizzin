@@ -298,6 +298,14 @@ router.get('/users', requireAdmin, async (req, res) => {
             supabase.from('goals').select('*', { count: 'exact', head: true }).eq('user_id', profile.user_id).eq('status', 'completed'),
             supabase.from('documents').select('*', { count: 'exact', head: true }).eq('user_id', profile.user_id)
           ]);
+          
+          console.log(`📊 STATS DEBUG for ${profile.email}:`, {
+            journalCount,
+            goalCount,
+            completedGoals,
+            documentCount,
+            user_id: profile.user_id
+          });
 
           
           // Calculate plan information
