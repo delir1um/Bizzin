@@ -178,11 +178,18 @@ export default function AuthPage() {
         setMessage("Signup failed. Please try again or contact support if the problem persists.")
       }
     } else {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password })
       
       if (error) {
         setMessage(error.message)
-      } else {
+      } else if (signInData.user) {
+        // Check if email is verified
+        if (!signInData.user.email_confirmed_at) {
+          setMessage("Please verify your email address before signing in. Check your inbox for a verification link.")
+          // Sign out the user since they shouldn't have access without verification
+          await supabase.auth.signOut()
+          return
+        }
         setLocation("/dashboard")
       }
     }
