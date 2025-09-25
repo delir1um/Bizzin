@@ -220,9 +220,14 @@ export function AdminUserManagement() {
     mutationFn: async ({ userId, daysToAdd }: { userId: string; daysToAdd: number }) => {
       console.log('🔧 Starting trial update via admin API:', { userId, daysToAdd });
       
+      if (!session?.access_token) {
+        throw new Error('No authentication token available');
+      }
+      
       const response = await fetch(`/api/admin/trial/${userId}`, {
         method: 'PATCH',
         headers: {
+          'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ daysToAdd }),
@@ -252,9 +257,14 @@ export function AdminUserManagement() {
     mutationFn: async (userId: string) => {
       console.log('🗑️ Starting user deletion via admin API:', { userId });
       
+      if (!session?.access_token) {
+        throw new Error('No authentication token available');
+      }
+      
       const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'DELETE',
         headers: {
+          'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
         },
       });
