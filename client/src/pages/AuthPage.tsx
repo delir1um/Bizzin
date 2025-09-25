@@ -130,48 +130,28 @@ export default function AuthPage() {
 
     if (mode === "signUp") {
       try {
-        console.log('Starting signup process for:', email)
-        const { data: signUpData, error } = await supabase.auth.signUp({ 
-          email, 
-          password 
+        console.log('Starting server-side signup process for:', email)
+        
+        // Use server-side signup with beautiful email template
+        const response = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            email, 
+            password,
+            referralCode: referralCode || data.referralCode
+          })
         })
 
-        console.log('Signup response:', { data: signUpData, error })
+        const result = await response.json()
+        console.log('Server signup response:', result)
 
-        if (error) {
-          console.error('Supabase signup error details:', {
-            message: error.message,
-            status: error.status,
-            details: error
-          })
-          setMessage(`Signup failed: ${error.message}`)
-          return
-        }
-
-        if (signUpData.user) {
-          // Store referral if code provided (from form or URL) for processing during profile creation
-          const codeToProcess = referralCode || data.referralCode
-          if (codeToProcess && codeToProcess.trim()) {
-            try {
-              // Validate the code first
-              const isValid = await ReferralService.validateReferralCode(codeToProcess)
-              if (isValid) {
-                // Store referral for processing during profile creation
-                ReferralService.setPendingReferral(signUpData.user.id, codeToProcess)
-                console.log('✅ Referral code stored for user:', signUpData.user.id)
-                setMessage("Account created! Check your email for confirmation. Welcome bonus applied - you'll get 30 days free when you upgrade!")
-              } else {
-                setMessage("Account created! Check your email for confirmation. (Referral code not found)")
-              }
-            } catch (referralError) {
-              console.error('Error validating referral:', referralError)
-              setMessage("Account created! Check your email for confirmation.")
-            }
-          } else {
-            setMessage("Account created! Check your email for confirmation. Your 14-day free trial will begin when you confirm your email!")
-          }
+        if (response.ok && result.success) {
+          setMessage(result.message)
         } else {
-          setMessage("Check your email for confirmation.")
+          setMessage(result.error || "Signup failed. Please try again.")
         }
       } catch (signupError) {
         console.error('Error during signup process:', signupError)

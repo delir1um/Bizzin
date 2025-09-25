@@ -17,15 +17,20 @@ export function EmailVerificationRequired() {
     setResendMessage("")
 
     try {
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: user.email
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: user.email })
       })
 
-      if (error) {
-        setResendMessage(`Error: ${error.message}`)
-      } else {
+      const result = await response.json()
+
+      if (response.ok) {
         setResendMessage("Verification email sent! Check your inbox and spam folder.")
+      } else {
+        setResendMessage(`Error: ${result.error || "Failed to resend verification email"}`)
       }
     } catch (error) {
       setResendMessage("Failed to resend verification email. Please try again.")
