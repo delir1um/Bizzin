@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase"
 import { ReferralService } from "@/lib/services/referrals"
 import { PlansService } from "@/lib/services/plans"
 import { TrialExpiredModal } from "@/components/plans/TrialExpiredModal"
+import { queryClient } from "@/lib/queryClient"
 
 type AuthContextType = {
   user: SupabaseUser | null
@@ -71,6 +72,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!isMounted) return
+
+      // Clear React Query cache on auth state changes to ensure fresh data
+      if (event === 'SIGNED_OUT' || (!session && event === 'TOKEN_REFRESHED')) {
+        console.log('🧹 Clearing React Query cache on auth state change:', event)
+        queryClient.clear()
+      } else if (event === 'SIGNED_IN' && session?.user) {
+        console.log('🔄 Invalidating cache for new user session:', session.user.id)
+        // Invalidate user-specific caches to get fresh data
+        queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
+        queryClient.invalidateQueries({ queryKey: ['goals'] })
+        queryClient.invalidateQueries({ queryKey: ['documents'] })
+        queryClient.invalidateQueries({ queryKey: ['user-profile'] })
+      }
 
       // Check email verification for any session
       if (session?.user && !session.user.email_confirmed_at) {
