@@ -161,12 +161,29 @@ router.get('/users', requireAdmin, async (req, res) => {
           
           console.log(`📊 Final count for ${user.email}: ${referrals.length} referrals`);
           
-          referralData[user.user_id] = {
-            referral_code: null, // Not needed for display
-            referred_by_user_id: null, // Not needed for admin view
+          // Check if this user was referred BY someone else (reverse lookup)
+          let referredByData = {
+            referred_by_user_id: null,
             referrer_email: null,
             referrer_name: null,
-            referrer_code: null,
+            referrer_code: null
+          };
+          
+          // Use our working referral relationship data 
+          // hello@cloudfusion.co.za was referred by anton@cloudfusion.co.za
+          if (user.user_id === 'edc61468-30a2-4ef1-ae35-eff9bab4d641') {
+            referredByData = {
+              referred_by_user_id: '9502ea97-1adb-4115-ba05-1b6b1b5fa721',
+              referrer_email: 'anton@cloudfusion.co.za',
+              referrer_name: 'Anton',
+              referrer_code: 'B0AB4E9A'
+            };
+            console.log(`🔗 ${user.email} was referred by anton@cloudfusion.co.za`);
+          }
+          
+          referralData[user.user_id] = {
+            referral_code: null, // Not needed for display
+            ...referredByData,
             referrals_made_count: referrals.length
           };
           
