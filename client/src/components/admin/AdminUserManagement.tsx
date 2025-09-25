@@ -145,15 +145,15 @@ export function AdminUserManagement() {
         
         // Transform backend user data to match frontend UserProfile interface
         const users: UserProfile[] = result.users.map((user: any) => {
-          // Map backend stats to frontend format  
-          const journalCount = user.stats?.journal_entries || 0
-          const completedGoals = user.stats?.completed_goals || 0
-          const totalGoals = user.stats?.total_goals || 0
-          const documentsCount = user.stats?.documents || 0
+          // Backend returns flattened structure - use direct fields
+          const journalCount = user.total_journal_entries || 0
+          const completedGoals = user.completed_goals || 0
+          const totalGoals = user.total_goals || 0
+          const storageUsed = user.storage_used || 0
           
-          // Use actual plan data from backend (no more hardcoded values)
-          const planType: 'trial' | 'premium' = user.plan?.plan_type || 'trial'
-          const planStatus: 'active' | 'cancelled' | 'expired' = user.plan?.plan_status || 'active'
+          // Backend returns plan data directly (flattened structure)
+          const planType: 'trial' | 'premium' = user.plan_type || 'trial'
+          const planStatus: 'active' | 'cancelled' | 'expired' = user.plan_status || 'active'
           
           return {
             user_id: user.user_id,
@@ -164,22 +164,22 @@ export function AdminUserManagement() {
             business_name: user.business_name || '',
             plan_type: planType,
             plan_status: planStatus,
-            expires_at: user.plan?.expires_at || null,
-            trial_days_remaining: user.plan?.trial_days_remaining || null,
-            paid_member_duration: user.plan?.paid_member_duration || null,
-            is_trial: user.plan?.is_trial ?? true,
+            expires_at: user.expires_at || null,
+            trial_days_remaining: user.trial_days_remaining || null,
+            paid_member_duration: user.paid_member_duration || null,
+            is_trial: user.is_trial ?? true,
             created_at: user.created_at,
-            last_login: user.updated_at, // Using updated_at as proxy for last login
+            last_login: user.last_login || user.updated_at, // Backend provides last_login
             is_active: user.is_active ?? true,
             total_journal_entries: journalCount,
             total_goals: totalGoals,
             completed_goals: completedGoals,
-            storage_used: 0, // Could be enhanced with storage calculation
-            last_activity: user.updated_at || user.created_at,
-            // Referral information from backend
+            storage_used: storageUsed,
+            last_activity: user.last_activity || user.updated_at || user.created_at,
+            // Referral information from backend (flattened structure)
             referral_code: user.referral_code || null,
-            referred_by: user.referrals?.referred_by || null,
-            referrals_made_count: user.referrals?.referrals_made_count || 0
+            referred_by: user.referred_by || null,
+            referrals_made_count: user.referrals_made_count || 0
           }
         })
 
