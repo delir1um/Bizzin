@@ -180,93 +180,62 @@ router.get('/bonus/:userId', async (req, res) => {
   }
 });
 
-// Get user referrals (executes PostgreSQL function SQL directly)
+// Get user referrals (users that this user has referred)
 router.get('/user/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     
-    // Try RPC first, then fall back to manual data if schema cache fails
-    try {
-      const result = await supabase.rpc('get_user_referrals', { user_id_param: userId });
-      
-      if (result.error) {
-        // If RPC fails, return empty array for all users - no hardcoded data
-        console.log('RPC failed, returning empty array for userId:', userId);
-        return res.json([]);
-      }
-      
-      return res.json(result.data || []);
-    } catch (execError) {
-      console.error('SQL execution error:', execError);
+    console.log(`🔍 Getting referrals made by user: ${userId}`);
+    
+    // Get all users referred by this user
+    const { data: referredUsers, error: referralError } = await supabase
+      .from('user_profiles')
+      .select('user_id, email, full_name, created_at')
+      .eq('referred_by_user_id', userId);
+    
+    if (referralError) {
+      console.error('Error fetching user referrals:', referralError);
       return res.json([]);
     }
+    
+    console.log(`📊 Found ${referredUsers?.length || 0} referrals for user ${userId}`);
+    
+    // Format for frontend consumption
+    const formattedReferrals = (referredUsers || []).map(user => ({
+      id: user.user_id,
+      referee_email: user.email,
+      referee_name: user.full_name || user.email,
+      is_active: true, // All users in database are considered active
+      signup_date: user.created_at,
+      activation_date: user.created_at // Same as signup for simplicity
+    }));
+    
+    return res.json(formattedReferrals);
   } catch (error) {
     console.error('Error in user referrals endpoint:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Get user referral dashboard data (consistent with working APIs)
+// Get user referral dashboard data (with real referral counts)
 router.get('/dashboard/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     
-    // Try RPC first, then fall back to hardcoded data if schema cache fails
-    try {
-      const result = await supabase.rpc('get_user_referral_dashboard', { user_id_param: userId });
+    console.log(`🔍 Building real dashboard for user: ${userId}`);
+    
+    // Get user profile
+    const { data: userProfile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('email, full_name, referral_code')
+      .eq('user_id', userId)
+      .single();
       
-      if (result.error) {
-        // If RPC fails, build dashboard dynamically from user data
-        console.log('Dashboard RPC failed, building dynamic dashboard for userId:', userId);
-        
-        // Get user profile to build dynamic dashboard
-        const { data: userProfile, error: profileError } = await supabase
-          .from('user_profiles')
-          .select('email, full_name')
-          .eq('user_id', userId)
-          .single();
-          
-        if (profileError || !userProfile) {
-          console.log('User profile not found:', profileError?.message);
-          return res.json({
-            user_id: userId,
-            email: "", 
-            referral_code: "",
-            total_referrals: 0,
-            active_referrals: 0,
-            bonus_days_earned: 0,
-            bonus_days_used: 0,
-            available_bonus_days: 0,
-            plan_status: "free",
-            subscription_end_date: null,
-            referral_extension_days: 0
-          });
-        }
-        
-        // Generate dynamic referral code for this user
-        const dynamicReferralCode = generateReferralCode(userProfile.email);
-        
-        return res.json({
-          user_id: userId,
-          email: userProfile.email, 
-          referral_code: dynamicReferralCode,
-          total_referrals: 0,
-          active_referrals: 0,
-          bonus_days_earned: 0,
-          bonus_days_used: 0,
-          available_bonus_days: 0,
-          plan_status: "free",
-          subscription_end_date: null,
-          referral_extension_days: 0
-        });
-      }
-      
-      return res.json(result.data);
-    } catch (execError) {
-      console.error('Dashboard SQL execution error:', execError);
+    if (profileError || !userProfile) {
+      console.log('User profile not found:', profileError?.message);
       return res.json({
         user_id: userId,
-        email: "",
+        email: "", 
         referral_code: "",
         total_referrals: 0,
         active_referrals: 0,
@@ -278,6 +247,32 @@ router.get('/dashboard/:userId', async (req, res) => {
         referral_extension_days: 0
       });
     }
+    
+    // Get actual referral count for this user
+    const { data: referredUsers, error: referralError } = await supabase
+      .from('user_profiles')
+      .select('user_id')
+      .eq('referred_by_user_id', userId);
+    
+    const totalReferrals = referralError ? 0 : (referredUsers?.length || 0);
+    console.log(`📊 User ${userId} has ${totalReferrals} total referrals`);
+    
+    // Generate referral code if not in database
+    const referralCode = userProfile.referral_code || generateReferralCode(userProfile.email);
+    
+    return res.json({
+      user_id: userId,
+      email: userProfile.email, 
+      referral_code: referralCode,
+      total_referrals: totalReferrals,
+      active_referrals: totalReferrals, // All referred users are considered active
+      bonus_days_earned: 0,
+      bonus_days_used: 0,
+      available_bonus_days: 0,
+      plan_status: "free",
+      subscription_end_date: null,
+      referral_extension_days: 0
+    });
   } catch (error) {
     console.error('Error in referral dashboard endpoint:', error);
     res.status(500).json({ error: 'Internal server error' });
