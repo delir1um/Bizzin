@@ -128,9 +128,7 @@ router.post('/signup', async (req, res) => {
               referrer_user_id: referredByUserId,
               referred_user_id: signUpData.user.id,
               status: 'captured',
-              captured_at: now,
-              created_at: now,
-              updated_at: now
+              created_at: now
             });
 
           if (referralRecordError) {
