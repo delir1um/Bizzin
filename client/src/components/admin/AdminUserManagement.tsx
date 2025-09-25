@@ -65,6 +65,7 @@ interface UserProfile {
   storage_used: number
   last_activity: string
   // Referral information
+  referral_code: string | null // User's own referral code
   referred_by: {
     user_id: string
     email: string

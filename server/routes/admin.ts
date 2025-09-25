@@ -162,7 +162,12 @@ router.get('/users', requireAdmin, async (req, res) => {
           console.log(`📊 Final count for ${user.email}: ${referrals.length} referrals`);
           
           // Check if this user was referred BY someone else (reverse lookup)
-          let referredByData = {
+          let referredByData: {
+            referred_by_user_id: string | null,
+            referrer_email: string | null,
+            referrer_name: string | null,
+            referrer_code: string | null
+          } = {
             referred_by_user_id: null,
             referrer_email: null,
             referrer_name: null,
