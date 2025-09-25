@@ -179,7 +179,7 @@ export class ReferralService {
    */
   static async getReferralDashboard(userId: string): Promise<ReferralDashboard | null> {
     const { data, error } = await supabase
-      .from('user_referral_dashboard')
+      .from('user_referral_stats')
       .select('*')
       .eq('user_id', userId)
       .single()
