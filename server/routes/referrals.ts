@@ -145,22 +145,8 @@ router.get('/user/:userId', async (req, res) => {
       const result = await supabase.rpc('get_user_referrals', { user_id_param: userId });
       
       if (result.error) {
-        // If RPC fails, fall back to manual result
-        console.log('RPC failed, providing manual result for userId:', userId);
-        
-        // For anton@cloudfusion.co.za user (who we know has 1 referral)
-        if (userId === '9502ea97-1adb-4115-ba05-1b6b1b5fa721') {
-          return res.json([{
-            id: "de2495c0-084a-4854-9998-58ac34799586",
-            referee_email: "hello@cloudfusion.co.za",
-            is_active: true,
-            signup_date: "2025-09-25T09:00:00+00:00",
-            activation_date: null,
-            deactivation_date: null
-          }]);
-        }
-        
-        // For other users, return empty array
+        // If RPC fails, return empty array for all users - no hardcoded data
+        console.log('RPC failed, returning empty array for userId:', userId);
         return res.json([]);
       }
       
@@ -185,31 +171,40 @@ router.get('/dashboard/:userId', async (req, res) => {
       const result = await supabase.rpc('get_user_referral_dashboard', { user_id_param: userId });
       
       if (result.error) {
-        // If RPC fails, fall back to hardcoded result
-        console.log('Dashboard RPC failed, providing hardcoded result for userId:', userId);
+        // If RPC fails, build dashboard dynamically from user data
+        console.log('Dashboard RPC failed, building dynamic dashboard for userId:', userId);
         
-        // For anton@cloudfusion.co.za user (who we know has dashboard data)
-        if (userId === '9502ea97-1adb-4115-ba05-1b6b1b5fa721') {
+        // Get user profile to build dynamic dashboard
+        const { data: userProfile, error: profileError } = await supabase
+          .from('user_profiles')
+          .select('email, full_name')
+          .eq('user_id', userId)
+          .single();
+          
+        if (profileError || !userProfile) {
+          console.log('User profile not found:', profileError?.message);
           return res.json({
             user_id: userId,
-            email: "anton@cloudfusion.co.za", 
-            referral_code: "B0AB4E9A",
-            total_referrals: 1,
-            active_referrals: 1,
+            email: "", 
+            referral_code: "",
+            total_referrals: 0,
+            active_referrals: 0,
             bonus_days_earned: 0,
             bonus_days_used: 0,
             available_bonus_days: 0,
-            plan_status: "premium",
-            subscription_end_date: "2025-10-07T08:55:31.932257+00:00",
+            plan_status: "free",
+            subscription_end_date: null,
             referral_extension_days: 0
           });
         }
         
-        // For other users, return empty dashboard
+        // Generate dynamic referral code for this user
+        const dynamicReferralCode = generateReferralCode(userProfile.email);
+        
         return res.json({
           user_id: userId,
-          email: "", 
-          referral_code: "",
+          email: userProfile.email, 
+          referral_code: dynamicReferralCode,
           total_referrals: 0,
           active_referrals: 0,
           bonus_days_earned: 0,
