@@ -102,6 +102,10 @@ app.use((req, res, next) => {
   const referralsRoutes = await import('./routes/referrals.js');
   app.use('/api/referrals', referralsRoutes.default);
   
+  // Add Auth API routes - server-side signup with custom email verification
+  const authRoutes = await import('./routes/auth.js');
+  app.use('/api/auth', authRoutes.default);
+  
   // Add Plans API routes - user billing and subscription management
   const plansRoutes = await import('./routes/plans.js');
   app.use('/api/plans', plansRoutes.default);
