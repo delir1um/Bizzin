@@ -4,6 +4,18 @@ import { simpleEmailScheduler } from '../services/SimpleEmailScheduler.js';
 
 const router = express.Router();
 
+// Generate a unique referral code for a user
+function generateReferralCode(email: string): string {
+  // Create a hash from email and timestamp for uniqueness
+  const baseString = email.toLowerCase().replace(/[^a-z0-9]/g, '')
+  const timestamp = Date.now().toString(36)
+  const randomPart = Math.random().toString(36).substring(2, 8)
+  
+  // Take first 4 chars from email, 4 from timestamp, 2 random
+  const code = (baseString.substring(0, 4) + timestamp.slice(-4) + randomPart.substring(0, 2)).toUpperCase()
+  return code
+}
+
 // Server-side signup route with custom email verification
 router.post('/signup', async (req, res) => {
   try {
@@ -51,18 +63,85 @@ router.post('/signup', async (req, res) => {
 
     console.log('✅ User created successfully via admin API:', signUpData.user.id);
 
-    // Store referral code for processing during profile creation if valid
+    // Process referral and create user profile atomically if valid referral code
+    let referredByUserId: string | undefined;
+    let userReferralCode: string = '';
+    
     if (referralCode && isValidReferral) {
       try {
-        // Store the pending referral in a simple way for the auth provider to pick up
-        const tempStorage: Map<string, string> = (globalThis as any).pendingReferrals || new Map();
-        tempStorage.set(signUpData.user.id, referralCode);
-        (globalThis as any).pendingReferrals = tempStorage;
-        console.log('✅ Referral code stored for user:', signUpData.user.id);
+        // Get referrer user ID
+        const { data: referrer } = await supabase
+          .from('user_profiles')
+          .select('user_id')
+          .eq('referral_code', referralCode.trim().toUpperCase())
+          .single();
+
+        if (referrer && referrer.user_id !== signUpData.user.id) {
+          referredByUserId = referrer.user_id;
+          console.log('✅ Found valid referrer:', referredByUserId);
+        } else {
+          console.warn('Self-referral blocked or referrer not found');
+        }
       } catch (referralError) {
-        console.error('Error storing referral code:', referralError);
-        // Continue with signup even if referral storage fails
+        console.error('Error processing referral:', referralError);
       }
+    }
+
+    // Generate referral code for new user
+    userReferralCode = generateReferralCode(email);
+
+    // Create user profile with referral data
+    try {
+      const now = new Date().toISOString();
+      const bonusExpiresAt = referredByUserId 
+        ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+        : undefined;
+
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .insert({
+          user_id: signUpData.user.id,
+          email: email,
+          full_name: email.split('@')[0],
+          email_notifications: true,
+          daily_email: false,
+          daily_email_time: '08:00',
+          timezone: 'Africa/Johannesburg',
+          referral_code: userReferralCode,
+          referred_by_user_id: referredByUserId,
+          has_referral_bonus: !!referredByUserId,
+          referral_bonus_expires_at: bonusExpiresAt,
+          created_at: now,
+          updated_at: now
+        });
+
+      if (profileError) {
+        console.error('❌ Failed to create user profile:', profileError);
+      } else {
+        console.log('✅ User profile created with referral code:', userReferralCode);
+
+        // Create referral record if user was referred
+        if (referredByUserId) {
+          const { error: referralRecordError } = await supabase
+            .from('referrals')
+            .insert({
+              referrer_user_id: referredByUserId,
+              referred_user_id: signUpData.user.id,
+              status: 'captured',
+              captured_at: now,
+              created_at: now,
+              updated_at: now
+            });
+
+          if (referralRecordError) {
+            console.error('❌ Failed to create referral record:', referralRecordError);
+          } else {
+            console.log('✅ Referral record created successfully');
+          }
+        }
+      }
+    } catch (profileCreationError) {
+      console.error('❌ Error creating user profile and referral data:', profileCreationError);
     }
 
     // Generate email confirmation link using admin API

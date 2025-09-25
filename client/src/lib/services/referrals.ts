@@ -114,7 +114,7 @@ export class ReferralService {
     const randomPart = Math.random().toString(36).substring(2, 8)
     
     // Take first 4 chars from email, 4 from timestamp, 2 random
-    const code = (baseString.substring(0, 4) + timestamp.substring(-4) + randomPart.substring(0, 2)).toUpperCase()
+    const code = (baseString.substring(0, 4) + timestamp.slice(-4) + randomPart.substring(0, 2)).toUpperCase()
     return code
   }
 

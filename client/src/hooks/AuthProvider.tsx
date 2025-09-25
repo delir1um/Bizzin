@@ -101,93 +101,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .maybeSingle()
         
         if (!existingProfile && !profileCheckError) {
-          // Profile doesn't exist, create it
-          console.log('Creating user profile for new user:', user.id)
-          
-          // Generate referral code for this new user first
-          const newUserReferralCode = ReferralService.generateReferralCode(user.email!)
-          
-          // Check for pending referral data
-          const pendingReferralCode = ReferralService.consumePendingReferral(user.id)
-          let referredByUserId: string | undefined
-          let shouldRetryPendingReferral = false
-          
-          if (pendingReferralCode) {
-            console.log('Processing pending referral:', pendingReferralCode)
-            
-            // Prevent self-referral
-            if (pendingReferralCode === newUserReferralCode) {
-              console.error('Self-referral attempt blocked:', pendingReferralCode)
-            } else {
-              const referrerId = await ReferralService.getReferrerUserId(pendingReferralCode)
-              if (referrerId && referrerId !== user.id) {
-                referredByUserId = referrerId
-                console.log('Found valid referrer:', referredByUserId)
-              } else if (referrerId === user.id) {
-                console.error('Self-referral blocked - referrer same as new user')
-              }
-            }
-          }
-          
-          // Set referral bonus for referred users (30-day bonus expires in 7 days)
-          const bonusExpiresAt = referredByUserId 
-            ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days from now
-            : undefined
-
-          const { error: createProfileError } = await supabase
-            .from('user_profiles')
-            .insert({
-              user_id: user.id,
-              email: user.email!,
-              first_name: user.user_metadata?.first_name || '',
-              last_name: user.user_metadata?.last_name || '',
-              full_name: user.user_metadata?.full_name || user.email!.split('@')[0],
-              email_notifications: true,
-              daily_email: false,
-              daily_email_time: '08:00',
-              timezone: 'Africa/Johannesburg',
-              referral_code: newUserReferralCode, // Set user's own referral code
-              referred_by_user_id: referredByUserId, // Set referrer if available
-              has_referral_bonus: !!referredByUserId, // Grant bonus if referred
-              referral_bonus_expires_at: bonusExpiresAt, // Expires in 7 days for urgency
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            })
-          
-          if (createProfileError) {
-            console.error('Failed to create user profile:', createProfileError)
-            // Restore pending referral for retry if profile creation failed
-            if (pendingReferralCode) {
-              ReferralService.setPendingReferral(user.id, pendingReferralCode)
-              shouldRetryPendingReferral = true
-            }
-          } else {
-            console.log('User profile created successfully with referral code:', newUserReferralCode)
-            
-            // Complete referral processing if we had a referrer
-            if (referredByUserId) {
-              try {
-                const success = await ReferralService.completeReferralSignup(user.id, referredByUserId)
-                if (success) {
-                  console.log('Referral processing completed successfully')
-                } else {
-                  console.error('Failed to complete referral processing')
-                  // Restore pending referral for retry
-                  if (pendingReferralCode) {
-                    ReferralService.setPendingReferral(user.id, pendingReferralCode)
-                    shouldRetryPendingReferral = true
-                  }
-                }
-              } catch (error) {
-                console.error('Error completing referral:', error)
-                // Restore pending referral for retry
-                if (pendingReferralCode) {
-                  ReferralService.setPendingReferral(user.id, pendingReferralCode)
-                  shouldRetryPendingReferral = true
-                }
-              }
-            }
-          }
+          // Profile should have been created by server during signup
+          // If it doesn't exist, there might be a server-side issue
+          console.warn('User profile not found after signup - this should have been created server-side')
         }
         
         // Check if user plan exists
