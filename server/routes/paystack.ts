@@ -292,6 +292,7 @@ const handleChargeSuccess = async (data: any) => {
 
   await recordPaymentTransaction(userId, data, 'success');
   await updateUserPlanStatus(userId, 'active', data);
+  
   // Process referral bonuses if user was referred
   try {
     const { ReferralBonusService } = await import("../services/referrals.js");
@@ -309,6 +310,23 @@ const handleChargeSuccess = async (data: any) => {
   } catch (referralError) {
     console.error("Failed to process referral bonuses:", referralError);
     // Don't fail the webhook processing because of referral issues
+  }
+
+  // Apply referral bonus (30-day extension) if user has one
+  try {
+    const { ReferralBonusService } = await import("../services/referrals.js");
+    const bonusResult = await ReferralBonusService.applyReferralBonus(userId);
+    
+    if (bonusResult.success && bonusResult.bonusApplied) {
+      console.log(`🎁 Applied ${bonusResult.daysExtended}-day referral bonus to user: ${userId}`);
+    } else if (!bonusResult.bonusApplied) {
+      console.log("ℹ️ No referral bonus to apply for user:", userId);
+    } else if (!bonusResult.success) {
+      console.error("❌ Failed to apply referral bonus:", bonusResult.error);
+    }
+  } catch (bonusError) {
+    console.error("Failed to apply referral bonus:", bonusError);
+    // Don't fail the webhook processing because of bonus issues
   }
 
   

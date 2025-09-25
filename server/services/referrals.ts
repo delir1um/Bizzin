@@ -187,6 +187,108 @@ export class ReferralBonusService {
   }
 
   /**
+   * Apply referral bonus to extend user subscription
+   */
+  static async applyReferralBonus(userId: string): Promise<{
+    success: boolean;
+    bonusApplied: boolean;
+    daysExtended: number;
+    error?: string;
+  }> {
+    try {
+      console.log(`🎁 Applying referral bonus for user: ${userId}`);
+
+      // Check if user has a pending referral bonus
+      const { data: userProfile, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('has_referral_bonus, referral_bonus_expires_at')
+        .eq('user_id', userId)
+        .single();
+
+      if (profileError || !userProfile) {
+        console.log('User profile not found or error accessing it');
+        return { success: true, bonusApplied: false, daysExtended: 0 };
+      }
+
+      // Check if bonus is available and not expired
+      if (!userProfile.has_referral_bonus || !userProfile.referral_bonus_expires_at) {
+        console.log('No referral bonus available for user');
+        return { success: true, bonusApplied: false, daysExtended: 0 };
+      }
+
+      const now = new Date();
+      const expiryDate = new Date(userProfile.referral_bonus_expires_at);
+      
+      if (expiryDate <= now) {
+        console.log('Referral bonus has expired');
+        return { success: true, bonusApplied: false, daysExtended: 0 };
+      }
+
+      // Apply the 30-day bonus by extending the subscription
+      const { data: userPlan, error: planError } = await supabase
+        .from('user_plans')
+        .select('expires_at, next_payment_date')
+        .eq('user_id', userId)
+        .single();
+
+      if (planError || !userPlan) {
+        console.error('Error fetching user plan:', planError);
+        return { success: false, bonusApplied: false, daysExtended: 0, error: 'User plan not found' };
+      }
+
+      // Calculate new dates with 30-day extension
+      const currentNextPayment = new Date(userPlan.next_payment_date || Date.now() + 30 * 24 * 60 * 60 * 1000);
+      const extendedNextPayment = new Date(currentNextPayment.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+      // Update user plan with extended dates
+      const { error: updatePlanError } = await supabase
+        .from('user_plans')
+        .update({
+          next_payment_date: extendedNextPayment.toISOString(),
+          updated_at: now.toISOString()
+        })
+        .eq('user_id', userId);
+
+      if (updatePlanError) {
+        console.error('Error updating user plan with bonus:', updatePlanError);
+        return { success: false, bonusApplied: false, daysExtended: 0, error: 'Failed to extend subscription' };
+      }
+
+      // Clear the referral bonus flags
+      const { error: clearBonusError } = await supabase
+        .from('user_profiles')
+        .update({
+          has_referral_bonus: false,
+          referral_bonus_expires_at: null,
+          updated_at: now.toISOString()
+        })
+        .eq('user_id', userId);
+
+      if (clearBonusError) {
+        console.warn('Warning: Failed to clear referral bonus flags:', clearBonusError);
+        // Don't fail the entire operation for this
+      }
+
+      console.log(`🎉 Successfully applied 30-day referral bonus to user ${userId}`);
+      
+      return {
+        success: true,
+        bonusApplied: true,
+        daysExtended: 30
+      };
+
+    } catch (error) {
+      console.error('Error applying referral bonus:', error);
+      return {
+        success: false,
+        bonusApplied: false,
+        daysExtended: 0,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  /**
    * Get referral conversion status for a user
    */
   static async getConversionStatus(userId: string): Promise<{
