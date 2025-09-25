@@ -57,6 +57,7 @@ interface UserProfile {
   trial_days_remaining: number | null
   paid_member_duration: number | null
   is_trial: boolean
+  is_admin: boolean
   created_at: string
   last_login: string
   is_active: boolean
@@ -168,6 +169,7 @@ export function AdminUserManagement() {
             trial_days_remaining: user.trial_days_remaining || null,
             paid_member_duration: user.paid_member_duration || null,
             is_trial: user.is_trial ?? true,
+            is_admin: user.is_admin ?? false,
             created_at: user.created_at,
             last_login: user.last_login || user.updated_at, // Backend provides last_login
             is_active: user.is_active ?? true,
