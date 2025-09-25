@@ -105,14 +105,29 @@ router.get('/users', requireAdmin, async (req, res) => {
       console.log('🔍 Fetching referral data with fallback approach...');
       
       // First, get all users with their referral codes and referred_by_user_id
-      const { data: allUsers, error: usersError } = await supabase
+      let { data: allUsers, error: usersError } = await supabase
         .from('user_profiles')
         .select('user_id, referral_code, referred_by_user_id, email, full_name');
 
+      // If the referral_code query fails, try without it first
       if (usersError) {
         console.error('Error fetching users for referral data:', usersError);
-        // Continue with empty referral data instead of failing
-      } else if (allUsers) {
+        console.log('🔄 Trying fallback query without referral_code...');
+        
+        const { data: fallbackUsers, error: fallbackError } = await supabase
+          .from('user_profiles')
+          .select('user_id, referred_by_user_id, email, full_name');
+          
+        if (!fallbackError && fallbackUsers) {
+          // Add empty referral_code for fallback users
+          allUsers = fallbackUsers.map(user => ({ ...user, referral_code: null }));
+          console.log('✅ Using fallback query results');
+        } else {
+          console.error('❌ Fallback query also failed:', fallbackError);
+        }
+      }
+
+      if (allUsers) {
         console.log(`🔍 Got ${allUsers.length} users for referral processing`);
         
         // Create lookup map for user info

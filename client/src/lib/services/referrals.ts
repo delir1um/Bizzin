@@ -196,7 +196,8 @@ export class ReferralService {
    * Get list of user's referrals using new schema
    */
   static async getUserReferrals(userId: string): Promise<ReferralEntry[]> {
-    const { data, error } = await supabase
+    // First try the query with foreign key relationship
+    let { data, error } = await supabase
       .from('referrals')
       .select(`
         id,
@@ -209,10 +210,47 @@ export class ReferralService {
       .eq('referrer_user_id', userId)
       .order('created_at', { ascending: false })
 
+    // If foreign key relationship fails, do manual lookup
     if (error) {
       console.error('Error fetching user referrals:', error)
-      return []
+      
+      // Try without foreign key relationship
+      const { data: referralsData, error: referralsError } = await supabase
+        .from('referrals')
+        .select(`
+          id,
+          referred_user_id,
+          status,
+          created_at,
+          converted_at
+        `)
+        .eq('referrer_user_id', userId)
+        .order('created_at', { ascending: false })
+
+      if (referralsError || !referralsData) {
+        console.error('Error fetching referrals fallback:', referralsError)
+        return []
+      }
+
+      // Manually get user emails
+      const userIds = referralsData.map(ref => ref.referred_user_id)
+      const { data: users } = await supabase
+        .from('user_profiles')
+        .select('user_id, email')
+        .in('user_id', userIds)
+
+      const userLookup = (users || []).reduce((acc, user) => {
+        acc[user.user_id] = user.email
+        return acc
+      }, {} as Record<string, string>)
+
+      data = referralsData.map(referral => ({
+        ...referral,
+        user_profiles: { email: userLookup[referral.referred_user_id] } as any
+      }))
     }
+
+    if (!data) return []
 
     // Map to ReferralEntry format
     return data.map(referral => ({
