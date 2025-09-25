@@ -11,15 +11,31 @@ import {
 const router = express.Router();
 
 // Generate a unique referral code for a user (copied from auth.ts)
+// UNIFIED REFERRAL CODE GENERATION SYSTEM
+// This function generates consistent, stable referral codes that never change for a given email
+// IMPORTANT: This must match the generation system in referrals.ts and client services
 function generateReferralCode(email: string): string {
-  // Create a hash from email and timestamp for uniqueness
-  const baseString = email.toLowerCase().replace(/[^a-z0-9]/g, '')
-  const timestamp = Date.now().toString(36)
-  const randomPart = Math.random().toString(36).substring(2, 8)
+  const cleanEmail = email.toLowerCase().replace(/[^a-z0-9]/g, '');
   
-  // Take first 4 chars from email, 4 from timestamp, 2 random
-  const code = (baseString.substring(0, 4) + timestamp.slice(-4) + randomPart.substring(0, 2)).toUpperCase()
-  return code
+  // Create a consistent hash using the same algorithm as other systems
+  let hash = 0;
+  for (let i = 0; i < cleanEmail.length; i++) {
+    const char = cleanEmail.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  
+  // Convert to positive number and create deterministic code
+  const positiveHash = Math.abs(hash);
+  const codeBase = positiveHash.toString(36).toUpperCase();
+  
+  // Create exactly 10-character code by taking first 4 chars of email + 6 chars from hash
+  const emailPrefix = cleanEmail.substring(0, 4).toUpperCase().padEnd(4, '0');
+  const hashSuffix = codeBase.length >= 6 ? codeBase.substring(0, 6) : codeBase.padStart(6, '0');
+  
+  const finalCode = emailPrefix + hashSuffix;
+  console.log(`🔧 [ADMIN] Generated consistent referral code for ${email}: ${finalCode}`);
+  return finalCode;
 }
 
 // Admin authentication middleware

@@ -49,10 +49,10 @@ router.get('/validate/:code', async (req, res) => {
     
     // Real referral codes confirmed from database (legacy system)
     const confirmedReferrals = [
-      { user_id: '9d722107-cfe5-45e1-827a-b9c4f26af884', email: 'admin@example.com', legacy_code: 'ADMI0249EX', name: 'Admin Example' },
-      { user_id: '9502ea97-1adb-4115-ba05-1b6b1b5fa721', email: 'anton@cloudfusion.co.za', legacy_code: 'B0AB4E9A', name: 'Anton CloudFusion' },
-      { user_id: '83a990b5-0ee1-4db6-8b6d-f3f430b7caf6', email: 'coopzbren@gmail.com', legacy_code: 'COOP0249GM', name: 'Coop Gmail' },
-      { user_id: 'edc61468-30a2-4ef1-ae35-eff9bab4d641', email: 'hello@cloudfusion.co.za', legacy_code: 'HELL0250AM', name: 'Hello CloudFusion' },
+      { user_id: '9d722107-cfe5-45e1-827a-b9c4f26af884', email: 'admin@example.com', legacy_code: 'ADMI0249EX', name: 'Admin User' },
+      { user_id: '9502ea97-1adb-4115-ba05-1b6b1b5fa721', email: 'anton@cloudfusion.co.za', legacy_code: 'B0AB4E9A', name: 'Anton Bosch' },
+      { user_id: '83a990b5-0ee1-4db6-8b6d-f3f430b7caf6', email: 'coopzbren@gmail.com', legacy_code: 'COOP0249GM', name: 'Cooper Brennan' },
+      { user_id: 'edc61468-30a2-4ef1-ae35-eff9bab4d641', email: 'hello@cloudfusion.co.za', legacy_code: 'HELL0250AM', name: 'Hello User' },
       { user_id: '9fd5beae-b30f-4656-a3e1-3ffa1874c0eb', email: 'info@cloudfusion.co.za', legacy_code: 'INFO0249CF', name: 'Info CloudFusion' }
     ];
 
@@ -92,7 +92,7 @@ router.get('/validate/:code', async (req, res) => {
         referrer: {
           user_id: userProfile.user_id,
           email: userProfile.email,
-          name: userProfile.full_name || userProfile.email.split('@')[0]
+          name: userProfile.name || userProfile.email.split('@')[0]
         }
       });
     }
@@ -101,40 +101,6 @@ router.get('/validate/:code', async (req, res) => {
     console.log('❌ Referral code not found:', searchCode);
     return res.json({ valid: false, error: 'Referral code not found' });
 
-    // Check if the code matches any generated referral code
-    for (const user of allUsers || []) {
-      const generatedCode = generateReferralCode(user.email);
-      
-      if (generatedCode === searchCode) {
-        console.log('✅ Valid referral code found (generated):', { 
-          code: searchCode, 
-          referrer: user.email,
-          generated: true 
-        });
-
-        // Update the user's referral_code in the database if it's not set
-        if (!user.referral_code) {
-          await supabase
-            .from('user_profiles')
-            .update({ referral_code: generatedCode })
-            .eq('user_id', user.user_id);
-        }
-        
-        return res.json({ 
-          valid: true, 
-          referrer: {
-            user_id: user.user_id,
-            email: user.email,
-            name: user.full_name || user.email.split('@')[0]
-          }
-        });
-      }
-    }
-
-    console.log('❌ Referral code not found:', searchCode);
-    console.log('📝 Available codes in database:', (allUsers || []).map(u => u.referral_code || generateReferralCode(u.email)));
-    
-    return res.json({ valid: false, error: 'Referral code not found' });
 
   } catch (error) {
     console.error('💥 Error validating referral code:', error);
