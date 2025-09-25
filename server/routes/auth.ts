@@ -132,7 +132,6 @@ router.post('/signup', async (req, res) => {
           timezone: 'Africa/Johannesburg',
           referral_code: userReferralCode,
           referred_by_user_id: referredByUserId,
-          has_referral_bonus: !!referredByUserId,
           referral_bonus_expires_at: bonusExpiresAt,
           created_at: now,
           updated_at: now
