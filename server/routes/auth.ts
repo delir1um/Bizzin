@@ -222,101 +222,50 @@ router.post('/signup', async (req, res) => {
     // Set expiration to 24 hours from now
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
-    // Store pending signup - try direct PostgreSQL first due to schema cache issues
-    console.log('🔧 Attempting direct PostgreSQL insert to bypass Supabase cache issues...');
+    // Store pending signup using Supabase client
+    console.log('🔧 Creating pending signup via Supabase client...');
     
-    try {
-      // Use direct PostgreSQL insert to bypass schema cache problems - inline SQL values
-      const insertResult = await supabase.rpc('exec_sql', {
-        sql_query: `
-          INSERT INTO pending_signups (
-            email, password_hash, referral_code, verification_token, 
-            first_name, last_name, verified, expires_at, attempts
-          ) VALUES (
-            '${email.toLowerCase()}', 
-            '${passwordHash}', 
-            ${referralCode && isValidReferral ? `'${referralCode.trim().toUpperCase()}'` : 'NULL'}, 
-            '${verificationToken}', 
-            ${first_name?.trim() ? `'${first_name.trim().replace(/'/g, "''")}'` : 'NULL'}, 
-            ${last_name?.trim() ? `'${last_name.trim().replace(/'/g, "''")}'` : 'NULL'}, 
-            false, 
-            '${expiresAt}', 
-            0
-          ) 
-          RETURNING id, email, created_at
-        `
+    const { data: pendingSignupData, error: pendingError } = await supabase
+      .from('pending_signups')
+      .insert({
+        email: email.toLowerCase(),
+        password_hash: passwordHash,
+        referral_code: referralCode && isValidReferral ? referralCode.trim().toUpperCase() : null,
+        verification_token: verificationToken,
+        first_name: first_name?.trim() || null,
+        last_name: last_name?.trim() || null,
+        verified: false,
+        expires_at: expiresAt,
+        attempts: 0
+      })
+      .select('id, email, created_at');
+    
+    const pendingSignup = pendingSignupData?.[0];
+
+    if (pendingError) {
+      console.error('❌ Failed to create pending signup:', {
+        error: pendingError,
+        errorCode: pendingError?.code,
+        errorMessage: pendingError?.message,
+        errorDetails: pendingError?.details,
+        errorHint: pendingError?.hint,
+        fullError: JSON.stringify(pendingError, null, 2)
       });
-
-      if (insertResult.error) {
-        throw new Error(`PostgreSQL insert failed: ${JSON.stringify(insertResult.error)}`);
-      }
-
-      console.log('🔍 PostgreSQL insert result structure:', JSON.stringify(insertResult, null, 2));
-
-      if (!insertResult.data || insertResult.data.length === 0) {
-        throw new Error('No data returned from PostgreSQL insert');
-      }
-
-      // Check what the actual structure is
-      const resultItem = insertResult.data[0];
-      console.log('🔍 First result item:', JSON.stringify(resultItem, null, 2));
-
-      // Try to access the data correctly based on the exec_sql function structure
-      let pendingSignup;
-      if (resultItem && resultItem.result) {
-        pendingSignup = resultItem.result;
-      } else if (resultItem) {
-        // If result is directly in the item itself
-        pendingSignup = resultItem;
-      } else {
-        throw new Error('Could not parse PostgreSQL insert result');
-      }
-
-      console.log('✅ Direct PostgreSQL insert successful:', pendingSignup);
-
-    } catch (directInsertError) {
-      console.error('❌ Direct PostgreSQL insert failed, trying Supabase client...', directInsertError);
-      
-      // Fallback to Supabase client with better debugging
-      const { data: pendingSignup, error: pendingError } = await supabase
-        .from('pending_signups')
-        .insert({
-          email: email.toLowerCase(),
-          password_hash: passwordHash,
-          referral_code: referralCode && isValidReferral ? referralCode.trim().toUpperCase() : null,
-          verification_token: verificationToken,
-          first_name: first_name?.trim() || null,
-          last_name: last_name?.trim() || null,
-          verified: false,
-          expires_at: expiresAt,
-          attempts: 0
-        })
-        .select('id, email, created_at')
-        .single();
-
-      if (pendingError) {
-        console.error('❌ Failed to create pending signup:', {
-          error: pendingError,
-          errorCode: pendingError?.code,
-          errorMessage: pendingError?.message,
-          errorDetails: pendingError?.details,
-          hasKeys: Object.keys(pendingError || {}).length > 0
-        });
-        return res.status(500).json({ 
-          error: 'Failed to process signup request - database insert error',
-          debug: process.env.NODE_ENV === 'development' ? {
-            supabaseError: pendingError,
-            directInsertError: directInsertError.message
-          } : undefined
-        });
-      }
-
-      if (!pendingSignup) {
-        return res.status(500).json({ error: 'Failed to create pending signup - no data returned' });
-      }
-      
-      console.log('✅ Pending signup created via Supabase client:', pendingSignup.id);
+      return res.status(500).json({ 
+        error: 'Failed to process signup request - database insert error',
+        debug: process.env.NODE_ENV === 'development' ? {
+          supabaseError: pendingError,
+          errorMessage: pendingError?.message || 'No error message available',
+          errorCode: pendingError?.code || 'No error code available'
+        } : undefined
+      });
     }
+
+    if (!pendingSignup) {
+      return res.status(500).json({ error: 'Failed to create pending signup - no data returned' });
+    }
+    
+    console.log('✅ Pending signup created successfully:', pendingSignup.id);
     
     console.log('✅ Pending signup process completed successfully');
 
@@ -355,7 +304,7 @@ router.post('/signup', async (req, res) => {
       console.error(`❌ Failed to send verification email to ${email}`);
       
       // Clean up pending signup if email fails
-      await supabase.from('pending_signups').delete().eq('id', pendingSignup.id);
+      await supabase.from('pending_signups').delete().eq('verification_token', verificationToken);
       
       res.status(500).json({ error: 'Failed to send verification email. Please try again.' });
     }
