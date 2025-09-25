@@ -33,6 +33,12 @@ export interface ReferralDashboard {
   referral_extension_days: number
 }
 
+export interface ReferralBonus {
+  hasBonus: boolean
+  expiresAt: string | null
+  daysUntilExpiry: number | null
+}
+
 export class ReferralService {
   private static readonly PENDING_REFERRAL_KEY = 'pendingReferral'
   private static readonly TEMP_REFERRAL_KEY = 'tempReferralCode'
@@ -390,6 +396,50 @@ export class ReferralService {
     }
   }
 
+
+  /**
+   * Check if user has a pending referral bonus
+   */
+  static async getUserReferralBonus(userId: string): Promise<ReferralBonus> {
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('has_referral_bonus, referral_bonus_expires_at')
+        .eq('user_id', userId)
+        .single()
+
+      if (error || !data) {
+        return { hasBonus: false, expiresAt: null, daysUntilExpiry: null }
+      }
+
+      const hasBonus = data.has_referral_bonus && data.referral_bonus_expires_at
+
+      if (!hasBonus || !data.referral_bonus_expires_at) {
+        return { hasBonus: false, expiresAt: null, daysUntilExpiry: null }
+      }
+
+      const expiresAt = data.referral_bonus_expires_at
+      const now = new Date()
+      const expiryDate = new Date(expiresAt)
+      
+      // Check if bonus has expired
+      if (expiryDate <= now) {
+        return { hasBonus: false, expiresAt, daysUntilExpiry: 0 }
+      }
+
+      // Calculate days until expiry
+      const daysUntilExpiry = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+
+      return {
+        hasBonus: true,
+        expiresAt,
+        daysUntilExpiry
+      }
+    } catch (error) {
+      console.error('Error checking referral bonus:', error)
+      return { hasBonus: false, expiresAt: null, daysUntilExpiry: null }
+    }
+  }
 
   /**
    * Initialize referral stats with a specific referral code (for consistency with user_profiles)

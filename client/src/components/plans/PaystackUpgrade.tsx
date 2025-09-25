@@ -1,11 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { usePaystackPayment } from 'react-paystack'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, Crown, Check, CreditCard } from 'lucide-react'
+import { Loader2, Crown, Check, CreditCard, Gift, Timer } from 'lucide-react'
 import { PaystackService, type PaystackResponse } from '@/lib/services/paystack'
+import { ReferralService, type ReferralBonus } from '@/lib/services/referrals'
 import { useAuth } from '@/hooks/AuthProvider'
 import { useToast } from '@/hooks/use-toast'
 import { usePlans } from '@/hooks/usePlans'
@@ -18,6 +19,15 @@ export function PaystackUpgrade() {
   const queryClient = useQueryClient()
   const { isTrial, isPremium } = usePlans()
 
+  // Query for referral bonus status
+  const { data: referralBonus } = useQuery({
+    queryKey: ['referral-bonus', user?.id],
+    queryFn: () => user ? ReferralService.getUserReferralBonus(user.id) : null,
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+  })
+
   const upgradeMutation = useMutation({
     mutationFn: async (response: PaystackResponse) => {
       const success = await PaystackService.handlePaymentSuccess(response)
@@ -26,11 +36,12 @@ export function PaystackUpgrade() {
     },
     onSuccess: () => {
       // queryClient.invalidateQueries({ queryKey: ['usage-status'] }) // Disabled to prevent HEAD requests
+      const bonusMessage = referralBonus?.hasBonus ? " Plus you got your 30-day referral bonus!" : ""
       toast({
         title: "Welcome to Premium!",
         description: isTrial 
-          ? "Your trial has been converted to premium! Any remaining trial time has been added as bonus days. Enjoy unlimited access to all features."
-          : "Your account has been successfully upgraded. Enjoy unlimited access to all features.",
+          ? `Your trial has been converted to premium! Any remaining trial time has been added as bonus days.${bonusMessage} Enjoy unlimited access to all features.`
+          : `Your account has been successfully upgraded.${bonusMessage} Enjoy unlimited access to all features.`,
       })
     },
     onError: (error: any) => {
@@ -125,7 +136,32 @@ export function PaystackUpgrade() {
 
   return (
     <div className="space-y-6">
-
+      {/* Referral Bonus Banner */}
+      {referralBonus?.hasBonus && (
+        <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-green-200 dark:border-green-800">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                <Gift className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-green-800 dark:text-green-200">
+                  🎉 Welcome Bonus Active!
+                </h3>
+                <p className="text-sm text-green-700 dark:text-green-300">
+                  Get your first 30 days FREE when you upgrade now
+                  {referralBonus.daysUntilExpiry && referralBonus.daysUntilExpiry > 0 && (
+                    <span className="ml-2 inline-flex items-center gap-1">
+                      <Timer className="w-3 h-3" />
+                      {referralBonus.daysUntilExpiry} day{referralBonus.daysUntilExpiry !== 1 ? 's' : ''} left to claim
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Billing Toggle */}
       <div className="flex flex-col items-center space-y-3">
@@ -167,13 +203,30 @@ export function PaystackUpgrade() {
           <CardTitle className="text-2xl text-slate-900 dark:text-white">
             Premium {selectedPlan === 'annual' ? 'Annual' : 'Monthly'}
           </CardTitle>
-          <div className="text-4xl font-bold text-orange-600 dark:text-orange-400">
-            {PaystackService.formatAmount(selectedPlan === 'annual' ? annualPrice : monthlyPrice)}
-            <span className="text-lg font-normal text-slate-600 dark:text-slate-400">
-              /{selectedPlan === 'annual' ? 'year' : 'month'}
-            </span>
-          </div>
-          {selectedPlan === 'annual' && (
+          {referralBonus?.hasBonus ? (
+            <div className="space-y-2">
+              <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+                First 30 Days FREE
+              </div>
+              <div className="text-xl text-slate-600 dark:text-slate-400">
+                Then {PaystackService.formatAmount(selectedPlan === 'annual' ? annualPrice : monthlyPrice)}
+                <span className="text-sm">
+                  /{selectedPlan === 'annual' ? 'year' : 'month'}
+                </span>
+              </div>
+              <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                Your referral bonus!
+              </Badge>
+            </div>
+          ) : (
+            <div className="text-4xl font-bold text-orange-600 dark:text-orange-400">
+              {PaystackService.formatAmount(selectedPlan === 'annual' ? annualPrice : monthlyPrice)}
+              <span className="text-lg font-normal text-slate-600 dark:text-slate-400">
+                /{selectedPlan === 'annual' ? 'year' : 'month'}
+              </span>
+            </div>
+          )}
+          {selectedPlan === 'annual' && !referralBonus?.hasBonus && (
             <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
               2 months free!
             </Badge>
@@ -215,8 +268,17 @@ export function PaystackUpgrade() {
               </>
             ) : (
               <>
-                <CreditCard className="w-5 h-5 mr-2" />
-                {isTrial ? 'Convert to Premium' : 'Pay with Paystack'}
+                {referralBonus?.hasBonus ? (
+                  <>
+                    <Gift className="w-5 h-5 mr-2" />
+                    Claim 30 Days FREE
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="w-5 h-5 mr-2" />
+                    {isTrial ? 'Convert to Premium' : 'Pay with Paystack'}
+                  </>
+                )}
               </>
             )}
           </Button>
