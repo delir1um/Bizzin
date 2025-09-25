@@ -429,20 +429,29 @@ export function AdminUserManagement() {
                       
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Badge variant={
-                            user.plan_type === 'premium' ? 'default' : 
-                            user.plan_type === 'trial' ? 'secondary' : 'outline'
-                          }>
-                            {user.plan_type === 'premium' && <Crown className="w-3 h-3 mr-1" />}
-                            {user.plan_type === 'trial' && <Calendar className="w-3 h-3 mr-1" />}
-                            {user.plan_type}
-                          </Badge>
-                          <Badge variant={
-                            user.plan_status === 'active' ? 'default' : 
-                            user.plan_status === 'cancelled' ? 'secondary' : 'destructive'
-                          }>
-                            {user.plan_status}
-                          </Badge>
+                          {user.is_admin ? (
+                            <Badge variant="default">
+                              <Crown className="w-3 h-3 mr-1" />
+                              Admin
+                            </Badge>
+                          ) : (
+                            <Badge variant={
+                              user.plan_type === 'premium' ? 'default' : 
+                              user.plan_type === 'trial' ? 'secondary' : 'outline'
+                            }>
+                              {user.plan_type === 'premium' && <Crown className="w-3 h-3 mr-1" />}
+                              {user.plan_type === 'trial' && <Calendar className="w-3 h-3 mr-1" />}
+                              {user.plan_type}
+                            </Badge>
+                          )}
+                          {!user.is_admin && (
+                            <Badge variant={
+                              user.plan_status === 'active' ? 'default' : 
+                              user.plan_status === 'cancelled' ? 'secondary' : 'destructive'
+                            }>
+                              {user.plan_status}
+                            </Badge>
+                          )}
                         </div>
                       </TableCell>
                       
