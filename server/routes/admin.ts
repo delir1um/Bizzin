@@ -184,23 +184,26 @@ router.get('/users', requireAdmin, async (req, res) => {
           .rpc('exec_sql', { 
             sql_query: `
               SELECT 
-                r.referred_by_user_id,
+                referred_by_user_id,
                 COUNT(*) as referral_count
-              FROM user_profiles r 
-              WHERE r.referred_by_user_id IS NOT NULL 
-              GROUP BY r.referred_by_user_id
-            `,
-            bind_params: []
+              FROM user_profiles 
+              WHERE referred_by_user_id IS NOT NULL 
+              GROUP BY referred_by_user_id
+            `
           });
         
         console.log(`🔍 Referral counts query result:`, { referralCounts, referralCountError });
         
         // Create a map of user_id -> referral count for quick lookup
         const referralCountMap: Record<string, number> = {};
-        if (!referralCountError && referralCounts) {
+        if (!referralCountError && referralCounts && Array.isArray(referralCounts)) {
           referralCounts.forEach((row: any) => {
-            referralCountMap[row.referred_by_user_id] = parseInt(row.referral_count) || 0;
+            if (row && row.referred_by_user_id && row.referral_count) {
+              referralCountMap[row.referred_by_user_id] = parseInt(row.referral_count) || 0;
+            }
           });
+        } else if (referralCountError) {
+          console.error('❌ Referral counts query failed:', referralCountError);
         }
         
         console.log(`🔍 Built referral count map for ${Object.keys(referralCountMap).length} users`);
@@ -221,8 +224,7 @@ router.get('/users', requireAdmin, async (req, res) => {
                 r.referral_code as referrer_code
               FROM user_profiles u
               LEFT JOIN user_profiles r ON u.referred_by_user_id = r.user_id
-            `,
-            bind_params: []
+            `
           });
           
         console.log(`🔍 Referrer info query result:`, { referrerInfo, referrerError });

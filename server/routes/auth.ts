@@ -6,6 +6,133 @@ import bcrypt from 'bcryptjs';
 
 const router = express.Router();
 
+// TEMPORARY: Direct signup for testing referrals (bypasses email verification)
+router.post('/signup-direct', async (req, res) => {
+  try {
+    const { email, password, referralCode, first_name, last_name } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+    }
+
+    console.log('🚀 TESTING: Direct signup initiated for:', email);
+
+    // Check if user already exists
+    const { data: existingUser } = await supabase.auth.admin.listUsers();
+    const userExists = existingUser.users.some(u => u.email?.toLowerCase() === email.toLowerCase());
+    
+    if (userExists) {
+      return res.status(400).json({ error: 'An account with this email already exists' });
+    }
+
+    // Validate referral code if provided
+    let referredByUserId = null;
+    if (referralCode && referralCode.trim()) {
+      console.log('🔍 Validating referral code:', referralCode);
+      
+      try {
+        const response = await fetch(`http://localhost:5000/api/referrals/validate/${referralCode}`);
+        const validationResult = await response.json();
+        
+        if (validationResult.valid && validationResult.referrer) {
+          referredByUserId = validationResult.referrer.user_id;
+          console.log('✅ Valid referral code found for:', validationResult.referrer.email);
+        } else {
+          console.log('❌ Invalid referral code provided:', referralCode);
+        }
+      } catch (error) {
+        console.error('⚠️ Error validating referral code:', error);
+      }
+    }
+
+    // Create the user directly in Supabase Auth
+    const { data: authResult, error: authError } = await supabase.auth.admin.createUser({
+      email: email.toLowerCase(),
+      password: password,
+      email_confirm: true, // Auto-confirm email for testing
+      user_metadata: {
+        first_name: first_name,
+        last_name: last_name,
+        full_name: `${first_name || ''} ${last_name || ''}`.trim() || email
+      }
+    });
+
+    if (authError || !authResult.user) {
+      console.error('❌ Failed to create auth user:', authError);
+      return res.status(500).json({ error: 'Failed to create user account' });
+    }
+
+    console.log('✅ Auth user created:', authResult.user.id);
+
+    // Create user profile with referral information
+    const profileData = {
+      user_id: authResult.user.id,
+      email: email.toLowerCase(),
+      first_name: first_name || null,
+      last_name: last_name || null,
+      full_name: `${first_name || ''} ${last_name || ''}`.trim() || email,
+      business_name: null,
+      referred_by_user_id: referredByUserId,
+      referral_code: generateReferralCode(email),
+      is_admin: false,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    const { data: profileResult, error: profileError } = await supabase
+      .from('user_profiles')
+      .insert(profileData)
+      .select()
+      .single();
+
+    if (profileError) {
+      console.error('❌ Failed to create user profile:', profileError);
+      // Clean up auth user if profile creation fails
+      await supabase.auth.admin.deleteUser(authResult.user.id);
+      return res.status(500).json({ error: 'Failed to create user profile' });
+    }
+
+    console.log('✅ User profile created with referral link:', { 
+      userId: profileResult.user_id, 
+      referredBy: referredByUserId 
+    });
+
+    // Create default trial plan
+    const { error: planError } = await supabase
+      .from('user_plans')
+      .insert({
+        user_id: authResult.user.id,
+        plan_type: 'free',
+        expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(), // 14 days trial
+        created_at: new Date().toISOString()
+      });
+
+    if (planError) {
+      console.error('⚠️ Failed to create user plan:', planError);
+    }
+
+    res.json({
+      success: true,
+      message: 'Account created successfully',
+      user: {
+        id: authResult.user.id,
+        email: authResult.user.email,
+        referral_code: profileResult.referral_code,
+        referred_by: referredByUserId ? 'Yes' : 'No'
+      }
+    });
+
+  } catch (error) {
+    console.error('💥 Error in direct signup:', error);
+    res.status(500).json({ error: 'Failed to create account' });
+  }
+});
+
 // UNIFIED REFERRAL CODE GENERATION SYSTEM
 // This function generates consistent, stable referral codes that never change for a given email
 function generateReferralCode(email: string): string {
