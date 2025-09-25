@@ -189,7 +189,7 @@ router.get('/users', requireAdmin, async (req, res) => {
           try {
             // Try RPC first
             const { data: rpcResult, error: rpcError } = await supabase.rpc('get_user_referrals', { 
-              p_referrer_user_id: user.user_id 
+              user_id_param: user.user_id 
             });
             
             if (!rpcError && rpcResult) {
@@ -236,20 +236,44 @@ router.get('/users', requireAdmin, async (req, res) => {
             referrer_code: null
           };
           
-          // HARDCODED REFERRAL DATA FOR TESTING (while we debug the column access issue)
-          console.log(`🔍 Checking referral data for ${user.email}...`);
-          
-          // Known referral relationship: hello@cloudfusion.co.za was referred by anton@cloudfusion.co.za
-          if (user.email === 'hello@cloudfusion.co.za') {
-            referredByData = {
-              referred_by_user_id: '9502ea97-1adb-4115-ba05-1b6b1b5fa721', // Anton's user ID
-              referrer_email: 'anton@cloudfusion.co.za',
-              referrer_name: 'Anton Bosch',
-              referrer_code: 'ANTOWVLZ2E'
-            };
-            console.log(`✅ HARDCODED: ${user.email} was referred by ${referredByData.referrer_email}`);
-          } else {
-            console.log(`📝 ${user.email} has no known referrer (direct signup)`);
+          // Get the user's profile to check if they were referred by someone
+          try {
+            console.log(`🔍 Checking if ${user.email} was referred by someone...`);
+            const { data: userProfile, error: profileError } = await supabase
+              .from('user_profiles')
+              .select('referred_by_user_id')
+              .eq('user_id', user.user_id)
+              .single();
+            
+            console.log(`🔍 Profile query result for ${user.email}:`, { userProfile, profileError });
+              
+            if (userProfile?.referred_by_user_id) {
+              console.log(`🔍 ${user.email} has referrer ID: ${userProfile.referred_by_user_id}, looking up referrer...`);
+              // Get the referrer's information
+              const { data: referrerProfile, error: referrerError } = await supabase
+                .from('user_profiles')
+                .select('email, full_name, referral_code')
+                .eq('user_id', userProfile.referred_by_user_id)
+                .single();
+              
+              console.log(`🔍 Referrer query result:`, { referrerProfile, referrerError });
+                
+              if (referrerProfile) {
+                referredByData = {
+                  referred_by_user_id: userProfile.referred_by_user_id,
+                  referrer_email: referrerProfile.email,
+                  referrer_name: referrerProfile.full_name || referrerProfile.email,
+                  referrer_code: referrerProfile.referral_code || generateReferralCode(referrerProfile.email)
+                };
+                console.log(`✅ Found referrer for ${user.email}: ${referrerProfile.email}`);
+              } else {
+                console.log(`❌ No referrer profile found for ID: ${userProfile.referred_by_user_id}`);
+              }
+            } else {
+              console.log(`📝 ${user.email} has no referrer (direct signup)`);
+            }
+          } catch (referrerError) {
+            console.log(`⚠️ Could not fetch referrer for ${user.email}:`, referrerError);
           }
           
           // Get the user's referral code from the database or generate one
@@ -336,20 +360,33 @@ router.get('/users', requireAdmin, async (req, res) => {
         
         if (referrerLookupError) {
           console.log('⚠️ SQL JOIN failed, falling back to individual queries');
-          // HARDCODED FALLBACK with known referral relationships
+          // Fallback to individual queries
           for (const user of allUsers) {
             if (referralData[user.user_id] && !referralData[user.user_id].referred_by_user_id) {
-              console.log(`🔍 FALLBACK: Checking referral data for ${user.email}...`);
-              
-              // Known referral relationship: hello@cloudfusion.co.za was referred by anton@cloudfusion.co.za
-              if (user.email === 'hello@cloudfusion.co.za') {
-                referralData[user.user_id].referred_by_user_id = '9502ea97-1adb-4115-ba05-1b6b1b5fa721'; // Anton's user ID
-                referralData[user.user_id].referrer_email = 'anton@cloudfusion.co.za';
-                referralData[user.user_id].referrer_name = 'Anton Bosch';
-                referralData[user.user_id].referrer_code = 'ANTOWVLZ2E';
-                console.log(`✅ HARDCODED FALLBACK: ${user.email} was referred by ${referralData[user.user_id].referrer_email}`);
-              } else {
-                console.log(`📝 FALLBACK: ${user.email} has no known referrer (direct signup)`);
+              try {
+                const { data: userProfile } = await supabase
+                  .from('user_profiles')
+                  .select('referred_by_user_id')
+                  .eq('user_id', user.user_id)
+                  .single();
+                  
+                if (userProfile?.referred_by_user_id) {
+                  const { data: referrerProfile } = await supabase
+                    .from('user_profiles')
+                    .select('email, full_name, referral_code')
+                    .eq('user_id', userProfile.referred_by_user_id)
+                    .single();
+                    
+                  if (referrerProfile) {
+                    referralData[user.user_id].referred_by_user_id = userProfile.referred_by_user_id;
+                    referralData[user.user_id].referrer_email = referrerProfile.email;
+                    referralData[user.user_id].referrer_name = referrerProfile.full_name || referrerProfile.email;
+                    referralData[user.user_id].referrer_code = referrerProfile.referral_code || generateReferralCode(referrerProfile.email);
+                    console.log(`✅ Found referrer for ${user.email}: ${referrerProfile.email}`);
+                  }
+                }
+              } catch (err) {
+                console.log(`⚠️ Fallback lookup failed for ${user.email}:`, err);
               }
             }
           }
