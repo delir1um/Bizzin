@@ -807,7 +807,7 @@ function UserDetailView({ user, refetch }: { user: UserProfile, refetch: () => v
                     {user.plan_type}
                   </Badge>
                   <span className="text-sm text-muted-foreground">
-                    {user.plan_type === 'premium' ? 'R299/month' : 'Free trial'}
+                    {user.plan_type === 'premium' ? 'Paid Plan' : 'Free trial'}
                   </span>
                 </div>
               </div>
@@ -823,9 +823,9 @@ function UserDetailView({ user, refetch }: { user: UserProfile, refetch: () => v
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium">Billing Cycle</label>
+                <label className="text-sm font-medium">Expires At</label>
                 <p className="text-sm text-muted-foreground">
-                  {user.plan_type === 'premium' ? 'Monthly (Auto-renew)' : 'Trial period'}
+                  {user.expires_at ? format(new Date(user.expires_at), 'MMMM d, yyyy') : 'Not set'}
                 </p>
               </div>
             </CardContent>
@@ -839,19 +839,19 @@ function UserDetailView({ user, refetch }: { user: UserProfile, refetch: () => v
               <div>
                 <label className="text-sm font-medium">Journal Entries</label>
                 <p className="text-sm text-muted-foreground">
-                  {user.total_journal_entries} / {user.plan_type === 'premium' ? 'Unlimited' : '10 per month'}
+                  {user.total_journal_entries} entries created
                 </p>
               </div>
               <div>
                 <label className="text-sm font-medium">Storage Used</label>
                 <p className="text-sm text-muted-foreground">
-                  {Math.round(user.storage_used / (1024 * 1024))}MB / {user.plan_type === 'premium' ? '10GB' : '50MB'}
+                  {Math.round(user.storage_used / (1024 * 1024))}MB total storage
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium">AI Analysis</label>
+                <label className="text-sm font-medium">Goals Completed</label>
                 <p className="text-sm text-muted-foreground">
-                  {user.plan_type === 'premium' ? 'Unlimited requests' : '20 per month'}
+                  {user.completed_goals} out of {user.total_goals} total goals
                 </p>
               </div>
             </CardContent>
@@ -860,26 +860,30 @@ function UserDetailView({ user, refetch }: { user: UserProfile, refetch: () => v
 
         <Card className="mt-4">
           <CardHeader>
-            <CardTitle>Payment History</CardTitle>
+            <CardTitle>Plan Information</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {user.plan_type === 'premium' ? (
-                <div className="flex justify-between items-center p-3 border rounded">
-                  <div>
-                    <div className="font-medium">Premium Subscription - Monthly</div>
-                    <div className="text-sm text-muted-foreground">
-                      {format(new Date(user.created_at), 'MMM d, yyyy')}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-medium">R299.00</div>
-                    <Badge variant="default">Paid</Badge>
-                  </div>
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm font-medium">Trial Days Remaining</label>
+                <p className="text-sm text-muted-foreground">
+                  {user.trial_days_remaining !== null ? `${user.trial_days_remaining} days` : 'Not applicable'}
+                </p>
+              </div>
+              {user.is_trial && (
+                <div>
+                  <label className="text-sm font-medium">Trial Status</label>
+                  <p className="text-sm text-muted-foreground">
+                    User is currently on a free trial period
+                  </p>
                 </div>
-              ) : (
-                <div className="text-center py-4 text-muted-foreground">
-                  No payment history - currently on free trial
+              )}
+              {user.paid_member_duration && (
+                <div>
+                  <label className="text-sm font-medium">Paid Member Duration</label>
+                  <p className="text-sm text-muted-foreground">
+                    {user.paid_member_duration} days as paid member
+                  </p>
                 </div>
               )}
             </div>
@@ -930,18 +934,18 @@ function UserDetailView({ user, refetch }: { user: UserProfile, refetch: () => v
               </div>
 
               <div>
-                <label className="text-sm font-medium">Referral Performance</label>
+                <label className="text-sm font-medium">Referral Activity</label>
                 <div className="mt-2 space-y-1">
                   <div className="flex justify-between text-sm">
-                    <span>Conversion Rate</span>
+                    <span>Total Referrals</span>
                     <span className="text-muted-foreground">
-                      {user.referrals_made_count > 0 ? '100%' : '0%'}
+                      {user.referrals_made_count} users
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span>Potential Earnings</span>
+                    <span>Referral Status</span>
                     <span className="text-muted-foreground">
-                      R{(user.referrals_made_count * 50).toFixed(2)}
+                      {user.referrals_made_count > 0 ? 'Active referrer' : 'No referrals yet'}
                     </span>
                   </div>
                 </div>
