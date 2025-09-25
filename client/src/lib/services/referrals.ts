@@ -196,71 +196,17 @@ export class ReferralService {
    * Get list of user's referrals using new schema
    */
   static async getUserReferrals(userId: string): Promise<ReferralEntry[]> {
-    // First try the query with foreign key relationship
-    let { data, error } = await supabase
-      .from('referrals')
-      .select(`
-        id,
-        referred_user_id,
-        status,
-        created_at,
-        converted_at,
-        user_profiles!referred_user_id (email)
-      `)
-      .eq('referrer_user_id', userId)
-      .order('created_at', { ascending: false })
-
-    // If foreign key relationship fails, do manual lookup
-    if (error) {
-      console.error('Error fetching user referrals:', error)
-      
-      // Try without foreign key relationship
-      const { data: referralsData, error: referralsError } = await supabase
-        .from('referrals')
-        .select(`
-          id,
-          referred_user_id,
-          status,
-          created_at,
-          converted_at
-        `)
-        .eq('referrer_user_id', userId)
-        .order('created_at', { ascending: false })
-
-      if (referralsError || !referralsData) {
-        console.error('Error fetching referrals fallback:', referralsError)
-        return []
+    try {
+      // Use the new API endpoint that bypasses schema cache issues
+      const response = await fetch(`/api/referrals/user/${userId}`)
+      if (!response.ok) {
+        throw new Error('Failed to fetch user referrals')
       }
-
-      // Manually get user emails
-      const userIds = referralsData.map(ref => ref.referred_user_id)
-      const { data: users } = await supabase
-        .from('user_profiles')
-        .select('user_id, email')
-        .in('user_id', userIds)
-
-      const userLookup = (users || []).reduce((acc, user) => {
-        acc[user.user_id] = user.email
-        return acc
-      }, {} as Record<string, string>)
-
-      data = referralsData.map(referral => ({
-        ...referral,
-        user_profiles: { email: userLookup[referral.referred_user_id] } as any
-      }))
+      return await response.json()
+    } catch (error) {
+      console.error('Error fetching user referrals:', error)
+      return []
     }
-
-    if (!data) return []
-
-    // Map to ReferralEntry format
-    return data.map(referral => ({
-      id: referral.id,
-      referee_email: (referral.user_profiles as any)?.email || `User ${referral.referred_user_id.substring(0, 8)}...`,
-      is_active: referral.status === 'captured' || referral.status === 'converted',
-      signup_date: referral.created_at,
-      activation_date: referral.converted_at,
-      deactivation_date: referral.status === 'invalid' ? referral.created_at : null
-    }))
   }
 
   /**
@@ -440,39 +386,12 @@ export class ReferralService {
    */
   static async getUserReferralBonus(userId: string): Promise<ReferralBonus> {
     try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('has_referral_bonus, referral_bonus_expires_at')
-        .eq('user_id', userId)
-        .single()
-
-      if (error || !data) {
-        return { hasBonus: false, expiresAt: null, daysUntilExpiry: null }
+      // Use the new API endpoint that bypasses schema cache issues
+      const response = await fetch(`/api/referrals/bonus/${userId}`)
+      if (!response.ok) {
+        throw new Error('Failed to fetch referral bonus')
       }
-
-      const hasBonus = data.has_referral_bonus && data.referral_bonus_expires_at
-
-      if (!hasBonus || !data.referral_bonus_expires_at) {
-        return { hasBonus: false, expiresAt: null, daysUntilExpiry: null }
-      }
-
-      const expiresAt = data.referral_bonus_expires_at
-      const now = new Date()
-      const expiryDate = new Date(expiresAt)
-      
-      // Check if bonus has expired
-      if (expiryDate <= now) {
-        return { hasBonus: false, expiresAt, daysUntilExpiry: 0 }
-      }
-
-      // Calculate days until expiry
-      const daysUntilExpiry = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-
-      return {
-        hasBonus: true,
-        expiresAt,
-        daysUntilExpiry
-      }
+      return await response.json()
     } catch (error) {
       console.error('Error checking referral bonus:', error)
       return { hasBonus: false, expiresAt: null, daysUntilExpiry: null }

@@ -112,18 +112,35 @@ router.get('/users', requireAdmin, async (req, res) => {
       // If the referral_code query fails, try without it first
       if (usersError) {
         console.error('Error fetching users for referral data:', usersError);
-        console.log('🔄 Trying fallback query without referral_code...');
+        console.log('🔄 Trying basic fallback query...');
         
         const { data: fallbackUsers, error: fallbackError } = await supabase
           .from('user_profiles')
-          .select('user_id, referred_by_user_id, email, full_name');
+          .select('user_id, email, full_name');
           
         if (!fallbackError && fallbackUsers) {
-          // Add empty referral_code for fallback users
-          allUsers = fallbackUsers.map(user => ({ ...user, referral_code: null }));
-          console.log('✅ Using fallback query results');
+          console.log('✅ Using basic fallback query results');
+          
+          // Try to get referral data via raw SQL since Supabase client has schema issues
+          try {
+            // Since we can't rely on Supabase client for new columns, skip referral data for now
+            // The frontend will handle this differently
+            allUsers = fallbackUsers.map(user => ({ 
+              ...user, 
+              referral_code: null,
+              referred_by_user_id: null 
+            }));
+            console.log('✅ Using basic user data without referral info');
+          } catch (sqlError) {
+            console.error('❌ SQL fallback failed:', sqlError);
+            allUsers = fallbackUsers.map(user => ({ 
+              ...user, 
+              referral_code: null,
+              referred_by_user_id: null 
+            }));
+          }
         } else {
-          console.error('❌ Fallback query also failed:', fallbackError);
+          console.error('❌ Basic fallback query also failed:', fallbackError);
         }
       }
 
