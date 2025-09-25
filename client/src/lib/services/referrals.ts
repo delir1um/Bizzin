@@ -204,7 +204,7 @@ export class ReferralService {
         status,
         created_at,
         converted_at,
-        user_profiles!referrals_referred_user_id_fkey (email)
+        user_profiles!referred_user_id (email)
       `)
       .eq('referrer_user_id', userId)
       .order('created_at', { ascending: false })
