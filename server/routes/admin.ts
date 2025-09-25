@@ -10,6 +10,18 @@ import {
 
 const router = express.Router();
 
+// Generate a unique referral code for a user (copied from auth.ts)
+function generateReferralCode(email: string): string {
+  // Create a hash from email and timestamp for uniqueness
+  const baseString = email.toLowerCase().replace(/[^a-z0-9]/g, '')
+  const timestamp = Date.now().toString(36)
+  const randomPart = Math.random().toString(36).substring(2, 8)
+  
+  // Take first 4 chars from email, 4 from timestamp, 2 random
+  const code = (baseString.substring(0, 4) + timestamp.slice(-4) + randomPart.substring(0, 2)).toUpperCase()
+  return code
+}
+
 // Admin authentication middleware
 const requireAdmin = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -174,29 +186,38 @@ router.get('/users', requireAdmin, async (req, res) => {
             referrer_code: null
           };
           
-          // Use our working referral relationship data 
-          // hello@cloudfusion.co.za was referred by anton@cloudfusion.co.za
-          if (user.user_id === 'edc61468-30a2-4ef1-ae35-eff9bab4d641') {
-            referredByData = {
-              referred_by_user_id: '9502ea97-1adb-4115-ba05-1b6b1b5fa721',
-              referrer_email: 'anton@cloudfusion.co.za',
-              referrer_name: 'Anton',
-              referrer_code: 'B0AB4E9A'
-            };
-            console.log(`🔗 ${user.email} was referred by anton@cloudfusion.co.za`);
+          // Get the user's referral code from the database or generate one
+          let userReferralCode = null;
+          try {
+            // Try to get referral code from user_profiles table
+            const { data: userProfile } = await supabase
+              .from('user_profiles')
+              .select('referral_code')
+              .eq('user_id', user.user_id)
+              .single();
+              
+            if (userProfile?.referral_code) {
+              userReferralCode = userProfile.referral_code;
+            } else {
+              // Generate a referral code if one doesn't exist
+              userReferralCode = generateReferralCode(user.email);
+              
+              // Save the generated code back to the database
+              await supabase
+                .from('user_profiles')
+                .update({ referral_code: userReferralCode })
+                .eq('user_id', user.user_id);
+                
+              console.log(`📝 Generated referral code ${userReferralCode} for ${user.email}`);
+            }
+          } catch (codeError) {
+            console.error(`❌ Error handling referral code for ${user.email}:`, codeError);
+            // Fallback to generating a code without saving it
+            userReferralCode = generateReferralCode(user.email);
           }
           
-          // TEMPORARY FIX: Use known referral codes mapping
-          const knownReferralCodes: Record<string, string> = {
-            '9fd5beae-b30f-4656-a3e1-3ffa1874c0eb': 'INFO0249CF',
-            '9d722107-cfe5-45e1-827a-b9c4f26af884': 'ADMI0249EX', 
-            '83a990b5-0ee1-4db6-8b6d-f3f430b7caf6': 'COOP0249GM',
-            '9502ea97-1adb-4115-ba05-1b6b1b5fa721': 'B0AB4E9A',
-            '97129b42-2ebe-4e6c-bb72-4d1f3a833b00': 'HELLO249FC'
-          };
-          
           referralData[user.user_id] = {
-            referral_code: knownReferralCodes[user.user_id] || null,
+            referral_code: userReferralCode,
             ...referredByData,
             referrals_made_count: referrals.length
           };
@@ -204,17 +225,22 @@ router.get('/users', requireAdmin, async (req, res) => {
         } catch (userError) {
           console.error(`❌ Error fetching referrals for ${user.email}:`, userError);
           
-          // TEMPORARY FIX: Use known referral codes mapping even in error case
-          const knownReferralCodes: Record<string, string> = {
-            '9fd5beae-b30f-4656-a3e1-3ffa1874c0eb': 'INFO0249CF',
-            '9d722107-cfe5-45e1-827a-b9c4f26af884': 'ADMI0249EX', 
-            '83a990b5-0ee1-4db6-8b6d-f3f430b7caf6': 'COOP0249GM',
-            '9502ea97-1adb-4115-ba05-1b6b1b5fa721': 'B0AB4E9A',
-            '97129b42-2ebe-4e6c-bb72-4d1f3a833b00': 'HELLO249FC'
-          };
+          // Even in error case, try to get/generate referral code properly
+          let fallbackReferralCode = null;
+          try {
+            const { data: userProfile } = await supabase
+              .from('user_profiles')
+              .select('referral_code')
+              .eq('user_id', user.user_id)
+              .single();
+              
+            fallbackReferralCode = userProfile?.referral_code || generateReferralCode(user.email);
+          } catch {
+            fallbackReferralCode = generateReferralCode(user.email);
+          }
           
           referralData[user.user_id] = {
-            referral_code: knownReferralCodes[user.user_id] || null,
+            referral_code: fallbackReferralCode,
             referred_by_user_id: null, 
             referrer_email: null,
             referrer_name: null,
