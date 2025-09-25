@@ -83,30 +83,48 @@ router.post('/signup', async (req, res) => {
     
     if (referralCode && isValidReferral) {
       try {
-        // Get referrer user ID and email for comprehensive self-referral check
-        const { data: referrer } = await supabase
+        console.log('🔍 Processing referral code during signup:', referralCode);
+        
+        // Use same workaround as validation endpoint - get all users and check generated codes
+        const { data: allUsers, error: usersError } = await supabase
           .from('user_profiles')
-          .select('user_id, email')
-          .eq('referral_code', referralCode.trim().toUpperCase())
-          .single();
+          .select('user_id, email, full_name')
+          .not('email', 'is', null);
 
-        if (referrer) {
-          // Check both user_id and email to prevent self-referral abuse
-          if (referrer.user_id !== signUpData.user.id && referrer.email.toLowerCase() !== email.toLowerCase()) {
-            referredByUserId = referrer.user_id;
-            console.log('✅ Found valid referrer:', { userId: referredByUserId, email: referrer.email });
-          } else {
-            if (referrer.email.toLowerCase() === email.toLowerCase()) {
-              console.warn('🚫 Self-referral blocked: user trying to refer themselves using their own email\'s referral code');
-            } else {
-              console.warn('🚫 Self-referral blocked: same user_id');
+        if (usersError) {
+          console.error('❌ Error fetching users for referral processing:', usersError);
+        } else if (allUsers && allUsers.length > 0) {
+          // Find referrer by checking generated codes
+          const searchCode = referralCode.trim().toUpperCase();
+          let referrer = null;
+          
+          for (const user of allUsers) {
+            const generatedCode = generateReferralCode(user.email);
+            if (generatedCode === searchCode) {
+              referrer = user;
+              console.log(`✅ Found referrer during signup: ${user.email} (code: ${generatedCode})`);
+              break;
             }
           }
-        } else {
-          console.warn('❌ Referrer not found in database');
+
+          if (referrer) {
+            // Check both user_id and email to prevent self-referral abuse
+            if (referrer.user_id !== signUpData.user.id && referrer.email.toLowerCase() !== email.toLowerCase()) {
+              referredByUserId = referrer.user_id;
+              console.log('✅ Valid referrer confirmed for signup:', { userId: referredByUserId, email: referrer.email });
+            } else {
+              if (referrer.email.toLowerCase() === email.toLowerCase()) {
+                console.warn('🚫 Self-referral blocked during signup: user trying to refer themselves using their own email\'s referral code');
+              } else {
+                console.warn('🚫 Self-referral blocked during signup: same user_id');
+              }
+            }
+          } else {
+            console.warn('❌ Referrer not found during signup processing');
+          }
         }
       } catch (referralError) {
-        console.error('Error processing referral:', referralError);
+        console.error('Error processing referral during signup:', referralError);
       }
     }
 
@@ -130,7 +148,6 @@ router.post('/signup', async (req, res) => {
           daily_email: false,
           daily_email_time: '08:00',
           timezone: 'Africa/Johannesburg',
-          referral_code: userReferralCode,
           referred_by_user_id: referredByUserId,
           referral_bonus_expires_at: bonusExpiresAt,
           created_at: now,
