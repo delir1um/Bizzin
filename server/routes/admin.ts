@@ -346,53 +346,71 @@ router.get('/users', requireAdmin, async (req, res) => {
             };
           }
 
+          // Get actual storage used by calculating file sizes
+          let storageUsed = 0;
+          try {
+            const { data: storageSizes } = await supabase
+              .from('documents')
+              .select('file_size')
+              .eq('user_id', profile.user_id);
+            
+            if (storageSizes) {
+              storageUsed = storageSizes.reduce((total, doc) => total + (doc.file_size || 0), 0);
+            }
+          } catch (storageError) {
+            console.log(`⚠️ Could not calculate storage for ${profile.email}:`, storageError);
+            storageUsed = 0;
+          }
+
+          // Return flat structure to match frontend expectations
           return {
             ...profile,
+            // Plan information (flattened)
+            plan_type: planType,
+            plan_status: planStatus,
+            expires_at: userPlan?.expires_at || null,
+            trial_days_remaining: trialDaysRemaining,
+            paid_member_duration: paidMemberDuration,
+            is_trial: isTrial,
+            // Activity/stats information (flattened)
+            total_journal_entries: journalCount || 0,
+            total_goals: goalCount || 0,
+            completed_goals: completedGoals || 0,
+            storage_used: storageUsed,
+            // Use the last_login from backend, fallback to created_at
+            last_login: profile.updated_at || profile.created_at,
+            last_activity: profile.updated_at || profile.created_at,
+            // Referral information (flattened)
             referral_code: userReferralData?.referral_code || null,
-            plan: {
-              plan_type: planType,
-              plan_status: planStatus,
-              expires_at: userPlan?.expires_at || null,
-              trial_days_remaining: trialDaysRemaining,
-              paid_member_duration: paidMemberDuration,
-              is_trial: isTrial
-            },
-            stats: {
-              journal_entries: journalCount || 0,
-              total_goals: goalCount || 0,
-              completed_goals: completedGoals || 0,
-              documents: documentCount || 0
-            },
-            referrals: {
-              referred_by: referredBy,
-              referrals_made_count: userReferralData?.referrals_made_count || 0
-            }
+            referred_by: referredBy,
+            referrals_made_count: userReferralData?.referrals_made_count || 0
           };
         } catch (error) {
           console.error(`Error fetching stats for ${profile.email}:`, error);
           const userReferralData = referralData[profile.user_id];
           
+          // Return flat structure for error case too
           return {
             ...profile,
+            // Plan information (flattened)
+            plan_type: 'trial' as const,
+            plan_status: 'active' as const,
+            expires_at: null,
+            trial_days_remaining: null,
+            paid_member_duration: null,
+            is_trial: true,
+            // Activity/stats information (flattened)
+            total_journal_entries: 0,
+            total_goals: 0,
+            completed_goals: 0,
+            storage_used: 0,
+            // Default login times
+            last_login: profile.updated_at || profile.created_at,
+            last_activity: profile.updated_at || profile.created_at,
+            // Referral information (flattened)
             referral_code: userReferralData?.referral_code || null,
-            plan: {
-              plan_type: 'trial' as const,
-              plan_status: 'active' as const,
-              expires_at: null,
-              trial_days_remaining: null,
-              paid_member_duration: null,
-              is_trial: true
-            },
-            stats: {
-              journal_entries: 0,
-              total_goals: 0,
-              completed_goals: 0,
-              documents: 0
-            },
-            referrals: {
-              referred_by: null,
-              referrals_made_count: userReferralData?.referrals_made_count || 0
-            }
+            referred_by: null,
+            referrals_made_count: userReferralData?.referrals_made_count || 0
           };
         }
       })
