@@ -6,18 +6,27 @@ const router = express.Router();
 
 
 
-// Generate referral code for a given email (matches the pattern used during signup)
+// Generate referral code for a given email (static per user, no date dependency)
 function generateReferralCode(email: string): string {
-  // Pattern: FIRST4CHARS + MMDD + LAST2CHARS (all uppercase)
-  const cleanEmail = email.replace('@', '').replace('.', '');
-  const firstPart = cleanEmail.substring(0, 4).toUpperCase();
-  const now = new Date();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const datePart = month + day;
-  const lastPart = cleanEmail.slice(-2).toUpperCase();
+  // Create a consistent hash-based code that doesn't change per user
+  const cleanEmail = email.toLowerCase().replace(/[^a-z0-9]/g, '');
   
-  return `${firstPart}${datePart}${lastPart}`;
+  // Use a simple hash algorithm to create consistent codes
+  let hash = 0;
+  for (let i = 0; i < cleanEmail.length; i++) {
+    const char = cleanEmail.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  
+  // Convert to positive number and create 8-character code
+  const positiveHash = Math.abs(hash);
+  const codeBase = positiveHash.toString(36).toUpperCase();
+  
+  // Ensure 8 characters by padding or truncating
+  let code = codeBase.length >= 8 ? codeBase.substring(0, 8) : codeBase.padStart(8, '0');
+  
+  return code;
 }
 
 // Validate referral code endpoint
@@ -44,39 +53,11 @@ router.get('/validate/:code', async (req, res) => {
     // Check if the code matches any user's computed referral code
     const searchCode = code.trim().toUpperCase();
     
-    // Known mappings for existing users (fallback for date variations)
-    const knownCodes: Record<string, string> = {
-      'B0AB4E9A': 'anton@cloudfusion.co.za',
-      '9FD5BEAE': 'info@cloudfusion.co.za',  // Added missing code for info user
-      'INFO0249CF': 'info@cloudfusion.co.za', 
-      'ADMI0249EX': 'admin@example.com',
-      'COOP0249GM': 'coopzbren@gmail.com',
-      'COOP0925OM': 'coopzbren@gmail.com'
-    };
-
-    // First check known codes
-    if (knownCodes[searchCode]) {
-      const referrerEmail = knownCodes[searchCode];
-      const referrer = users.find(u => u.email === referrerEmail);
-      
-      if (referrer) {
-        console.log('✅ Valid referral code found via known mapping:', { code: searchCode, referrer: referrer.email });
-        return res.json({ 
-          valid: true, 
-          referrer: {
-            user_id: referrer.user_id,
-            email: referrer.email,
-            name: referrer.full_name
-          }
-        });
-      }
-    }
-
-    // Then check computed codes for current date
+    // Check all users dynamically - no hardcoded mappings
     for (const user of users) {
       const computedCode = generateReferralCode(user.email);
       if (computedCode === searchCode) {
-        console.log('✅ Valid referral code found via computation:', { code: searchCode, referrer: user.email });
+        console.log('✅ Valid referral code found for user:', { code: searchCode, referrer: user.email });
         return res.json({ 
           valid: true, 
           referrer: {
