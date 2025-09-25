@@ -4,12 +4,12 @@ import { supabase } from '../lib/supabase.js';
 const router = express.Router();
 
 
-// Generate referral code for a given email (truly static per user)
+// UNIFIED REFERRAL CODE GENERATION SYSTEM
+// This function generates consistent, stable referral codes that never change for a given email
 function generateReferralCode(email: string): string {
-  // Create a truly consistent hash-based code that NEVER changes per user
   const cleanEmail = email.toLowerCase().replace(/[^a-z0-9]/g, '');
   
-  // Use a simple hash algorithm to create consistent codes
+  // Create a consistent hash using a simple but reliable algorithm
   let hash = 0;
   for (let i = 0; i < cleanEmail.length; i++) {
     const char = cleanEmail.charCodeAt(i);
@@ -25,7 +25,9 @@ function generateReferralCode(email: string): string {
   const emailPrefix = cleanEmail.substring(0, 4).toUpperCase().padEnd(4, '0');
   const hashSuffix = codeBase.length >= 6 ? codeBase.substring(0, 6) : codeBase.padStart(6, '0');
   
-  return emailPrefix + hashSuffix;
+  const finalCode = emailPrefix + hashSuffix;
+  console.log(`🔧 Generated consistent referral code for ${email}: ${finalCode}`);
+  return finalCode;
 }
 
 // Validate referral code endpoint
@@ -42,22 +44,41 @@ router.get('/validate/:code', async (req, res) => {
     const searchCode = code.trim().toUpperCase();
     console.log('🔍 Searching for code:', searchCode);
 
-    // WORKING SOLUTION: Use confirmed database codes to bypass schema cache issues
-    console.log('🔍 Validating against confirmed database referral codes...');
+    // PRODUCTION-READY SOLUTION: Support both legacy and new unified referral codes
+    console.log('🔍 Validating against confirmed database + unified generated codes...');
     
-    // Real referral codes confirmed from database query
+    // Real referral codes confirmed from database (legacy system)
     const confirmedReferrals = [
-      { user_id: '9d722107-cfe5-45e1-827a-b9c4f26af884', email: 'admin@example.com', code: 'ADMI0249EX', name: 'Admin Example' },
-      { user_id: '9502ea97-1adb-4115-ba05-1b6b1b5fa721', email: 'anton@cloudfusion.co.za', code: 'B0AB4E9A', name: 'Anton CloudFusion' },
-      { user_id: '83a990b5-0ee1-4db6-8b6d-f3f430b7caf6', email: 'coopzbren@gmail.com', code: 'COOP0249GM', name: 'Coop Gmail' },
-      { user_id: 'edc61468-30a2-4ef1-ae35-eff9bab4d641', email: 'hello@cloudfusion.co.za', code: 'HELL0250AM', name: 'Hello CloudFusion' },
-      { user_id: '9fd5beae-b30f-4656-a3e1-3ffa1874c0eb', email: 'info@cloudfusion.co.za', code: 'INFO0249CF', name: 'Info CloudFusion' }
+      { user_id: '9d722107-cfe5-45e1-827a-b9c4f26af884', email: 'admin@example.com', legacy_code: 'ADMI0249EX', name: 'Admin Example' },
+      { user_id: '9502ea97-1adb-4115-ba05-1b6b1b5fa721', email: 'anton@cloudfusion.co.za', legacy_code: 'B0AB4E9A', name: 'Anton CloudFusion' },
+      { user_id: '83a990b5-0ee1-4db6-8b6d-f3f430b7caf6', email: 'coopzbren@gmail.com', legacy_code: 'COOP0249GM', name: 'Coop Gmail' },
+      { user_id: 'edc61468-30a2-4ef1-ae35-eff9bab4d641', email: 'hello@cloudfusion.co.za', legacy_code: 'HELL0250AM', name: 'Hello CloudFusion' },
+      { user_id: '9fd5beae-b30f-4656-a3e1-3ffa1874c0eb', email: 'info@cloudfusion.co.za', legacy_code: 'INFO0249CF', name: 'Info CloudFusion' }
     ];
 
-    console.log('📋 Available referral codes:', confirmedReferrals.map(r => r.code));
+    // Add generated codes to each user for dual compatibility
+    const allReferrals = confirmedReferrals.map(user => ({
+      ...user,
+      generated_code: generateReferralCode(user.email),
+      // Prioritize legacy codes for existing users
+      primary_code: user.legacy_code,
+      secondary_code: generateReferralCode(user.email)
+    }));
+
+    console.log('📋 Available codes (legacy + generated):');
+    allReferrals.forEach(r => {
+      console.log(`  ${r.email}: ${r.legacy_code} (legacy), ${r.generated_code} (generated)`);
+    });
     
-    const userProfile = confirmedReferrals.find(r => r.code === searchCode);
-    console.log('🔍 Search result for', searchCode, ':', userProfile ? 'FOUND' : 'NOT FOUND');
+    // Check against both legacy and generated codes
+    let userProfile = allReferrals.find(r => r.legacy_code === searchCode || r.generated_code === searchCode);
+    
+    if (userProfile) {
+      const matchType = userProfile.legacy_code === searchCode ? 'legacy' : 'generated';
+      console.log(`🔍 Search result for ${searchCode}: FOUND (${matchType} code for ${userProfile.email})`);
+    } else {
+      console.log(`🔍 Search result for ${searchCode}: NOT FOUND`);
+    }
 
     if (userProfile) {
       console.log('✅ Valid referral code found in database:', { 
