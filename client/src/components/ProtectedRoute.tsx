@@ -1,6 +1,7 @@
 import { useLocation } from "wouter"
 import { useAuth } from "@/hooks/AuthProvider"
 import { useEffect } from "react"
+import { EmailVerificationRequired } from "@/components/EmailVerificationRequired"
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -21,6 +22,11 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
         </div>
       </div>
     )
+  }
+  
+  // Check if user exists but email is not verified
+  if (user && !user.email_confirmed_at) {
+    return <EmailVerificationRequired />
   }
   
   return user ? <>{children}</> : null

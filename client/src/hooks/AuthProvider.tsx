@@ -30,6 +30,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!isMounted) return
 
         if (!error && data.session) {
+          // Check if email is verified
+          if (!data.session.user.email_confirmed_at) {
+            console.log('User email not verified, clearing session')
+            await supabase.auth.signOut()
+            setSession(null)
+            setUser(null)
+            return
+          }
+          
           setSession(data.session)
           setUser(data.session.user)
           
@@ -62,6 +71,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!isMounted) return
+
+      // Check email verification for any session
+      if (session?.user && !session.user.email_confirmed_at) {
+        console.log('User email not verified in auth state change, clearing session')
+        await supabase.auth.signOut()
+        setSession(null)
+        setUser(null)
+        return
+      }
 
       setSession(session)
       setUser(session?.user ?? null)
