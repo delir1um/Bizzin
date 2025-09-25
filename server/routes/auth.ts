@@ -1,54 +1,12 @@
 import express from 'express';
 import { supabase } from '../lib/supabase.js';
 import { simpleEmailScheduler } from '../services/SimpleEmailScheduler.js';
-import { insertPendingSignup, findPendingSignupByToken, deletePendingSignup, updatePendingSignupAttempts, updatePendingSignupToken } from '../lib/postgres.js';
+// Removed PostgreSQL imports - now using Supabase exclusively
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 
 const router = express.Router();
 
-// Create pending_signups table in Supabase database
-router.post('/create-pending-table', async (req, res) => {
-  try {
-    console.log('🔧 Creating pending_signups table in Supabase database...');
-    
-    const { data: result, error } = await supabase.rpc('exec_sql', {
-      sql_query: `
-        CREATE TABLE IF NOT EXISTS public.pending_signups (
-          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-          email VARCHAR NOT NULL,
-          password_hash TEXT NOT NULL,
-          referral_code VARCHAR,
-          verification_token VARCHAR NOT NULL,
-          first_name VARCHAR,
-          last_name VARCHAR,
-          business_name VARCHAR,
-          business_type VARCHAR,
-          phone VARCHAR,
-          verified BOOLEAN DEFAULT FALSE,
-          expires_at TIMESTAMPTZ NOT NULL,
-          attempts INTEGER DEFAULT 0,
-          created_at TIMESTAMPTZ DEFAULT NOW(),
-          updated_at TIMESTAMPTZ DEFAULT NOW()
-        );
-        
-        CREATE UNIQUE INDEX IF NOT EXISTS pending_signups_email_idx ON public.pending_signups(email);
-        CREATE UNIQUE INDEX IF NOT EXISTS pending_signups_verification_token_idx ON public.pending_signups(verification_token);
-      `
-    });
-
-    if (error) {
-      console.error('❌ Failed to create table:', error);
-      return res.status(500).json({ error: 'Failed to create table', details: error });
-    }
-
-    console.log('✅ Table creation result:', result);
-    return res.json({ success: true, result });
-  } catch (err) {
-    console.error('❌ Table creation error:', err);
-    return res.status(500).json({ error: 'Failed to create table', details: err });
-  }
-});
 
 // TEMPORARY: Direct signup for testing referrals (bypasses email verification)
 router.post('/signup-direct', async (req, res) => {
@@ -367,7 +325,7 @@ router.post('/signup', async (req, res) => {
       console.error(`❌ Failed to send verification email to ${email}`);
       
       // Clean up pending signup if email fails
-      await deletePendingSignup(pendingSignup.id);
+      await supabase.from('pending_signups').delete().eq('id', pendingSignup.id);
       
       res.status(500).json({ error: 'Failed to send verification email. Please try again.' });
     }
@@ -392,17 +350,23 @@ router.get('/verify-email', async (req, res) => {
     // Find pending signup by token
     let pendingSignup;
     try {
-      pendingSignup = await findPendingSignupByToken(token);
+      const { data: foundSignup, error: findError } = await supabase
+        .from('pending_signups')
+        .select('*')
+        .eq('verification_token', token)
+        .single();
+      
+      if (findError || !foundSignup) {
+        console.error('❌ Pending signup not found:', findError);
+        const redirectUrl = process.env.NODE_ENV === 'production' 
+          ? 'https://bizzin.co.za/auth?error=invalid_token' 
+          : 'http://localhost:5000/auth?error=invalid_token';
+        return res.redirect(redirectUrl);
+      }
+      
+      pendingSignup = foundSignup;
     } catch (error) {
       console.error('❌ Database error finding verification token:', error);
-      const redirectUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://bizzin.co.za/auth?error=invalid_token' 
-        : 'http://localhost:5000/auth?error=invalid_token';
-      return res.redirect(redirectUrl);
-    }
-
-    if (!pendingSignup) {
-      console.error('❌ Invalid or expired verification token');
       const redirectUrl = process.env.NODE_ENV === 'production' 
         ? 'https://bizzin.co.za/auth?error=invalid_token' 
         : 'http://localhost:5000/auth?error=invalid_token';
@@ -414,7 +378,7 @@ router.get('/verify-email', async (req, res) => {
       console.error('❌ Verification token expired for:', pendingSignup.email);
       
       // Clean up expired token
-      await deletePendingSignup(pendingSignup.id);
+      await supabase.from('pending_signups').delete().eq('id', pendingSignup.id);
       
       const redirectUrl = process.env.NODE_ENV === 'production' 
         ? 'https://bizzin.co.za/auth?error=token_expired' 
@@ -544,7 +508,7 @@ router.get('/verify-email', async (req, res) => {
     try {
       // Delete the pending signup after successful verification
       setTimeout(async () => {
-        await deletePendingSignup(pendingSignup.id);
+        await supabase.from('pending_signups').delete().eq('id', pendingSignup.id);
       }, 5000); // Clean up after 5 seconds
       
     } catch (cleanupError) {
@@ -600,7 +564,7 @@ router.post('/resend-verification', async (req, res) => {
     // Check if token expired - clean it up and allow resend
     if (new Date() > new Date(pendingSignup.expires_at)) {
       console.log('📝 Expired pending signup found, cleaning up and allowing new verification:', email);
-      await deletePendingSignup(pendingSignup.id);
+      await supabase.from('pending_signups').delete().eq('id', pendingSignup.id);
       
       return res.status(400).json({ 
         error: 'Your verification link expired. Please sign up again to receive a new verification email.' 
@@ -620,7 +584,15 @@ router.post('/resend-verification', async (req, res) => {
     
     // Update the pending signup with new token and increment attempts
     try {
-      await updatePendingSignupToken(pendingSignup.id, newVerificationToken, pendingSignup.attempts + 1);
+      const { error: updateError } = await supabase
+        .from('pending_signups')
+        .update({
+          verification_token: newVerificationToken,
+          attempts: pendingSignup.attempts + 1
+        })
+        .eq('id', pendingSignup.id);
+      
+      if (updateError) throw updateError;
     } catch (updateError) {
       console.error('❌ Failed to update pending signup token:', updateError);
       return res.status(500).json({ error: 'Failed to generate new verification link' });
