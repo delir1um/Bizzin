@@ -7,6 +7,8 @@ import { UpgradeModal } from "@/components/plans/UpgradeModal"
 import { PaystackService } from "@/lib/services/paystack"
 import { usePlans } from "@/hooks/usePlans"
 import { useAuth } from "@/hooks/AuthProvider"
+import { ReferralService } from "@/lib/services/referrals"
+import { useQuery } from "@tanstack/react-query"
 import { 
   Crown, 
   Database, 
@@ -15,7 +17,9 @@ import {
   Target, 
   Calculator,
   Check,
-  X
+  X,
+  Gift,
+  Timer
 } from "lucide-react"
 
 const formatBytes = (bytes: number): string => {
@@ -56,6 +60,13 @@ export function PlanManagement() {
   const [showFreeLimits, setShowFreeLimits] = useState(false)
   const { user } = useAuth()
   const { usageStatus, isPremium, isFree, isTrial, isExpiredTrial, hasPremiumFeatures, isLoading, refetch } = usePlans()
+  
+  // Fetch referral bonus for current user
+  const { data: referralBonus } = useQuery({
+    queryKey: ['referral-bonus', user?.id],
+    queryFn: () => user ? ReferralService.getUserReferralBonus(user.id) : null,
+    enabled: !!user && !isPremium // Only fetch for non-premium users
+  })
   
   // Get ZAR pricing for display
   const monthlyPrice = PaystackService.getSubscriptionPrice('monthly')
@@ -119,6 +130,39 @@ export function PlanManagement() {
 
   return (
     <div className="space-y-6">
+      {/* Referral Bonus Banner - Show for non-premium users with active bonus */}
+      {!isPremium && referralBonus?.hasBonus && (
+        <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-green-200 dark:border-green-800">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                <Gift className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-green-800 dark:text-green-200">
+                  🎉 Welcome Bonus Active!
+                </h3>
+                <p className="text-sm text-green-700 dark:text-green-300">
+                  Get your first 30 days FREE when you upgrade now
+                  {referralBonus.daysUntilExpiry && referralBonus.daysUntilExpiry > 0 && (
+                    <span className="ml-2 inline-flex items-center gap-1">
+                      <Timer className="w-3 h-3" />
+                      {referralBonus.daysUntilExpiry} day{referralBonus.daysUntilExpiry !== 1 ? 's' : ''} left to claim
+                    </span>
+                  )}
+                </p>
+              </div>
+              <Button 
+                onClick={() => setShowUpgradeModal(true)}
+                className="bg-green-600 hover:bg-green-700 text-white"
+                data-testid="button-claim-bonus"
+              >
+                Claim Now
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
       {/* Current Plan Status */}
       <Card className="bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800">
         <CardHeader>
