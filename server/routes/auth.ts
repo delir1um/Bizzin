@@ -133,48 +133,54 @@ router.post('/signup', async (req, res) => {
 
     // Create user profile with referral data
     try {
-      const now = new Date().toISOString();
-      const bonusExpiresAt = referredByUserId 
-        ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-        : undefined;
-
+      console.log('🔧 Creating user profile for:', signUpData.user.id, 'with referrer:', referredByUserId);
+      
+      // Create absolute minimal user profile first
       const { error: profileError } = await supabase
         .from('user_profiles')
         .insert({
           user_id: signUpData.user.id,
           email: email,
-          full_name: email.split('@')[0],
-          email_notifications: true,
-          daily_email: false,
-          daily_email_time: '08:00',
-          timezone: 'Africa/Johannesburg',
-          referred_by_user_id: referredByUserId,
-          referral_bonus_expires_at: bonusExpiresAt,
-          created_at: now,
-          updated_at: now
+          full_name: email.split('@')[0]
         });
 
       if (profileError) {
-        console.error('❌ Failed to create user profile:', profileError);
+        console.error('❌ Failed to create basic user profile:', profileError);
       } else {
-        console.log('✅ User profile created with referral code:', userReferralCode);
-
-        // Create referral record if user was referred
+        console.log('✅ Basic user profile created');
+        
+        // Now update with referral data if we have a referrer
         if (referredByUserId) {
-          const { error: referralRecordError } = await supabase
-            .from('referrals')
-            .insert({
-              referrer_user_id: referredByUserId,
-              referred_user_id: signUpData.user.id,
-              status: 'captured',
-              created_at: now
-            });
-
-          if (referralRecordError) {
-            console.error('❌ Failed to create referral record:', referralRecordError);
+          console.log('🔧 Updating profile with referral data:', referredByUserId);
+          const { error: updateError } = await supabase
+            .from('user_profiles')
+            .update({ referred_by_user_id: referredByUserId })
+            .eq('user_id', signUpData.user.id);
+            
+          if (updateError) {
+            console.error('❌ Failed to update profile with referral:', updateError);
           } else {
-            console.log('✅ Referral record created successfully');
+            console.log('✅ Profile updated with referral data');
           }
+        }
+      }
+
+      // Create referral record if user was referred and profile creation succeeded
+      if (!profileError && referredByUserId) {
+        console.log('✅ User profile created with referral code:', userReferralCode);
+        const { error: referralRecordError } = await supabase
+          .from('referrals')
+          .insert({
+            referrer_user_id: referredByUserId,
+            referred_user_id: signUpData.user.id,
+            status: 'captured',
+            created_at: new Date().toISOString()
+          });
+
+        if (referralRecordError) {
+          console.error('❌ Failed to create referral record:', referralRecordError);
+        } else {
+          console.log('✅ Referral record created successfully');
         }
       }
     } catch (profileCreationError) {
