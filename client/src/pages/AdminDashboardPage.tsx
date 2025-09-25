@@ -58,7 +58,7 @@ interface AdminStats {
 }
 
 export default function AdminDashboardPage() {
-  const { user } = useAuth()
+  const { user, session } = useAuth()
   const [realtimeStats, setRealtimeStats] = useState<AdminStats | null>(null)
   const queryClient = useQueryClient()
 
@@ -101,7 +101,23 @@ export default function AdminDashboardPage() {
         
         // Get accurate user count from admin API (which has access to all users)
         try {
-          const response = await fetch('/api/admin/users')
+          // Get the JWT token from the current session
+          if (!session?.access_token) {
+            throw new Error('No authentication token available')
+          }
+
+          const response = await fetch('/api/admin/users', {
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json'
+            }
+          })
+          
+          if (!response.ok) {
+            const errorText = await response.text()
+            throw new Error(`Admin API failed: ${response.status} - ${errorText}`)
+          }
+          
           const userData = await response.json()
           
           if (userData.success && userData.users) {

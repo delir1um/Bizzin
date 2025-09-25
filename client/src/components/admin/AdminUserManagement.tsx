@@ -33,6 +33,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { supabase } from "@/lib/supabase"
 import { format } from "date-fns"
+import { useAuth } from "@/hooks/AuthProvider"
 
 interface UserPlan {
   user_id: string
@@ -94,6 +95,7 @@ export function AdminUserManagement() {
   const [deleteUser, setDeleteUser] = useState<UserProfile | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const queryClient = useQueryClient()
+  const { session } = useAuth()
 
 
   // Fetch users using admin API with service role privileges
@@ -103,11 +105,29 @@ export function AdminUserManagement() {
       console.log('Fetching users via admin API...', { searchTerm, planFilter, statusFilter })
       
       try {
-        // Use admin API endpoint which bypasses RLS with service role
-        const response = await fetch('/api/admin/users')
+        // Get the JWT token from the current session
+        if (!session?.access_token) {
+          throw new Error('No authentication token available')
+        }
+
+        // Use admin API endpoint with proper authentication
+        const response = await fetch('/api/admin/users', {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json'
+          }
+        })
         
         if (!response.ok) {
-          throw new Error(`Failed to fetch users: ${response.status} ${response.statusText}`)
+          const errorText = await response.text()
+          console.error('❌ Admin API error:', { 
+            status: response.status, 
+            statusText: response.statusText,
+            text: errorText,
+            hasToken: !!session?.access_token,
+            tokenPreview: session?.access_token?.substring(0, 20) + '...'
+          })
+          throw new Error(`Admin API failed: ${response.status} - ${errorText}`)
         }
         
         const result = await response.json()
