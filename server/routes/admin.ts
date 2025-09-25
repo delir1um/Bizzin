@@ -134,22 +134,15 @@ router.get('/users', requireAdmin, async (req, res) => {
     // Get ALL user plans using direct SQL to avoid Supabase client issues
     let allPlans: any[] = [];
     try {
-      // First try direct database access via SQL
+      // Use only columns that definitely exist
       const { data: planData, error: plansError } = await supabase
         .from('user_plans')
-        .select('user_id, plan_type, expires_at, created_at, cancelled_at, is_trial, trial_ends_at')
+        .select('user_id, plan_type, expires_at, created_at')
         .order('created_at', { ascending: false });
       
       if (plansError) {
         console.error('Error fetching plans:', plansError);
-        // Try without problematic columns as fallback
-        const { data: fallbackPlans, error: fallbackError } = await supabase
-          .from('user_plans')  
-          .select('user_id, plan_type, expires_at, created_at')
-          .order('created_at', { ascending: false });
-        
-        allPlans = fallbackPlans || [];
-        console.log('Using fallback plan query without cancelled_at');
+        allPlans = [];
       } else {
         allPlans = planData || [];
       }
@@ -179,53 +172,61 @@ router.get('/users', requireAdmin, async (req, res) => {
       
       // Use a single efficient SQL query to get all referral data at once
       try {
-        console.log('🔍 Using single query to get all user referral counts...');
+        console.log('🔍 Getting referral counts using Supabase client...');
         const { data: referralCounts, error: referralCountError } = await supabase
-          .rpc('exec_sql', { 
-            sql_query: `
-              SELECT 
-                referred_by_user_id,
-                COUNT(*) as referral_count
-              FROM user_profiles 
-              WHERE referred_by_user_id IS NOT NULL 
-              GROUP BY referred_by_user_id
-            `
-          });
+          .from('user_profiles')
+          .select('referred_by_user_id')
+          .not('referred_by_user_id', 'is', null);
         
         console.log(`🔍 Referral counts query result:`, { referralCounts, referralCountError });
+        console.log(`🔍 referralCounts type:`, typeof referralCounts);
+        console.log(`🔍 referralCounts isArray:`, Array.isArray(referralCounts));
+        if (referralCounts) {
+          console.log(`🔍 referralCounts length:`, referralCounts.length);
+          console.log(`🔍 First few referralCounts:`, referralCounts.slice(0, 3));
+        }
         
         // Create a map of user_id -> referral count for quick lookup
         const referralCountMap: Record<string, number> = {};
         if (!referralCountError && referralCounts && Array.isArray(referralCounts)) {
-          referralCounts.forEach((row: any) => {
-            if (row && row.referred_by_user_id && row.referral_count) {
-              referralCountMap[row.referred_by_user_id] = parseInt(row.referral_count) || 0;
+          console.log(`🔍 Processing ${referralCounts.length} referral records...`);
+          
+          // Count referrals manually from the individual records
+          const countMap: Record<string, number> = {};
+          referralCounts.forEach((row: any, index: number) => {
+            console.log(`🔍 Processing referral row ${index}:`, row);
+            if (row && row.referred_by_user_id) {
+              const referrerId = row.referred_by_user_id;
+              countMap[referrerId] = (countMap[referrerId] || 0) + 1;
+              console.log(`📊 Counting referral for: ${referrerId}`);
             }
+          });
+          
+          // Copy to final map
+          Object.entries(countMap).forEach(([userId, count]) => {
+            referralCountMap[userId] = count;
+            console.log(`📊 Added to map: ${userId} -> ${count} referrals`);
           });
         } else if (referralCountError) {
           console.error('❌ Referral counts query failed:', referralCountError);
+        } else {
+          console.log('⚠️ Referral counts data is not an array or is null');
         }
         
         console.log(`🔍 Built referral count map for ${Object.keys(referralCountMap).length} users`);
+        console.log(`🗺️ Final referralCountMap:`, referralCountMap);
         
-        // Get all referrer information in a single query
-        console.log('🔍 Getting all referrer information with single query...');
+        // Get all referrer information using Supabase client
+        console.log('🔍 Getting all referrer information...');
         const { data: referrerInfo, error: referrerError } = await supabase
-          .rpc('exec_sql', { 
-            sql_query: `
-              SELECT 
-                u.user_id,
-                u.email,
-                u.full_name,
-                u.referred_by_user_id,
-                u.referral_code,
-                r.email as referrer_email,
-                r.full_name as referrer_name,
-                r.referral_code as referrer_code
-              FROM user_profiles u
-              LEFT JOIN user_profiles r ON u.referred_by_user_id = r.user_id
-            `
-          });
+          .from('user_profiles')
+          .select(`
+            user_id,
+            email,
+            full_name,
+            referred_by_user_id,
+            referral_code
+          `);
           
         console.log(`🔍 Referrer info query result:`, { referrerInfo, referrerError });
         
@@ -245,22 +246,24 @@ router.get('/users', requireAdmin, async (req, res) => {
             referrer_code: null
           };
           
-          if (!referrerError && referrerInfo) {
-            const userReferrerInfo = referrerInfo.find((info: any) => info.user_id === user.user_id);
+          if (!referrerError && referrerInfo && Array.isArray(referrerInfo)) {
+            const userReferrerInfo = referrerInfo.find((info: any) => info && info.user_id === user.user_id);
             if (userReferrerInfo && userReferrerInfo.referred_by_user_id) {
               referredByData = {
                 referred_by_user_id: userReferrerInfo.referred_by_user_id,
                 referrer_email: userReferrerInfo.referrer_email,
                 referrer_name: userReferrerInfo.referrer_name || userReferrerInfo.referrer_email,
-                referrer_code: userReferrerInfo.referrer_code || generateReferralCode(userReferrerInfo.referrer_email)
+                referrer_code: userReferrerInfo.referrer_code || generateReferralCode(userReferrerInfo.referrer_email || '')
               };
               console.log(`✅ Found referrer for ${user.email}: ${userReferrerInfo.referrer_email}`);
             }
+          } else if (referrerError) {
+            console.error('❌ Referrer query failed:', referrerError);
           }
           // Get the user's referral code (already in referrerInfo or generate if needed)
           let userReferralCode = null;
-          if (!referrerError && referrerInfo) {
-            const userInfo = referrerInfo.find((info: any) => info.user_id === user.user_id);
+          if (!referrerError && referrerInfo && Array.isArray(referrerInfo)) {
+            const userInfo = referrerInfo.find((info: any) => info && info.user_id === user.user_id);
             userReferralCode = userInfo?.referral_code;
           }
           
