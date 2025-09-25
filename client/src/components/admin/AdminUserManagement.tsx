@@ -584,15 +584,17 @@ export function AdminUserManagement() {
                             </DialogContent>
                           </Dialog>
                           
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => confirmDeleteUser(user)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            data-testid={`button-delete-${user.user_id}`}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                          {!user.is_admin && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => confirmDeleteUser(user)}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              data-testid={`button-delete-${user.user_id}`}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
