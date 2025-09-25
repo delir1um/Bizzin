@@ -249,13 +249,19 @@ router.get('/users', requireAdmin, async (req, res) => {
           if (!referrerError && referrerInfo && Array.isArray(referrerInfo)) {
             const userReferrerInfo = referrerInfo.find((info: any) => info && info.user_id === user.user_id);
             if (userReferrerInfo && userReferrerInfo.referred_by_user_id) {
-              referredByData = {
-                referred_by_user_id: userReferrerInfo.referred_by_user_id,
-                referrer_email: userReferrerInfo.referrer_email,
-                referrer_name: userReferrerInfo.referrer_name || userReferrerInfo.referrer_email,
-                referrer_code: userReferrerInfo.referrer_code || generateReferralCode(userReferrerInfo.referrer_email || '')
-              };
-              console.log(`✅ Found referrer for ${user.email}: ${userReferrerInfo.referrer_email}`);
+              // Look up the actual referrer's information
+              const referrerDetails = referrerInfo.find((info: any) => info && info.user_id === userReferrerInfo.referred_by_user_id);
+              if (referrerDetails) {
+                referredByData = {
+                  referred_by_user_id: userReferrerInfo.referred_by_user_id,
+                  referrer_email: referrerDetails.email,
+                  referrer_name: referrerDetails.full_name || referrerDetails.email,
+                  referrer_code: referrerDetails.referral_code || generateReferralCode(referrerDetails.email || '')
+                };
+                console.log(`✅ Found referrer for ${user.email}: ${referrerDetails.email} (${referrerDetails.full_name})`);
+              } else {
+                console.log(`⚠️ Referrer ID ${userReferrerInfo.referred_by_user_id} not found in user list for ${user.email}`);
+              }
             }
           } else if (referrerError) {
             console.error('❌ Referrer query failed:', referrerError);
