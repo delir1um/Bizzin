@@ -47,6 +47,7 @@ router.get('/validate/:code', async (req, res) => {
     // Known mappings for existing users (fallback for date variations)
     const knownCodes: Record<string, string> = {
       'B0AB4E9A': 'anton@cloudfusion.co.za',
+      '9FD5BEAE': 'info@cloudfusion.co.za',  // Added missing code for info user
       'INFO0249CF': 'info@cloudfusion.co.za', 
       'ADMI0249EX': 'admin@example.com',
       'COOP0249GM': 'coopzbren@gmail.com',
