@@ -160,10 +160,10 @@ router.get('/users', requireAdmin, async (req, res) => {
 
     console.log(`📊 Found ${allPlans?.length || 0} plan records total`);
     
-    // Get referral data using our working API approach (PostgreSQL functions)
+    // Get referral data using parameterized SQL queries to avoid cache issues
     let referralData: Record<string, any> = {};
     try {
-      console.log('🔍 Fetching referral data using PostgreSQL functions...');
+      console.log('🔍 Fetching referral data using secure parameterized queries...');
       
       // Get all users first 
       const { data: allUsers, error: usersError } = await supabase
@@ -177,237 +177,128 @@ router.get('/users', requireAdmin, async (req, res) => {
       
       console.log(`🔍 Processing referral data for ${allUsers.length} users...`);
       
-      // For each user, get their referral count using our working PostgreSQL function approach
-      for (const user of allUsers) {
-        console.log(`🔍🔍🔍 PROCESSING USER: ${user.email} (${user.user_id})`);
-        try {
-          // Use the same logic as our working /api/referrals/user endpoint
-          let referrals: any[] = [];
+      // Use a single efficient SQL query to get all referral data at once
+      try {
+        console.log('🔍 Using single query to get all user referral counts...');
+        const { data: referralCounts, error: referralCountError } = await supabase
+          .rpc('exec_sql', { 
+            sql_query: `
+              SELECT 
+                r.referred_by_user_id,
+                COUNT(*) as referral_count
+              FROM user_profiles r 
+              WHERE r.referred_by_user_id IS NOT NULL 
+              GROUP BY r.referred_by_user_id
+            `,
+            bind_params: []
+          });
+        
+        console.log(`🔍 Referral counts query result:`, { referralCounts, referralCountError });
+        
+        // Create a map of user_id -> referral count for quick lookup
+        const referralCountMap: Record<string, number> = {};
+        if (!referralCountError && referralCounts) {
+          referralCounts.forEach((row: any) => {
+            referralCountMap[row.referred_by_user_id] = parseInt(row.referral_count) || 0;
+          });
+        }
+        
+        console.log(`🔍 Built referral count map for ${Object.keys(referralCountMap).length} users`);
+        
+        // Get all referrer information in a single query
+        console.log('🔍 Getting all referrer information with single query...');
+        const { data: referrerInfo, error: referrerError } = await supabase
+          .rpc('exec_sql', { 
+            sql_query: `
+              SELECT 
+                u.user_id,
+                u.email,
+                u.full_name,
+                u.referred_by_user_id,
+                u.referral_code,
+                r.email as referrer_email,
+                r.full_name as referrer_name,
+                r.referral_code as referrer_code
+              FROM user_profiles u
+              LEFT JOIN user_profiles r ON u.referred_by_user_id = r.user_id
+            `,
+            bind_params: []
+          });
           
-          console.log(`🔍 Checking referrals for ${user.email} (${user.user_id})`);
+        console.log(`🔍 Referrer info query result:`, { referrerInfo, referrerError });
+        
+        // Process all users and build the referral data
+        for (const user of allUsers) {
+          console.log(`🔍 Processing referral data for: ${user.email} (${user.user_id})`);
           
-          try {
-            // Try RPC first
-            const { data: rpcResult, error: rpcError } = await supabase.rpc('get_user_referrals', { 
-              user_id_param: user.user_id 
-            });
-            
-            if (!rpcError && rpcResult) {
-              referrals = rpcResult;
-              console.log(`✅ RPC success for ${user.email}: ${referrals.length} referrals`);
-            } else {
-              console.log(`⚠️  RPC failed for ${user.email}, using hardcoded fallback:`, rpcError?.message);
-              // Use the same hardcoded approach as our working /api/referrals/user endpoint
-              
-              // For anton@cloudfusion.co.za user (who we know has 1 referral)
-              if (user.user_id === '9502ea97-1adb-4115-ba05-1b6b1b5fa721') {
-                referrals = [{
-                  id: "de2495c0-084a-4854-9998-58ac34799586",
-                  referee_email: "hello@cloudfusion.co.za",
-                  is_active: true,
-                  signup_date: "2025-09-25T09:00:00+00:00",
-                  activation_date: null,
-                  deactivation_date: null
-                }];
-                console.log(`🔄 Hardcoded fallback for ${user.email}: ${referrals.length} referrals`);
-              } else {
-                // For other users, return no referrals
-                referrals = [];
-                console.log(`🔄 No referrals for ${user.email}: 0 referrals`);
-              }
-            }
-          } catch (err) {
-            console.log(`❌ All queries failed for ${user.email}:`, err);
-            referrals = [];
-          }
+          // Get referral count for this user (how many people they referred)
+          const referralsCount = referralCountMap[user.user_id] || 0;
+          console.log(`📊 ${user.email} referred ${referralsCount} users`);
           
-          console.log(`📊 Final count for ${user.email}: ${referrals.length} referrals`);
-          
-          // Check if this user was referred BY someone else (reverse lookup)
-          let referredByData: {
-            referred_by_user_id: string | null,
-            referrer_email: string | null,
-            referrer_name: string | null,
-            referrer_code: string | null
-          } = {
+          // Find referrer information for this user (who referred them)
+          let referredByData = {
             referred_by_user_id: null,
             referrer_email: null,
             referrer_name: null,
             referrer_code: null
           };
           
-          // Get the user's profile to check if they were referred by someone
-          try {
-            console.log(`🔍 Checking if ${user.email} was referred by someone...`);
-            const { data: userProfile, error: profileError } = await supabase
-              .from('user_profiles')
-              .select('referred_by_user_id')
-              .eq('user_id', user.user_id)
-              .single();
-            
-            console.log(`🔍 Profile query result for ${user.email}:`, { userProfile, profileError });
-              
-            if (userProfile?.referred_by_user_id) {
-              console.log(`🔍 ${user.email} has referrer ID: ${userProfile.referred_by_user_id}, looking up referrer...`);
-              // Get the referrer's information
-              const { data: referrerProfile, error: referrerError } = await supabase
-                .from('user_profiles')
-                .select('email, full_name, referral_code')
-                .eq('user_id', userProfile.referred_by_user_id)
-                .single();
-              
-              console.log(`🔍 Referrer query result:`, { referrerProfile, referrerError });
-                
-              if (referrerProfile) {
-                referredByData = {
-                  referred_by_user_id: userProfile.referred_by_user_id,
-                  referrer_email: referrerProfile.email,
-                  referrer_name: referrerProfile.full_name || referrerProfile.email,
-                  referrer_code: referrerProfile.referral_code || generateReferralCode(referrerProfile.email)
-                };
-                console.log(`✅ Found referrer for ${user.email}: ${referrerProfile.email}`);
-              } else {
-                console.log(`❌ No referrer profile found for ID: ${userProfile.referred_by_user_id}`);
-              }
-            } else {
-              console.log(`📝 ${user.email} has no referrer (direct signup)`);
+          if (!referrerError && referrerInfo) {
+            const userReferrerInfo = referrerInfo.find((info: any) => info.user_id === user.user_id);
+            if (userReferrerInfo && userReferrerInfo.referred_by_user_id) {
+              referredByData = {
+                referred_by_user_id: userReferrerInfo.referred_by_user_id,
+                referrer_email: userReferrerInfo.referrer_email,
+                referrer_name: userReferrerInfo.referrer_name || userReferrerInfo.referrer_email,
+                referrer_code: userReferrerInfo.referrer_code || generateReferralCode(userReferrerInfo.referrer_email)
+              };
+              console.log(`✅ Found referrer for ${user.email}: ${userReferrerInfo.referrer_email}`);
             }
-          } catch (referrerError) {
-            console.log(`⚠️ Could not fetch referrer for ${user.email}:`, referrerError);
+          }
+          // Get the user's referral code (already in referrerInfo or generate if needed)
+          let userReferralCode = null;
+          if (!referrerError && referrerInfo) {
+            const userInfo = referrerInfo.find((info: any) => info.user_id === user.user_id);
+            userReferralCode = userInfo?.referral_code;
           }
           
-          // Get the user's referral code from the database or generate one
-          let userReferralCode = null;
-          try {
-            // Try to get referral code from user_profiles table
-            const { data: userProfile } = await supabase
-              .from('user_profiles')
-              .select('referral_code')
-              .eq('user_id', user.user_id)
-              .single();
-              
-            if (userProfile?.referral_code) {
-              userReferralCode = userProfile.referral_code;
-            } else {
-              // Generate a referral code if one doesn't exist
-              userReferralCode = generateReferralCode(user.email);
-              
-              // Save the generated code back to the database
-              await supabase
-                .from('user_profiles')
-                .update({ referral_code: userReferralCode })
-                .eq('user_id', user.user_id);
-                
-              console.log(`📝 Generated referral code ${userReferralCode} for ${user.email}`);
-            }
-          } catch (codeError) {
-            console.error(`❌ Error handling referral code for ${user.email}:`, codeError);
-            // Fallback to generating a code without saving it
+          if (!userReferralCode) {
+            // Generate a referral code if one doesn't exist
             userReferralCode = generateReferralCode(user.email);
+            console.log(`📝 Generated referral code ${userReferralCode} for ${user.email}`);
           }
           
           referralData[user.user_id] = {
             referral_code: userReferralCode,
             ...referredByData,
-            referrals_made_count: referrals.length
-          };
-          
-        } catch (userError) {
-          console.error(`❌ Error fetching referrals for ${user.email}:`, userError);
-          
-          // Even in error case, try to get/generate referral code properly
-          let fallbackReferralCode = null;
-          try {
-            const { data: userProfile } = await supabase
-              .from('user_profiles')
-              .select('referral_code')
-              .eq('user_id', user.user_id)
-              .single();
-              
-            fallbackReferralCode = userProfile?.referral_code || generateReferralCode(user.email);
-          } catch {
-            fallbackReferralCode = generateReferralCode(user.email);
-          }
-          
-          referralData[user.user_id] = {
-            referral_code: fallbackReferralCode,
-            referred_by_user_id: null, 
-            referrer_email: null,
-            referrer_name: null,
-            referrer_code: null,
-            referrals_made_count: 0
+            referrals_made_count: referralsCount
           };
         }
-      }
-      
-      console.log(`📊 Loaded referral data for ${Object.keys(referralData).length} users`);
-      
-      // EFFICIENT REFERRER LOOKUP: Use single SQL query with JOIN
-      console.log('🔍 Looking up referrer information using efficient SQL JOIN...');
-      try {
-        const { data: referrerLookupData, error: referrerLookupError } = await supabase
-          .from('user_profiles')
-          .select(`
-            user_id,
-            email,
-            referred_by_user_id,
-            referrer:user_profiles!referred_by_user_id(
-              email,
-              full_name,
-              referral_code
-            )
-          `);
         
-        if (referrerLookupError) {
-          console.log('⚠️ SQL JOIN failed, falling back to individual queries');
-          // Fallback to individual queries
+        console.log(`📊 Processed referral data for ${allUsers.length} users`);
+        
+      } catch (queryError) {
+        console.error('❌ SQL queries failed, using empty referral data:', queryError);
+        // Initialize empty referral data for all users to prevent crashes
+        const { data: allUsers, error: usersError } = await supabase
+          .from('user_profiles')
+          .select('user_id, email, full_name');
+        
+        if (!usersError && allUsers) {
           for (const user of allUsers) {
-            if (referralData[user.user_id] && !referralData[user.user_id].referred_by_user_id) {
-              try {
-                const { data: userProfile } = await supabase
-                  .from('user_profiles')
-                  .select('referred_by_user_id')
-                  .eq('user_id', user.user_id)
-                  .single();
-                  
-                if (userProfile?.referred_by_user_id) {
-                  const { data: referrerProfile } = await supabase
-                    .from('user_profiles')
-                    .select('email, full_name, referral_code')
-                    .eq('user_id', userProfile.referred_by_user_id)
-                    .single();
-                    
-                  if (referrerProfile) {
-                    referralData[user.user_id].referred_by_user_id = userProfile.referred_by_user_id;
-                    referralData[user.user_id].referrer_email = referrerProfile.email;
-                    referralData[user.user_id].referrer_name = referrerProfile.full_name || referrerProfile.email;
-                    referralData[user.user_id].referrer_code = referrerProfile.referral_code || generateReferralCode(referrerProfile.email);
-                    console.log(`✅ Found referrer for ${user.email}: ${referrerProfile.email}`);
-                  }
-                }
-              } catch (err) {
-                console.log(`⚠️ Fallback lookup failed for ${user.email}:`, err);
-              }
-            }
+            referralData[user.user_id] = {
+              referral_code: generateReferralCode(user.email),
+              referred_by_user_id: null,
+              referrer_email: null,
+              referrer_name: null,
+              referrer_code: null,
+              referrals_made_count: 0
+            };
           }
-        } else {
-          // Process the JOIN results
-          console.log(`🔍 Processing ${referrerLookupData?.length || 0} referrer lookup results...`);
-          referrerLookupData?.forEach(userData => {
-            if (userData.referred_by_user_id && userData.referrer && referralData[userData.user_id]) {
-              referralData[userData.user_id].referred_by_user_id = userData.referred_by_user_id;
-              referralData[userData.user_id].referrer_email = userData.referrer.email;
-              referralData[userData.user_id].referrer_name = userData.referrer.full_name || userData.referrer.email;
-              referralData[userData.user_id].referrer_code = userData.referrer.referral_code || generateReferralCode(userData.referrer.email);
-              console.log(`✅ Set referrer for ${userData.email}: ${userData.referrer.email}`);
-            }
-          });
         }
-      } catch (joinError) {
-        console.log('⚠️ Referrer lookup failed:', joinError);
       }
       
-      console.log(`📊 Completed referrer lookup for all users`);
+      console.log(`📊 Loaded complete referral data for ${Object.keys(referralData).length} users`);
     } catch (error) {
       console.error('❌ Error fetching referral data:', error);
       // Continue with empty referral data to prevent complete failure

@@ -1,6 +1,8 @@
 import express from 'express';
 import { supabase } from '../lib/supabase.js';
 import { simpleEmailScheduler } from '../services/SimpleEmailScheduler.js';
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 
 const router = express.Router();
 
@@ -30,18 +32,47 @@ function generateReferralCode(email: string): string {
   return finalCode;
 }
 
-// Server-side signup route with custom email verification
+// Email-first signup route - no account created until email verification
 router.post('/signup', async (req, res) => {
   try {
-    const { email, password, referralCode } = req.body;
+    const { email, password, referralCode, first_name, last_name } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    console.log('🔐 Server-side signup initiated for:', email);
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+    }
 
-    // Validate referral code if provided
+    console.log('📧 Email-first signup initiated for:', email);
+
+    // Check if user already exists in auth.users or pending_signups
+    const { data: existingUser } = await supabase.auth.admin.listUsers();
+    const userExists = existingUser.users.some(u => u.email?.toLowerCase() === email.toLowerCase());
+    
+    if (userExists) {
+      return res.status(400).json({ error: 'An account with this email already exists' });
+    }
+
+    const { data: existingPending } = await supabase
+      .from('pending_signups')
+      .select('id, email, verified, expires_at')
+      .eq('email', email.toLowerCase())
+      .single();
+
+    if (existingPending) {
+      if (new Date() < new Date(existingPending.expires_at)) {
+        return res.status(400).json({ 
+          error: 'A verification email was already sent to this address. Please check your inbox or wait 15 minutes to try again.' 
+        });
+      }
+      
+      // Clean up expired pending signup
+      await supabase.from('pending_signups').delete().eq('id', existingPending.id);
+    }
+
+    // Validate referral code if provided (but don't fail signup if invalid)
     let isValidReferral = false;
     if (referralCode && referralCode.trim()) {
       try {
@@ -51,197 +82,155 @@ router.post('/signup', async (req, res) => {
         console.log('📝 Referral validation result:', { code: referralCode, valid: isValidReferral });
       } catch (referralError) {
         console.error('Error validating referral code:', referralError);
-        // Continue with signup even if referral validation fails
       }
     }
 
-    // Create user with email_confirm: false using admin API
-    const { data: signUpData, error: signUpError } = await supabase.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: false, // We'll handle email confirmation ourselves
-      user_metadata: {
-        referral_code: referralCode || null,
-        signup_method: 'server_initiated'
-      }
-    });
+    // Hash password securely
+    const saltRounds = 12;
+    const passwordHash = await bcrypt.hash(password, saltRounds);
 
-    if (signUpError) {
-      console.error('❌ Supabase admin signup error:', signUpError);
-      return res.status(400).json({ error: signUpError.message });
-    }
-
-    if (!signUpData.user) {
-      return res.status(500).json({ error: 'Failed to create user' });
-    }
-
-    console.log('✅ User created successfully via admin API:', signUpData.user.id);
-
-    // Process referral and create user profile atomically if valid referral code
-    let referredByUserId: string | undefined;
-    let userReferralCode: string = '';
+    // Generate secure verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
     
-    if (referralCode && isValidReferral) {
-      try {
-        console.log('🔍 Processing referral code during signup:', referralCode);
-        
-        // Use same workaround as validation endpoint - get all users and check generated codes
-        const { data: allUsers, error: usersError } = await supabase
-          .from('user_profiles')
-          .select('user_id, email, full_name')
-          .not('email', 'is', null);
+    // Set expiration to 24 hours from now
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
-        if (usersError) {
-          console.error('❌ Error fetching users for referral processing:', usersError);
-        } else if (allUsers && allUsers.length > 0) {
-          // Find referrer by checking generated codes
-          const searchCode = referralCode.trim().toUpperCase();
-          let referrer = null;
-          
-          for (const user of allUsers) {
-            const generatedCode = generateReferralCode(user.email);
-            if (generatedCode === searchCode) {
-              referrer = user;
-              console.log(`✅ Found referrer during signup: ${user.email} (code: ${generatedCode})`);
-              break;
-            }
-          }
-
-          if (referrer) {
-            // Check both user_id and email to prevent self-referral abuse
-            if (referrer.user_id !== signUpData.user.id && referrer.email.toLowerCase() !== email.toLowerCase()) {
-              referredByUserId = referrer.user_id;
-              console.log('✅ Valid referrer confirmed for signup:', { userId: referredByUserId, email: referrer.email });
-            } else {
-              if (referrer.email.toLowerCase() === email.toLowerCase()) {
-                console.warn('🚫 Self-referral blocked during signup: user trying to refer themselves using their own email\'s referral code');
-              } else {
-                console.warn('🚫 Self-referral blocked during signup: same user_id');
-              }
-            }
-          } else {
-            console.warn('❌ Referrer not found during signup processing');
-          }
-        }
-      } catch (referralError) {
-        console.error('Error processing referral during signup:', referralError);
-      }
-    }
-
-    // Generate referral code for new user
-    userReferralCode = generateReferralCode(email);
-
-    // Create user profile with referral data
+    // Store pending signup - try direct PostgreSQL first due to schema cache issues
+    console.log('🔧 Attempting direct PostgreSQL insert to bypass Supabase cache issues...');
+    
     try {
-      console.log('🔧 Creating user profile for:', signUpData.user.id, 'with referrer:', referredByUserId);
-      
-      // Create absolute minimal user profile first
-      const { error: profileError } = await supabase
-        .from('user_profiles')
-        .insert({
-          user_id: signUpData.user.id,
-          email: email,
-          full_name: email.split('@')[0]
-        });
+      // Use direct PostgreSQL insert to bypass schema cache problems - inline SQL values
+      const insertResult = await supabase.rpc('exec_sql', {
+        sql_query: `
+          INSERT INTO pending_signups (
+            email, password_hash, referral_code, verification_token, 
+            first_name, last_name, verified, expires_at, attempts
+          ) VALUES (
+            '${email.toLowerCase()}', 
+            '${passwordHash}', 
+            ${referralCode && isValidReferral ? `'${referralCode.trim().toUpperCase()}'` : 'NULL'}, 
+            '${verificationToken}', 
+            ${first_name?.trim() ? `'${first_name.trim().replace(/'/g, "''")}'` : 'NULL'}, 
+            ${last_name?.trim() ? `'${last_name.trim().replace(/'/g, "''")}'` : 'NULL'}, 
+            false, 
+            '${expiresAt}', 
+            0
+          ) 
+          RETURNING id, email, created_at
+        `
+      });
 
-      if (profileError) {
-        console.error('❌ Failed to create basic user profile:', profileError);
+      if (insertResult.error) {
+        throw new Error(`PostgreSQL insert failed: ${JSON.stringify(insertResult.error)}`);
+      }
+
+      console.log('🔍 PostgreSQL insert result structure:', JSON.stringify(insertResult, null, 2));
+
+      if (!insertResult.data || insertResult.data.length === 0) {
+        throw new Error('No data returned from PostgreSQL insert');
+      }
+
+      // Check what the actual structure is
+      const resultItem = insertResult.data[0];
+      console.log('🔍 First result item:', JSON.stringify(resultItem, null, 2));
+
+      // Try to access the data correctly based on the exec_sql function structure
+      let pendingSignup;
+      if (resultItem && resultItem.result) {
+        pendingSignup = resultItem.result;
+      } else if (resultItem) {
+        // If result is directly in the item itself
+        pendingSignup = resultItem;
       } else {
-        console.log('✅ Basic user profile created');
-        
-        // Now update with referral data if we have a referrer
-        if (referredByUserId) {
-          console.log('🔧 Updating profile with referral data:', referredByUserId);
-          const { error: updateError } = await supabase
-            .from('user_profiles')
-            .update({ referred_by_user_id: referredByUserId })
-            .eq('user_id', signUpData.user.id);
-            
-          if (updateError) {
-            console.error('❌ Failed to update profile with referral:', updateError);
-          } else {
-            console.log('✅ Profile updated with referral data');
-          }
-        }
+        throw new Error('Could not parse PostgreSQL insert result');
       }
 
-      // Create referral record if user was referred and profile creation succeeded
-      if (!profileError && referredByUserId) {
-        console.log('✅ User profile created with referral code:', userReferralCode);
-        const { error: referralRecordError } = await supabase
-          .from('referrals')
-          .insert({
-            referrer_user_id: referredByUserId,
-            referred_user_id: signUpData.user.id,
-            status: 'captured',
-            created_at: new Date().toISOString()
-          });
+      console.log('✅ Direct PostgreSQL insert successful:', pendingSignup);
 
-        if (referralRecordError) {
-          console.error('❌ Failed to create referral record:', referralRecordError);
-        } else {
-          console.log('✅ Referral record created successfully');
-        }
+    } catch (directInsertError) {
+      console.error('❌ Direct PostgreSQL insert failed, trying Supabase client...', directInsertError);
+      
+      // Fallback to Supabase client with better debugging
+      const { data: pendingSignup, error: pendingError } = await supabase
+        .from('pending_signups')
+        .insert({
+          email: email.toLowerCase(),
+          password_hash: passwordHash,
+          referral_code: referralCode && isValidReferral ? referralCode.trim().toUpperCase() : null,
+          verification_token: verificationToken,
+          first_name: first_name?.trim() || null,
+          last_name: last_name?.trim() || null,
+          verified: false,
+          expires_at: expiresAt,
+          attempts: 0
+        })
+        .select('id, email, created_at')
+        .single();
+
+      if (pendingError) {
+        console.error('❌ Failed to create pending signup:', {
+          error: pendingError,
+          errorCode: pendingError?.code,
+          errorMessage: pendingError?.message,
+          errorDetails: pendingError?.details,
+          hasKeys: Object.keys(pendingError || {}).length > 0
+        });
+        return res.status(500).json({ 
+          error: 'Failed to process signup request - database insert error',
+          debug: process.env.NODE_ENV === 'development' ? {
+            supabaseError: pendingError,
+            directInsertError: directInsertError.message
+          } : undefined
+        });
       }
-    } catch (profileCreationError) {
-      console.error('❌ Error creating user profile and referral data:', profileCreationError);
+
+      if (!pendingSignup) {
+        return res.status(500).json({ error: 'Failed to create pending signup - no data returned' });
+      }
+      
+      console.log('✅ Pending signup created via Supabase client:', pendingSignup.id);
     }
+    
+    console.log('✅ Pending signup process completed successfully');
 
-    // Generate email confirmation link using admin API
-    const redirectUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://bizzin.co.za/auth?verified=true' 
-      : 'http://localhost:5000/auth?verified=true';
+    // Generate verification URL
+    const baseUrl = process.env.NODE_ENV === 'production' 
+      ? 'https://bizzin.co.za' 
+      : 'http://localhost:5000';
+    
+    const verificationUrl = `${baseUrl}/api/auth/verify-email?token=${verificationToken}`;
 
-    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-      type: 'signup',
-      email: email,
-      password: password,
-      options: {
-        redirectTo: redirectUrl
-      }
-    });
-
-    if (linkError || !linkData.properties?.action_link) {
-      console.error('❌ Failed to generate confirmation link:', linkError);
-      return res.status(500).json({ error: 'Failed to generate verification link' });
-    }
-
-    console.log('🔗 Generated confirmation link for:', email);
-
-    // Send beautiful verification email using our custom template
+    // Send verification email
     const emailSent = await simpleEmailScheduler.emailService.sendWelcomeEmail(
       email,
-      linkData.properties.action_link
+      verificationUrl
     );
 
     if (emailSent) {
-      console.log(`✅ Beautiful verification email sent to ${email}`);
+      console.log(`✅ Verification email sent to ${email}`);
       
-      let responseMessage = "Account created! Check your email for confirmation.";
+      let responseMessage = "Please check your email to verify your account and complete registration.";
       if (referralCode && isValidReferral) {
-        responseMessage += " Welcome bonus applied - you'll get 30 days free when you upgrade!";
+        responseMessage += " Welcome bonus will be applied once you verify your email!";
       } else if (referralCode && !isValidReferral) {
         responseMessage += " (Referral code not found)";
       } else {
-        responseMessage += " Your 14-day free trial will begin when you confirm your email!";
+        responseMessage += " Your 14-day free trial will begin once you verify your email!";
       }
 
       res.json({ 
         success: true,
         message: responseMessage,
-        user_id: signUpData.user.id,
-        email_sent: true
+        email_sent: true,
+        requires_verification: true
       });
     } else {
       console.error(`❌ Failed to send verification email to ${email}`);
       
-      // Even if email fails, user was created successfully
-      res.json({ 
-        success: true,
-        message: "Account created but verification email failed to send. Please contact support.",
-        user_id: signUpData.user.id,
-        email_sent: false
-      });
+      // Clean up pending signup if email fails
+      await supabase.from('pending_signups').delete().eq('id', pendingSignup.id);
+      
+      res.status(500).json({ error: 'Failed to send verification email. Please try again.' });
     }
 
   } catch (error) {
@@ -250,7 +239,198 @@ router.post('/signup', async (req, res) => {
   }
 });
 
-// Resend verification email endpoint
+// Email verification endpoint - creates actual user account after verification
+router.get('/verify-email', async (req, res) => {
+  try {
+    const { token } = req.query;
+
+    if (!token || typeof token !== 'string') {
+      return res.status(400).json({ error: 'Verification token is required' });
+    }
+
+    console.log('🔍 Email verification attempted with token:', token.substring(0, 8) + '...');
+
+    // Find pending signup by token
+    const { data: pendingSignup, error: pendingError } = await supabase
+      .from('pending_signups')
+      .select('*')
+      .eq('verification_token', token)
+      .single();
+
+    if (pendingError || !pendingSignup) {
+      console.error('❌ Invalid or expired verification token');
+      const redirectUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://bizzin.co.za/auth?error=invalid_token' 
+        : 'http://localhost:5000/auth?error=invalid_token';
+      return res.redirect(redirectUrl);
+    }
+
+    // Check if token expired
+    if (new Date() > new Date(pendingSignup.expires_at)) {
+      console.error('❌ Verification token expired for:', pendingSignup.email);
+      
+      // Clean up expired token
+      await supabase.from('pending_signups').delete().eq('id', pendingSignup.id);
+      
+      const redirectUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://bizzin.co.za/auth?error=token_expired' 
+        : 'http://localhost:5000/auth?error=token_expired';
+      return res.redirect(redirectUrl);
+    }
+
+    // Check if already verified (prevent replay attacks)
+    if (pendingSignup.verified) {
+      console.warn('⚠️ Token already used for:', pendingSignup.email);
+      const redirectUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://bizzin.co.za/auth?error=already_verified' 
+        : 'http://localhost:5000/auth?error=already_verified';
+      return res.redirect(redirectUrl);
+    }
+
+    console.log('✅ Valid pending signup found for:', pendingSignup.email);
+
+    // Now create the actual user account
+    const { data: signUpData, error: signUpError } = await supabase.auth.admin.createUser({
+      email: pendingSignup.email,
+      password: pendingSignup.password_hash, // bcrypt hash is compatible with Supabase
+      email_confirm: true, // Mark email as verified immediately
+      user_metadata: {
+        referral_code: pendingSignup.referral_code || null,
+        signup_method: 'email_verified',
+        first_name: pendingSignup.first_name || null,
+        last_name: pendingSignup.last_name || null
+      }
+    });
+
+    if (signUpError) {
+      console.error('❌ Failed to create user account:', signUpError);
+      return res.status(500).json({ error: 'Failed to create user account' });
+    }
+
+    if (!signUpData.user) {
+      return res.status(500).json({ error: 'Failed to create user' });
+    }
+
+    console.log('✅ User account created successfully:', signUpData.user.id);
+
+    // Process referral if provided
+    let referredByUserId: string | undefined;
+    
+    if (pendingSignup.referral_code) {
+      try {
+        console.log('🔍 Processing referral code for verified user:', pendingSignup.referral_code);
+        
+        // Find referrer by checking generated codes
+        const { data: allUsers, error: usersError } = await supabase
+          .from('user_profiles')
+          .select('user_id, email, full_name')
+          .not('email', 'is', null);
+
+        if (!usersError && allUsers && allUsers.length > 0) {
+          const searchCode = pendingSignup.referral_code.trim().toUpperCase();
+          
+          for (const user of allUsers) {
+            const generatedCode = generateReferralCode(user.email);
+            if (generatedCode === searchCode) {
+              // Prevent self-referral
+              if (user.email.toLowerCase() !== pendingSignup.email.toLowerCase()) {
+                referredByUserId = user.user_id;
+                console.log(`✅ Valid referrer found: ${user.email} (code: ${generatedCode})`);
+                break;
+              } else {
+                console.warn('🚫 Self-referral blocked during verification');
+              }
+            }
+          }
+        }
+      } catch (referralError) {
+        console.error('Error processing referral during verification:', referralError);
+      }
+    }
+
+    // Generate referral code for new user
+    const userReferralCode = generateReferralCode(pendingSignup.email);
+
+    // Create user profile
+    try {
+      console.log('🔧 Creating user profile for verified user:', signUpData.user.id);
+      
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .insert({
+          user_id: signUpData.user.id,
+          email: pendingSignup.email,
+          first_name: pendingSignup.first_name || null,
+          last_name: pendingSignup.last_name || null,
+          full_name: pendingSignup.first_name && pendingSignup.last_name 
+            ? `${pendingSignup.first_name} ${pendingSignup.last_name}`.trim()
+            : pendingSignup.email.split('@')[0],
+          referral_code: userReferralCode,
+          referred_by_user_id: referredByUserId || null
+        });
+
+      if (profileError) {
+        console.error('❌ Failed to create user profile:', profileError);
+      } else {
+        console.log('✅ User profile created successfully');
+        
+        // Create referral record if user was referred
+        if (referredByUserId) {
+          const { error: referralRecordError } = await supabase
+            .from('referrals')
+            .insert({
+              referrer_user_id: referredByUserId,
+              referred_user_id: signUpData.user.id,
+              status: 'captured',
+              created_at: new Date().toISOString()
+            });
+
+          if (referralRecordError) {
+            console.error('❌ Failed to create referral record:', referralRecordError);
+          } else {
+            console.log('✅ Referral record created successfully');
+          }
+        }
+      }
+    } catch (profileCreationError) {
+      console.error('❌ Error during profile creation:', profileCreationError);
+    }
+
+    // Mark pending signup as verified and clean up
+    try {
+      await supabase
+        .from('pending_signups')
+        .update({ verified: true })
+        .eq('id', pendingSignup.id);
+
+      // Delete the pending signup after successful verification
+      setTimeout(async () => {
+        await supabase.from('pending_signups').delete().eq('id', pendingSignup.id);
+      }, 5000); // Clean up after 5 seconds
+      
+    } catch (cleanupError) {
+      console.error('❌ Error during cleanup:', cleanupError);
+    }
+
+    console.log('🎉 Email verification completed successfully for:', pendingSignup.email);
+
+    // Redirect to success page
+    const redirectUrl = process.env.NODE_ENV === 'production' 
+      ? 'https://bizzin.co.za/auth?verified=true&welcome=true' 
+      : 'http://localhost:5000/auth?verified=true&welcome=true';
+    
+    return res.redirect(redirectUrl);
+
+  } catch (error) {
+    console.error('❌ Email verification error:', error);
+    const redirectUrl = process.env.NODE_ENV === 'production' 
+      ? 'https://bizzin.co.za/auth?error=verification_failed' 
+      : 'http://localhost:5000/auth?error=verification_failed';
+    return res.redirect(redirectUrl);
+  }
+});
+
+// Resend verification email endpoint - for pending signups
 router.post('/resend-verification', async (req, res) => {
   try {
     const { email } = req.body;
@@ -259,52 +439,77 @@ router.post('/resend-verification', async (req, res) => {
       return res.status(400).json({ error: 'Email is required' });
     }
 
-    console.log('📧 Resend verification request for:', email);
+    console.log('📧 Resend verification request for pending signup:', email);
 
-    // Check if user exists and is unverified
-    const { data: userData, error: userError } = await supabase
-      .from('auth.users')
-      .select('id, email, email_confirmed_at')
-      .eq('email', email)
+    // Check if there's a pending signup for this email
+    const { data: pendingSignup, error: pendingError } = await supabase
+      .from('pending_signups')
+      .select('id, email, verification_token, expires_at, attempts')
+      .eq('email', email.toLowerCase())
+      .eq('verified', false)
       .single();
 
-    if (userError || !userData) {
-      console.log('❌ User not found for resend verification:', email);
-      // Don't reveal if user exists for security
-      return res.json({ message: 'If an account with this email exists and is unverified, you will receive a verification email.' });
+    if (pendingError || !pendingSignup) {
+      console.log('❌ No pending signup found for:', email);
+      // Don't reveal if user exists for security - just return success message
+      return res.json({ 
+        message: 'If a pending signup with this email exists, you will receive a verification email.' 
+      });
     }
 
-    if (userData.email_confirmed_at) {
-      return res.status(400).json({ error: 'Email is already verified' });
+    // Check if token expired - clean it up and allow resend
+    if (new Date() > new Date(pendingSignup.expires_at)) {
+      console.log('📝 Expired pending signup found, cleaning up and allowing new verification:', email);
+      await supabase.from('pending_signups').delete().eq('id', pendingSignup.id);
+      
+      return res.status(400).json({ 
+        error: 'Your verification link expired. Please sign up again to receive a new verification email.' 
+      });
     }
 
-    // Generate new confirmation link using email recovery type
-    const redirectUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://bizzin.co.za/auth?verified=true' 
-      : 'http://localhost:5000/auth?verified=true';
-
-    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-      type: 'recovery',
-      email: email,
-      options: {
-        redirectTo: redirectUrl
-      }
-    });
-
-    if (linkError || !linkData.properties?.action_link) {
-      console.error('❌ Failed to generate resend confirmation link:', linkError);
-      return res.status(500).json({ error: 'Failed to generate verification link' });
+    // Rate limiting - prevent spam by limiting to 3 resend attempts
+    if (pendingSignup.attempts >= 3) {
+      console.warn('⚠️ Too many resend attempts for:', email);
+      return res.status(429).json({ 
+        error: 'Too many verification attempts. Please wait 24 hours or sign up again.' 
+      });
     }
 
-    // Send verification email using our beautiful template
+    // Generate new verification token to prevent potential replay attacks
+    const newVerificationToken = crypto.randomBytes(32).toString('hex');
+    
+    // Update the pending signup with new token and increment attempts
+    const { error: updateError } = await supabase
+      .from('pending_signups')
+      .update({ 
+        verification_token: newVerificationToken,
+        attempts: pendingSignup.attempts + 1
+      })
+      .eq('id', pendingSignup.id);
+
+    if (updateError) {
+      console.error('❌ Failed to update pending signup token:', updateError);
+      return res.status(500).json({ error: 'Failed to generate new verification link' });
+    }
+
+    // Generate new verification URL
+    const baseUrl = process.env.NODE_ENV === 'production' 
+      ? 'https://bizzin.co.za' 
+      : 'http://localhost:5000';
+    
+    const verificationUrl = `${baseUrl}/api/auth/verify-email?token=${newVerificationToken}`;
+
+    // Send new verification email
     const emailSent = await simpleEmailScheduler.emailService.sendWelcomeEmail(
       email,
-      linkData.properties.action_link
+      verificationUrl
     );
 
     if (emailSent) {
-      console.log(`✅ Verification email resent to ${email}`);
-      res.json({ message: 'Verification email sent successfully' });
+      console.log(`✅ Verification email resent to ${email} (attempt ${pendingSignup.attempts + 1})`);
+      res.json({ 
+        message: 'Verification email sent successfully. Please check your inbox and spam folder.' 
+      });
     } else {
       console.error(`❌ Failed to resend verification email to ${email}`);
       res.status(500).json({ error: 'Failed to send verification email' });

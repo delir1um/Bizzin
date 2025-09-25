@@ -221,6 +221,25 @@ export type EarlySignup = {
   updated_at: string;
 };
 
+// Pending Signups Table - temporary storage before email verification
+export type PendingSignup = {
+  id: string;
+  email: string;
+  password_hash: string;
+  referral_code?: string;
+  verification_token: string;
+  first_name?: string;
+  last_name?: string;
+  business_name?: string;
+  business_type?: string;
+  phone?: string;
+  verified: boolean;
+  expires_at: string;
+  attempts: number; // Track verification attempts
+  created_at: string;
+  updated_at: string;
+};
+
 // Journal Entries Table
 export type JournalEntry = {
   id: string;
