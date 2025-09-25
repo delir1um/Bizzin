@@ -178,18 +178,17 @@ export class ReferralService {
    * Get user's referral dashboard data
    */
   static async getReferralDashboard(userId: string): Promise<ReferralDashboard | null> {
-    const { data, error } = await supabase
-      .from('user_referral_stats')
-      .select('*')
-      .eq('user_id', userId)
-      .single()
-
-    if (error) {
+    try {
+      // Use the new API endpoint that bypasses schema cache issues
+      const response = await fetch(`/api/referrals/dashboard/${userId}`)
+      if (!response.ok) {
+        throw new Error('Failed to fetch referral dashboard')
+      }
+      return await response.json()
+    } catch (error) {
       console.error('Error fetching referral dashboard:', error)
       return null
     }
-
-    return data
   }
 
   /**
