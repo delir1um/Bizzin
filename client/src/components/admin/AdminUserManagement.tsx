@@ -157,6 +157,7 @@ export function AdminUserManagement() {
             storage_used: 0, // Could be enhanced with storage calculation
             last_activity: user.updated_at || user.created_at,
             // Referral information from backend
+            referral_code: user.referral_code || null,
             referred_by: user.referrals?.referred_by || null,
             referrals_made_count: user.referrals?.referrals_made_count || 0
           }
