@@ -896,13 +896,13 @@ function UserDetailView({ user, refetch }: { user: UserProfile, refetch: () => v
                 <label className="text-sm font-medium">User's Own Referral Code</label>
                 <div className="flex items-center gap-2 mt-1">
                   <code className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-sm">
-                    {user.user_id.split('-')[0].toUpperCase()}
+                    {user.referral_code || 'Not Available'}
                   </code>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                      const code = user.user_id.split('-')[0].toUpperCase()
+                      const code = user.referral_code || 'Not Available'
                       navigator.clipboard.writeText(code)
                       alert('Referral code copied to clipboard!')
                     }}
