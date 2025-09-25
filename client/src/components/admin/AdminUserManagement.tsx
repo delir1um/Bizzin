@@ -457,7 +457,9 @@ export function AdminUserManagement() {
                       
                       <TableCell>
                         <div className="text-sm space-y-1">
-                          {user.is_trial ? (
+                          {user.is_admin ? (
+                            <span className="text-muted-foreground">None</span>
+                          ) : user.is_trial ? (
                             <>
                               <div className="flex items-center gap-2">
                                 <span className="font-medium">
