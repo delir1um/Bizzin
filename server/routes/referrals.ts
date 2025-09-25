@@ -3,6 +3,34 @@ import { supabase } from '../lib/supabase.js';
 
 const router = express.Router();
 
+// Debug endpoint to see all generated referral codes (development only)
+router.get('/debug/codes', async (req, res) => {
+  try {
+    if (process.env.NODE_ENV !== 'development') {
+      return res.status(403).json({ error: 'Debug endpoint only available in development' });
+    }
+    
+    const { data: users, error } = await supabase
+      .from('user_profiles')
+      .select('user_id, email, full_name');
+    
+    if (error || !users) {
+      return res.status(500).json({ error: 'Failed to fetch users' });
+    }
+    
+    const codes = users.map(user => ({
+      email: user.email,
+      name: user.full_name,
+      referral_code: generateReferralCode(user.email)
+    }));
+    
+    return res.json(codes);
+  } catch (error) {
+    console.error('Error in debug codes endpoint:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
 
 
