@@ -447,6 +447,175 @@ router.get('/verify-email', async (req, res) => {
   }
 });
 
+// Set password after email verification endpoint
+router.post('/set-password', async (req, res) => {
+  try {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({ error: 'Token and password are required' });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+    }
+
+    console.log('🔐 Setting password for verification token:', token.substring(0, 8) + '...');
+
+    // Find verified pending signup by token
+    const { data: pendingSignup, error: findError } = await supabase
+      .from('pending_signups')
+      .select('*')
+      .eq('verification_token', token)
+      .eq('verified', true)
+      .single();
+    
+    if (findError || !pendingSignup) {
+      console.error('❌ Verified pending signup not found or invalid token:', findError);
+      return res.status(400).json({ error: 'Invalid or expired verification token' });
+    }
+
+    // Check if token expired
+    if (new Date() > new Date(pendingSignup.expires_at)) {
+      console.error('❌ Verification token expired for:', pendingSignup.email);
+      
+      // Clean up expired token
+      await supabase.from('pending_signups').delete().eq('id', pendingSignup.id);
+      
+      return res.status(400).json({ error: 'Verification token has expired' });
+    }
+
+    console.log('✅ Valid verified pending signup found for:', pendingSignup.email);
+
+    // Create the actual user account
+    const { data: signUpData, error: signUpError } = await supabase.auth.admin.createUser({
+      email: pendingSignup.email,
+      password: password, // Supabase will handle password hashing
+      email_confirm: true, // Mark email as verified immediately
+      user_metadata: {
+        referral_code: pendingSignup.referral_code || null,
+        signup_method: 'email_verified',
+        first_name: pendingSignup.first_name || null,
+        last_name: pendingSignup.last_name || null
+      }
+    });
+
+    if (signUpError) {
+      console.error('❌ Failed to create user account:', signUpError);
+      return res.status(500).json({ error: 'Failed to create user account' });
+    }
+
+    if (!signUpData.user) {
+      return res.status(500).json({ error: 'Failed to create user' });
+    }
+
+    console.log('✅ User account created successfully:', signUpData.user.id);
+
+    // Process referral if provided
+    let referredByUserId: string | undefined;
+    
+    if (pendingSignup.referral_code) {
+      try {
+        console.log('🔍 Processing referral code for new user:', pendingSignup.referral_code);
+        
+        // Find referrer by checking generated codes
+        const { data: allUsers, error: usersError } = await supabase
+          .from('user_profiles')
+          .select('user_id, email, full_name')
+          .not('email', 'is', null);
+
+        if (!usersError && allUsers && allUsers.length > 0) {
+          const searchCode = pendingSignup.referral_code.trim().toUpperCase();
+          
+          for (const user of allUsers) {
+            const generatedCode = generateReferralCode(user.email);
+            if (generatedCode === searchCode) {
+              // Prevent self-referral
+              if (user.email.toLowerCase() !== pendingSignup.email.toLowerCase()) {
+                referredByUserId = user.user_id;
+                console.log(`✅ Valid referrer found: ${user.email} (code: ${generatedCode})`);
+                break;
+              } else {
+                console.warn('🚫 Self-referral blocked during password setup');
+              }
+            }
+          }
+        }
+      } catch (referralError) {
+        console.error('Error processing referral during password setup:', referralError);
+      }
+    }
+
+    // Generate referral code for new user
+    const userReferralCode = generateReferralCode(pendingSignup.email);
+
+    // Create user profile
+    try {
+      console.log('🔧 Creating user profile for new user:', signUpData.user.id);
+      
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .insert({
+          user_id: signUpData.user.id,
+          email: pendingSignup.email,
+          first_name: pendingSignup.first_name || null,
+          last_name: pendingSignup.last_name || null,
+          full_name: pendingSignup.first_name && pendingSignup.last_name 
+            ? `${pendingSignup.first_name} ${pendingSignup.last_name}`.trim()
+            : pendingSignup.email.split('@')[0],
+          referral_code: userReferralCode,
+          referred_by_user_id: referredByUserId || null
+        });
+
+      if (profileError) {
+        console.error('❌ Failed to create user profile:', profileError);
+      } else {
+        console.log('✅ User profile created successfully');
+        
+        // Create referral record if user was referred
+        if (referredByUserId) {
+          const { error: referralRecordError } = await supabase
+            .from('referrals')
+            .insert({
+              referrer_user_id: referredByUserId,
+              referred_user_id: signUpData.user.id,
+              status: 'captured',
+              created_at: new Date().toISOString()
+            });
+
+          if (referralRecordError) {
+            console.error('❌ Failed to create referral record:', referralRecordError);
+          } else {
+            console.log('✅ Referral record created successfully');
+          }
+        }
+      }
+    } catch (profileCreationError) {
+      console.error('❌ Error during profile creation:', profileCreationError);
+    }
+
+    // Clean up pending signup after successful account creation
+    try {
+      await supabase.from('pending_signups').delete().eq('id', pendingSignup.id);
+      console.log('✅ Pending signup cleaned up successfully');
+    } catch (cleanupError) {
+      console.error('❌ Error during cleanup:', cleanupError);
+    }
+
+    console.log('🎉 Account creation completed successfully for:', pendingSignup.email);
+
+    res.json({ 
+      success: true, 
+      message: 'Account created successfully! You can now log in.',
+      user_id: signUpData.user.id
+    });
+
+  } catch (error) {
+    console.error('❌ Set password error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Resend verification email endpoint - for pending signups
 router.post('/resend-verification', async (req, res) => {
   try {
