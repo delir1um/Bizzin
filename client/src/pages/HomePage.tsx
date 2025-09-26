@@ -423,7 +423,7 @@ export function HomePage() {
                   <span className="text-2xl font-bold text-green-600 dark:text-green-400">2</span>
                 </div>
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Friend Subscribes</h3>
-                <p className="text-slate-600 dark:text-slate-300 text-sm">They sign up and subscribe to any paid plan</p>
+                <p className="text-slate-600 dark:text-slate-300 text-sm">They sign up and subscribe to the paid plan</p>
               </div>
               
               <div>
