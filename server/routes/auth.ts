@@ -7,34 +7,23 @@ import bcrypt from 'bcryptjs';
 
 const router = express.Router();
 
-// TEMPORARY: Update pending_signups table for verify-then-set-password flow
-router.post('/update-pending-table', async (req, res) => {
-  try {
-    console.log('🔧 Updating pending_signups table to remove password_hash column...');
-    
-    const { data: result, error } = await supabase.rpc('exec_sql', {
-      sql_query: `
-        ALTER TABLE public.pending_signups 
-        DROP COLUMN IF EXISTS password_hash;
-      `
-    });
-
-    if (error) {
-      console.error('❌ Failed to update table:', error);
-      return res.status(500).json({ error: 'Failed to update table', details: error });
-    }
-
-    console.log('✅ Table update result:', result);
-    return res.json({ success: true, result });
-  } catch (err) {
-    console.error('❌ Table update error:', err);
-    return res.status(500).json({ error: 'Failed to update table', details: err });
-  }
-});
+// REMOVED: update-pending-table endpoint was a critical security vulnerability
+// that executed raw SQL from a public route. This has been removed to prevent
+// unauthorized database modifications.
 
 
-// TEMPORARY: Direct signup for testing referrals (bypasses email verification)
-router.post('/signup-direct', async (req, res) => {
+// REMOVED: signup-direct endpoint was a critical security vulnerability
+// that bypassed email verification. This has been removed to ensure
+// all signups go through the secure verify-then-set-password flow.
+
+// The secure signup flow is now:
+// 1. POST /api/auth/signup (email + referral code only)
+// 2. User clicks verification email link
+// 3. GET /verify-email redirects to password creation page  
+// 4. POST /api/auth/set-password creates actual account
+
+/*
+router.post('/signup-direct-REMOVED', async (req, res) => {
   try {
     const { email, password, referralCode, first_name, last_name } = req.body;
 
@@ -159,6 +148,45 @@ router.post('/signup-direct', async (req, res) => {
     res.status(500).json({ error: 'Failed to create account' });
   }
 });
+*/
+
+// DIRECT REFERRAL CODE VALIDATION
+// Validates referral codes without HTTP requests to avoid localhost dependencies
+async function validateReferralCodeDirect(code: string): Promise<boolean> {
+  try {
+    console.log('🔍 Validating referral code:', code);
+    console.log('🔍 Validating against active users in database...');
+    console.log('🔄 Using temporary validation workaround due to schema cache issues...');
+    
+    // Get all users from database
+    const { data: allUsers, error: usersError } = await supabase
+      .from('user_profiles')
+      .select('user_id, email, full_name')
+      .not('email', 'is', null);
+
+    if (usersError || !allUsers || allUsers.length === 0) {
+      console.error('❌ Error fetching users for referral validation:', usersError);
+      return false;
+    }
+
+    console.log(`📋 Checking ${allUsers.length} active users for referral code: ${code}`);
+    
+    // Generate codes for all users and check for match
+    for (const user of allUsers) {
+      const generatedCode = generateReferralCode(user.email);
+      if (generatedCode === code) {
+        console.log(`✅ Valid referrer found: ${user.email} (code: ${generatedCode})`);
+        return true;
+      }
+    }
+    
+    console.log('❌ No matching referrer found for code:', code);
+    return false;
+  } catch (error) {
+    console.error('❌ Error in direct referral validation:', error);
+    return false;
+  }
+}
 
 // UNIFIED REFERRAL CODE GENERATION SYSTEM
 // This function generates consistent, stable referral codes that never change for a given email
@@ -226,9 +254,8 @@ router.post('/signup', async (req, res) => {
     let isValidReferral = false;
     if (referralCode && referralCode.trim()) {
       try {
-        const response = await fetch(`http://localhost:5000/api/referrals/validate/${referralCode}`);
-        const validationResult = await response.json();
-        isValidReferral = validationResult.valid;
+        // Direct validation instead of HTTP request to avoid localhost dependency
+        isValidReferral = await validateReferralCodeDirect(referralCode.trim().toUpperCase());
         console.log('📝 Referral validation result:', { code: referralCode, valid: isValidReferral });
       } catch (referralError) {
         console.error('Error validating referral code:', referralError);
