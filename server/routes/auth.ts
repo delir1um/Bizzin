@@ -613,20 +613,30 @@ router.post('/set-password', async (req, res) => {
     try {
       console.log('🔧 Creating user profile for new user:', signUpData.user.id);
       
-      // Use upsert to handle potential duplicates
+      // Check if profile already exists to preserve original referral data
+      const { data: existingProfile } = await supabase
+        .from('user_profiles')
+        .select('referred_by_user_id')
+        .eq('user_id', signUpData.user.id)
+        .single();
+
+      // Use upsert but preserve original referral relationship if it exists
+      const profileData = {
+        user_id: signUpData.user.id,
+        email: pendingSignup.email,
+        first_name: pendingSignup.first_name || null,
+        last_name: pendingSignup.last_name || null,
+        full_name: pendingSignup.first_name && pendingSignup.last_name 
+          ? `${pendingSignup.first_name} ${pendingSignup.last_name}`.trim()
+          : pendingSignup.email.split('@')[0],
+        referral_code: userReferralCode,
+        // Only set referral if profile doesn't exist or has no existing referral
+        referred_by_user_id: existingProfile?.referred_by_user_id || referredByUserId || null
+      };
+
       const { error: profileError } = await supabase
         .from('user_profiles')
-        .upsert({
-          user_id: signUpData.user.id,
-          email: pendingSignup.email,
-          first_name: pendingSignup.first_name || null,
-          last_name: pendingSignup.last_name || null,
-          full_name: pendingSignup.first_name && pendingSignup.last_name 
-            ? `${pendingSignup.first_name} ${pendingSignup.last_name}`.trim()
-            : pendingSignup.email.split('@')[0],
-          referral_code: userReferralCode,
-          referred_by_user_id: referredByUserId || null
-        }, {
+        .upsert(profileData, {
           onConflict: 'user_id'
         });
 
@@ -639,11 +649,14 @@ router.post('/set-password', async (req, res) => {
         if (referredByUserId) {
           const { error: referralRecordError } = await supabase
             .from('referrals')
-            .insert({
+            .upsert({
               referrer_user_id: referredByUserId,
               referred_user_id: signUpData.user.id,
+              referral_code: pendingSignup.referral_code,
               status: 'captured',
               created_at: new Date().toISOString()
+            }, {
+              onConflict: 'referrer_user_id,referred_user_id'
             });
 
           if (referralRecordError) {
