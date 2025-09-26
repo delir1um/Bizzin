@@ -67,6 +67,14 @@ export class ReferralService {
   }
 
   /**
+   * Get temporary referral code without removing it
+   * Used for populating forms and checking existence
+   */
+  static getTemporaryReferralCode(): string | null {
+    return localStorage.getItem(this.TEMP_REFERRAL_KEY)
+  }
+
+  /**
    * Get and remove pending referral for user
    * Checks both user-specific and temporary storage
    */

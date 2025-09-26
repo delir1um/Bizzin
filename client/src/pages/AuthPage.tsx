@@ -60,18 +60,36 @@ export default function AuthPage() {
 
   const emailValue = watch('email')
 
-  // Check for referral code in URL and validate it
+  // Check for referral code in URL and localStorage and validate it
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
-    const refCode = urlParams.get('ref')
+    const urlRefCode = urlParams.get('ref')
     
-    if (refCode) {
-      setReferralCode(refCode)
+    // Check URL first
+    if (urlRefCode) {
+      console.log(`📋 Referral code found in URL: ${urlRefCode}`)
+      setReferralCode(urlRefCode)
       // Store temporarily in case user needs to confirm email
-      ReferralService.setTemporaryReferralCode(refCode)
+      ReferralService.setTemporaryReferralCode(urlRefCode)
       
       // Validate referral code
-      ReferralService.validateReferralCode(refCode).then(valid => {
+      ReferralService.validateReferralCode(urlRefCode).then(valid => {
+        setReferralValid(valid)
+        if (valid) {
+          setMode("signUp") // Switch to signup mode for referrals
+        }
+      })
+      return
+    }
+    
+    // If no URL referral code, check localStorage for temporary one
+    const tempRefCode = ReferralService.getTemporaryReferralCode()
+    if (tempRefCode) {
+      console.log(`📋 Referral code found in localStorage: ${tempRefCode}`)
+      setReferralCode(tempRefCode)
+      
+      // Validate the stored referral code
+      ReferralService.validateReferralCode(tempRefCode).then(valid => {
         setReferralValid(valid)
         if (valid) {
           setMode("signUp") // Switch to signup mode for referrals
