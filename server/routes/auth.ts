@@ -609,13 +609,14 @@ router.post('/set-password', async (req, res) => {
     // Generate referral code for new user
     const userReferralCode = generateReferralCode(pendingSignup.email);
 
-    // Create user profile
+    // Create user profile with conflict handling
     try {
       console.log('🔧 Creating user profile for new user:', signUpData.user.id);
       
+      // Use upsert to handle potential duplicates
       const { error: profileError } = await supabase
         .from('user_profiles')
-        .insert({
+        .upsert({
           user_id: signUpData.user.id,
           email: pendingSignup.email,
           first_name: pendingSignup.first_name || null,
@@ -625,6 +626,8 @@ router.post('/set-password', async (req, res) => {
             : pendingSignup.email.split('@')[0],
           referral_code: userReferralCode,
           referred_by_user_id: referredByUserId || null
+        }, {
+          onConflict: 'user_id'
         });
 
       if (profileError) {
