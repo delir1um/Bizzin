@@ -7,6 +7,31 @@ import bcrypt from 'bcryptjs';
 
 const router = express.Router();
 
+// TEMPORARY: Update pending_signups table for verify-then-set-password flow
+router.post('/update-pending-table', async (req, res) => {
+  try {
+    console.log('🔧 Updating pending_signups table to remove password_hash column...');
+    
+    const { data: result, error } = await supabase.rpc('exec_sql', {
+      sql_query: `
+        ALTER TABLE public.pending_signups 
+        DROP COLUMN IF EXISTS password_hash;
+      `
+    });
+
+    if (error) {
+      console.error('❌ Failed to update table:', error);
+      return res.status(500).json({ error: 'Failed to update table', details: error });
+    }
+
+    console.log('✅ Table update result:', result);
+    return res.json({ success: true, result });
+  } catch (err) {
+    console.error('❌ Table update error:', err);
+    return res.status(500).json({ error: 'Failed to update table', details: err });
+  }
+});
+
 
 // TEMPORARY: Direct signup for testing referrals (bypasses email verification)
 router.post('/signup-direct', async (req, res) => {
@@ -164,14 +189,10 @@ function generateReferralCode(email: string): string {
 // Email-first signup route - no account created until email verification
 router.post('/signup', async (req, res) => {
   try {
-    const { email, password, referralCode, first_name, last_name } = req.body;
+    const { email, referralCode, first_name, last_name } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
-    }
-
-    if (password.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
     }
 
     console.log('📧 Email-first signup initiated for:', email);
@@ -214,10 +235,6 @@ router.post('/signup', async (req, res) => {
       }
     }
 
-    // Hash password securely
-    const saltRounds = 12;
-    const passwordHash = await bcrypt.hash(password, saltRounds);
-
     // Generate secure verification token
     const verificationToken = crypto.randomBytes(32).toString('hex');
     
@@ -240,7 +257,6 @@ router.post('/signup', async (req, res) => {
         .from('pending_signups')
         .insert({
           email: email.toLowerCase(),
-          password_hash: passwordHash,
           referral_code: referralCode && isValidReferral ? referralCode.trim().toUpperCase() : null,
           verification_token: verificationToken,
           first_name: first_name?.trim() || null,
