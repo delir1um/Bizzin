@@ -32,11 +32,31 @@ import PreLaunchPage from "@/pages/PreLaunchPage"
 import AdminDashboardPage from "@/pages/AdminDashboardPage"
 import { useEffect } from "react"
 import { usePlatformSettings } from "@/hooks/usePlatformSettings"
+import { ReferralService } from "@/lib/services/referrals"
 
 // Component to handle root route logic
 function MainRouter() {
   const { user, loading } = useAuth()
   const [, setLocation] = useLocation()
+
+  // Capture referral codes from URL on home page
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const refCode = urlParams.get('ref')
+    
+    if (refCode) {
+      console.log(`📋 Referral code captured on home page: ${refCode}`)
+      // Store temporarily for later use during signup
+      ReferralService.setTemporaryReferralCode(refCode)
+      
+      // Optionally validate the code (non-blocking)
+      ReferralService.validateReferralCode(refCode).then(valid => {
+        if (valid) {
+          console.log(`✅ Valid referral code captured: ${refCode}`)
+        }
+      })
+    }
+  }, [])
 
   useEffect(() => {
     if (!loading && user) {

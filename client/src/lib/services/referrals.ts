@@ -367,17 +367,17 @@ export class ReferralService {
     // Check if we have a custom deployment URL
     const deploymentUrl = import.meta.env.VITE_DEPLOYMENT_URL
     if (deploymentUrl) {
-      return `${deploymentUrl}/auth?ref=${referralCode}`
+      return `${deploymentUrl}/?ref=${referralCode}`
     }
     
     // Auto-detect deployment URL based on current hostname
     const currentHostname = window.location.hostname
     let baseUrl = window.location.origin
     
-    // Use current origin for referral links
-    // This works for any deployment URL
+    // Use current origin for referral links and go to home page
+    // This works better for both logged-in and new users
     
-    return `${baseUrl}/auth?ref=${referralCode}`
+    return `${baseUrl}/?ref=${referralCode}`
   }
 
   /**
