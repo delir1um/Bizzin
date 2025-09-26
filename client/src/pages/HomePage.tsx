@@ -3,9 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Target, BookOpen, Calculator, Shield, PenTool, Headphones, ArrowRight, Brain, Users, LayoutDashboard, TrendingUp, Flame, BarChart3 } from "lucide-react"
 import { useLocation } from "wouter"
 import { FadeInUp, FadeInLeft, FadeInRight, StaggerContainer } from "@/components/animations/ScrollReveal"
+import { useState, useEffect } from "react"
 
 export function HomePage() {
   const [, setLocation] = useLocation()
+  const [isLoading, setIsLoading] = useState(true)
   
   const scrollToFeatures = () => {
     const featuresSection = document.getElementById('features-section')
@@ -13,10 +15,45 @@ export function HomePage() {
       featuresSection.scrollIntoView({ behavior: 'smooth' })
     }
   }
+
+  // Simulate page loading and hide indicator after content loads
+  useEffect(() => {
+    // Set a minimum loading time for smooth UX
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 1500) // 1.5 seconds - feel instant but allow for content loading
+
+    return () => clearTimeout(timer)
+  }, [])
   
   return (
     <>
-      <main className="flex-1">
+      {/* Loading Indicator */}
+      {isLoading && (
+        <div className="fixed inset-0 z-50 bg-white dark:bg-[#0B0A1D] flex items-center justify-center transition-opacity duration-500">
+          <div className="text-center">
+            {/* Bizzin Branded Loading Animation */}
+            <div className="relative mb-8">
+              <div className="w-16 h-16 border-4 border-orange-200 dark:border-orange-900 rounded-full animate-spin">
+                <div className="absolute top-0 left-0 w-16 h-16 border-4 border-transparent border-t-orange-600 rounded-full animate-spin"></div>
+              </div>
+            </div>
+            
+            {/* Loading Text */}
+            <div className="space-y-2">
+              <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">
+                Welcome to <span className="text-orange-600 italic">Bizzin</span>
+              </h2>
+              <p className="text-slate-600 dark:text-slate-400 animate-pulse">
+                Preparing your business growth platform...
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Main Content - fade in when loading completes */}
+      <main className={`flex-1 transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         {/* Enhanced Background with Multiple Gradients */}
