@@ -1,6 +1,7 @@
 import { EmailService } from './EmailService.js';
 import { supabase } from '../lib/supabase.js';
 import * as cron from 'node-cron';
+import { logger } from '../lib/logger.js';
 
 export class SimpleEmailScheduler {
   public emailService: EmailService;
@@ -14,11 +15,11 @@ export class SimpleEmailScheduler {
 
   async start() {
     if (this.isRunning) {
-      console.log('📧 Email scheduler already running');
+      logger.warn('EMAIL', 'Email scheduler already running');
       return;
     }
 
-    console.log('🚀 Starting Simple Email Scheduler...');
+    logger.info('EMAIL', 'Starting Simple Email Scheduler');
     
     // Load email templates
     await this.emailService.loadTemplates();
@@ -26,16 +27,16 @@ export class SimpleEmailScheduler {
     // Run at the top of every hour (0 minutes)
     this.cronTask = cron.schedule('0 * * * *', () => {
       this.checkAndSendEmails().catch(error => {
-        console.error('❌ Error in email check:', error);
+        logger.error('EMAIL', 'Error in email check', error);
       });
     });
     
     this.isRunning = true;
-    console.log('✅ Simple Email Scheduler started - running hourly at :00 minutes (Africa/Johannesburg timezone)');
+    logger.info('EMAIL', 'Simple Email Scheduler started - running hourly at :00 minutes (Africa/Johannesburg timezone)');
     
     // Run initial check immediately
     this.checkAndSendEmails().catch(error => {
-      console.error('❌ Error in initial email check:', error);
+      logger.error('EMAIL', 'Error in initial email check', error);
     });
   }
 

@@ -3,6 +3,7 @@ import helmet from "helmet";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import huggingfaceRouter from "./huggingface";
+import { logger } from "./lib/logger.js";
 
 const app = express();
 
@@ -122,15 +123,15 @@ app.use((req, res, next) => {
   const server = await registerRoutes(app);
   
   // Initialize single email system - SimpleEmailScheduler (production ready)
-  console.log('📧 Initializing unified email system...');
-  console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
+  logger.info('SERVER', 'Initializing unified email system');
+  logger.info('SERVER', `Environment: ${process.env.NODE_ENV || 'development'}`);
   const { simpleEmailScheduler } = await import('./services/SimpleEmailScheduler.js');
   simpleEmailScheduler.start().catch(error => {
-    console.error('❌ Failed to start email scheduler:', error);
+    logger.error('SERVER', 'Failed to start email scheduler', error);
   });
 
   // Initialize Grace Period Scheduler for automatic account suspension
-  console.log('⏰ Initializing Grace Period Scheduler...');
+  logger.info('SERVER', 'Initializing Grace Period Scheduler');
   const { GracePeriodScheduler } = await import('./services/GracePeriodScheduler.js');
   GracePeriodScheduler.start();
 
@@ -158,6 +159,6 @@ app.use((req, res, next) => {
   const port = parseInt(process.env.PORT || '5000', 10);
   server.listen(port, "0.0.0.0", () => {
     log(`serving on port ${port}`);
-    console.log(`Server is running on http://0.0.0.0:${port}`);
+    logger.info('SERVER', `Server running on http://0.0.0.0:${port}`);
   });
 })();

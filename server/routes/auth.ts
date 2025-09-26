@@ -4,6 +4,7 @@ import { simpleEmailScheduler } from '../services/SimpleEmailScheduler.js';
 // Removed PostgreSQL imports - now using Supabase exclusively
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
+import { logger } from '../lib/logger.js';
 
 const router = express.Router();
 
@@ -27,9 +28,9 @@ const router = express.Router();
 // Validates referral codes without HTTP requests to avoid localhost dependencies
 async function validateReferralCodeDirect(code: string): Promise<boolean> {
   try {
-    console.log('🔍 Validating referral code:', code);
-    console.log('🔍 Validating against active users in database...');
-    console.log('🔄 Using temporary validation workaround due to schema cache issues...');
+    logger.debug('AUTH', 'Validating referral code', { code });
+    logger.debug('AUTH', 'Validating against active users in database');
+    logger.debug('AUTH', 'Using temporary validation workaround due to schema cache issues');
     
     // Get all users from database
     const { data: allUsers, error: usersError } = await supabase
@@ -38,25 +39,25 @@ async function validateReferralCodeDirect(code: string): Promise<boolean> {
       .not('email', 'is', null);
 
     if (usersError || !allUsers || allUsers.length === 0) {
-      console.error('❌ Error fetching users for referral validation:', usersError);
+      logger.error('AUTH', 'Error fetching users for referral validation', usersError);
       return false;
     }
 
-    console.log(`📋 Checking ${allUsers.length} active users for referral code: ${code}`);
+    logger.debug('AUTH', `Checking ${allUsers.length} active users for referral code`, { code, userCount: allUsers.length });
     
     // Generate codes for all users and check for match
     for (const user of allUsers) {
       const generatedCode = generateReferralCode(user.email);
       if (generatedCode === code) {
-        console.log(`✅ Valid referrer found: ${user.email} (code: ${generatedCode})`);
+        logger.info('AUTH', 'Valid referrer found', { referrerEmail: user.email, code: generatedCode });
         return true;
       }
     }
     
-    console.log('❌ No matching referrer found for code:', code);
+    logger.warn('AUTH', 'No matching referrer found for code', { code });
     return false;
   } catch (error) {
-    console.error('❌ Error in direct referral validation:', error);
+    logger.error('AUTH', 'Error in direct referral validation', error);
     return false;
   }
 }
@@ -108,7 +109,7 @@ function generateReferralCode(email: string): string {
   const hashSuffix = codeBase.length >= 6 ? codeBase.substring(0, 6) : codeBase.padStart(6, '0');
   
   const finalCode = emailPrefix + hashSuffix;
-  console.log(`🔧 Generated consistent referral code for ${email}: ${finalCode}`);
+  logger.debug('AUTH', 'Generated consistent referral code', { email, code: finalCode });
   return finalCode;
 }
 
@@ -121,7 +122,7 @@ router.post('/signup', async (req, res) => {
       return res.status(400).json({ error: 'Email is required' });
     }
 
-    console.log('📧 Email-first signup initiated for:', email);
+    logger.info('AUTH', 'Email-first signup initiated', { email });
 
     // Check if user already exists in auth.users
     const { data: existingUser } = await supabase.auth.admin.listUsers();
@@ -138,7 +139,7 @@ router.post('/signup', async (req, res) => {
       .maybeSingle();
 
     if (pendingError) {
-      console.error('❌ Error checking pending signups:', pendingError);
+      logger.error('AUTH', 'Error checking pending signups', pendingError);
       return res.status(500).json({ error: 'Database error while checking pending signups' });
     }
 
@@ -165,9 +166,9 @@ router.post('/signup', async (req, res) => {
       try {
         // Direct validation instead of HTTP request to avoid localhost dependency
         isValidReferral = await validateReferralCodeDirect(referralCode.trim().toUpperCase());
-        console.log('📝 Referral validation result:', { code: referralCode, valid: isValidReferral });
+        logger.info('AUTH', 'Referral validation result', { code: referralCode, valid: isValidReferral });
       } catch (referralError) {
-        console.error('Error validating referral code:', referralError);
+        logger.error('AUTH', 'Error validating referral code', referralError);
       }
     }
 
@@ -225,9 +226,9 @@ router.post('/signup', async (req, res) => {
       }
 
       pendingSignup = data[0];
-      console.log('✅ Pending signup created successfully:', pendingSignup.id);
+      logger.info('AUTH', 'Pending signup created successfully', { signupId: pendingSignup.id });
     } catch (dbError) {
-      console.error('❌ Failed to create pending signup:', {
+      logger.error('AUTH', 'Failed to create pending signup', {
         error: dbError,
         errorMessage: dbError instanceof Error ? dbError.message : 'Unknown database error',
         stack: dbError instanceof Error ? dbError.stack : undefined
@@ -254,7 +255,7 @@ router.post('/signup', async (req, res) => {
     );
 
     if (emailSent) {
-      console.log(`✅ Verification email sent to ${email}`);
+      logger.info('AUTH', 'Verification email sent', { email });
       
       let responseMessage = "Please check your email to verify your account and complete registration.";
       if (referralCode && isValidReferral) {
@@ -272,7 +273,7 @@ router.post('/signup', async (req, res) => {
         requires_verification: true
       });
     } else {
-      console.error(`❌ Failed to send verification email to ${email}`);
+      logger.error('AUTH', 'Failed to send verification email', { email });
       
       // Clean up pending signup if email fails
       await supabase.from('pending_signups').delete().eq('id', pendingSignup.id);

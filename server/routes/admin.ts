@@ -7,6 +7,7 @@ import {
   updateUserProfileAdminSchema,
   createAdminAuditLogSchema 
 } from '../../shared/schema.js';
+import { logger } from '../lib/logger.js';
 
 const router = express.Router();
 
@@ -34,7 +35,7 @@ function generateReferralCode(email: string): string {
   const hashSuffix = codeBase.length >= 6 ? codeBase.substring(0, 6) : codeBase.padStart(6, '0');
   
   const finalCode = emailPrefix + hashSuffix;
-  console.log(`🔧 [ADMIN] Generated consistent referral code for ${email}: ${finalCode}`);
+  logger.debug('ADMIN', 'Generated consistent referral code', { email, code: finalCode });
   return finalCode;
 }
 
@@ -60,7 +61,7 @@ const requireAdmin = async (req: Request, res: Response, next: NextFunction) => 
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     
     if (authError || !user) {
-      console.log('❌ Admin auth failed:', { authError, hasUser: !!user });
+      logger.security('Admin auth failed', { authError, hasUser: !!user });
       return res.status(401).json({ 
         error: 'Authentication failed: Invalid or expired token' 
       });
@@ -75,7 +76,7 @@ const requireAdmin = async (req: Request, res: Response, next: NextFunction) => 
       .single();
 
     if (adminError || !adminUser) {
-      console.log('❌ Admin privilege check failed:', { 
+      logger.security('Admin privilege check failed', { 
         userId: user.id, 
         email: user.email, 
         adminError, 
@@ -86,7 +87,7 @@ const requireAdmin = async (req: Request, res: Response, next: NextFunction) => 
       });
     }
 
-    console.log('✅ Admin access granted:', { 
+    logger.security('Admin access granted', { 
       userId: adminUser.user_id, 
       email: adminUser.email 
     });
@@ -96,7 +97,7 @@ const requireAdmin = async (req: Request, res: Response, next: NextFunction) => 
     (req as any).authenticatedUser = user;
     next();
   } catch (error) {
-    console.error('❌ Admin authentication error:', error);
+    logger.error('ADMIN', 'Admin authentication error', error);
     res.status(500).json({ error: 'Authentication failed' });
   }
 };
@@ -105,7 +106,7 @@ const requireAdmin = async (req: Request, res: Response, next: NextFunction) => 
 // Get comprehensive admin user list with service role privileges
 router.get('/users', requireAdmin, async (req, res) => {
   try {
-    console.log('👥 Fetching complete admin user list with fixed plan logic...');
+    logger.info('ADMIN', 'Fetching complete admin user list with fixed plan logic');
     
     // Get all user profiles with service role privileges (bypasses RLS)
     const { data: profiles, error: profileError } = await supabase
@@ -125,11 +126,11 @@ router.get('/users', requireAdmin, async (req, res) => {
       .order('created_at', { ascending: false });
     
     if (profileError) {
-      console.error('Error fetching user profiles:', profileError);
+      logger.error('ADMIN', 'Error fetching user profiles', profileError);
       return res.status(500).json({ error: 'Failed to fetch user profiles' });
     }
     
-    console.log(`📋 Found ${profiles?.length || 0} user profiles`);
+    logger.info('ADMIN', `Found ${profiles?.length || 0} user profiles`);
     
     // Get ALL user plans using direct SQL to avoid Supabase client issues
     let allPlans: any[] = [];
@@ -141,17 +142,17 @@ router.get('/users', requireAdmin, async (req, res) => {
         .order('created_at', { ascending: false });
       
       if (plansError) {
-        console.error('Error fetching plans:', plansError);
+        logger.error('ADMIN', 'Error fetching plans', plansError);
         allPlans = [];
       } else {
         allPlans = planData || [];
       }
     } catch (err) {
-      console.error('Plan query failed completely:', err);
+      logger.error('ADMIN', 'Plan query failed completely', err);
       allPlans = [];
     }
 
-    console.log(`📊 Found ${allPlans?.length || 0} plan records total`);
+    logger.info('ADMIN', `Found ${allPlans?.length || 0} plan records total`);
     
     // Get referral data using parameterized SQL queries to avoid cache issues
     let referralData: Record<string, any> = {};
