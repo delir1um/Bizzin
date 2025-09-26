@@ -15,13 +15,20 @@ import { useTheme } from "@/lib/theme-provider"
 import { FooterContentModal, type FooterContentType } from "@/components/footer/FooterContentModal"
 import brizzinLogoDark from "@/assets/brizzin-logo-dark-v2.webp"
 
-const schema = z.object({
+const signInSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
   referralCode: z.string().optional(),
 })
 
-type FormData = z.infer<typeof schema>
+const signUpSchema = z.object({
+  email: z.string().email({ message: "Invalid email address" }),
+  referralCode: z.string().optional(),
+})
+
+type SignInFormData = z.infer<typeof signInSchema>
+type SignUpFormData = z.infer<typeof signUpSchema>
+type FormData = SignInFormData | SignUpFormData
 
 export default function AuthPage() {
   const [mode, setMode] = useState<"signIn" | "signUp">("signIn")
@@ -47,7 +54,9 @@ export default function AuthPage() {
     handleSubmit,
     watch,
     formState: { errors, isSubmitting },
-  } = useForm<FormData>({ resolver: zodResolver(schema) })
+  } = useForm<FormData>({ 
+    resolver: zodResolver(mode === "signUp" ? signUpSchema : signInSchema) 
+  })
 
   const emailValue = watch('email')
 
@@ -126,22 +135,22 @@ export default function AuthPage() {
 
   const onSubmit = async (data: FormData) => {
     setMessage("")
-    const { email, password } = data
+    const { email } = data
+    const password = 'password' in data ? data.password : undefined
 
     if (mode === "signUp") {
       try {
         console.log('Starting server-side signup process for:', email)
         
-        // Use server-side signup with beautiful email template
+        // Use server-side signup with beautiful email template (no password required)
         const response = await fetch('/api/auth/signup', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ 
-            email, 
-            password,
-            referralCode: referralCode || data.referralCode
+            email,
+            referralCode: referralCode || (data as any).referralCode
           })
         })
 
@@ -158,6 +167,11 @@ export default function AuthPage() {
         setMessage("Signup failed. Please try again or contact support if the problem persists.")
       }
     } else {
+      // Sign in requires password
+      if (!password) {
+        setMessage("Password is required for sign in")
+        return
+      }
       const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password })
       
       if (error) {
@@ -281,12 +295,13 @@ export default function AuthPage() {
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                      Password
-                    </label>
-                    {mode === "signIn" && (
+                {/* Password Field - Only show for sign-in */}
+                {mode === "signIn" && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Password
+                      </label>
                       <button
                         type="button"
                         onClick={handleForgotPasswordClick}
@@ -294,20 +309,20 @@ export default function AuthPage() {
                       >
                         Forgot password?
                       </button>
+                    </div>
+                    <Input
+                      type="password"
+                      placeholder="Enter your password"
+                      {...register("password" as any)}
+                      className="h-12 border-slate-200 dark:border-slate-600 focus:border-orange-500 focus:ring-orange-500"
+                    />
+                    {(errors as any).password && (
+                      <p className="text-sm text-red-500 flex items-center gap-1">
+                        <span>⚠</span> {(errors as any).password.message}
+                      </p>
                     )}
                   </div>
-                  <Input
-                    type="password"
-                    placeholder="Enter your password"
-                    {...register("password")}
-                    className="h-12 border-slate-200 dark:border-slate-600 focus:border-orange-500 focus:ring-orange-500"
-                  />
-                  {errors.password && (
-                    <p className="text-sm text-red-500 flex items-center gap-1">
-                      <span>⚠</span> {errors.password.message}
-                    </p>
-                  )}
-                </div>
+                )}
 
                 {/* Referral Code Field - Only show for signup */}
                 {mode === "signUp" && (
