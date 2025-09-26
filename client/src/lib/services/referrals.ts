@@ -42,6 +42,10 @@ export interface ReferralBonus {
 export class ReferralService {
   private static readonly PENDING_REFERRAL_KEY = 'pendingReferral'
   private static readonly TEMP_REFERRAL_KEY = 'tempReferralCode'
+  
+  // Client-side caching for validation to prevent duplicate API calls
+  private static validationCache = new Map<string, { valid: boolean; exp: number }>()
+  private static inFlightValidations = new Map<string, Promise<boolean>>()
 
   /**
    * Store referral code persistently during signup process
@@ -303,7 +307,7 @@ export class ReferralService {
   }
 
   /**
-   * Validate a referral code
+   * Validate a referral code with client-side caching and in-flight deduplication
    * Uses server-side endpoint to bypass permission issues
    */
   static async validateReferralCode(referralCode: string): Promise<boolean> {
@@ -311,13 +315,54 @@ export class ReferralService {
       return false
     }
     
+    const normalizedCode = referralCode.trim().toUpperCase()
+    const now = Date.now()
+    const cacheExpiry = 10 * 60 * 1000 // 10 minutes
+    
+    // Check cache first
+    const cached = this.validationCache.get(normalizedCode)
+    if (cached && cached.exp > now) {
+      console.log(`📋 Using cached validation result for ${normalizedCode}`)
+      return cached.valid
+    }
+    
+    // Check if already validating (in-flight deduplication)
+    const inFlight = this.inFlightValidations.get(normalizedCode)
+    if (inFlight) {
+      console.log(`📋 Using in-flight validation for ${normalizedCode}`)
+      return inFlight
+    }
+    
+    // Start new validation
+    console.log(`📋 Starting new validation for ${normalizedCode}`)
+    const validationPromise = this.performValidation(normalizedCode, now + cacheExpiry)
+    this.inFlightValidations.set(normalizedCode, validationPromise)
+    
+    return validationPromise
+  }
+  
+  /**
+   * Perform the actual validation API call
+   */
+  private static async performValidation(normalizedCode: string, expiry: number): Promise<boolean> {
     try {
-      const response = await fetch(`/api/referrals/validate/${encodeURIComponent(referralCode.trim().toUpperCase())}`)
+      const response = await fetch(`/api/referrals/validate/${encodeURIComponent(normalizedCode)}`)
       const data = await response.json()
-      return data.valid === true
+      const valid = data.valid === true
+      
+      // Cache the result
+      this.validationCache.set(normalizedCode, { valid, exp: expiry })
+      console.log(`📋 Cached validation result for ${normalizedCode}: ${valid}`)
+      
+      return valid
     } catch (error) {
       console.error('Error validating referral code:', error)
+      // Cache false result for shorter time on errors
+      this.validationCache.set(normalizedCode, { valid: false, exp: Date.now() + 60000 }) // 1 minute
       return false
+    } finally {
+      // Remove from in-flight
+      this.inFlightValidations.delete(normalizedCode)
     }
   }
 

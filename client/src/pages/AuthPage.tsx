@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useLocation } from "wouter"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -42,6 +42,9 @@ export default function AuthPage() {
   const [footerContentType, setFooterContentType] = useState<FooterContentType | null>(null)
   const { theme } = useTheme()
   
+  // Prevent React StrictMode double-validation
+  const didValidateRef = useRef(false)
+  
   const currentLogo = brizzinLogoDark // Always use dark version
 
   const handleFooterLinkClick = (contentType: FooterContentType) => {
@@ -62,6 +65,10 @@ export default function AuthPage() {
 
   // Check for referral code in URL and localStorage and validate it
   useEffect(() => {
+    // Prevent React StrictMode double-run
+    if (didValidateRef.current) return
+    didValidateRef.current = true
+    
     const urlParams = new URLSearchParams(window.location.search)
     const urlRefCode = urlParams.get('ref')
     
@@ -72,7 +79,7 @@ export default function AuthPage() {
       // Store temporarily in case user needs to confirm email
       ReferralService.setTemporaryReferralCode(urlRefCode)
       
-      // Validate referral code
+      // Validate referral code (now cached and deduplicated)
       ReferralService.validateReferralCode(urlRefCode).then(valid => {
         setReferralValid(valid)
         if (valid) {
@@ -88,7 +95,7 @@ export default function AuthPage() {
       console.log(`📋 Referral code found in localStorage: ${tempRefCode}`)
       setReferralCode(tempRefCode)
       
-      // Validate the stored referral code
+      // Validate the stored referral code (now cached and deduplicated)
       ReferralService.validateReferralCode(tempRefCode).then(valid => {
         setReferralValid(valid)
         if (valid) {

@@ -49,12 +49,12 @@ function MainRouter() {
       // Store temporarily for later use during signup
       ReferralService.setTemporaryReferralCode(refCode)
       
-      // Optionally validate the code (non-blocking)
-      ReferralService.validateReferralCode(refCode).then(valid => {
-        if (valid) {
-          console.log(`✅ Valid referral code captured: ${refCode}`)
-        }
-      })
+      // Remove ref parameter from URL to prevent re-triggers on navigation
+      const newUrl = new URL(window.location.href)
+      newUrl.searchParams.delete('ref')
+      window.history.replaceState(null, '', newUrl.pathname + newUrl.search + newUrl.hash)
+      
+      // Don't validate here - let AuthPage handle validation to avoid duplicates
     }
   }, [])
 
