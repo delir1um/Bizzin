@@ -353,16 +353,25 @@ export default function AuthPage() {
                 {mode === "signUp" && (
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                      Referral Code (Optional)
+                      Referral Code {referralCode && referralValid ? "" : "(Optional)"}
                     </label>
                     <Input
                       placeholder="Enter referral code"
                       {...register("referralCode")}
                       defaultValue={referralCode || ""}
-                      className="h-12 border-slate-200 dark:border-slate-600 focus:border-orange-500 focus:ring-orange-500"
+                      disabled={!!(referralCode && referralValid)}
+                      className={`h-12 border-slate-200 dark:border-slate-600 focus:border-orange-500 focus:ring-orange-500 ${
+                        referralCode && referralValid ? 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800 cursor-not-allowed' : ''
+                      }`}
                     />
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Got a referral code? You'll get <strong>30 days free</strong> when you upgrade to premium!
+                      {referralCode && referralValid ? (
+                        <span className="text-green-600 dark:text-green-400">
+                          ✅ Referral code applied! You'll get <strong>30 days free</strong> when you upgrade to premium!
+                        </span>
+                      ) : (
+                        <>Got a referral code? You'll get <strong>30 days free</strong> when you upgrade to premium!</>
+                      )}
                     </p>
                   </div>
                 )}
