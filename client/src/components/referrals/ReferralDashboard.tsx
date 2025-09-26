@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/hooks/use-toast'
-import { Copy, Users, Calendar, Gift, TrendingUp, ExternalLink } from 'lucide-react'
+import { Copy, Users, Calendar, Gift, TrendingUp, ExternalLink, Link } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
 
 export function ReferralDashboard() {
@@ -223,15 +223,21 @@ export function ReferralDashboard() {
                 {dashboard.referral_code}
               </div>
             </div>
-            <Button onClick={handleCopyReferralCode} size="sm" className="shrink-0 bg-orange-600 hover:bg-orange-700">
-              <Copy className="w-4 h-4 mr-2" />
-              Copy Code
-            </Button>
+            <div className="flex flex-col gap-2 shrink-0">
+              <Button onClick={handleCopyReferralCode} size="sm" className="bg-orange-600 hover:bg-orange-700">
+                <Copy className="w-4 h-4 mr-2" />
+                Copy Code
+              </Button>
+              <Button onClick={handleCopyReferralLink} size="sm" variant="outline" className="border-orange-600 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950">
+                <Link className="w-4 h-4 mr-2" />
+                Copy Link
+              </Button>
+            </div>
           </div>
           
           <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
             <p className="text-sm text-blue-700 dark:text-blue-300">
-              <strong>How it works:</strong> Share this code with friends. When they sign up and enter your code:
+              <strong>How it works:</strong> Share your referral code or link with friends. When they sign up with your referral:
             </p>
             <ul className="text-sm text-blue-700 dark:text-blue-300 mt-2 space-y-1">
               <li>• They get a <strong>14-day premium trial</strong> immediately</li>
