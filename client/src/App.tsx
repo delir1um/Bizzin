@@ -33,6 +33,7 @@ import AdminDashboardPage from "@/pages/AdminDashboardPage"
 import { useEffect } from "react"
 import { usePlatformSettings } from "@/hooks/usePlatformSettings"
 import { ReferralService } from "@/lib/services/referrals"
+import { clientLogger } from "@/lib/clientLogger"
 
 // Component to handle root route logic
 function MainRouter() {
@@ -45,7 +46,7 @@ function MainRouter() {
     const refCode = urlParams.get('ref')
     
     if (refCode) {
-      console.log(`📋 Referral code captured on home page: ${refCode}`)
+      clientLogger.info('App', 'Referral code captured on home page', { refCode })
       // Store temporarily for later use during signup
       ReferralService.setTemporaryReferralCode(refCode)
       

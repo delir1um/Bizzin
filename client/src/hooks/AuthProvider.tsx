@@ -5,6 +5,7 @@ import { ReferralService } from "@/lib/services/referrals"
 import { PlansService } from "@/lib/services/plans"
 import { TrialExpiredModal } from "@/components/plans/TrialExpiredModal"
 import { queryClient } from "@/lib/queryClient"
+import { clientLogger } from "@/lib/clientLogger"
 
 type AuthContextType = {
   user: SupabaseUser | null
@@ -33,7 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!error && data.session) {
           // Check if email is verified
           if (!data.session.user.email_confirmed_at) {
-            console.log('User email not verified, clearing session')
+            clientLogger.warn('AuthProvider', 'User email not verified, clearing session')
             await supabase.auth.signOut()
             setSession(null)
             setUser(null)
@@ -47,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           updateLastLogin(data.session.user.id)
         }
       } catch (error) {
-        console.error('Error getting session:', error)
+        clientLogger.error('AuthProvider', 'Error getting session', error)
       } finally {
         if (isMounted) {
           setLoading(false)
@@ -66,7 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .eq('user_id', userId)
       } catch (error) {
         // Could not update login time - this is non-critical
-        console.log('Could not update last login:', error)
+        clientLogger.warn('AuthProvider', 'Could not update last login', error)
       }
     }
 
@@ -75,10 +76,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Clear React Query cache on auth state changes to ensure fresh data
       if (event === 'SIGNED_OUT' || (!session && event === 'TOKEN_REFRESHED')) {
-        console.log('🧹 Clearing React Query cache on auth state change:', event)
+        clientLogger.debug('AuthProvider', 'Clearing React Query cache on auth state change', { event })
         queryClient.clear()
       } else if (event === 'SIGNED_IN' && session?.user) {
-        console.log('🔄 Invalidating cache for new user session:', session.user.id)
+        clientLogger.debug('AuthProvider', 'Invalidating cache for new user session', { userId: session.user.id })
         // Invalidate user-specific caches to get fresh data
         queryClient.invalidateQueries({ queryKey: ['journal-entries'] })
         queryClient.invalidateQueries({ queryKey: ['goals'] })
@@ -88,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Check email verification for any session
       if (session?.user && !session.user.email_confirmed_at) {
-        console.log('User email not verified in auth state change, clearing session')
+        clientLogger.warn('AuthProvider', 'User email not verified in auth state change, clearing session')
         await supabase.auth.signOut()
         setSession(null)
         setUser(null)
@@ -117,7 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!existingProfile && !profileCheckError) {
           // Profile should have been created by server during signup
           // If it doesn't exist, there might be a server-side issue
-          console.warn('User profile not found after signup - this should have been created server-side')
+          clientLogger.warn('AuthProvider', 'User profile not found after signup - this should have been created server-side')
         }
         
         // Check if user plan exists
@@ -129,7 +130,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (!existingPlan && !planCheckError) {
           // Plan doesn't exist, create it using secure server-side function
-          console.log('Initializing trial plan for new user:', user.id)
+          clientLogger.info('AuthProvider', 'Initializing trial plan for new user', { userId: user.id })
           
           const { error: createPlanError } = await supabase
             .rpc('initialize_user_trial', {
@@ -137,9 +138,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             })
           
           if (createPlanError) {
-            console.error('Failed to create user plan:', createPlanError)
+            clientLogger.error('AuthProvider', 'Failed to create user plan', createPlanError)
           } else {
-            console.log('Trial plan initialized successfully')
+            clientLogger.info('AuthProvider', 'Trial plan initialized successfully')
           }
         }
         
@@ -164,7 +165,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             await ReferralService.initializeUserReferralStatsWithCode(user.id, user.email, referralCode)
           }
         } catch (error) {
-          console.error('Failed to initialize referral stats:', error)
+          clientLogger.error('AuthProvider', 'Failed to initialize referral stats', error)
         }
 
         // Check for trial expiry after all setup is complete
@@ -215,7 +216,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         
       } catch (error) {
-        console.error('Error during profile/plan creation:', error)
+        clientLogger.error('AuthProvider', 'Error during profile/plan creation', error)
       }
     }
 
