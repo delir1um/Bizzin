@@ -193,9 +193,15 @@ async function validateReferralCodeDirect(code: string): Promise<boolean> {
 function getBaseUrl(): string {
   // In published/deployed apps, use REPLIT_DOMAINS
   if (process.env.REPLIT_DOMAINS) {
-    const domains = process.env.REPLIT_DOMAINS.split(',');
-    const primaryDomain = domains[0].trim();
-    return `https://${primaryDomain}`;
+    const domains = process.env.REPLIT_DOMAINS.split(',').map(d => d.trim());
+    
+    // Prefer custom domain over preview domains
+    // Look for bizzin.co.za first, then any non-.replit.app domain, then fallback to first domain
+    const customDomain = domains.find(d => d === 'bizzin.co.za') ||
+                         domains.find(d => !d.endsWith('.replit.app')) ||
+                         domains[0];
+    
+    return `https://${customDomain}`;
   }
   
   // Production fallback
