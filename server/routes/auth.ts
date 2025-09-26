@@ -250,7 +250,7 @@ router.post('/signup', async (req, res) => {
 
     console.log('📧 Email-first signup initiated for:', email);
 
-    // Check if user already exists in auth.users or pending_signups
+    // Check if user already exists in auth.users
     const { data: existingUser } = await supabase.auth.admin.listUsers();
     const userExists = existingUser.users.some(u => u.email?.toLowerCase() === email.toLowerCase());
     
@@ -258,21 +258,32 @@ router.post('/signup', async (req, res) => {
       return res.status(400).json({ error: 'An account with this email already exists' });
     }
 
-    const { data: existingPending } = await supabase
+    const { data: existingPending, error: pendingError } = await supabase
       .from('pending_signups')
       .select('id, email, verified, expires_at')
       .eq('email', email.toLowerCase())
-      .single();
+      .maybeSingle();
+
+    if (pendingError) {
+      console.error('❌ Error checking pending signups:', pendingError);
+      return res.status(500).json({ error: 'Database error while checking pending signups' });
+    }
 
     if (existingPending) {
-      if (new Date() < new Date(existingPending.expires_at)) {
+      // If already verified, clean it up and allow new signup
+      if (existingPending.verified) {
+        await supabase.from('pending_signups').delete().eq('id', existingPending.id);
+      }
+      // If not verified and not expired, block repeat signup
+      else if (new Date() < new Date(existingPending.expires_at)) {
         return res.status(400).json({ 
           error: 'A verification email was already sent to this address. Please check your inbox or wait 15 minutes to try again.' 
         });
       }
-      
-      // Clean up expired pending signup
-      await supabase.from('pending_signups').delete().eq('id', existingPending.id);
+      // If not verified and expired, clean up expired signup
+      else {
+        await supabase.from('pending_signups').delete().eq('id', existingPending.id);
+      }
     }
 
     // Validate referral code if provided (but don't fail signup if invalid)
