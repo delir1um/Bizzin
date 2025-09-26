@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 // Dialog components removed - using custom modal instead
 import { X, Download, Calculator, DollarSign, Calendar, TrendingUp, Target, Percent } from "lucide-react"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from "recharts"
+import { DynamicLineChart } from "@/components/charts/DynamicLineChart"
+import { DynamicAreaChart } from "@/components/charts/DynamicAreaChart"
 
 
 interface SimpleInterestData {
@@ -522,17 +523,27 @@ export default function SimpleInterestCalculator({ onClose }: { onClose: () => v
                     <CardTitle className="text-lg">Interest Growth Comparison</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={projectionData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="year" />
-                        <YAxis />
-                        <Tooltip formatter={(value: any) => [`R${value.toLocaleString()}`, '']} />
-                        <Legend />
-                        <Line type="monotone" dataKey="monthlyCompound" stroke="#10B981" strokeWidth={2} name="Monthly Compounding" />
-                        <Line type="monotone" dataKey="simpleInterest" stroke="#F59E0B" strokeWidth={2} strokeDasharray="5 5" name="Simple Interest" />
-                      </LineChart>
-                    </ResponsiveContainer>
+                    <DynamicLineChart
+                      data={projectionData}
+                      height={300}
+                      xAxisKey="year"
+                      lines={[
+                        {
+                          dataKey: "monthlyCompound",
+                          stroke: "#10B981",
+                          strokeWidth: 2,
+                          name: "Monthly Compounding"
+                        },
+                        {
+                          dataKey: "simpleInterest", 
+                          stroke: "#F59E0B",
+                          strokeWidth: 2,
+                          strokeDasharray: "5 5",
+                          name: "Simple Interest"
+                        }
+                      ]}
+                      tooltipFormatter={(value: any) => [`R${value.toLocaleString()}`, '']}
+                    />
                   </CardContent>
                 </Card>
 
@@ -542,17 +553,30 @@ export default function SimpleInterestCalculator({ onClose }: { onClose: () => v
                     <CardTitle className="text-lg">Interest Earned Over Time</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <ResponsiveContainer width="100%" height={250}>
-                      <AreaChart data={projectionData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="year" />
-                        <YAxis />
-                        <Tooltip formatter={(value: any) => [`R${value.toLocaleString()}`, '']} />
-                        <Legend />
-                        <Area type="monotone" dataKey="interest" stackId="1" stroke="#EA7A57" fill="#EA7A57" fillOpacity={0.6} name="Monthly Compound Interest" />
-                        <Area type="monotone" dataKey="simpleInterestOnly" stackId="2" stroke="#94A3B8" fill="#94A3B8" fillOpacity={0.4} name="Simple Interest" />
-                      </AreaChart>
-                    </ResponsiveContainer>
+                    <DynamicAreaChart
+                      data={projectionData}
+                      height={250}
+                      xAxisKey="year"
+                      areas={[
+                        {
+                          dataKey: "interest",
+                          stackId: "1",
+                          stroke: "#EA7A57",
+                          fill: "#EA7A57",
+                          fillOpacity: 0.6,
+                          name: "Monthly Compound Interest"
+                        },
+                        {
+                          dataKey: "simpleInterestOnly",
+                          stackId: "2", 
+                          stroke: "#94A3B8",
+                          fill: "#94A3B8",
+                          fillOpacity: 0.4,
+                          name: "Simple Interest"
+                        }
+                      ]}
+                      tooltipFormatter={(value: any) => [`R${value.toLocaleString()}`, '']}
+                    />
                   </CardContent>
                 </Card>
               </>
