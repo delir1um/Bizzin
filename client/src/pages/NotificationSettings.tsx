@@ -180,10 +180,10 @@ export default function NotificationSettings() {
         <Settings className="h-8 w-8 text-orange-500" />
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Notification Settings
+            Profile Settings
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Customize your daily email preferences and content
+            Manage your account settings and profile information.
           </p>
         </div>
       </div>
@@ -217,6 +217,7 @@ export default function NotificationSettings() {
                 onCheckedChange={(enabled) => 
                   setSettings(prev => ({ ...prev, enabled }))
                 }
+                data-testid="switch-daily-emails"
               />
             </div>
 
@@ -235,7 +236,7 @@ export default function NotificationSettings() {
                 }
                 disabled={!settings.enabled}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full" data-testid="select-delivery-time">
                   <SelectValue placeholder="Select time" />
                 </SelectTrigger>
                 <SelectContent>
@@ -262,6 +263,7 @@ export default function NotificationSettings() {
                 onClick={handleSave}
                 disabled={saveSettingsMutation.isPending}
                 className="bg-orange-500 hover:bg-orange-600"
+                data-testid="button-save-settings"
               >
                 {saveSettingsMutation.isPending ? 'Saving...' : 'Save Settings'}
               </Button>
@@ -270,6 +272,7 @@ export default function NotificationSettings() {
                 variant="outline" 
                 onClick={handleTestEmail}
                 disabled={sendTestEmailMutation.isPending || !settings.enabled}
+                data-testid="button-send-test-email"
               >
                 {sendTestEmailMutation.isPending ? 'Sending...' : 'Send Test Email'}
               </Button>

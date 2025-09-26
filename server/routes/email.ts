@@ -276,8 +276,8 @@ router.get('/settings/:userId', async (req, res) => {
 
     // Return default settings if none exist
     const defaultSettings = {
-      enabled: false,
-      send_time: '08:00',
+      enabled: true,
+      send_time: '09:00',
       timezone: 'Africa/Johannesburg',
       content_preferences: {
         journal_prompts: true,
@@ -300,7 +300,7 @@ router.get('/settings/:userId', async (req, res) => {
 // Enable daily emails for a user (quick setup)
 router.post('/enable', async (req, res) => {
   try {
-    const { userId, sendTime = '08:00', timezone = 'Africa/Johannesburg' } = req.body;
+    const { userId, sendTime = '09:00', timezone = 'Africa/Johannesburg' } = req.body;
     
     if (!userId) {
       return res.status(400).json({ error: 'User ID is required' });
