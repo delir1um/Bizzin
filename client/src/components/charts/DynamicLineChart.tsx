@@ -53,7 +53,7 @@ export function DynamicLineChart({
           setLoading(false)
         }
       } catch (error) {
-        console.error('Failed to load chart library:', error)
+        clientLogger.error('DynamicLineChart', 'Failed to load chart library', error)
         if (isMounted) {
           setLoading(false)
         }

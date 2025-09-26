@@ -3,6 +3,7 @@
 
 import { supabase } from '../lib/supabase.js';
 import { EmailService } from './EmailService.js';
+import { logger } from '../lib/logger.js';
 import { 
   EmailQueueJob, 
   EmailQueueStatus, 
@@ -29,7 +30,7 @@ export class EmailQueueService {
 
   // Initialize worker with health monitoring
   private async initializeWorker() {
-    console.log(`🟢 EmailQueueService worker ${this.workerId} initializing...`);
+    logger.info('EMAIL_QUEUE', 'EmailQueueService worker initializing', { workerId: this.workerId });
     
     // Initialize email templates for this worker
     await this.emailService.loadTemplates();
@@ -57,7 +58,7 @@ export class EmailQueueService {
         uptime_start: new Date().toISOString()
       });
     } catch (error) {
-      console.error('Failed to register worker:', error);
+      logger.error('EMAIL_QUEUE', 'Failed to register worker', error);
     }
   }
 
@@ -72,7 +73,7 @@ export class EmailQueueService {
           jobs_processed_today: this.processingStats.get('jobs_today') || 0
         });
       } catch (error) {
-        console.error('Heartbeat failed:', error);
+        logger.error('EMAIL_QUEUE', 'Worker heartbeat failed', error);
       }
     }, 30000); // Every 30 seconds
   }
@@ -94,14 +95,14 @@ export class EmailQueueService {
         .single();
 
       if (error) {
-        console.error('Failed to queue email job:', error);
+        logger.error('EMAIL_QUEUE', 'Failed to queue email job', error);
         return null;
       }
 
-      console.log(`📧 Email job queued: ${data.id} for user ${jobData.user_id}`);
+      logger.info('EMAIL_QUEUE', 'Email job queued successfully', { jobId: data.id, userId: jobData.user_id, jobType: jobData.job_type });
       return data.id;
     } catch (error) {
-      console.error('Error queueing email job:', error);
+      logger.error('EMAIL_QUEUE', 'Error queueing email job', error);
       return null;
     }
   }
@@ -122,14 +123,14 @@ export class EmailQueueService {
         .select('id');
 
       if (error) {
-        console.error('Failed to queue batch email jobs:', error);
+        logger.error('EMAIL_QUEUE', 'Failed to queue batch email jobs', error);
         return 0;
       }
 
-      console.log(`📧 Batch queued: ${data?.length || 0} email jobs`);
+      logger.info('EMAIL_QUEUE', 'Batch email jobs queued successfully', { jobCount: data?.length || 0 });
       return data?.length || 0;
     } catch (error) {
-      console.error('Error queueing batch email jobs:', error);
+      logger.error('EMAIL_QUEUE', 'Error queueing batch email jobs', error);
       return 0;
     }
   }
@@ -137,12 +138,12 @@ export class EmailQueueService {
   // Process pending email jobs with concurrency control
   async processQueuedJobs(): Promise<void> {
     if (this.isProcessing) {
-      console.log('⏭️ Worker already processing, skipping...');
+      logger.info('EMAIL_QUEUE', 'Worker already processing, skipping current cycle', { workerId: this.workerId });
       return;
     }
 
     this.isProcessing = true;
-    console.log(`🔄 Worker ${this.workerId} starting job processing...`);
+    logger.info('EMAIL_QUEUE', 'Worker starting job processing cycle', { workerId: this.workerId });
 
     try {
       // Get pending jobs ordered by priority and scheduled time
@@ -156,24 +157,24 @@ export class EmailQueueService {
         .limit(this.maxConcurrentJobs);
 
       if (error) {
-        console.error('Failed to fetch pending jobs:', error);
+        logger.error('EMAIL_QUEUE', 'Failed to fetch pending jobs', error);
         return;
       }
 
       if (!pendingJobs || pendingJobs.length === 0) {
-        console.log('📭 No pending email jobs to process');
+        logger.info('EMAIL_QUEUE', 'No pending email jobs to process');
         return;
       }
 
-      console.log(`📬 Processing ${pendingJobs.length} email jobs concurrently`);
+      logger.info('EMAIL_QUEUE', 'Processing email jobs concurrently', { jobCount: pendingJobs.length });
 
       // Process jobs concurrently with Promise.all
       const processingPromises = pendingJobs.map(job => this.processEmailJob(job));
       await Promise.all(processingPromises);
 
-      console.log(`✅ Completed processing ${pendingJobs.length} email jobs`);
+      logger.info('EMAIL_QUEUE', 'Completed processing email jobs batch', { jobCount: pendingJobs.length });
     } catch (error) {
-      console.error('Error processing queued jobs:', error);
+      logger.error('EMAIL_QUEUE', 'Error processing queued jobs', error);
     } finally {
       this.isProcessing = false;
     }
@@ -181,7 +182,7 @@ export class EmailQueueService {
 
   // Process individual email job with retry logic
   private async processEmailJob(job: EmailQueueJob): Promise<void> {
-    console.log(`🔄 Processing email job ${job.id} for ${job.user_email}`);
+    logger.info('EMAIL_QUEUE', 'Processing email job', { jobId: job.id, userEmail: job.user_email, jobType: job.job_type });
     
     try {
       // Mark job as processing
@@ -202,7 +203,7 @@ export class EmailQueueService {
           success = await this.processMilestoneAlertJob(job);
           break;
         default:
-          console.error(`❌ Unknown job type: ${job.job_type}`);
+          logger.error('EMAIL_QUEUE', 'Unknown job type encountered', { jobType: job.job_type, jobId: job.id });
           success = false;
       }
 
@@ -213,7 +214,7 @@ export class EmailQueueService {
           completed_at: new Date().toISOString(),
           processing_time: processingTime 
         });
-        console.log(`✅ Email job ${job.id} completed in ${processingTime}ms`);
+        logger.info('EMAIL_QUEUE', 'Email job completed successfully', { jobId: job.id, processingTimeMs: processingTime });
         
         // Update daily stats
         this.updateProcessingStats('success', processingTime);
@@ -222,7 +223,7 @@ export class EmailQueueService {
       }
 
     } catch (error) {
-      console.error(`❌ Error processing email job ${job.id}:`, error);
+      logger.error('EMAIL_QUEUE', 'Error processing email job', { jobId: job.id, error });
       await this.handleJobFailure(job, error as Error);
     }
   }
@@ -233,7 +234,7 @@ export class EmailQueueService {
       // Generate email content
       const emailContent = await this.emailService.generateDailyEmailContent(job.user_id);
       if (!emailContent) {
-        console.error(`Failed to generate email content for user ${job.user_id}`);
+        logger.error('EMAIL_QUEUE', 'Failed to generate email content for daily digest', { userId: job.user_id });
         return false;
       }
 
@@ -248,7 +249,7 @@ export class EmailQueueService {
       
       return false;
     } catch (error) {
-      console.error('Error processing daily digest job:', error);
+      logger.error('EMAIL_QUEUE', 'Error processing daily digest job', error);
       return false;
     }
   }
@@ -256,7 +257,7 @@ export class EmailQueueService {
   // Process goal reminder email job
   private async processGoalReminderJob(job: EmailQueueJob): Promise<boolean> {
     try {
-      console.log(`📋 Processing goal reminder for ${job.user_email}`);
+      logger.info('EMAIL_QUEUE', 'Processing goal reminder job', { userEmail: job.user_email, userId: job.user_id });
       
       // Get user's active goals that need reminders
       const { data: goals, error: goalsError } = await supabase
@@ -269,7 +270,7 @@ export class EmailQueueService {
         .limit(5);
 
       if (goalsError || !goals || goals.length === 0) {
-        console.log(`No active goals found for user ${job.user_id}`);
+        logger.info('EMAIL_QUEUE', 'No active goals found for goal reminder', { userId: job.user_id });
         return true; // Not an error, just no goals to remind about
       }
 
@@ -282,14 +283,14 @@ export class EmailQueueService {
 
       if (emailSent) {
         await this.trackEmailAnalytics(job.user_id, 'goal_reminder', true);
-        console.log(`✅ Goal reminder sent to ${job.user_email}`);
+        logger.info('EMAIL_QUEUE', 'Goal reminder sent successfully', { userEmail: job.user_email, goalCount: goals.length });
         return true;
       } else {
-        console.error(`Failed to send goal reminder to ${job.user_email}`);
+        logger.error('EMAIL_QUEUE', 'Failed to send goal reminder email', { userEmail: job.user_email });
         return false;
       }
     } catch (error) {
-      console.error('Error processing goal reminder job:', error);
+      logger.error('EMAIL_QUEUE', 'Error processing goal reminder job', error);
       return false;
     }
   }
@@ -297,7 +298,7 @@ export class EmailQueueService {
   // Process milestone alert email job
   private async processMilestoneAlertJob(job: EmailQueueJob): Promise<boolean> {
     try {
-      console.log(`🎯 Processing milestone alert for ${job.user_email}`);
+      logger.info('EMAIL_QUEUE', 'Processing milestone alert job', { userEmail: job.user_email, userId: job.user_id });
       
       // Get user's upcoming milestones that need alerts
       const { data: milestones, error: milestonesError } = await supabase
@@ -314,7 +315,7 @@ export class EmailQueueService {
         .limit(5);
 
       if (milestonesError || !milestones || milestones.length === 0) {
-        console.log(`No upcoming milestones found for user ${job.user_id}`);
+        logger.info('EMAIL_QUEUE', 'No upcoming milestones found for milestone alert', { userId: job.user_id });
         return true; // Not an error, just no milestones to alert about
       }
 
@@ -327,14 +328,14 @@ export class EmailQueueService {
 
       if (emailSent) {
         await this.trackEmailAnalytics(job.user_id, 'milestone_alert', true);
-        console.log(`✅ Milestone alert sent to ${job.user_email}`);
+        logger.info('EMAIL_QUEUE', 'Milestone alert sent successfully', { userEmail: job.user_email, milestoneCount: milestones.length });
         return true;
       } else {
-        console.error(`Failed to send milestone alert to ${job.user_email}`);
+        logger.error('EMAIL_QUEUE', 'Failed to send milestone alert email', { userEmail: job.user_email });
         return false;
       }
     } catch (error) {
-      console.error('Error processing milestone alert job:', error);
+      logger.error('EMAIL_QUEUE', 'Error processing milestone alert job', error);
       return false;
     }
   }
@@ -355,14 +356,14 @@ export class EmailQueueService {
         scheduled_for: retryTime
       });
 
-      console.log(`🔄 Job ${job.id} scheduled for retry ${retryCount}/${job.max_retries} in ${retryDelay/1000}s`);
+      logger.info('EMAIL_QUEUE', 'Job scheduled for retry', { jobId: job.id, retryCount, maxRetries: job.max_retries, retryDelaySeconds: retryDelay/1000 });
     } else {
       await this.updateJobStatus(job.id, 'failed', {
         failed_at: new Date().toISOString(),
         error_message: errorMessage
       });
 
-      console.log(`❌ Job ${job.id} failed permanently after ${job.max_retries} retries`);
+      logger.error('EMAIL_QUEUE', 'Job failed permanently after max retries', { jobId: job.id, maxRetries: job.max_retries });
       this.updateProcessingStats('failure');
     }
   }
@@ -375,7 +376,7 @@ export class EmailQueueService {
         .update({ status, ...updates })
         .eq('id', jobId);
     } catch (error) {
-      console.error(`Failed to update job ${jobId} status:`, error);
+      logger.error('EMAIL_QUEUE', 'Failed to update job status', { jobId, error });
     }
   }
 
@@ -391,7 +392,7 @@ export class EmailQueueService {
         });
       }
     } catch (error) {
-      console.error('Error tracking email analytics:', error);
+      logger.error('EMAIL_QUEUE', 'Error tracking email analytics', error);
     }
   }
 
@@ -437,13 +438,13 @@ export class EmailQueueService {
         .single();
 
       if (error) {
-        console.error('Failed to create email batch:', error);
+        logger.error('EMAIL_QUEUE', 'Failed to create email batch', error);
         return null;
       }
 
       return data.id;
     } catch (error) {
-      console.error('Error creating email batch:', error);
+      logger.error('EMAIL_QUEUE', 'Error creating email batch', error);
       return null;
     }
   }
@@ -475,14 +476,14 @@ export class EmailQueueService {
         processing_stats: Object.fromEntries(this.processingStats)
       };
     } catch (error) {
-      console.error('Error getting queue stats:', error);
+      logger.error('EMAIL_QUEUE', 'Error getting queue stats', error);
       return null;
     }
   }
 
   // Graceful shutdown
   private async gracefulShutdown(): Promise<void> {
-    console.log(`🛑 Worker ${this.workerId} shutting down gracefully...`);
+    logger.info('EMAIL_QUEUE', 'Worker shutting down gracefully', { workerId: this.workerId });
     
     if (this.heartbeatInterval) {
       clearInterval(this.heartbeatInterval);
@@ -490,7 +491,7 @@ export class EmailQueueService {
 
     // Wait for current jobs to complete
     if (this.isProcessing) {
-      console.log('⏳ Waiting for current jobs to complete...');
+      logger.info('EMAIL_QUEUE', 'Waiting for current jobs to complete');
       while (this.isProcessing) {
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
@@ -503,7 +504,7 @@ export class EmailQueueService {
       last_heartbeat: new Date().toISOString()
     });
 
-    console.log(`✅ Worker ${this.workerId} shutdown complete`);
+    logger.info('EMAIL_QUEUE', 'Worker shutdown complete', { workerId: this.workerId });
     process.exit(0);
   }
 }

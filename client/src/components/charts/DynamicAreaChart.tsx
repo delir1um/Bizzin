@@ -52,7 +52,7 @@ export function DynamicAreaChart({
           setLoading(false)
         }
       } catch (error) {
-        console.error('Failed to load chart library:', error)
+        clientLogger.error('DynamicAreaChart', 'Failed to load chart library', error)
         if (isMounted) {
           setLoading(false)
         }
