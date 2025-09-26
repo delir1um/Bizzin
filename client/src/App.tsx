@@ -20,6 +20,7 @@ import { AdminVideoPage } from "@/pages/AdminVideoPage"
 import AuthPage from "@/pages/AuthPage"
 import ProfilePage from "@/pages/ProfilePage"
 import ResetPasswordPage from "@/pages/ResetPasswordPage"
+import SetPasswordPage from "@/pages/SetPasswordPage"
 import { PrivacyPage } from "@/pages/PrivacyPage"
 import NotificationSettings from "@/pages/NotificationSettings"
 import { AuthProvider, useAuth } from "@/hooks/AuthProvider"
@@ -96,6 +97,7 @@ function App() {
               <Layout>
                 <Route path="/" component={() => <MainRouter />} />
                 <Route path="/auth" component={AuthPageWrapper} />
+                <Route path="/auth/set-password" component={SetPasswordPage} />
                 <Route path="/reset-password" component={ResetPasswordPage} />
                 <Route path="/admin-login" component={AuthPage} />
                 <Route path="/profile" component={() => <ProtectedRoute><ProfilePage /></ProtectedRoute>} />
