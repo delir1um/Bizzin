@@ -123,57 +123,99 @@ router.get('/validate/:code', async (req, res) => {
   }
 });
 
-// Get user referral bonus data (executes PostgreSQL function SQL directly)
+// Get user referral bonus data - checks database for actual referral bonuses
 router.get('/bonus/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     
-    // Execute the function SQL directly to bypass schema cache
-    const functionSQL = `SELECT get_user_referral_bonus('${userId}')`;
+    console.log(`🎁 Checking referral bonus for user: ${userId}`);
     
-    const { data, error } = await supabase
-      .from('user_profiles') // Use any existing table to establish connection
-      .select('*')
-      .limit(0); // Empty query just to get connection
-
-    if (error) {
-      console.error('Connection error:', error);
+    // Check user profile for referral bonus flags
+    const { data: userProfile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('has_referral_bonus, referral_bonus_expires_at, referred_by_user_id')
+      .eq('user_id', userId)
+      .single();
+      
+    if (profileError || !userProfile) {
+      console.log('User profile not found or error:', profileError?.message);
       return res.json({ hasBonus: false, expiresAt: null, daysUntilExpiry: null });
     }
-
-    // Use raw SQL query through a different approach
-    try {
-      // Try to execute as a simple query
-      const result = await supabase.rpc('get_user_referral_bonus', { user_id_param: userId });
+    
+    // First check: Does user have has_referral_bonus flag set?
+    if (userProfile.has_referral_bonus && userProfile.referral_bonus_expires_at) {
+      const now = new Date();
+      const expiryDate = new Date(userProfile.referral_bonus_expires_at);
+      const daysUntilExpiry = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
       
-      if (result.error) {
-        // If RPC fails, fall back to manual result
-        console.log('RPC failed, providing manual result for userId:', userId);
+      if (daysUntilExpiry > 0) {
+        console.log(`✅ User has active referral bonus expiring in ${daysUntilExpiry} days`);
+        return res.json({
+          hasBonus: true,
+          expiresAt: userProfile.referral_bonus_expires_at,
+          daysUntilExpiry: Math.max(0, daysUntilExpiry)
+        });
+      }
+    }
+    
+    // Second check: Does user have unused subscription credits from referrals?
+    const { data: subscriptionCredits, error: creditsError } = await supabase
+      .from('subscription_credits')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('source', 'referral')
+      .eq('is_used', false);
+      
+    if (!creditsError && subscriptionCredits && subscriptionCredits.length > 0) {
+      // User has unused referral credits - they have a bonus
+      const totalBonusDays = subscriptionCredits.reduce((total, credit) => total + credit.amount_days, 0);
+      console.log(`✅ User has ${subscriptionCredits.length} unused subscription credits totaling ${totalBonusDays} days`);
+      
+      // Set expiry to 30 days from now if not set
+      const now = new Date();
+      const expiryDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+      const daysUntilExpiry = 30;
+      
+      return res.json({
+        hasBonus: true,
+        expiresAt: expiryDate.toISOString(),
+        daysUntilExpiry: daysUntilExpiry
+      });
+    }
+    
+    // Third check: Was user referred and might be eligible for bonus upon subscription?
+    if (userProfile.referred_by_user_id) {
+      const { data: referralRecord, error: referralError } = await supabase
+        .from('referrals')
+        .select('status, created_at')
+        .eq('referred_user_id', userId)
+        .eq('status', 'captured')
+        .single();
         
-        // For hello@cloudfusion.co.za user (who we know has a bonus)
-        if (userId === 'edc61468-30a2-4ef1-ae35-eff9bab4d641') {
-          // Use the actual trial expiry date to match the 14 days remaining
-          const trialExpiryDate = "2025-10-09T07:08:31.869852+00:00";
-          const now = new Date();
-          const expiryDate = new Date(trialExpiryDate);
-          const daysUntilExpiry = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-          
+      if (!referralError && referralRecord) {
+        // User was referred but hasn't converted yet - they will get bonus on subscription
+        console.log(`✅ User was referred and will get bonus upon subscription`);
+        
+        // Set expiry to 30 days from referral capture
+        const referralDate = new Date(referralRecord.created_at);
+        const expiryDate = new Date(referralDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+        const now = new Date();
+        const daysUntilExpiry = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        
+        if (daysUntilExpiry > 0) {
           return res.json({
             hasBonus: true,
-            expiresAt: trialExpiryDate,
-            daysUntilExpiry: Math.max(0, daysUntilExpiry) // Ensure non-negative
+            expiresAt: expiryDate.toISOString(),
+            daysUntilExpiry: Math.max(0, daysUntilExpiry)
           });
         }
-        
-        // For other users, return no bonus
-        return res.json({ hasBonus: false, expiresAt: null, daysUntilExpiry: null });
       }
-      
-      return res.json(result.data);
-    } catch (execError) {
-      console.error('SQL execution error:', execError);
-      return res.json({ hasBonus: false, expiresAt: null, daysUntilExpiry: null });
     }
+    
+    // No referral bonus found
+    console.log(`ℹ️ No referral bonus found for user ${userId}`);
+    return res.json({ hasBonus: false, expiresAt: null, daysUntilExpiry: null });
+    
   } catch (error) {
     console.error('Error in referral bonus endpoint:', error);
     res.status(500).json({ error: 'Internal server error' });
