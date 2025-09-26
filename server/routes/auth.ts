@@ -188,6 +188,25 @@ async function validateReferralCodeDirect(code: string): Promise<boolean> {
   }
 }
 
+// GET CORRECT BASE URL FOR VERIFICATION LINKS
+// Uses REPLIT_DOMAINS for published apps, falls back to production/dev URLs
+function getBaseUrl(): string {
+  // In published/deployed apps, use REPLIT_DOMAINS
+  if (process.env.REPLIT_DOMAINS) {
+    const domains = process.env.REPLIT_DOMAINS.split(',');
+    const primaryDomain = domains[0].trim();
+    return `https://${primaryDomain}`;
+  }
+  
+  // Production fallback
+  if (process.env.NODE_ENV === 'production') {
+    return 'https://bizzin.co.za';
+  }
+  
+  // Development
+  return 'http://localhost:5000';
+}
+
 // UNIFIED REFERRAL CODE GENERATION SYSTEM
 // This function generates consistent, stable referral codes that never change for a given email
 function generateReferralCode(email: string): string {
@@ -333,10 +352,8 @@ router.post('/signup', async (req, res) => {
     
     console.log('✅ Pending signup process completed successfully');
 
-    // Generate verification URL
-    const baseUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://bizzin.co.za' 
-      : 'http://localhost:5000';
+    // Generate verification URL using proper domain for published apps
+    const baseUrl = getBaseUrl();
     
     const verificationUrl = `${baseUrl}/api/auth/verify-email?token=${verificationToken}`;
 
@@ -401,18 +418,14 @@ router.get('/verify-email', async (req, res) => {
       
       if (findError || !foundSignup) {
         console.error('❌ Pending signup not found:', findError);
-        const redirectUrl = process.env.NODE_ENV === 'production' 
-          ? 'https://bizzin.co.za/auth?error=invalid_token' 
-          : 'http://localhost:5000/auth?error=invalid_token';
+        const redirectUrl = `${getBaseUrl()}/auth?error=invalid_token`;
         return res.redirect(redirectUrl);
       }
       
       pendingSignup = foundSignup;
     } catch (error) {
       console.error('❌ Database error finding verification token:', error);
-      const redirectUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://bizzin.co.za/auth?error=invalid_token' 
-        : 'http://localhost:5000/auth?error=invalid_token';
+      const redirectUrl = `${getBaseUrl()}/auth?error=invalid_token`;
       return res.redirect(redirectUrl);
     }
 
@@ -423,18 +436,14 @@ router.get('/verify-email', async (req, res) => {
       // Clean up expired token
       await supabase.from('pending_signups').delete().eq('id', pendingSignup.id);
       
-      const redirectUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://bizzin.co.za/auth?error=token_expired' 
-        : 'http://localhost:5000/auth?error=token_expired';
+      const redirectUrl = `${getBaseUrl()}/auth?error=token_expired`;
       return res.redirect(redirectUrl);
     }
 
     // Check if already verified (prevent replay attacks)
     if (pendingSignup.verified) {
       console.warn('⚠️ Token already used for:', pendingSignup.email);
-      const redirectUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://bizzin.co.za/auth?error=already_verified' 
-        : 'http://localhost:5000/auth?error=already_verified';
+      const redirectUrl = `${getBaseUrl()}/auth?error=already_verified`;
       return res.redirect(redirectUrl);
     }
 
@@ -448,9 +457,7 @@ router.get('/verify-email', async (req, res) => {
 
     if (updateError) {
       console.error('❌ Failed to mark pending signup as verified:', updateError);
-      const redirectUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://bizzin.co.za/auth?error=verification_failed' 
-        : 'http://localhost:5000/auth?error=verification_failed';
+      const redirectUrl = `${getBaseUrl()}/auth?error=verification_failed`;
       return res.redirect(redirectUrl);
     }
 
@@ -459,17 +466,13 @@ router.get('/verify-email', async (req, res) => {
     // Redirect to password creation page with verification token
     console.log('🔄 Redirecting to password creation page for:', pendingSignup.email);
     
-    const redirectUrl = process.env.NODE_ENV === 'production' 
-      ? `https://bizzin.co.za/auth/set-password?token=${token}` 
-      : `http://localhost:5000/auth/set-password?token=${token}`;
+    const redirectUrl = `${getBaseUrl()}/auth/set-password?token=${token}`;
     
     return res.redirect(redirectUrl);
 
   } catch (error) {
     console.error('❌ Email verification error:', error);
-    const redirectUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://bizzin.co.za/auth?error=verification_failed' 
-      : 'http://localhost:5000/auth?error=verification_failed';
+    const redirectUrl = `${getBaseUrl()}/auth?error=verification_failed`;
     return res.redirect(redirectUrl);
   }
 });
@@ -708,10 +711,8 @@ router.post('/resend-verification', async (req, res) => {
       return res.status(500).json({ error: 'Failed to generate new verification link' });
     }
 
-    // Generate new verification URL
-    const baseUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://bizzin.co.za' 
-      : 'http://localhost:5000';
+    // Generate new verification URL using proper domain for published apps
+    const baseUrl = getBaseUrl();
     
     const verificationUrl = `${baseUrl}/api/auth/verify-email?token=${newVerificationToken}`;
 
