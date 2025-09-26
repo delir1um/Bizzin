@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, Clock, Settings, Bell } from 'lucide-react';
+import { Mail, Clock, Settings } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/AuthProvider';
 
@@ -33,7 +33,7 @@ export default function NotificationSettings() {
 
   const [settings, setSettings] = useState<DailyEmailSettings>({
     user_id: user?.id || '',
-    enabled: false,
+    enabled: true,
     send_time: '09:00',
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     content_preferences: {
@@ -251,97 +251,6 @@ export default function NotificationSettings() {
               </p>
             </div>
 
-            <Separator />
-
-            {/* Content Preferences */}
-            <div className="space-y-4">
-              <Label className="flex items-center gap-2 text-base font-medium">
-                <Bell className="h-4 w-4" />
-                Content Preferences
-              </Label>
-              
-              <div className="grid gap-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="journal-prompts">Journal Prompts</Label>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      AI-generated prompts based on your business journey
-                    </p>
-                  </div>
-                  <Switch
-                    id="journal-prompts"
-                    checked={settings.content_preferences.journal_prompts}
-                    onCheckedChange={(checked) => 
-                      setSettings(prev => ({
-                        ...prev,
-                        content_preferences: { ...prev.content_preferences, journal_prompts: checked }
-                      }))
-                    }
-                    disabled={!settings.enabled}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="goal-summaries">Goal Summaries</Label>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Progress updates and upcoming deadlines
-                    </p>
-                  </div>
-                  <Switch
-                    id="goal-summaries"
-                    checked={settings.content_preferences.goal_summaries}
-                    onCheckedChange={(checked) => 
-                      setSettings(prev => ({
-                        ...prev,
-                        content_preferences: { ...prev.content_preferences, goal_summaries: checked }
-                      }))
-                    }
-                    disabled={!settings.enabled}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="business-insights">Business Insights</Label>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      AI-powered analysis of your business health
-                    </p>
-                  </div>
-                  <Switch
-                    id="business-insights"
-                    checked={settings.content_preferences.business_insights}
-                    onCheckedChange={(checked) => 
-                      setSettings(prev => ({
-                        ...prev,
-                        content_preferences: { ...prev.content_preferences, business_insights: checked }
-                      }))
-                    }
-                    disabled={!settings.enabled}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="milestone-reminders">Milestone Reminders</Label>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Upcoming milestone deadlines and suggestions
-                    </p>
-                  </div>
-                  <Switch
-                    id="milestone-reminders"
-                    checked={settings.content_preferences.milestone_reminders}
-                    onCheckedChange={(checked) => 
-                      setSettings(prev => ({
-                        ...prev,
-                        content_preferences: { ...prev.content_preferences, milestone_reminders: checked }
-                      }))
-                    }
-                    disabled={!settings.enabled}
-                  />
-                </div>
-              </div>
-            </div>
           </CardContent>
         </Card>
 
