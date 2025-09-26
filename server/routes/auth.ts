@@ -413,130 +413,28 @@ router.get('/verify-email', async (req, res) => {
 
     console.log('✅ Valid pending signup found for:', pendingSignup.email);
 
-    // Now create the actual user account
-    const { data: signUpData, error: signUpError } = await supabase.auth.admin.createUser({
-      email: pendingSignup.email,
-      password: pendingSignup.password_hash, // bcrypt hash is compatible with Supabase
-      email_confirm: true, // Mark email as verified immediately
-      user_metadata: {
-        referral_code: pendingSignup.referral_code || null,
-        signup_method: 'email_verified',
-        first_name: pendingSignup.first_name || null,
-        last_name: pendingSignup.last_name || null
-      }
-    });
+    // Mark the pending signup as verified (but don't create user account yet)
+    const { error: updateError } = await supabase
+      .from('pending_signups')
+      .update({ verified: true })
+      .eq('id', pendingSignup.id);
 
-    if (signUpError) {
-      console.error('❌ Failed to create user account:', signUpError);
-      return res.status(500).json({ error: 'Failed to create user account' });
+    if (updateError) {
+      console.error('❌ Failed to mark pending signup as verified:', updateError);
+      const redirectUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://bizzin.co.za/auth?error=verification_failed' 
+        : 'http://localhost:5000/auth?error=verification_failed';
+      return res.redirect(redirectUrl);
     }
 
-    if (!signUpData.user) {
-      return res.status(500).json({ error: 'Failed to create user' });
-    }
+    console.log('✅ Email verified successfully for:', pendingSignup.email);
 
-    console.log('✅ User account created successfully:', signUpData.user.id);
-
-    // Process referral if provided
-    let referredByUserId: string | undefined;
+    // Redirect to password creation page with verification token
+    console.log('🔄 Redirecting to password creation page for:', pendingSignup.email);
     
-    if (pendingSignup.referral_code) {
-      try {
-        console.log('🔍 Processing referral code for verified user:', pendingSignup.referral_code);
-        
-        // Find referrer by checking generated codes
-        const { data: allUsers, error: usersError } = await supabase
-          .from('user_profiles')
-          .select('user_id, email, full_name')
-          .not('email', 'is', null);
-
-        if (!usersError && allUsers && allUsers.length > 0) {
-          const searchCode = pendingSignup.referral_code.trim().toUpperCase();
-          
-          for (const user of allUsers) {
-            const generatedCode = generateReferralCode(user.email);
-            if (generatedCode === searchCode) {
-              // Prevent self-referral
-              if (user.email.toLowerCase() !== pendingSignup.email.toLowerCase()) {
-                referredByUserId = user.user_id;
-                console.log(`✅ Valid referrer found: ${user.email} (code: ${generatedCode})`);
-                break;
-              } else {
-                console.warn('🚫 Self-referral blocked during verification');
-              }
-            }
-          }
-        }
-      } catch (referralError) {
-        console.error('Error processing referral during verification:', referralError);
-      }
-    }
-
-    // Generate referral code for new user
-    const userReferralCode = generateReferralCode(pendingSignup.email);
-
-    // Create user profile
-    try {
-      console.log('🔧 Creating user profile for verified user:', signUpData.user.id);
-      
-      const { error: profileError } = await supabase
-        .from('user_profiles')
-        .insert({
-          user_id: signUpData.user.id,
-          email: pendingSignup.email,
-          first_name: pendingSignup.first_name || null,
-          last_name: pendingSignup.last_name || null,
-          full_name: pendingSignup.first_name && pendingSignup.last_name 
-            ? `${pendingSignup.first_name} ${pendingSignup.last_name}`.trim()
-            : pendingSignup.email.split('@')[0],
-          referral_code: userReferralCode,
-          referred_by_user_id: referredByUserId || null
-        });
-
-      if (profileError) {
-        console.error('❌ Failed to create user profile:', profileError);
-      } else {
-        console.log('✅ User profile created successfully');
-        
-        // Create referral record if user was referred
-        if (referredByUserId) {
-          const { error: referralRecordError } = await supabase
-            .from('referrals')
-            .insert({
-              referrer_user_id: referredByUserId,
-              referred_user_id: signUpData.user.id,
-              status: 'captured',
-              created_at: new Date().toISOString()
-            });
-
-          if (referralRecordError) {
-            console.error('❌ Failed to create referral record:', referralRecordError);
-          } else {
-            console.log('✅ Referral record created successfully');
-          }
-        }
-      }
-    } catch (profileCreationError) {
-      console.error('❌ Error during profile creation:', profileCreationError);
-    }
-
-    // Clean up pending signup after successful verification
-    try {
-      // Delete the pending signup after successful verification
-      setTimeout(async () => {
-        await supabase.from('pending_signups').delete().eq('id', pendingSignup.id);
-      }, 5000); // Clean up after 5 seconds
-      
-    } catch (cleanupError) {
-      console.error('❌ Error during cleanup:', cleanupError);
-    }
-
-    console.log('🎉 Email verification completed successfully for:', pendingSignup.email);
-
-    // Redirect to success page
     const redirectUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://bizzin.co.za/auth?verified=true&welcome=true' 
-      : 'http://localhost:5000/auth?verified=true&welcome=true';
+      ? `https://bizzin.co.za/auth/set-password?token=${token}` 
+      : `http://localhost:5000/auth/set-password?token=${token}`;
     
     return res.redirect(redirectUrl);
 
