@@ -65,19 +65,8 @@ function MainRouter() {
     }
   }, [user, loading, setLocation])
 
-  // Show loading state while checking auth
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-slate-600">Loading...</p>
-        </div>
-      </div>
-    )
-  }
-
-  // Always show HomePage for unauthenticated users - let PreLaunchWrapper handle auth page redirects
+  // Always show HomePage immediately for unauthenticated users (no loading gate)
+  // The redirect effect handles authenticated users
   return user ? null : <HomePage />
 }
 
