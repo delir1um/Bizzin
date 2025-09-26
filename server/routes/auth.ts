@@ -301,8 +301,8 @@ router.post('/signup', async (req, res) => {
     // Generate secure verification token
     const verificationToken = crypto.randomBytes(32).toString('hex');
     
-    // Set expiration to 24 hours from now
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    // Set expiration to 15 minutes from now
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
 
     // Store pending signup using Supabase client with detailed error inspection
     console.log('🔧 Creating pending signup via Supabase client with detailed debugging...');
