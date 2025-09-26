@@ -158,7 +158,7 @@ router.get('/users', requireAdmin, async (req, res) => {
     // Get referral data using parameterized SQL queries to avoid cache issues
     let referralData: Record<string, any> = {};
     try {
-      console.log('🔍 Fetching referral data using secure parameterized queries...');
+      logger.info('ADMIN', 'Fetching referral data using secure parameterized queries');
       
       // Get all users first 
       const { data: allUsers, error: usersError } = await supabase
@@ -166,60 +166,60 @@ router.get('/users', requireAdmin, async (req, res) => {
         .select('user_id, email, full_name');
       
       if (usersError || !allUsers) {
-        console.error('❌ Failed to fetch users:', usersError);
+        logger.error('ADMIN', 'Failed to fetch users', usersError);
         throw new Error('Cannot fetch users for referral data');
       }
       
-      console.log(`🔍 Processing referral data for ${allUsers.length} users...`);
+      logger.info('ADMIN', 'Processing referral data', { userCount: allUsers.length });
       
       // Use a single efficient SQL query to get all referral data at once
       try {
-        console.log('🔍 Getting referral counts using Supabase client...');
+        logger.info('ADMIN', 'Getting referral counts using Supabase client');
         const { data: referralCounts, error: referralCountError } = await supabase
           .from('user_profiles')
           .select('referred_by_user_id')
           .not('referred_by_user_id', 'is', null);
         
-        console.log(`🔍 Referral counts query result:`, { referralCounts, referralCountError });
-        console.log(`🔍 referralCounts type:`, typeof referralCounts);
-        console.log(`🔍 referralCounts isArray:`, Array.isArray(referralCounts));
+        logger.info('ADMIN', 'Referral counts query result', { hasData: !!referralCounts, hasError: !!referralCountError });
+        logger.debug('ADMIN', 'Referral counts data type check', { type: typeof referralCounts });
+        logger.debug('ADMIN', 'Referral counts array check', { isArray: Array.isArray(referralCounts) });
         if (referralCounts) {
-          console.log(`🔍 referralCounts length:`, referralCounts.length);
-          console.log(`🔍 First few referralCounts:`, referralCounts.slice(0, 3));
+          logger.info('ADMIN', 'Referral counts data size', { length: referralCounts.length });
+          logger.debug('ADMIN', 'Referral counts sample data', { sampleCount: 3 });
         }
         
         // Create a map of user_id -> referral count for quick lookup
         const referralCountMap: Record<string, number> = {};
         if (!referralCountError && referralCounts && Array.isArray(referralCounts)) {
-          console.log(`🔍 Processing ${referralCounts.length} referral records...`);
+          logger.info('ADMIN', 'Processing referral records', { recordCount: referralCounts.length });
           
           // Count referrals manually from the individual records
           const countMap: Record<string, number> = {};
           referralCounts.forEach((row: any, index: number) => {
-            console.log(`🔍 Processing referral row ${index}:`, row);
+            logger.debug('ADMIN', 'Processing referral row', { rowIndex: index });
             if (row && row.referred_by_user_id) {
               const referrerId = row.referred_by_user_id;
               countMap[referrerId] = (countMap[referrerId] || 0) + 1;
-              console.log(`📊 Counting referral for: ${referrerId}`);
+              logger.debug('ADMIN', 'Counting referral', { referrerId });
             }
           });
           
           // Copy to final map
           Object.entries(countMap).forEach(([userId, count]) => {
             referralCountMap[userId] = count;
-            console.log(`📊 Added to map: ${userId} -> ${count} referrals`);
+            logger.debug('ADMIN', 'Added referral count to map', { userId, count });
           });
         } else if (referralCountError) {
-          console.error('❌ Referral counts query failed:', referralCountError);
+          logger.error('ADMIN', 'Referral counts query failed', referralCountError);
         } else {
-          console.log('⚠️ Referral counts data is not an array or is null');
+          logger.warn('ADMIN', 'Referral counts data is not an array or is null');
         }
         
-        console.log(`🔍 Built referral count map for ${Object.keys(referralCountMap).length} users`);
-        console.log(`🗺️ Final referralCountMap:`, referralCountMap);
+        logger.info('ADMIN', 'Built referral count map', { userCount: Object.keys(referralCountMap).length });
+        logger.debug('ADMIN', 'Final referral count map built', { mapSize: Object.keys(referralCountMap).length });
         
         // Get all referrer information using Supabase client
-        console.log('🔍 Getting all referrer information...');
+        logger.info('ADMIN', 'Getting all referrer information');
         const { data: referrerInfo, error: referrerError } = await supabase
           .from('user_profiles')
           .select(`
@@ -230,15 +230,15 @@ router.get('/users', requireAdmin, async (req, res) => {
             referral_code
           `);
           
-        console.log(`🔍 Referrer info query result:`, { referrerInfo, referrerError });
+        logger.info('ADMIN', 'Referrer info query result', { hasData: !!referrerInfo, hasError: !!referrerError });
         
         // Process all users and build the referral data
         for (const user of allUsers) {
-          console.log(`🔍 Processing referral data for: ${user.email} (${user.user_id})`);
+          logger.debug('ADMIN', 'Processing referral data for user', { userEmail: user.email, userId: user.user_id });
           
           // Get referral count for this user (how many people they referred)
           const referralsCount = referralCountMap[user.user_id] || 0;
-          console.log(`📊 ${user.email} referred ${referralsCount} users`);
+          logger.info('ADMIN', 'User referral count', { userEmail: user.email, referralsCount });
           
           // Find referrer information for this user (who referred them)
           let referredByData = {
@@ -260,13 +260,13 @@ router.get('/users', requireAdmin, async (req, res) => {
                   referrer_name: referrerDetails.full_name || referrerDetails.email,
                   referrer_code: referrerDetails.referral_code || generateReferralCode(referrerDetails.email || '')
                 };
-                console.log(`✅ Found referrer for ${user.email}: ${referrerDetails.email} (${referrerDetails.full_name})`);
+                logger.info('ADMIN', 'Found referrer for user', { userEmail: user.email, referrerEmail: referrerDetails.email });
               } else {
-                console.log(`⚠️ Referrer ID ${userReferrerInfo.referred_by_user_id} not found in user list for ${user.email}`);
+                logger.warn('ADMIN', 'Referrer ID not found in user list', { referrerId: userReferrerInfo.referred_by_user_id, userEmail: user.email });
               }
             }
           } else if (referrerError) {
-            console.error('❌ Referrer query failed:', referrerError);
+            logger.error('ADMIN', 'Referrer query failed', referrerError);
           }
           // Get the user's referral code (already in referrerInfo or generate if needed)
           let userReferralCode = null;
@@ -278,7 +278,7 @@ router.get('/users', requireAdmin, async (req, res) => {
           if (!userReferralCode) {
             // Generate a referral code if one doesn't exist
             userReferralCode = generateReferralCode(user.email);
-            console.log(`📝 Generated referral code ${userReferralCode} for ${user.email}`);
+            logger.info('ADMIN', 'Generated referral code for user', { userEmail: user.email, code: userReferralCode });
           }
           
           referralData[user.user_id] = {
@@ -288,10 +288,10 @@ router.get('/users', requireAdmin, async (req, res) => {
           };
         }
         
-        console.log(`📊 Processed referral data for ${allUsers.length} users`);
+        logger.info('ADMIN', 'Processed referral data', { userCount: allUsers.length });
         
       } catch (queryError) {
-        console.error('❌ SQL queries failed, using empty referral data:', queryError);
+        logger.error('ADMIN', 'SQL queries failed, using empty referral data', queryError);
         // Initialize empty referral data for all users to prevent crashes
         const { data: allUsers, error: usersError } = await supabase
           .from('user_profiles')
@@ -311,9 +311,9 @@ router.get('/users', requireAdmin, async (req, res) => {
         }
       }
       
-      console.log(`📊 Loaded complete referral data for ${Object.keys(referralData).length} users`);
+      logger.info('ADMIN', 'Loaded complete referral data', { userCount: Object.keys(referralData).length });
     } catch (error) {
-      console.error('❌ Error fetching referral data:', error);
+      logger.error('ADMIN', 'Error fetching referral data', error);
       // Continue with empty referral data to prevent complete failure
     }
     
@@ -325,7 +325,7 @@ router.get('/users', requireAdmin, async (req, res) => {
           // Find user's plan from the pre-fetched plans
           const userPlan = allPlans?.find(plan => plan.user_id === profile.user_id);
           
-          console.log(`🔍 Plan lookup for ${profile.email}:`, {
+          logger.debug('ADMIN', 'Plan lookup for user', {
             user_id: profile.user_id,
             found_plan: !!userPlan,
             plan_details: userPlan
@@ -344,7 +344,7 @@ router.get('/users', requireAdmin, async (req, res) => {
             supabase.from('documents').select('*', { count: 'exact', head: true }).eq('user_id', profile.user_id)
           ]);
           
-          console.log(`📊 STATS DEBUG for ${profile.email}:`, {
+          logger.debug('ADMIN', 'Stats debug for user', {
             journalCount,
             goalCount,
             completedGoals,
@@ -365,7 +365,7 @@ router.get('/users', requireAdmin, async (req, res) => {
             const expiresAt = userPlan.expires_at ? new Date(userPlan.expires_at) : null;
             const planCreatedAt = userPlan.created_at ? new Date(userPlan.created_at) : null;
             
-            console.log(`✅ Processing plan for ${profile.email}:`, {
+            logger.info('ADMIN', 'Processing plan for user', {
               plan_type: userPlan.plan_type,
               expires_at: userPlan.expires_at,
               now: now.toISOString()
@@ -386,7 +386,7 @@ router.get('/users', requireAdmin, async (req, res) => {
                 trialDaysRemaining = 0;
                 planStatus = 'expired';
               }
-              console.log(`📅 Trial calculation for ${profile.email}:`, {
+              logger.debug('ADMIN', 'Trial calculation for user', {
                 trialDaysRemaining,
                 planStatus,
                 expires_at: expiresAt.toISOString(),
@@ -399,7 +399,7 @@ router.get('/users', requireAdmin, async (req, res) => {
               planStatus = 'cancelled';
             }
           } else {
-            console.log(`❌ No plan found for ${profile.email}, using default trial`);
+            logger.info('ADMIN', 'No plan found for user, using default trial', { userEmail: profile.email });
           }
           
           // Get referral information for this user
@@ -427,7 +427,7 @@ router.get('/users', requireAdmin, async (req, res) => {
               storageUsed = storageSizes.reduce((total, doc) => total + (doc.file_size || 0), 0);
             }
           } catch (storageError) {
-            console.log(`⚠️ Could not calculate storage for ${profile.email}:`, storageError);
+            logger.warn('ADMIN', 'Could not calculate storage for user', { userEmail: profile.email, error: storageError });
             storageUsed = 0;
           }
 
@@ -455,7 +455,7 @@ router.get('/users', requireAdmin, async (req, res) => {
             referrals_made_count: userReferralData?.referrals_made_count || 0
           };
         } catch (error) {
-          console.error(`Error fetching stats for ${profile.email}:`, error);
+          logger.error('ADMIN', 'Error fetching stats for user', { userEmail: profile.email, error });
           const userReferralData = referralData[profile.user_id];
           
           // Return flat structure for error case too
@@ -492,7 +492,7 @@ router.get('/users', requireAdmin, async (req, res) => {
     });
     
   } catch (error) {
-    console.error('💥 Error fetching admin users:', error);
+    logger.error('ADMIN', 'Error fetching admin users', error);
     res.status(500).json({ 
       error: 'Failed to fetch admin users',
       details: error instanceof Error ? error.message : 'Unknown error'
@@ -503,7 +503,7 @@ router.get('/users', requireAdmin, async (req, res) => {
 // Admin endpoint to update trial days for a user
 router.patch('/trial/:userId', requireAdmin, async (req: Request, res: Response) => {
   try {
-    console.log('🔧 Admin trial update request:', { 
+    logger.info('ADMIN', 'Admin trial update request', { 
       userId: req.params.userId, 
       body: req.body 
     });
@@ -525,10 +525,10 @@ router.patch('/trial/:userId', requireAdmin, async (req: Request, res: Response)
       .order('created_at', { ascending: false })
       .limit(1)
 
-    console.log('📋 Service role plan fetch:', { userPlans, fetchError });
+    logger.info('ADMIN', 'Service role plan fetch', { hasUserPlans: !!userPlans, hasFetchError: !!fetchError });
 
     if (fetchError) {
-      console.error('❌ Error fetching user plan with service role:', fetchError);
+      logger.error('ADMIN', 'Error fetching user plan with service role', fetchError);
       return res.status(500).json({ 
         error: `Failed to fetch user plan: ${fetchError.message}` 
       });
@@ -536,13 +536,13 @@ router.patch('/trial/:userId', requireAdmin, async (req: Request, res: Response)
 
     const userPlan = userPlans?.[0]
     if (!userPlan) {
-      console.error('❌ No user plan found for user:', userId);
+      logger.error('ADMIN', 'No user plan found for user', { userId });
       return res.status(404).json({ 
         error: 'No user plan found for this user' 
       });
     }
 
-    console.log('📅 Found user plan via service role:', userPlan);
+    logger.info('ADMIN', 'Found user plan via service role', { userId: userPlan?.user_id });
 
     const now = new Date()
     let baseDate: Date
@@ -558,7 +558,7 @@ router.patch('/trial/:userId', requireAdmin, async (req: Request, res: Response)
     // Add the days to the base date
     const newExpiryDate = new Date(baseDate.getTime() + (daysToAdd * 24 * 60 * 60 * 1000))
     
-    console.log('🔄 Trial calculation:', { 
+    logger.info('ADMIN', 'Trial calculation', { 
       baseDate: baseDate.toISOString(), 
       daysToAdd, 
       newExpiryDate: newExpiryDate.toISOString() 
@@ -581,16 +581,16 @@ router.patch('/trial/:userId', requireAdmin, async (req: Request, res: Response)
       .eq('id', userPlan.id)
       .select()
 
-    console.log('💾 Service role update result:', { updateData, updateError });
+    logger.info('ADMIN', 'Service role update result', { hasUpdateData: !!updateData, hasUpdateError: !!updateError });
 
     if (updateError) {
-      console.error('❌ Update error with service role:', updateError);
+      logger.error('ADMIN', 'Update error with service role', updateError);
       return res.status(500).json({ 
         error: `Failed to update trial: ${updateError.message}` 
       });
     }
 
-    console.log('✅ Admin trial update successful!');
+    logger.info('ADMIN', 'Admin trial update successful');
     
     res.json({
       success: true,
@@ -604,7 +604,7 @@ router.patch('/trial/:userId', requireAdmin, async (req: Request, res: Response)
     })
 
   } catch (error) {
-    console.error('❌ Admin trial update failed:', error);
+    logger.error('ADMIN', 'Admin trial update failed', error);
     res.status(500).json({ 
       error: 'Internal server error',
       details: error instanceof Error ? error.message : 'Unknown error'
@@ -630,14 +630,14 @@ async function createAuditLog(
       user_agent: req.get('User-Agent')
     });
   } catch (error) {
-    console.error('❌ Failed to create audit log:', error);
+    logger.error('ADMIN', 'Failed to create audit log', error);
   }
 }
 
 // Admin endpoint to suspend a user account
 router.post('/suspend/:userId', requireAdmin, async (req: Request, res: Response) => {
   try {
-    console.log('🚨 Admin suspend request:', { 
+    logger.info('ADMIN', 'Admin suspend request', { 
       userId: req.params.userId, 
       body: req.body 
     });
@@ -656,21 +656,21 @@ router.post('/suspend/:userId', requireAdmin, async (req: Request, res: Response
     const adminUserId = (req as any).adminUser.user_id;
 
     // Check if user exists and current suspension status
-    console.log('🔍 Looking up user with ID:', userId);
+    logger.info('ADMIN', 'Looking up user with ID', { userId });
     const { data: targetUser, error: userError } = await supabase
       .from('user_profiles')
       .select('user_id, email, is_suspended')
       .eq('user_id', userId)
       .single();
 
-    console.log('📋 User lookup result:', { 
+    logger.info('ADMIN', 'User lookup result', { 
       targetUser, 
       userError: userError?.message || userError,
       hasData: !!targetUser 
     });
 
     if (userError || !targetUser) {
-      console.error('❌ User lookup failed:', userError);
+      logger.error('ADMIN', 'User lookup failed', userError);
       return res.status(404).json({ 
         error: 'User not found',
         debug: userError?.message || 'No data returned'
@@ -702,13 +702,13 @@ router.post('/suspend/:userId', requireAdmin, async (req: Request, res: Response
         .eq('user_id', userId);
       
       if (suspendError) {
-        console.error('❌ Error suspending user via Supabase:', suspendError);
+        logger.error('ADMIN', 'Error suspending user via Supabase', suspendError);
         // This will likely fail due to schema cache, so we'll handle it below
       }
       
-      console.log('✅ User suspension initiated successfully');
+      logger.info('ADMIN', 'User suspension initiated successfully');
     } catch (error) {
-      console.error('❌ Suspension failed:', error);
+      logger.error('ADMIN', 'Suspension failed', error);
       return res.status(500).json({ error: 'Failed to suspend user' });
     }
 
@@ -719,7 +719,7 @@ router.post('/suspend/:userId', requireAdmin, async (req: Request, res: Response
       target_email: targetUser.email
     }, req);
 
-    console.log(`✅ User ${targetUser.email} suspended successfully`);
+    logger.info('ADMIN', 'User suspended successfully', { userEmail: targetUser.email });
     
     res.json({
       success: true,
@@ -733,7 +733,7 @@ router.post('/suspend/:userId', requireAdmin, async (req: Request, res: Response
     });
 
   } catch (error) {
-    console.error('💥 Error in suspend endpoint:', error);
+    logger.error('ADMIN', 'Error in suspend endpoint', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -741,7 +741,7 @@ router.post('/suspend/:userId', requireAdmin, async (req: Request, res: Response
 // Admin endpoint to unsuspend a user account
 router.post('/unsuspend/:userId', requireAdmin, async (req: Request, res: Response) => {
   try {
-    console.log('🔓 Admin unsuspend request:', { userId: req.params.userId });
+    logger.info('ADMIN', 'Admin unsuspend request', { userId: req.params.userId });
 
     const { userId } = req.params;
     const adminUserId = (req as any).adminUser.user_id;
@@ -775,7 +775,7 @@ router.post('/unsuspend/:userId', requireAdmin, async (req: Request, res: Respon
       .eq('user_id', userId);
 
     if (unsuspendError) {
-      console.error('❌ Error unsuspending user:', unsuspendError);
+      logger.error('ADMIN', 'Error unsuspending user', unsuspendError);
       return res.status(500).json({ error: 'Failed to unsuspend user' });
     }
 
@@ -785,7 +785,7 @@ router.post('/unsuspend/:userId', requireAdmin, async (req: Request, res: Respon
       target_email: targetUser.email
     }, req);
 
-    console.log(`✅ User ${targetUser.email} unsuspended successfully`);
+    logger.info('ADMIN', 'User unsuspended successfully', { userEmail: targetUser.email });
     
     res.json({
       success: true,
@@ -794,7 +794,7 @@ router.post('/unsuspend/:userId', requireAdmin, async (req: Request, res: Respon
     });
 
   } catch (error) {
-    console.error('💥 Error in unsuspend endpoint:', error);
+    logger.error('ADMIN', 'Error in unsuspend endpoint', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -802,7 +802,7 @@ router.post('/unsuspend/:userId', requireAdmin, async (req: Request, res: Respon
 // Admin endpoint to reset user password
 router.post('/reset-password/:userId', requireAdmin, async (req: Request, res: Response) => {
   try {
-    console.log('🔑 Admin password reset request:', { userId: req.params.userId });
+    logger.info('ADMIN', 'Admin password reset request', { userId: req.params.userId });
 
     const { userId } = req.params;
     const adminUserId = (req as any).adminUser.user_id;
@@ -825,7 +825,7 @@ router.post('/reset-password/:userId', requireAdmin, async (req: Request, res: R
     });
 
     if (resetError) {
-      console.error('❌ Error generating password reset:', resetError);
+      logger.error('ADMIN', 'Error generating password reset', resetError);
       return res.status(500).json({ error: 'Failed to generate password reset' });
     }
 
@@ -835,7 +835,7 @@ router.post('/reset-password/:userId', requireAdmin, async (req: Request, res: R
       reset_link_generated: true
     }, req);
 
-    console.log(`✅ Password reset generated for ${targetUser.email}`);
+    logger.info('ADMIN', 'Password reset generated for user', { userEmail: targetUser.email });
     
     res.json({
       success: true,
@@ -848,7 +848,7 @@ router.post('/reset-password/:userId', requireAdmin, async (req: Request, res: R
     });
 
   } catch (error) {
-    console.error('💥 Error in reset password endpoint:', error);
+    logger.error('ADMIN', 'Error in reset password endpoint', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -856,7 +856,7 @@ router.post('/reset-password/:userId', requireAdmin, async (req: Request, res: R
 // Admin endpoint to send email to user
 router.post('/send-email/:userId', requireAdmin, async (req: Request, res: Response) => {
   try {
-    console.log('📧 Admin send email request:', { 
+    logger.info('ADMIN', 'Admin send email request', { 
       userId: req.params.userId, 
       body: req.body 
     });
@@ -914,7 +914,7 @@ router.post('/send-email/:userId', requireAdmin, async (req: Request, res: Respo
       message_preview: message.substring(0, 100) + (message.length > 100 ? '...' : '')
     }, req);
 
-    console.log(`✅ Email queued for ${targetUser.email}: ${subject}`);
+    logger.info('ADMIN', 'Email queued for user', { userEmail: targetUser.email, subject });
     
     res.json({
       success: true,
@@ -928,7 +928,7 @@ router.post('/send-email/:userId', requireAdmin, async (req: Request, res: Respo
     });
 
   } catch (error) {
-    console.error('💥 Error in send email endpoint:', error);
+    logger.error('ADMIN', 'Error in send email endpoint', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -936,7 +936,7 @@ router.post('/send-email/:userId', requireAdmin, async (req: Request, res: Respo
 // Admin endpoint to get user activity logs
 router.get('/activity/:userId', requireAdmin, async (req: Request, res: Response) => {
   try {
-    console.log('📊 Admin activity request:', { userId: req.params.userId });
+    logger.info('ADMIN', 'Admin activity request', { userId: req.params.userId });
 
     const { userId } = req.params;
     const { limit = 50, offset = 0 } = req.query;
@@ -961,7 +961,7 @@ router.get('/activity/:userId', requireAdmin, async (req: Request, res: Response
       .range(Number(offset), Number(offset) + Number(limit) - 1);
 
     if (activityError) {
-      console.error('❌ Error fetching activity logs:', activityError);
+      logger.error('ADMIN', 'Error fetching activity logs', activityError);
       return res.status(500).json({ error: 'Failed to fetch activity logs' });
     }
 
@@ -977,11 +977,11 @@ router.get('/activity/:userId', requireAdmin, async (req: Request, res: Response
       .range(0, 19); // Last 20 admin actions
 
     if (adminError) {
-      console.error('❌ Error fetching admin logs:', adminError);
+      logger.error('ADMIN', 'Error fetching admin logs', adminError);
       return res.status(500).json({ error: 'Failed to fetch admin logs' });
     }
 
-    console.log(`✅ Retrieved ${activityLogs?.length || 0} activity logs for ${targetUser.email}`);
+    logger.info('ADMIN', 'Retrieved activity logs for user', { userEmail: targetUser.email, logCount: activityLogs?.length || 0 });
     
     res.json({
       success: true,
@@ -998,7 +998,7 @@ router.get('/activity/:userId', requireAdmin, async (req: Request, res: Response
     });
 
   } catch (error) {
-    console.error('💥 Error in activity endpoint:', error);
+    logger.error('ADMIN', 'Error in activity endpoint', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1006,7 +1006,7 @@ router.get('/activity/:userId', requireAdmin, async (req: Request, res: Response
 // Admin endpoint to edit user profile
 router.patch('/profile/:userId', requireAdmin, async (req: Request, res: Response) => {
   try {
-    console.log('✏️ Admin profile edit request:', { 
+    logger.info('ADMIN', 'Admin profile edit request', { 
       userId: req.params.userId, 
       body: req.body 
     });
@@ -1049,7 +1049,7 @@ router.patch('/profile/:userId', requireAdmin, async (req: Request, res: Respons
       .single();
 
     if (updateError) {
-      console.error('❌ Error updating profile:', updateError);
+      logger.error('ADMIN', 'Error updating profile', updateError);
       return res.status(500).json({ error: 'Failed to update profile' });
     }
 
@@ -1071,7 +1071,7 @@ router.patch('/profile/:userId', requireAdmin, async (req: Request, res: Respons
       fields_updated: Object.keys(profileUpdates)
     }, req);
 
-    console.log(`✅ Profile updated for ${currentProfile.email}`);
+    logger.info('ADMIN', 'Profile updated for user', { userEmail: currentProfile.email });
     
     res.json({
       success: true,
@@ -1084,7 +1084,7 @@ router.patch('/profile/:userId', requireAdmin, async (req: Request, res: Respons
     });
 
   } catch (error) {
-    console.error('💥 Error in profile edit endpoint:', error);
+    logger.error('ADMIN', 'Error in profile edit endpoint', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1092,7 +1092,7 @@ router.patch('/profile/:userId', requireAdmin, async (req: Request, res: Respons
 // Admin endpoint to delete a user account
 router.delete('/users/:userId', requireAdmin, async (req: Request, res: Response) => {
   try {
-    console.log('🗑️ Admin delete user request:', { userId: req.params.userId });
+    logger.info('ADMIN', 'Admin delete user request', { userId: req.params.userId });
 
     const { userId } = req.params;
     const adminUserId = (req as any).adminUser.user_id;
@@ -1133,14 +1133,14 @@ router.delete('/users/:userId', requireAdmin, async (req: Request, res: Response
     const { error: authDeleteError } = await supabase.auth.admin.deleteUser(userId);
     
     if (authDeleteError) {
-      console.error('❌ Error deleting user from auth:', authDeleteError);
+      logger.error('ADMIN', 'Error deleting user from auth', authDeleteError);
       return res.status(500).json({ 
         error: 'Failed to delete user from authentication system',
         details: authDeleteError.message 
       });
     }
 
-    console.log(`✅ User ${targetUser.email} deleted successfully`);
+    logger.info('ADMIN', 'User deleted successfully', { userEmail: targetUser.email });
     
     res.json({
       success: true,
@@ -1152,7 +1152,7 @@ router.delete('/users/:userId', requireAdmin, async (req: Request, res: Response
     });
 
   } catch (error) {
-    console.error('💥 Error in delete user endpoint:', error);
+    logger.error('ADMIN', 'Error in delete user endpoint', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

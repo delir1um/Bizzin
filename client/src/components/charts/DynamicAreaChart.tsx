@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { ChartSkeleton } from './LazyChart'
+import { clientLogger } from '@/lib/clientLogger'
 
 interface DynamicAreaChartProps {
   data: any[]
