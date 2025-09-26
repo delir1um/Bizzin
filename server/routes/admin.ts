@@ -653,11 +653,11 @@ router.post('/suspend/:userId', requireAdmin, async (req: Request, res: Response
     const { reason, expires_at } = validation.data;
     const adminUserId = (req as any).adminUser.user_id;
 
-    // Check if user exists (temporarily removing is_suspended due to schema cache issues)
+    // Check if user exists and current suspension status
     console.log('🔍 Looking up user with ID:', userId);
     const { data: targetUser, error: userError } = await supabase
       .from('user_profiles')
-      .select('user_id, email')
+      .select('user_id, email, is_suspended')
       .eq('user_id', userId)
       .single();
 
@@ -675,10 +675,10 @@ router.post('/suspend/:userId', requireAdmin, async (req: Request, res: Response
       });
     }
 
-    // TODO: Re-enable suspension check once schema cache is fixed
-    // if (targetUser.is_suspended) {
-    //   return res.status(400).json({ error: 'User is already suspended' });
-    // }
+    // Check if user is already suspended
+    if (targetUser.is_suspended) {
+      return res.status(400).json({ error: 'User is already suspended' });
+    }
 
     // Suspend the user using direct SQL to bypass Supabase schema cache issues
     const expiresAt = expires_at ? new Date(expires_at).toISOString() : null;
@@ -686,11 +686,15 @@ router.post('/suspend/:userId', requireAdmin, async (req: Request, res: Response
     const updatedAt = new Date().toISOString();
     
     try {
-      // Suspend user by setting is_active to false (this column works)
+      // Suspend user with proper suspension fields
       const { error: suspendError } = await supabase
         .from('user_profiles')
         .update({
-          is_active: false,
+          is_suspended: true,
+          suspended_at: suspendedAt,
+          suspended_by: adminUserId,
+          suspension_reason: reason,
+          suspension_expires_at: expiresAt,
           updated_at: updatedAt
         })
         .eq('user_id', userId);
