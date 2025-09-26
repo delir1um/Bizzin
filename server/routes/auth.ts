@@ -571,25 +571,38 @@ router.post('/set-password', async (req, res) => {
           .select('user_id, email, full_name')
           .not('email', 'is', null);
 
-        if (!usersError && allUsers && allUsers.length > 0) {
+        if (usersError) {
+          console.error('❌ Error fetching users for referral validation:', usersError);
+        } else if (!allUsers || allUsers.length === 0) {
+          console.warn('⚠️ No users found in user_profiles table for referral validation');
+        } else {
           const searchCode = pendingSignup.referral_code.trim().toUpperCase();
+          console.log(`🔍 Looking for referral code: ${searchCode} among ${allUsers.length} users`);
           
+          let foundMatch = false;
           for (const user of allUsers) {
             const generatedCode = generateReferralCode(user.email);
+            console.log(`🧪 Checking user ${user.email}: generated code ${generatedCode} vs search code ${searchCode}`);
+            
             if (generatedCode === searchCode) {
+              foundMatch = true;
               // Prevent self-referral
               if (user.email.toLowerCase() !== pendingSignup.email.toLowerCase()) {
                 referredByUserId = user.user_id;
-                console.log(`✅ Valid referrer found: ${user.email} (code: ${generatedCode})`);
+                console.log(`✅ Valid referrer found: ${user.email} (${user.full_name}) with code: ${generatedCode}`);
                 break;
               } else {
                 console.warn('🚫 Self-referral blocked during password setup');
               }
             }
           }
+          
+          if (!foundMatch) {
+            console.warn(`⚠️ No matching referrer found for code: ${searchCode}`);
+          }
         }
       } catch (referralError) {
-        console.error('Error processing referral during password setup:', referralError);
+        console.error('❌ Error processing referral during password setup:', referralError);
       }
     }
 
