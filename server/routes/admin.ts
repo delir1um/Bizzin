@@ -8,6 +8,7 @@ import {
   createAdminAuditLogSchema 
 } from '../../shared/schema.js';
 import { logger } from '../lib/logger.js';
+import { simpleEmailScheduler } from '../services/SimpleEmailScheduler.js';
 
 const router = express.Router();
 
@@ -884,8 +885,26 @@ router.post('/send-email/:userId', requireAdmin, async (req: Request, res: Respo
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // TODO: Integrate with email service to actually send the email
-    // For now, we'll just log and create audit trail
+    // Send email using the email service
+    try {
+      const emailSent = await simpleEmailScheduler.emailService.sendAdminEmail({
+        to: targetUser.email,
+        toName: targetUser.first_name || targetUser.full_name || 'User',
+        subject,
+        message,
+        emailType: email_type
+      });
+
+      if (!emailSent) {
+        logger.error('ADMIN', 'Failed to send admin email', { targetEmail: targetUser.email, subject });
+        return res.status(500).json({ error: 'Failed to send email' });
+      }
+
+      logger.info('ADMIN', 'Admin email sent successfully', { targetEmail: targetUser.email, subject, emailType: email_type });
+    } catch (emailError) {
+      logger.error('ADMIN', 'Error sending admin email', emailError);
+      return res.status(500).json({ error: 'Failed to send email' });
+    }
     
     // Create audit log
     await createAuditLog(adminUserId, userId, 'send_email', {

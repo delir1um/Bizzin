@@ -255,18 +255,88 @@ export class EmailQueueService {
 
   // Process goal reminder email job
   private async processGoalReminderJob(job: EmailQueueJob): Promise<boolean> {
-    // Implement goal reminder logic
-    console.log(`📋 Processing goal reminder for ${job.user_email}`);
-    // TODO: Implement goal reminder email generation and sending
-    return true;
+    try {
+      console.log(`📋 Processing goal reminder for ${job.user_email}`);
+      
+      // Get user's active goals that need reminders
+      const { data: goals, error: goalsError } = await supabase
+        .from('goals')
+        .select('id, title, description, target_date, category')
+        .eq('user_id', job.user_id)
+        .eq('completed', false)
+        .gte('target_date', new Date().toISOString())
+        .order('target_date', { ascending: true })
+        .limit(5);
+
+      if (goalsError || !goals || goals.length === 0) {
+        console.log(`No active goals found for user ${job.user_id}`);
+        return true; // Not an error, just no goals to remind about
+      }
+
+      // Generate and send goal reminder email
+      const emailSent = await this.emailService.sendGoalReminderEmail({
+        to: job.user_email,
+        userId: job.user_id,
+        goals: goals
+      });
+
+      if (emailSent) {
+        await this.trackEmailAnalytics(job.user_id, 'goal_reminder', true);
+        console.log(`✅ Goal reminder sent to ${job.user_email}`);
+        return true;
+      } else {
+        console.error(`Failed to send goal reminder to ${job.user_email}`);
+        return false;
+      }
+    } catch (error) {
+      console.error('Error processing goal reminder job:', error);
+      return false;
+    }
   }
 
   // Process milestone alert email job
   private async processMilestoneAlertJob(job: EmailQueueJob): Promise<boolean> {
-    // Implement milestone alert logic
-    console.log(`🎯 Processing milestone alert for ${job.user_email}`);
-    // TODO: Implement milestone alert email generation and sending
-    return true;
+    try {
+      console.log(`🎯 Processing milestone alert for ${job.user_email}`);
+      
+      // Get user's upcoming milestones that need alerts
+      const { data: milestones, error: milestonesError } = await supabase
+        .from('milestones')
+        .select(`
+          id, title, description, due_date, status,
+          goals!inner(id, title, category)
+        `)
+        .eq('goals.user_id', job.user_id)
+        .in('status', ['pending', 'in_progress'])
+        .gte('due_date', new Date().toISOString())
+        .lte('due_date', new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()) // Next 7 days
+        .order('due_date', { ascending: true })
+        .limit(5);
+
+      if (milestonesError || !milestones || milestones.length === 0) {
+        console.log(`No upcoming milestones found for user ${job.user_id}`);
+        return true; // Not an error, just no milestones to alert about
+      }
+
+      // Generate and send milestone alert email
+      const emailSent = await this.emailService.sendMilestoneAlertEmail({
+        to: job.user_email,
+        userId: job.user_id,
+        milestones: milestones
+      });
+
+      if (emailSent) {
+        await this.trackEmailAnalytics(job.user_id, 'milestone_alert', true);
+        console.log(`✅ Milestone alert sent to ${job.user_email}`);
+        return true;
+      } else {
+        console.error(`Failed to send milestone alert to ${job.user_email}`);
+        return false;
+      }
+    } catch (error) {
+      console.error('Error processing milestone alert job:', error);
+      return false;
+    }
   }
 
   // Handle job failure with retry logic

@@ -76,7 +76,7 @@ export function EnhancedInsights({ entry, className = "" }: EnhancedInsightsProp
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      // TODO: Fetch recent entries and goals for better context
+      // TODO: Fetch recent entries and goals for better context - requires proper data access setup
       const recentEntries: string[] = [];
       const goals: string[] = [];
 
