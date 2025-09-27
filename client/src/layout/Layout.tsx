@@ -198,21 +198,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 className="text-slate-400 hover:text-white text-sm transition-colors cursor-pointer"
                 data-testid="link-footer-privacy"
               >
-                Privacy
+                Privacy Policy
               </button>
               <button
                 onClick={() => handleFooterLinkClick('terms')}
                 className="text-slate-400 hover:text-white text-sm transition-colors cursor-pointer"
                 data-testid="link-footer-terms"
               >
-                Terms
+                Terms of Service
               </button>
               <button
                 onClick={() => handleFooterLinkClick('contact')}
                 className="text-slate-400 hover:text-white text-sm transition-colors cursor-pointer"
                 data-testid="link-footer-contact"
               >
-                Contact
+                Support
               </button>
             </div>
           </div>
