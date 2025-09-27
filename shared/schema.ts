@@ -203,6 +203,10 @@ export type EarlySignup = {
   last_name?: string;
   business_name?: string;
   business_type?: string;
+  business_size?: string;
+  signup_date: string;
+  source?: string;
+  is_notified: boolean;
   phone?: string;
   referral_source?: string;
   utm_source?: string;
@@ -436,6 +440,8 @@ export const createEarlySignupSchema = z.object({
   last_name: z.string().optional(),
   business_name: z.string().optional(),
   business_type: z.string().optional(),
+  business_size: z.string().optional(),
+  source: z.string().optional(),
   phone: z.string().optional(),
   referral_source: z.string().optional(),
   utm_source: z.string().optional(),
