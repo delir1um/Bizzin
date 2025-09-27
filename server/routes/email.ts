@@ -201,7 +201,7 @@ router.get('/debug/profile/:userId', async (req, res) => {
 // Save/update email settings from profile (main endpoint for profile page)
 router.post('/settings', async (req, res) => {
   try {
-    const { userId, enabled, sendTime = '08:00', timezone = 'Africa/Johannesburg', contentPreferences } = req.body;
+    const { userId, enabled, sendTime = '08:00', timezone = 'Africa/Johannesburg' } = req.body;
 
     if (!userId) {
       return res.status(400).json({ error: 'User ID is required' });
@@ -218,12 +218,6 @@ router.post('/settings', async (req, res) => {
       enabled: enabled !== undefined ? enabled : true,
       send_time: sendTime,
       timezone: timezone,
-      content_preferences: contentPreferences || {
-        journal_prompts: true,
-        goal_summaries: true,
-        business_insights: true,
-        milestone_reminders: true
-      },
       updated_at: new Date().toISOString()
     };
 
@@ -279,12 +273,6 @@ router.get('/settings/:userId', async (req, res) => {
       enabled: true,
       send_time: '09:00',
       timezone: 'Africa/Johannesburg',
-      content_preferences: {
-        journal_prompts: true,
-        goal_summaries: true,
-        business_insights: true,
-        milestone_reminders: true
-      }
     };
 
     res.json({ 
