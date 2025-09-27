@@ -153,14 +153,24 @@ export function AdminEarlySignups() {
     }
 
     try {
+      console.log(`🗑️ [AdminEarlySignups] Attempting to delete signup: ${signupId} (${email})`)
+      
       const { error } = await supabase
         .from('early_signups')
         .delete()
         .eq('id', signupId)
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ [AdminEarlySignups] Delete error:', error)
+        throw error
+      }
 
-      refetch()
+      console.log(`✅ [AdminEarlySignups] Successfully deleted signup from database: ${email}`)
+      
+      // Invalidate all early signup queries to force refresh
+      await queryClient.invalidateQueries({ queryKey: ['admin-early-signups'] })
+      console.log(`🔄 [AdminEarlySignups] Invalidated cache for early signups`)
+      
       console.log(`Deleted early signup: ${email}`)
     } catch (error) {
       console.error('Error deleting signup:', error)
@@ -183,7 +193,8 @@ export function AdminEarlySignups() {
 
       if (error) throw error
 
-      refetch()
+      // Invalidate cache to force refresh
+      await queryClient.invalidateQueries({ queryKey: ['admin-early-signups'] })
       setSelectedSignups(new Set())
       console.log(`Deleted ${selectedSignups.size} early signups`)
     } catch (error) {
