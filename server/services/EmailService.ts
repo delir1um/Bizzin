@@ -525,23 +525,36 @@ export class EmailService {
     };
   }
 
-  // Calculate journal streak
+  // Calculate journal streak - matches UI calculation exactly
   private calculateJournalStreak(recentEntries: any[]) {
     if (!recentEntries || recentEntries.length === 0) return 0;
-
-    const sortedEntries = recentEntries.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    let streak = 0;
-    let currentDate = new Date();
     
-    for (const entry of sortedEntries) {
+    // Use same logic as UI: convert to date strings to avoid time zone issues
+    const uniqueDates = Array.from(new Set(recentEntries.map(entry => {
       const entryDate = new Date(entry.created_at);
-      const daysDiff = Math.floor((currentDate.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24));
-      
-      if (daysDiff === streak) {
-        streak++;
-        currentDate = entryDate;
-      } else {
-        break;
+      return entryDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+    }))).sort().reverse(); // Sort newest first
+    
+    let streak = 0;
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    
+    // Only start counting if there's an entry today
+    if (uniqueDates.includes(todayStr)) {
+      streak = 1;
+      // Count backwards from today
+      for (let i = 1; i < uniqueDates.length; i++) {
+        const prevDateStr = uniqueDates[i-1];
+        const currDateStr = uniqueDates[i];
+        const prevDate = new Date(prevDateStr + 'T00:00:00.000Z');
+        const currDate = new Date(currDateStr + 'T00:00:00.000Z');
+        const daysDiff = Math.abs((prevDate.getTime() - currDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        if (daysDiff === 1) {
+          streak++;
+        } else {
+          break;
+        }
       }
     }
     
