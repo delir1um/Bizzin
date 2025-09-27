@@ -5,6 +5,7 @@ import { Notebook, Plus, TrendingUp, Zap, Flame } from 'lucide-react'
 import { JournalEntry } from '@/types/journal'
 import { getMoodEmoji } from '@/lib/journalDisplayUtils'
 import { isToday, isThisWeek, differenceInDays, format } from 'date-fns'
+import { getWeeklyDominantMood } from '@/lib/weeklyMoodHelper'
 
 interface JournalStatsCardProps {
   journalEntries: JournalEntry[]
@@ -67,18 +68,8 @@ export function JournalStatsCard({ journalEntries, onNavigate }: JournalStatsCar
     const aiAnalyzedEntries = journalEntries.filter(entry => entry.sentiment_data)
     const aiAnalysisRate = totalEntries > 0 ? Math.round((aiAnalyzedEntries.length / totalEntries) * 100) : 0
     
-    // Most common mood this week
-    const weeklyMoods = thisWeekEntries
-      .map(entry => entry.sentiment_data?.primary_mood || entry.mood)
-      .filter(Boolean)
-    
-    const moodCounts = weeklyMoods.reduce((acc: Record<string, number>, mood) => {
-      acc[mood!] = (acc[mood!] || 0) + 1
-      return acc
-    }, {})
-    
-    const dominantMood = Object.entries(moodCounts)
-      .sort(([,a], [,b]) => b - a)[0]?.[0] || 'Neutral'
+    // Use shared helper for consistent weekly mood calculation
+    const dominantMood = getWeeklyDominantMood(journalEntries)
     
     return {
       totalEntries,

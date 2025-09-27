@@ -20,6 +20,7 @@ import { getMoodEmoji } from "@/lib/journalDisplayUtils"
 import { useQuery } from "@tanstack/react-query"
 import { GoalsService } from "@/lib/services/goals"
 import { useAuth } from "@/hooks/AuthProvider"
+import { getWeeklyDominantMood } from "@/lib/weeklyMoodHelper"
 
 interface JournalDashboardProps {
   entries: JournalEntry[]
@@ -69,16 +70,8 @@ export function JournalDashboard({
       return entryDate >= weekStart && entryDate <= weekEnd
     })
 
-    // Mood patterns
-    const moodCounts = entries.reduce((acc, entry) => {
-      if (entry.sentiment_data?.primary_mood) {
-        acc[entry.sentiment_data.primary_mood] = (acc[entry.sentiment_data.primary_mood] || 0) + 1
-      }
-      return acc
-    }, {} as Record<string, number>)
-
-    const dominantMood = Object.entries(moodCounts)
-      .sort(([,a], [,b]) => b - a)[0]
+    // Use shared helper for consistent weekly mood calculation
+    const weeklyDominantMood = getWeeklyDominantMood(entries)
 
     // Energy levels
     const energyLevels = entries
@@ -145,7 +138,7 @@ export function JournalDashboard({
       recentEntries: recentEntries.slice(0, 3),
       todayEntries,
       weekEntries,
-      dominantMood,
+      weeklyDominantMood,
       avgEnergy,
       streak,
       topCategory,
@@ -246,12 +239,12 @@ export function JournalDashboard({
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Mood</p>
+                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Weekly Mood</p>
                 <p className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-1">
-                  <span>{getMoodEmoji(analytics.dominantMood?.[0] || '')}</span>
-                  {analytics.dominantMood?.[0] || 'Mixed'}
+                  <span>{getMoodEmoji(analytics.weeklyDominantMood || '')}</span>
+                  {analytics.weeklyDominantMood || 'Neutral'}
                 </p>
-                <p className="text-xs text-slate-500">Most common</p>
+                <p className="text-xs text-slate-500">This week</p>
               </div>
               <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
