@@ -372,8 +372,14 @@ export default function CashFlowCalculator({ onClose }: { onClose: () => void })
                       <Label>Starting Cash Balance (R)</Label>
                       <Input
                         type="number"
-                        value={cashFlowData.startingCash}
-                        onChange={(e) => setCashFlowData(prev => ({ ...prev, startingCash: parseFloat(e.target.value) || 0 }))}
+                        value={cashFlowData.startingCash === 0 ? '' : cashFlowData.startingCash}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setCashFlowData(prev => ({ 
+                            ...prev, 
+                            startingCash: value === '' ? 0 : parseFloat(value) || 0 
+                          }));
+                        }}
                         placeholder="0.00"
                         step="0.01"
                       />
@@ -429,9 +435,13 @@ export default function CashFlowCalculator({ onClose }: { onClose: () => void })
                         <Label className={validationErrors.inflowAmount ? 'text-red-600' : ''}>Amount (R) *</Label>
                         <Input
                           type="number"
-                          value={newInflow.amount}
+                          value={newInflow.amount === 0 ? '' : newInflow.amount}
                           onChange={(e) => {
-                            setNewInflow(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))
+                            const value = e.target.value;
+                            setNewInflow(prev => ({ 
+                              ...prev, 
+                              amount: value === '' ? 0 : parseFloat(value) || 0 
+                            }));
                             if (validationErrors.inflowAmount) {
                               setValidationErrors(prev => ({ ...prev, inflowAmount: false }))
                             }
@@ -561,9 +571,13 @@ export default function CashFlowCalculator({ onClose }: { onClose: () => void })
                         <Label className={validationErrors.outflowAmount ? 'text-red-600' : ''}>Amount (R) *</Label>
                         <Input
                           type="number"
-                          value={newOutflow.amount}
+                          value={newOutflow.amount === 0 ? '' : newOutflow.amount}
                           onChange={(e) => {
-                            setNewOutflow(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))
+                            const value = e.target.value;
+                            setNewOutflow(prev => ({ 
+                              ...prev, 
+                              amount: value === '' ? 0 : parseFloat(value) || 0 
+                            }));
                             if (validationErrors.outflowAmount) {
                               setValidationErrors(prev => ({ ...prev, outflowAmount: false }))
                             }

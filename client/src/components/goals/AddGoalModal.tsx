@@ -59,7 +59,7 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
       status: 'not_started',
       priority: 'medium',
       category: "",
-      progress: 0,
+      progress: undefined,
       progress_type: 'manual',
     },
   })
@@ -301,7 +301,10 @@ export function AddGoalModal({ open, onOpenChange }: AddGoalModalProps) {
                           max="100"
                           placeholder="0"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : 0)}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(value === '' ? undefined : Number(value));
+                          }}
                           disabled={createGoalMutation.isPending}
                         />
                       </FormControl>

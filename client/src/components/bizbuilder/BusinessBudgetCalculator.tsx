@@ -375,9 +375,13 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
                         <Label className={incomeValidationErrors.amount ? 'text-red-600' : ''}>Amount *</Label>
                         <Input
                           type="number"
-                          value={newIncomeItem.amount}
+                          value={newIncomeItem.amount === 0 ? '' : newIncomeItem.amount}
                           onChange={(e) => {
-                            setNewIncomeItem(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))
+                            const value = e.target.value;
+                            setNewIncomeItem(prev => ({ 
+                              ...prev, 
+                              amount: value === '' ? 0 : parseFloat(value) || 0 
+                            }));
                             if (incomeValidationErrors.amount) {
                               setIncomeValidationErrors(prev => ({ ...prev, amount: false }))
                             }
@@ -482,9 +486,13 @@ export function BusinessBudgetCalculator({ onClose }: BusinessBudgetCalculatorPr
                         <Label className={expenseValidationErrors.amount ? 'text-red-600' : ''}>Amount *</Label>
                         <Input
                           type="number"
-                          value={newExpenseItem.amount}
+                          value={newExpenseItem.amount === 0 ? '' : newExpenseItem.amount}
                           onChange={(e) => {
-                            setNewExpenseItem(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))
+                            const value = e.target.value;
+                            setNewExpenseItem(prev => ({ 
+                              ...prev, 
+                              amount: value === '' ? 0 : parseFloat(value) || 0 
+                            }));
                             if (expenseValidationErrors.amount) {
                               setExpenseValidationErrors(prev => ({ ...prev, amount: false }))
                             }

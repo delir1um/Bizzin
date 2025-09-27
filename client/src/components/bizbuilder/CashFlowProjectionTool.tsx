@@ -179,10 +179,10 @@ export function CashFlowProjectionTool({ onClose }: CashFlowProjectionToolProps)
     
     const item: CashFlowItem = {
       id: Date.now().toString(),
-      name: newItem.name,
-      amount: newItem.amount,
+      name: newItem.name!,
+      amount: newItem.amount!,
       type: newItem.type || 'inflow',
-      category: newItem.category,
+      category: newItem.category!,
       startMonth: newItem.startMonth || 1,
       frequency: newItem.frequency || 'monthly',
       growth: newItem.growth || 0
@@ -329,8 +329,14 @@ export function CashFlowProjectionTool({ onClose }: CashFlowProjectionToolProps)
                         <Input
                           id="startingBalance"
                           type="number"
-                          value={cashFlowData.startingBalance}
-                          onChange={(e) => setCashFlowData(prev => ({ ...prev, startingBalance: parseFloat(e.target.value) || 0 }))}
+                          value={cashFlowData.startingBalance === 0 ? '' : cashFlowData.startingBalance}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setCashFlowData(prev => ({ 
+                              ...prev, 
+                              startingBalance: value === '' ? 0 : parseFloat(value) || 0 
+                            }));
+                          }}
                           placeholder="0.00"
                         />
                       </div>
@@ -396,9 +402,13 @@ export function CashFlowProjectionTool({ onClose }: CashFlowProjectionToolProps)
                         <Label className={validationErrors.amount ? 'text-red-600' : ''}>Amount *</Label>
                         <Input
                           type="number"
-                          value={newItem.amount}
+                          value={newItem.amount === 0 ? '' : newItem.amount}
                           onChange={(e) => {
-                            setNewItem(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))
+                            const value = e.target.value;
+                            setNewItem(prev => ({ 
+                              ...prev, 
+                              amount: value === '' ? 0 : parseFloat(value) || 0 
+                            }));
                             if (validationErrors.amount) {
                               setValidationErrors(prev => ({ ...prev, amount: false }))
                             }
@@ -470,8 +480,14 @@ export function CashFlowProjectionTool({ onClose }: CashFlowProjectionToolProps)
                         <Label>Growth Rate (%)</Label>
                         <Input
                           type="number"
-                          value={newItem.growth}
-                          onChange={(e) => setNewItem(prev => ({ ...prev, growth: parseFloat(e.target.value) || 0 }))}
+                          value={newItem.growth === 0 ? '' : newItem.growth}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setNewItem(prev => ({ 
+                              ...prev, 
+                              growth: value === '' ? 0 : parseFloat(value) || 0 
+                            }));
+                          }}
                           placeholder="0.0"
                           step="0.1"
                         />
