@@ -155,11 +155,6 @@ export function GoalsStatsCard({ goals, onNavigate }: GoalsStatsCardProps) {
           {stats.milestoneGoalsCount} milestone
         </Badge>
       )}
-      {stats.completedThisMonth > 0 && (
-        <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 text-xs">
-          {stats.completedThisMonth} completed
-        </Badge>
-      )}
     </div>
   )
 
