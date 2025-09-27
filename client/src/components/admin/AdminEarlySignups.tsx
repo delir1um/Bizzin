@@ -167,8 +167,10 @@ export function AdminEarlySignups() {
 
       console.log(`✅ [AdminEarlySignups] Successfully deleted signup from database: ${email}`)
       
-      // Invalidate all early signup queries to force refresh
-      await queryClient.invalidateQueries({ queryKey: ['admin-early-signups'] })
+      // Invalidate all early signup queries to force refresh (use predicate to match all variants)
+      await queryClient.invalidateQueries({ 
+        predicate: (query) => query.queryKey[0] === 'admin-early-signups'
+      })
       console.log(`🔄 [AdminEarlySignups] Invalidated cache for early signups`)
       
       console.log(`Deleted early signup: ${email}`)
@@ -193,8 +195,10 @@ export function AdminEarlySignups() {
 
       if (error) throw error
 
-      // Invalidate cache to force refresh
-      await queryClient.invalidateQueries({ queryKey: ['admin-early-signups'] })
+      // Invalidate cache to force refresh (use predicate to match all variants)
+      await queryClient.invalidateQueries({ 
+        predicate: (query) => query.queryKey[0] === 'admin-early-signups'
+      })
       setSelectedSignups(new Set())
       console.log(`Deleted ${selectedSignups.size} early signups`)
     } catch (error) {
