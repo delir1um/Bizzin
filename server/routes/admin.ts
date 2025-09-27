@@ -1157,4 +1157,75 @@ router.delete('/users/:userId', requireAdmin, async (req: Request, res: Response
   }
 });
 
+// Admin endpoint to delete an early signup
+router.delete('/early-signups/:signupId', requireAdmin, async (req: Request, res: Response) => {
+  try {
+    logger.info('ADMIN', 'Admin delete early signup request', { signupId: req.params.signupId });
+
+    const { signupId } = req.params;
+    const adminUserId = (req as any).adminUser.user_id;
+
+    // Check if early signup exists
+    const { data: targetSignup, error: signupError } = await supabase
+      .from('early_signups')
+      .select('id, email, created_at')
+      .eq('id', signupId)
+      .single();
+
+    if (signupError || !targetSignup) {
+      logger.warn('ADMIN', 'Early signup not found', { signupId, error: signupError });
+      return res.status(404).json({ error: 'Early signup not found' });
+    }
+
+    logger.info('ADMIN', 'Found early signup to delete', { 
+      signupId, 
+      email: targetSignup.email,
+      created_at: targetSignup.created_at 
+    });
+
+    // Create audit log before deletion
+    await createAuditLog(adminUserId, null, 'delete_early_signup', {
+      signup_id: signupId,
+      signup_email: targetSignup.email,
+      deletion_timestamp: new Date().toISOString()
+    }, req);
+
+    // Delete early signup using service role permissions
+    // This bypasses RLS restrictions that were blocking frontend deletions
+    const { error: deleteError } = await supabase
+      .from('early_signups')
+      .delete()
+      .eq('id', signupId);
+    
+    if (deleteError) {
+      logger.error('ADMIN', 'Error deleting early signup from database', { 
+        signupId, 
+        error: deleteError 
+      });
+      return res.status(500).json({ 
+        error: 'Failed to delete early signup',
+        details: deleteError.message 
+      });
+    }
+
+    logger.info('ADMIN', 'Early signup deleted successfully', { 
+      signupId,
+      email: targetSignup.email 
+    });
+    
+    res.json({
+      success: true,
+      message: 'Early signup deleted successfully',
+      data: {
+        deletedSignupId: signupId,
+        deletedSignupEmail: targetSignup.email
+      }
+    });
+
+  } catch (error) {
+    logger.error('ADMIN', 'Error in delete early signup endpoint', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;
