@@ -167,12 +167,16 @@ export function AdminEarlySignups() {
 
       console.log(`✅ [AdminEarlySignups] Successfully deleted signup from database: ${email}`)
       
-      // Invalidate all early signup queries to force refresh (use predicate to match all variants)
-      await queryClient.invalidateQueries({ 
-        predicate: (query) => query.queryKey[0] === 'admin-early-signups'
-      })
-      console.log(`🔄 [AdminEarlySignups] Invalidated cache for early signups`)
+      // Optimistically update UI by removing the deleted item immediately
+      queryClient.setQueriesData({ queryKey: ['admin-early-signups'] }, (old: EarlySignup[] | undefined) => 
+        old?.filter(s => s.id !== signupId) || []
+      )
       
+      // Invalidate and refetch to ensure consistency
+      await queryClient.invalidateQueries({ queryKey: ['admin-early-signups'] })
+      await refetch()
+      
+      console.log(`🔄 [AdminEarlySignups] Updated cache and refreshed data`)
       console.log(`Deleted early signup: ${email}`)
     } catch (error) {
       console.error('Error deleting signup:', error)
@@ -195,11 +199,17 @@ export function AdminEarlySignups() {
 
       if (error) throw error
 
-      // Invalidate cache to force refresh (use predicate to match all variants)
-      await queryClient.invalidateQueries({ 
-        predicate: (query) => query.queryKey[0] === 'admin-early-signups'
-      })
+      // Optimistically update UI by removing deleted items immediately
+      const idsToDelete = new Set(selectedSignups)
+      queryClient.setQueriesData({ queryKey: ['admin-early-signups'] }, (old: EarlySignup[] | undefined) => 
+        old?.filter(s => !idsToDelete.has(s.id)) || []
+      )
+      
+      // Invalidate and refetch to ensure consistency
+      await queryClient.invalidateQueries({ queryKey: ['admin-early-signups'] })
       setSelectedSignups(new Set())
+      await refetch()
+      
       console.log(`Deleted ${selectedSignups.size} early signups`)
     } catch (error) {
       console.error('Error deleting signups:', error)
