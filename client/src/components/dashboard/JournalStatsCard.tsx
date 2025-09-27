@@ -16,42 +16,46 @@ export function JournalStatsCard({ journalEntries, onNavigate }: JournalStatsCar
   const calculateJournalStats = () => {
     const totalEntries = journalEntries.length
     
-    // Calculate writing streak
+    // Calculate writing streak - count unique consecutive days, not individual entries
     let streak = 0
     if (journalEntries.length > 0) {
-      const sortedEntries = [...journalEntries].sort((a, b) => 
-        new Date(b.entry_date || b.created_at).getTime() - new Date(a.entry_date || a.created_at).getTime()
-      )
+      // Get unique dates from all entries
+      const uniqueDates = new Set(journalEntries.map(entry => 
+        format(new Date(entry.entry_date || entry.created_at), 'yyyy-MM-dd')
+      ))
+      const sortedDates = Array.from(uniqueDates).sort().reverse()
+
+      const today = new Date()
+      const todayStr = format(today, 'yyyy-MM-dd')
+      const yesterdayStr = format(new Date(today.getTime() - 24 * 60 * 60 * 1000), 'yyyy-MM-dd')
       
-      let currentDate = new Date()
-      let consecutiveDays = 0
-      
-      // Check if there's an entry today or yesterday (allow one day gap)
-      const latestEntry = sortedEntries[0]
-      const latestEntryDate = new Date(latestEntry.entry_date || latestEntry.created_at)
-      const daysSinceLatest = differenceInDays(currentDate, latestEntryDate)
-      
-      if (daysSinceLatest <= 1) {
-        // Start counting from the latest entry date
-        currentDate = latestEntryDate
-        consecutiveDays = 1
-        
-        // Count backwards to find consecutive days
-        for (let i = 1; i < sortedEntries.length; i++) {
-          const entryDate = new Date(sortedEntries[i].entry_date || sortedEntries[i].created_at)
-          const expectedDate = new Date(currentDate)
-          expectedDate.setDate(expectedDate.getDate() - 1)
-          
-          if (differenceInDays(expectedDate, entryDate) === 0) {
-            consecutiveDays++
-            currentDate = entryDate
+      // Start counting if there's an entry today or yesterday (allow one day gap)
+      if (sortedDates.includes(todayStr)) {
+        streak = 1
+        // Count backwards from today
+        for (let i = 1; i < sortedDates.length; i++) {
+          const prevDate = new Date(sortedDates[i-1])
+          const currDate = new Date(sortedDates[i])
+          if (differenceInDays(prevDate, currDate) === 1) {
+            streak++
+          } else {
+            break
+          }
+        }
+      } else if (sortedDates.includes(yesterdayStr)) {
+        streak = 1
+        // Find yesterday's position and count backwards
+        const yesterdayIndex = sortedDates.indexOf(yesterdayStr)
+        for (let i = yesterdayIndex + 1; i < sortedDates.length; i++) {
+          const prevDate = new Date(sortedDates[i-1])
+          const currDate = new Date(sortedDates[i])
+          if (differenceInDays(prevDate, currDate) === 1) {
+            streak++
           } else {
             break
           }
         }
       }
-      
-      streak = consecutiveDays
     }
     
     // This week's entries
