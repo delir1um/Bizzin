@@ -155,17 +155,23 @@ export function AdminEarlySignups() {
     try {
       console.log(`🗑️ [AdminEarlySignups] Attempting to delete signup: ${signupId} (${email})`)
       
-      const { error } = await supabase
-        .from('early_signups')
-        .delete()
-        .eq('id', signupId)
+      // Use admin API endpoint instead of direct Supabase call to bypass RLS restrictions
+      const response = await fetch(`/api/admin/early-signups/${signupId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+        }
+      })
 
-      if (error) {
-        console.error('❌ [AdminEarlySignups] Delete error:', error)
-        throw error
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('❌ [AdminEarlySignups] API Delete error:', errorData)
+        throw new Error(errorData.error || `HTTP ${response.status}`)
       }
 
-      console.log(`✅ [AdminEarlySignups] Successfully deleted signup from database: ${email}`)
+      const result = await response.json()
+      console.log(`✅ [AdminEarlySignups] Successfully deleted signup via API: ${email}`, result)
       
       // Optimistically update UI by removing the deleted item immediately
       queryClient.setQueriesData({ queryKey: ['admin-early-signups'] }, (old: EarlySignup[] | undefined) => 
