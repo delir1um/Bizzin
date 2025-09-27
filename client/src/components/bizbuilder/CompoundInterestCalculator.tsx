@@ -355,8 +355,14 @@ export default function CompoundInterestCalculator({ onClose }: { onClose: () =>
                       <Label>Initial Principal (R)</Label>
                       <Input
                         type="number"
-                        value={compoundData.principal}
-                        onChange={(e) => setCompoundData(prev => ({ ...prev, principal: parseFloat(e.target.value) || 0 }))}
+                        value={compoundData.principal === 0 ? '' : compoundData.principal}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setCompoundData(prev => ({ 
+                            ...prev, 
+                            principal: value === '' ? 0 : parseFloat(value) || 0 
+                          }));
+                        }}
                         placeholder="5000"
                         step="100"
                       />
@@ -365,8 +371,14 @@ export default function CompoundInterestCalculator({ onClose }: { onClose: () =>
                       <Label>Annual Interest Rate (%)</Label>
                       <Input
                         type="number"
-                        value={compoundData.annualRate}
-                        onChange={(e) => setCompoundData(prev => ({ ...prev, annualRate: parseFloat(e.target.value) || 0 }))}
+                        value={compoundData.annualRate === 0 ? '' : compoundData.annualRate}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setCompoundData(prev => ({ 
+                            ...prev, 
+                            annualRate: value === '' ? 0 : parseFloat(value) || 0 
+                          }));
+                        }}
                         placeholder="5.0"
                         step="0.1"
                       />
@@ -375,8 +387,14 @@ export default function CompoundInterestCalculator({ onClose }: { onClose: () =>
                       <Label>Investment Period (Years)</Label>
                       <Input
                         type="number"
-                        value={compoundData.years}
-                        onChange={(e) => setCompoundData(prev => ({ ...prev, years: parseInt(e.target.value) || 0 }))}
+                        value={compoundData.years === 0 ? '' : compoundData.years}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setCompoundData(prev => ({ 
+                            ...prev, 
+                            years: value === '' ? 0 : parseInt(value) || 0 
+                          }));
+                        }}
                         placeholder="10"
                         min="1"
                         max="50"
@@ -413,8 +431,14 @@ export default function CompoundInterestCalculator({ onClose }: { onClose: () =>
                         <Label>Monthly Contribution (R)</Label>
                         <Input
                           type="number"
-                          value={compoundData.monthlyContribution}
-                          onChange={(e) => setCompoundData(prev => ({ ...prev, monthlyContribution: parseFloat(e.target.value) || 0 }))}
+                          value={compoundData.monthlyContribution === 0 ? '' : compoundData.monthlyContribution}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setCompoundData(prev => ({ 
+                              ...prev, 
+                              monthlyContribution: value === '' ? 0 : parseFloat(value) || 0 
+                            }));
+                          }}
                           placeholder="500"
                           step="50"
                         />
@@ -455,8 +479,14 @@ export default function CompoundInterestCalculator({ onClose }: { onClose: () =>
                         <Label>Tax Rate on Interest (%)</Label>
                         <Input
                           type="number"
-                          value={compoundData.taxRate}
-                          onChange={(e) => setCompoundData(prev => ({ ...prev, taxRate: parseFloat(e.target.value) || 0 }))}
+                          value={compoundData.taxRate === 0 ? '' : compoundData.taxRate}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setCompoundData(prev => ({ 
+                              ...prev, 
+                              taxRate: value === '' ? 0 : parseFloat(value) || 0 
+                            }));
+                          }}
                           placeholder="20"
                           step="1"
                           min="0"

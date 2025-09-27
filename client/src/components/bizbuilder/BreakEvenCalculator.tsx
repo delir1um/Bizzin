@@ -310,8 +310,14 @@ export default function BreakEvenCalculator({ onClose }: { onClose: () => void }
                       <Label>Selling Price per Unit (R)</Label>
                       <Input
                         type="number"
-                        value={breakEvenData.sellingPrice}
-                        onChange={(e) => setBreakEvenData(prev => ({ ...prev, sellingPrice: parseFloat(e.target.value) || 0 }))}
+                        value={breakEvenData.sellingPrice === 0 ? '' : breakEvenData.sellingPrice}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setBreakEvenData(prev => ({ 
+                            ...prev, 
+                            sellingPrice: value === '' ? 0 : parseFloat(value) || 0 
+                          }));
+                        }}
                         placeholder="0.00"
                         step="0.01"
                       />
@@ -320,8 +326,14 @@ export default function BreakEvenCalculator({ onClose }: { onClose: () => void }
                       <Label>Variable Cost per Unit (R)</Label>
                       <Input
                         type="number"
-                        value={breakEvenData.variableCostPerUnit}
-                        onChange={(e) => setBreakEvenData(prev => ({ ...prev, variableCostPerUnit: parseFloat(e.target.value) || 0 }))}
+                        value={breakEvenData.variableCostPerUnit === 0 ? '' : breakEvenData.variableCostPerUnit}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setBreakEvenData(prev => ({ 
+                            ...prev, 
+                            variableCostPerUnit: value === '' ? 0 : parseFloat(value) || 0 
+                          }));
+                        }}
                         placeholder="0.00"
                         step="0.01"
                       />
@@ -385,9 +397,13 @@ export default function BreakEvenCalculator({ onClose }: { onClose: () => void }
                         <Label className={validationErrors.amount ? 'text-red-600' : ''}>Amount (R) *</Label>
                         <Input
                           type="number"
-                          value={newFixedCost.amount}
+                          value={newFixedCost.amount === 0 ? '' : newFixedCost.amount}
                           onChange={(e) => {
-                            setNewFixedCost(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))
+                            const value = e.target.value;
+                            setNewFixedCost(prev => ({ 
+                              ...prev, 
+                              amount: value === '' ? 0 : parseFloat(value) || 0 
+                            }));
                             if (validationErrors.amount) {
                               setValidationErrors(prev => ({ ...prev, amount: false }))
                             }

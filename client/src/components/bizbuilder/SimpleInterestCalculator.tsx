@@ -288,8 +288,14 @@ export default function SimpleInterestCalculator({ onClose }: { onClose: () => v
                       <Label>Principal Amount (R)</Label>
                       <Input
                         type="number"
-                        value={interestData.principal}
-                        onChange={(e) => setInterestData(prev => ({ ...prev, principal: parseFloat(e.target.value) || 0 }))}
+                        value={interestData.principal === 0 ? '' : interestData.principal}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setInterestData(prev => ({ 
+                            ...prev, 
+                            principal: value === '' ? 0 : parseFloat(value) || 0 
+                          }));
+                        }}
                         placeholder="25000"
                         step="100"
                       />
@@ -299,8 +305,14 @@ export default function SimpleInterestCalculator({ onClose }: { onClose: () => v
                       <Label>Annual Interest Rate (%)</Label>
                       <Input
                         type="number"
-                        value={interestData.annualRate}
-                        onChange={(e) => setInterestData(prev => ({ ...prev, annualRate: parseFloat(e.target.value) || 0 }))}
+                        value={interestData.annualRate === 0 ? '' : interestData.annualRate}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setInterestData(prev => ({ 
+                            ...prev, 
+                            annualRate: value === '' ? 0 : parseFloat(value) || 0 
+                          }));
+                        }}
                         placeholder="15.0"
                         step="0.1"
                       />
@@ -310,8 +322,14 @@ export default function SimpleInterestCalculator({ onClose }: { onClose: () => v
                       <Label>Term (Years)</Label>
                       <Input
                         type="number"
-                        value={interestData.termYears}
-                        onChange={(e) => setInterestData(prev => ({ ...prev, termYears: parseFloat(e.target.value) || 0 }))}
+                        value={interestData.termYears === 0 ? '' : interestData.termYears}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setInterestData(prev => ({ 
+                            ...prev, 
+                            termYears: value === '' ? 0 : parseFloat(value) || 0 
+                          }));
+                        }}
                         placeholder="3"
                         step="0.5"
                         min="0.1"
@@ -369,8 +387,14 @@ export default function SimpleInterestCalculator({ onClose }: { onClose: () => v
                         <Label>Tax Rate on Interest (%)</Label>
                         <Input
                           type="number"
-                          value={interestData.taxRate}
-                          onChange={(e) => setInterestData(prev => ({ ...prev, taxRate: parseFloat(e.target.value) || 0 }))}
+                          value={interestData.taxRate === 0 ? '' : interestData.taxRate}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setInterestData(prev => ({ 
+                              ...prev, 
+                              taxRate: value === '' ? 0 : parseFloat(value) || 0 
+                            }));
+                          }}
                           placeholder="20"
                           step="1"
                           min="0"
