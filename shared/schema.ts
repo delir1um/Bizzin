@@ -56,12 +56,6 @@ export type DailyEmailSettings = {
   enabled: boolean;
   send_time: string; // HH:MM format
   timezone: string;
-  content_preferences: {
-    journal_prompts: boolean;
-    goal_summaries: boolean;
-    business_insights: boolean;
-    milestone_reminders: boolean;
-  };
   last_sent_at?: string;
   created_at: string;
   updated_at: string;

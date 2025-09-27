@@ -40,12 +40,6 @@ export function DailyEmailSetup({ onComplete, compact = false }: DailyEmailSetup
           enabled: settings.enabled,
           send_time: settings.send_time,
           timezone: settings.timezone,
-          content_preferences: {
-            journal_prompts: true,
-            goal_summaries: true,
-            business_insights: true,
-            milestone_reminders: true,
-          }
         })
         .select()
         .single();
