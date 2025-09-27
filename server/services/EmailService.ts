@@ -529,21 +529,40 @@ export class EmailService {
   private calculateJournalStreak(recentEntries: any[]) {
     if (!recentEntries || recentEntries.length === 0) return 0;
     
-    // Use same logic as UI: convert to date strings to avoid time zone issues
+    // Use same logic as UI: prioritize entry_date over created_at
     const uniqueDates = Array.from(new Set(recentEntries.map(entry => {
-      const entryDate = new Date(entry.created_at);
+      // Match UI logic exactly: entry.entry_date || entry.created_at
+      const entryDate = new Date(entry.entry_date || entry.created_at);
       return entryDate.toISOString().split('T')[0]; // YYYY-MM-DD format
     }))).sort().reverse(); // Sort newest first
     
     let streak = 0;
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
+    const yesterdayStr = new Date(today.getTime() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     
-    // Only start counting if there's an entry today
+    // Start counting if there's an entry today or yesterday (allow one day gap like UI)
     if (uniqueDates.includes(todayStr)) {
       streak = 1;
       // Count backwards from today
       for (let i = 1; i < uniqueDates.length; i++) {
+        const prevDateStr = uniqueDates[i-1];
+        const currDateStr = uniqueDates[i];
+        const prevDate = new Date(prevDateStr + 'T00:00:00.000Z');
+        const currDate = new Date(currDateStr + 'T00:00:00.000Z');
+        const daysDiff = Math.abs((prevDate.getTime() - currDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        if (daysDiff === 1) {
+          streak++;
+        } else {
+          break;
+        }
+      }
+    } else if (uniqueDates.includes(yesterdayStr)) {
+      streak = 1;
+      // Find yesterday's position and count backwards
+      const yesterdayIndex = uniqueDates.indexOf(yesterdayStr);
+      for (let i = yesterdayIndex + 1; i < uniqueDates.length; i++) {
         const prevDateStr = uniqueDates[i-1];
         const currDateStr = uniqueDates[i];
         const prevDate = new Date(prevDateStr + 'T00:00:00.000Z');
